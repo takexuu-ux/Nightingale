@@ -2924,13 +2924,17 @@ body::-webkit-scrollbar {
 
 /* Mobile and Phone Responsive Styling Overrides */
 @media (max-width: 768px) {
-  /* 1. Global dashboard elements spacing */
+  /* 1. Global dashboard elements spacing and background position */
   #app {
     padding: 0.75rem !important;
   }
   
   .container {
     padding: 0 0.25rem !important;
+  }
+
+  .nightingale-bg-image {
+    object-position: 80% 50% !important;
   }
   
   /* 2. Login Screen responsive typography and container scale */
@@ -3029,34 +3033,42 @@ body::-webkit-scrollbar {
   
   /* 3. Dashboard Header spacing updates */
   .app-header {
-    padding: 0.75rem 1rem !important;
-    gap: 0.4rem !important;
+    padding: 0.4rem 0.5rem !important;
+    gap: 0.25rem !important;
     height: auto !important;
-    min-height: 52px;
+    min-height: 48px !important;
+    justify-content: space-between !important;
+  }
+  
+  .header-logo {
+    gap: 0.3rem !important;
   }
   
   .logo-text {
-    display: none !important; /* Hide NIGHTINGALE text on mobile, icon is enough */
+    display: inline-block !important;
+    font-size: 0.72rem !important;
+    letter-spacing: -0.01em !important;
   }
   
   .header-logo-icon svg {
-    width: 32px !important;
+    width: 24px !important;
+    height: 14px !important;
   }
   
   .header-nav {
-    gap: 0.4rem !important;
-    flex: 1;
-    justify-content: center;
+    gap: 0.25rem !important;
+    flex: none !important;
+    justify-content: center !important;
   }
   
   #header-batch-btn {
-    padding: 0.35rem 0.55rem !important;
-    font-size: 0.68rem !important;
-    border-radius: 8px !important;
+    padding: 0.3rem 0.45rem !important;
+    font-size: 0.65rem !important;
+    border-radius: 6px !important;
   }
   
   #header-batch-btn span {
-    max-width: 120px;
+    max-width: 70px !important;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3064,31 +3076,36 @@ body::-webkit-scrollbar {
   }
   
   #btn-all-videos {
-    padding: 0.35rem 0.55rem !important;
-    font-size: 0.68rem !important;
-    border-radius: 8px !important;
+    padding: 0.35rem 0.45rem !important;
+    font-size: 0.65rem !important;
+    border-radius: 6px !important;
   }
   
   .user-badge {
-    padding: 0.2rem 0.4rem !important;
-    gap: 0.35rem !important;
-    border-radius: 8px !important;
+    padding: 0.15rem 0.3rem !important;
+    gap: 0.25rem !important;
+    border-radius: 6px !important;
     background: transparent !important;
     border: none !important;
   }
   
   #user-phone {
-    display: none !important; /* Hide "Rajit" top profile label to fit select dropdown */
+    display: inline-block !important;
+    font-size: 0.65rem !important;
+    max-width: 45px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
   
   .user-avatar {
-    width: 26px !important;
-    height: 26px !important;
-    font-size: 0.75rem !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 0.65rem !important;
   }
   
   .logout-link {
-    font-size: 0.7rem !important;
+    font-size: 0.65rem !important;
   }
 
   /* 4. Tab navigation container */
