@@ -1,6 +1,8 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "trailingSlash": true,
+  "cleanUrls": false,
   "rewrites": [
     {
       "source": "/api/:path*",
