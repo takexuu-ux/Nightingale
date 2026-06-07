@@ -2937,9 +2937,51 @@ body::-webkit-scrollbar {
     object-position: 80% 50% !important;
   }
   
-  /* 2. Login Screen responsive typography and container scale */
   .cyber-hero-section {
-    display: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 440px !important;
+  }
+
+  .cyber-hero-badge {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.15em !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .cyber-hero-title {
+    font-size: 1.6rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 0.6rem !important;
+    text-align: center !important;
+  }
+
+  .cyber-hero-desc {
+    font-size: 0.8rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1rem !important;
+    max-width: 340px !important;
+    text-align: center !important;
+  }
+
+  .cyber-status-bar {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.65rem !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .cyber-status-bar .status-indicator {
+    margin-left: 0.75rem !important;
+  }
+
+  .cyber-status-bar .status-indicator:first-child {
+    margin-left: 0 !important;
   }
 
   .auth-hero-wrapper {
@@ -2948,7 +2990,7 @@ body::-webkit-scrollbar {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0 !important;
+    gap: 1.5rem !important;
   }
 
   .auth-container {
