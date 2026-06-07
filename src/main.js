@@ -1640,6 +1640,44 @@ async function loadDashboard(isSilent = false) {
   }
 }
 
+function getSimplifiedBatchTitle(title) {
+  if (!title) return '';
+  const tUpper = title.toUpperCase();
+  if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) {
+    return 'Blue Sapphire Batch';
+  }
+  if (tUpper.includes('PEARL')) {
+    return 'Pearl Batch';
+  }
+  return title.trim();
+}
+
+function doesClassMatchBatch(c, activeBatch) {
+  const rawBatchTitle = c.batch?.title || (c.liveClass?.batch?.title);
+  if (!rawBatchTitle) {
+    const t = ((c.title || c.topic || '').toString()).toUpperCase();
+    const ab = activeBatch.toUpperCase();
+    if (ab.includes('SAPPHIRE') || ab.includes('BLUE')) {
+      return t.includes('SAPPHIRE') || t.includes('BLUE') || t.includes('PHARMACOLOGY') || t.includes('CARDIAC');
+    } else if (ab.includes('PEARL')) {
+      return t.includes('PEARL') || t.includes('COMMUNITY') || t.includes('HEALTH');
+    } else if (ab.includes('NORCET')) {
+      return t.includes('NORCET') || t.includes('AIIMS');
+    } else if (ab.includes('NCLEX')) {
+      return t.includes('NCLEX');
+    } else if (ab.includes('PSC') || ab.includes('CHO')) {
+      return t.includes('PSC') || t.includes('CHO');
+    } else if (ab.includes('MSC')) {
+      return t.includes('MSC');
+    }
+    return true;
+  }
+
+  const classBatchTitle = getSimplifiedBatchTitle(rawBatchTitle);
+  const targetBatch = getSimplifiedBatchTitle(activeBatch);
+  return classBatchTitle === targetBatch;
+}
+
 // Render the class cards
 function renderClasses(classes) {
   classListContainer.innerHTML = '';
@@ -1668,29 +1706,7 @@ function renderClasses(classes) {
   }
 
   // ── Live tab: filter by activeBatch (so we only show classes for the student's selected batch)
-  let poolForLive = cleanClasses.filter(c => {
-    const classBatchTitle = c.batch?.title || (c.liveClass?.batch?.title);
-    if (classBatchTitle) {
-      return classBatchTitle.trim() === activeBatch;
-    }
-    // Fallback keyword matching for mock data/legacy data
-    const t = ((c.title || c.topic || '').toString()).toUpperCase();
-    const ab = activeBatch.toUpperCase();
-    if (ab.includes('SAPPHIRE') || ab.includes('BLUE')) {
-      return t.includes('SAPPHIRE') || t.includes('BLUE') || t.includes('PHARMACOLOGY') || t.includes('CARDIAC');
-    } else if (ab.includes('PEARL')) {
-      return t.includes('PEARL') || t.includes('COMMUNITY') || t.includes('HEALTH');
-    } else if (ab.includes('NORCET')) {
-      return t.includes('NORCET') || t.includes('AIIMS');
-    } else if (ab.includes('NCLEX')) {
-      return t.includes('NCLEX');
-    } else if (ab.includes('PSC') || ab.includes('CHO')) {
-      return t.includes('PSC') || t.includes('CHO');
-    } else if (ab.includes('MSC')) {
-      return t.includes('MSC');
-    }
-    return true;
-  });
+  let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
 
   // Only fall back to mock if the filtered pool is empty
   if (poolForLive.length === 0) {
@@ -1698,29 +1714,7 @@ function renderClasses(classes) {
   }
 
   // ── Upcoming tab: keep batch filter as before
-  let batchFiltered = cleanClasses.filter(c => {
-    const classBatchTitle = c.batch?.title || (c.liveClass?.batch?.title);
-    if (classBatchTitle) {
-      return classBatchTitle.trim() === activeBatch;
-    }
-    // Fallback keyword matching for mock data/legacy data
-    const t = ((c.title || c.topic || '').toString()).toUpperCase();
-    const ab = activeBatch.toUpperCase();
-    if (ab.includes('SAPPHIRE') || ab.includes('BLUE')) {
-      return t.includes('SAPPHIRE') || t.includes('BLUE') || t.includes('PHARMACOLOGY') || t.includes('CARDIAC');
-    } else if (ab.includes('PEARL')) {
-      return t.includes('PEARL') || t.includes('COMMUNITY') || t.includes('HEALTH');
-    } else if (ab.includes('NORCET')) {
-      return t.includes('NORCET') || t.includes('AIIMS');
-    } else if (ab.includes('NCLEX')) {
-      return t.includes('NCLEX');
-    } else if (ab.includes('PSC') || ab.includes('CHO')) {
-      return t.includes('PSC') || t.includes('CHO');
-    } else if (ab.includes('MSC')) {
-      return t.includes('MSC');
-    }
-    return true;
-  });
+  let batchFiltered = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
   // Mock fallback only for non-live tabs
   if (activeTab !== 'live' && batchFiltered.length === 0) {
     batchFiltered = getMockClassesForBatch(activeBatch, activeTab);
@@ -1872,7 +1866,7 @@ function createClassCard(c, isCurrentlyLive) {
     `;
   }
 
-  let batchLabel = c.batch?.title || (c.liveClass?.batch?.title) || activeBatch;
+  let batchLabel = getSimplifiedBatchTitle(c.batch?.title || (c.liveClass?.batch?.title)) || activeBatch;
   const blUpper = batchLabel.toUpperCase();
   if (blUpper === 'NCLEX' || blUpper.includes('NCLEX')) batchLabel = 'NCLEX MASTERS';
   else if (blUpper === 'PSC' || blUpper.includes('STATE PSC')) batchLabel = 'STATE PSC / CHO';
@@ -2613,7 +2607,7 @@ function renderBatchSelector() {
   cleanClasses.forEach(c => {
     const title = c.batch?.title || (c.liveClass?.batch?.title);
     if (title) {
-      batchTitles.add(title.trim());
+      batchTitles.add(getSimplifiedBatchTitle(title));
     }
   });
   
@@ -2990,7 +2984,11 @@ function renderRecordings(classes) {
   currentRecordings = allRecordings;
 
   // Filter recordings for the selected batch
-  const filteredRecordings = allRecordings.filter(r => r.batch?.trim().toUpperCase() === activeBatch.trim().toUpperCase());
+  const filteredRecordings = allRecordings.filter(r => {
+    const recordBatch = getSimplifiedBatchTitle(r.batch);
+    const targetBatch = getSimplifiedBatchTitle(activeBatch);
+    return recordBatch === targetBatch;
+  });
 
   // Group by Subject
   const bySubject = {};
