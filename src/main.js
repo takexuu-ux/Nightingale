@@ -1820,18 +1820,20 @@ function renderClasses(classes) {
     });
   }
 
+  const isGuest = localStorage.getItem('nnl_access_token') === 'GUEST_DEMO_TOKEN';
+
   // ── Live tab: filter by activeBatch (so we only show classes for the student's selected batch)
   let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
 
-  // Only fall back to mock if the filtered pool is empty
-  if (poolForLive.length === 0) {
+  // Only fall back to mock if the filtered pool is empty and we are guest
+  if (poolForLive.length === 0 && isGuest) {
     poolForLive = getMockClassesForBatch(activeBatch, 'live');
   }
 
   // ── Upcoming tab: keep batch filter as before
   let batchFiltered = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
-  // Mock fallback only for non-live tabs
-  if (activeTab !== 'live' && batchFiltered.length === 0) {
+  // Mock fallback only for non-live tabs in Guest mode
+  if (activeTab !== 'live' && batchFiltered.length === 0 && isGuest) {
     batchFiltered = getMockClassesForBatch(activeBatch, activeTab);
   }
 
@@ -1881,10 +1883,10 @@ function renderClasses(classes) {
         const isLiveNow      = now >= start && now <= end;
         const isStartingSoon = start > now && (start - now) <= soonMs;
         const hasEndedToday  = isToday && now > end;
-        if (isLiveNow || isStartingSoon || hasEndedToday) {
+        if (isLiveNow || isStartingSoon) {
           c._isLiveNow      = isLiveNow;
           c._isStartingSoon = isStartingSoon;
-          c._hasEndedToday  = hasEndedToday;
+          c._hasEndedToday  = false;
           upcomingOrPastClasses.push(c);
         }
       } catch (e) {}
@@ -2848,6 +2850,16 @@ function getMockClassesForBatch(batch, tab) {
   
   const isSapphire = batch.toUpperCase().includes('SAPPHIRE') || batch.toUpperCase().includes('BLUE');
   
+  // Anchored fixed times for the current day to simulate a real daily schedule
+  const t9am = new Date(now); t9am.setHours(9, 0, 0, 0);
+  const t12pm = new Date(now); t12pm.setHours(12, 0, 0, 0);
+  
+  const t1pm = new Date(now); t1pm.setHours(13, 0, 0, 0);
+  const t4pm = new Date(now); t4pm.setHours(16, 0, 0, 0);
+  
+  const t4_30pm = new Date(now); t4_30pm.setHours(16, 30, 0, 0);
+  const t7_30pm = new Date(now); t7_30pm.setHours(19, 30, 0, 0);
+  
   if (tab === 'live') {
     if (isSapphire) {
       return [
@@ -2855,8 +2867,8 @@ function getMockClassesForBatch(batch, tab) {
           id: 'mock-sapphire-live-1',
           title: 'Pharmacology Day 1 (Part 1): Anti-Hypertensive Drugs & Cardiac Assessment',
           faculty: { name: 'Dr. Suresh Sharma' },
-          start: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-          end: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
+          start: t9am.toISOString(),
+          end: t12pm.toISOString(),
           zoom_meet_id: '82930283021',
           passcode: '908123',
           batch: { title: 'Blue Sapphire Batch' }
@@ -2865,10 +2877,20 @@ function getMockClassesForBatch(batch, tab) {
           id: 'mock-sapphire-live-2',
           title: 'Pharmacology Day 1 (Part 2): Anti-Hypertensive Drugs & Cardiac Assessment',
           faculty: { name: 'Dr. Suresh Sharma' },
-          start: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
-          end: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+          start: t1pm.toISOString(),
+          end: t4pm.toISOString(),
           zoom_meet_id: '82930283022',
           passcode: '908124',
+          batch: { title: 'Blue Sapphire Batch' }
+        },
+        {
+          id: 'mock-sapphire-live-3',
+          title: 'Pharmacology Day 1 (Part 3): Anti-Hypertensive Drugs & Cardiac Assessment',
+          faculty: { name: 'Dr. Suresh Sharma' },
+          start: t4_30pm.toISOString(),
+          end: t7_30pm.toISOString(),
+          zoom_meet_id: '82930283023',
+          passcode: '908125',
           batch: { title: 'Blue Sapphire Batch' }
         }
       ];
@@ -2878,8 +2900,8 @@ function getMockClassesForBatch(batch, tab) {
           id: 'mock-pearl-live-1',
           title: 'Community Health Nursing Day 6 (Part 1): Maternal & Child Health Indicators',
           faculty: { name: 'Mukhminder Singh' },
-          start: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-          end: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
+          start: t9am.toISOString(),
+          end: t12pm.toISOString(),
           zoom_meet_id: '81293028302',
           passcode: '123456',
           batch: { title: 'Pearl Batch' }
@@ -2888,9 +2910,19 @@ function getMockClassesForBatch(batch, tab) {
           id: 'mock-pearl-live-2',
           title: 'Community Health Nursing Day 6 (Part 2): Maternal & Child Health Indicators',
           faculty: { name: 'Mukhminder Singh' },
-          start: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
-          end: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+          start: t1pm.toISOString(),
+          end: t4pm.toISOString(),
           zoom_meet_id: '81293028303',
+          passcode: '123456',
+          batch: { title: 'Pearl Batch' }
+        },
+        {
+          id: 'mock-pearl-live-3',
+          title: 'Community Health Nursing Day 6 (Part 3): Maternal & Child Health Indicators',
+          faculty: { name: 'Mukhminder Singh' },
+          start: t4_30pm.toISOString(),
+          end: t7_30pm.toISOString(),
+          zoom_meet_id: '81293028304',
           passcode: '123456',
           batch: { title: 'Pearl Batch' }
         }
