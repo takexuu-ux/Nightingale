@@ -295,7 +295,10 @@ function checkLoginState() {
     if (cyberHero) cyberHero.classList.add('hide');
 
     // Update profile info
-    const displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone || 'Student');
+    let displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone || 'Student');
+    if (savedPhone === '7827209926') {
+      displayName = 'Rajit';
+    }
     userPhone.textContent = displayName;
     userAvatar.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -617,7 +620,7 @@ function updateTimelineSlider() {
     timelineSlider.value = 100; // 100% completed progress bar at start
     timelineSliderTime.textContent = 'LIVE';
     timelineSlider.classList.remove('in-rewind');
-    timelineSlider.style.background = `linear-gradient(to right, #00f3d0 0%, #00f3d0 100%)`;
+    timelineSlider.style.background = `linear-gradient(to right, var(--primary) 0%, var(--primary) 100%)`;
     
     rewindPrevBtn.disabled = true;
     rewindNextBtn.disabled = true;
@@ -687,7 +690,7 @@ function updateTimelineSlider() {
 
   // Update dynamic background track color filling
   const pct = (val / len) * 100;
-  const color = inRewindMode ? '#ff4d4d' : '#00f3d0';
+  const color = inRewindMode ? '#ff4d4d' : 'var(--primary)';
   timelineSlider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(255, 255, 255, 0.08) ${pct}%, rgba(255, 255, 255, 0.08) 100%)`;
 }
 
@@ -1602,6 +1605,7 @@ classroomIframe.addEventListener('load', () => {
 
 // Fetch and render classes
 async function loadDashboard(isSilent = false) {
+  const animStart = Date.now();
   if (!isSilent) {
     clearAlert();
   }
@@ -1752,11 +1756,16 @@ async function loadDashboard(isSilent = false) {
     }
   } finally {
     if (!isSilent) {
-      dashboardLoader.classList.add('hide');
-      if (refetchBtn) {
-        refetchBtn.classList.remove('spinning');
-        refetchBtn.disabled = false;
-      }
+      const elapsed = Date.now() - animStart;
+      const remainingDelay = Math.max(0, 800 - elapsed);
+      
+      setTimeout(() => {
+        if (dashboardLoader) dashboardLoader.classList.add('hide');
+        if (refetchBtn) {
+          refetchBtn.classList.remove('spinning');
+          refetchBtn.disabled = false;
+        }
+      }, remainingDelay);
     }
   }
 }
@@ -2069,30 +2078,13 @@ function showClassroomBars() {
 }
 
 function hideClassroomBars() {
-  const header = document.querySelector('.classroom-header');
-  const bar = document.getElementById('classroom-timeline-bar');
-  if (header) header.classList.add('bars-hidden');
-  if (bar) bar.classList.add('bars-hidden');
+  // Disabled auto-hiding to prevent exposing native Zoom controls underneath
 }
 
-// Show bars temporarily when mouse moves, but only if the sidebar is collapsed.
+// Keep bars visible permanently to avoid exposing native Zoom controls at the bottom
 function showBarsTemporarily() {
-  const sidebar = document.getElementById('timeline-sidebar');
-  if (!sidebar) return;
-
-  if (!sidebar.classList.contains('collapsed')) {
-    clearTimeout(barsHideTimerId);
-    showClassroomBars();
-    return;
-  }
-
-  showClassroomBars();
   clearTimeout(barsHideTimerId);
-  barsHideTimerId = setTimeout(() => {
-    if (sidebar.classList.contains('collapsed')) {
-      hideClassroomBars();
-    }
-  }, 2000);
+  showClassroomBars();
 }
 
 // Bind delegated listeners for class lists
@@ -3299,30 +3291,7 @@ function renderRecordings(classes) {
 }
 
 function initBackgroundParallax() {
-  const wrapper = document.querySelector('.bg-drift-wrapper');
-  if (!wrapper) return;
-  
-  let currentX = 0;
-  let currentY = 0;
-  
-  function updateParallax(timestamp) {
-    const t = timestamp / 1000; // seconds
-    
-    // Slow continuous auto-drift — more visible, purely time-based.
-    // X: gentle side-to-side on a 16-second sine cycle (±15px)
-    // Y: slower up-down on a 22-second cosine cycle    (±10px)
-    const targetX = Math.sin(t / 16) * 15;
-    const targetY = Math.cos(t / 22) * 10;
-    
-    // Lerp at 0.025 for smooth, jitter-free following of the sine target.
-    currentX += (targetX - currentX) * 0.025;
-    currentY += (targetY - currentY) * 0.025;
-    
-    wrapper.style.transform = `scale(1.03) translate(${currentX}px, ${currentY}px)`;
-    requestAnimationFrame(updateParallax);
-  }
-  
-  requestAnimationFrame(updateParallax);
+  // Disabled JS-based drift to allow smooth hardware-accelerated CSS keyframe animation to handle it
 }
 
 function initRecordingsViewer() {

@@ -1137,8 +1137,8 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #00f3d0;
-  box-shadow: 0 0 10px rgba(0, 243, 208, 0.8);
+  background: var(--primary);
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.8);
   margin-top: -4px;
   transition: var(--transition-smooth);
 }
@@ -1151,9 +1151,9 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #00f3d0;
+  background: var(--primary);
   border: none;
-  box-shadow: 0 0 10px rgba(0, 243, 208, 0.8);
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.8);
   transition: var(--transition-smooth);
 }
 
@@ -1745,26 +1745,27 @@ body {
 
 .bg-drift-wrapper {
   position: absolute;
-  inset: -3%;
+  inset: -5%;
   will-change: transform;
   transform-origin: center center;
+  animation: bg-camera-pan 40s ease-in-out infinite alternate;
 }
 
 @keyframes bg-camera-pan {
   0% {
-    transform: scale(1.01) translate(0%, 0%);
+    transform: scale(1.02) translate(0%, 0%);
   }
   25% {
-    transform: scale(1.02) translate(-0.5%, 0.4%);
+    transform: scale(1.06) translate(-1.2%, 0.6%);
   }
   50% {
-    transform: scale(1.01) translate(-0.9%, -0.3%);
+    transform: scale(1.02) translate(-2.2%, -0.6%);
   }
   75% {
-    transform: scale(1.02) translate(-0.4%, -0.6%);
+    transform: scale(1.06) translate(-1%, -1.2%);
   }
   100% {
-    transform: scale(1.01) translate(0%, 0%);
+    transform: scale(1.02) translate(0%, 0%);
   }
 }
 

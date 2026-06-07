@@ -130,29 +130,7 @@ function getSubjectFromTitle(title) {
 }
 
 function initBackgroundParallax() {
-  const wrapper = document.querySelector('.bg-drift-wrapper');
-  if (!wrapper) return;
-  
-  let currentX = 0;
-  let currentY = 0;
-  
-  function updateParallax(timestamp) {
-    const t = timestamp / 1000;
-    
-    // Slow continuous auto-drift — more visible, purely time-based.
-    // X: gentle side-to-side on a 16-second sine cycle (±15px)
-    // Y: slower up-down on a 22-second cosine cycle    (±10px)
-    const targetX = Math.sin(t / 16) * 15;
-    const targetY = Math.cos(t / 22) * 10;
-    
-    currentX += (targetX - currentX) * 0.025;
-    currentY += (targetY - currentY) * 0.025;
-    
-    wrapper.style.transform = `scale(1.03) translate(${currentX}px, ${currentY}px)`;
-    requestAnimationFrame(updateParallax);
-  }
-  
-  requestAnimationFrame(updateParallax);
+  // Disabled JS-based drift to allow smooth hardware-accelerated CSS keyframe animation to handle it
 }
 
 async function loadRecordings() {
