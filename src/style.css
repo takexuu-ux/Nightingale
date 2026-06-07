@@ -134,6 +134,9 @@ body {
 .auth-container {
   width: 100%;
   max-width: 440px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
   background: var(--card-bg);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -476,10 +479,9 @@ body {
 }
 
 /* Alerts Toast (Sleek UI inside the Card container) */
-#alert-container {
+#auth-alert-container, #dashboard-alert-container {
   width: 100%;
-  max-width: 440px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

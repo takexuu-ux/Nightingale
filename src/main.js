@@ -16,7 +16,8 @@ function getOrCreateDeviceId() {
 }
 
 // UI Elements
-const alertContainer = document.getElementById('alert-container');
+const authAlertContainer = document.getElementById('auth-alert-container');
+const dashboardAlertContainer = document.getElementById('dashboard-alert-container');
 const authScreen = document.getElementById('auth-screen');
 const phoneStep = document.getElementById('phone-step');
 const otpStep = document.getElementById('otp-step');
@@ -178,19 +179,31 @@ async function pruneOldSlides(meetingId) {
 
 // Show Alert feedback
 function showAlert(message, type = 'error') {
-  alertContainer.innerHTML = `
-    <div class="alert alert-${type}">
-      <span>${message}</span>
-    </div>
-  `;
-  alertContainer.classList.remove('hide');
-  // Scroll alert into view
-  alertContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const targetAlertContainer = classroomDashboard.classList.contains('hide') 
+    ? authAlertContainer 
+    : dashboardAlertContainer;
+    
+  if (targetAlertContainer) {
+    targetAlertContainer.innerHTML = `
+      <div class="alert alert-${type}">
+        <span>${message}</span>
+      </div>
+    `;
+    targetAlertContainer.classList.remove('hide');
+    // Scroll alert into view
+    targetAlertContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 function clearAlert() {
-  alertContainer.innerHTML = '';
-  alertContainer.classList.add('hide');
+  if (authAlertContainer) {
+    authAlertContainer.innerHTML = '';
+    authAlertContainer.classList.add('hide');
+  }
+  if (dashboardAlertContainer) {
+    dashboardAlertContainer.innerHTML = '';
+    dashboardAlertContainer.classList.add('hide');
+  }
 }
 
 // Check if user is already logged in
@@ -212,7 +225,7 @@ function checkLoginState() {
     if (cyberHero) cyberHero.classList.add('hide');
 
     // Update profile info
-    const displayName = 'Rajit';
+    const displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone || 'Student');
     userPhone.textContent = displayName;
     userAvatar.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -716,23 +729,31 @@ function toggleZoomPanel(type) {
 async function joinEmbeddedClassroom(classId, title, instructorName) {
   const token = localStorage.getItem('nnl_access_token');
   try {
-    const response = await fetch(`/api/cms/v2/live_classes/${classId}/`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
+    let meetingId = '';
+    let passcode = '';
+
+    if (token === 'GUEST_DEMO_TOKEN' || String(classId).startsWith('mock-')) {
+      meetingId = '98765432101';
+      passcode = '123456';
+    } else {
+      const response = await fetch(`/api/cms/v2/live_classes/${classId}/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Could not fetch meeting credentials. Class may not have started yet.');
       }
-    });
 
-    if (!response.ok) {
-      throw new Error('Could not fetch meeting credentials. Class may not have started yet.');
+      const resJson = await response.json();
+      const classDetail = resJson.data || resJson;
+
+      meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
+      passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
     }
-
-    const resJson = await response.json();
-    const classDetail = resJson.data || resJson;
-
-    const meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
-    const passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
 
     if (!meetingId) {
       throw new Error('No active Zoom credentials found for this class.');
@@ -1511,6 +1532,20 @@ async function loadDashboard(isSilent = false) {
 
   const token = localStorage.getItem('nnl_access_token');
   if (!token) return;
+
+  if (token === 'GUEST_DEMO_TOKEN') {
+    classesData = [];
+    renderBatchSelector();
+    renderClasses(classesData);
+    if (!isSilent) {
+      dashboardLoader.classList.add('hide');
+      if (refetchBtn) {
+        refetchBtn.classList.remove('spinning');
+        refetchBtn.disabled = false;
+      }
+    }
+    return;
+  }
 
   // 1. Try to load from local storage cache instantly (Stale-While-Revalidate)
   const cacheKey = `nnl_cache_live_classes_${activeTab}`;
@@ -2350,6 +2385,25 @@ document.getElementById('back-to-phone-btn').addEventListener('click', () => {
   phoneStep.classList.remove('hide');
   phoneInput.focus();
 });
+
+// Guest login handler
+const guestLoginBtn = document.getElementById('guest-login-btn');
+if (guestLoginBtn) {
+  guestLoginBtn.addEventListener('click', () => {
+    clearAlert();
+    localStorage.setItem('nnl_access_token', 'GUEST_DEMO_TOKEN');
+    localStorage.setItem('nnl_phone', 'Guest User');
+    showAlert('Logged in as Guest!', 'success');
+    
+    // Reset/clear login screen inputs
+    if (phoneInput) phoneInput.value = '';
+    if (otpInput) otpInput.value = '';
+    otpStep.classList.add('hide');
+    phoneStep.classList.remove('hide');
+
+    checkLoginState();
+  });
+}
 
 // Silent token refresh — call /api/auth/token/refresh/ with the stored refresh token.
 // Returns true if a new access token was successfully obtained and stored.
