@@ -2922,3 +2922,309 @@ body::-webkit-scrollbar {
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+/* Mobile and Phone Responsive Styling Overrides */
+@media (max-width: 768px) {
+  /* 1. Global dashboard elements spacing */
+  #app {
+    padding: 0.75rem !important;
+  }
+  
+  .container {
+    padding: 0 0.25rem !important;
+  }
+  
+  /* 2. Login Screen responsive typography and container scale */
+  .auth-container {
+    padding: 2rem 1.25rem !important;
+    min-height: 480px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .brand-title {
+    font-size: 1.8rem !important;
+  }
+  
+  .brand-subtitle {
+    font-size: 0.75rem !important;
+  }
+  
+  .form-label {
+    font-size: 0.75rem !important;
+  }
+  
+  /* 3. Dashboard Header spacing updates */
+  .app-header {
+    padding: 0.75rem 1rem !important;
+    gap: 0.4rem !important;
+    height: auto !important;
+    min-height: 52px;
+  }
+  
+  .logo-text {
+    display: none !important; /* Hide NIGHTINGALE text on mobile, icon is enough */
+  }
+  
+  .header-logo-icon svg {
+    width: 32px !important;
+  }
+  
+  .header-nav {
+    gap: 0.4rem !important;
+    flex: 1;
+    justify-content: center;
+  }
+  
+  #header-batch-btn {
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.68rem !important;
+    border-radius: 8px !important;
+  }
+  
+  #header-batch-btn span {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  
+  #btn-all-videos {
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.68rem !important;
+    border-radius: 8px !important;
+  }
+  
+  .user-badge {
+    padding: 0.2rem 0.4rem !important;
+    gap: 0.35rem !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  #user-phone {
+    display: none !important; /* Hide "Rajit" top profile label to fit select dropdown */
+  }
+  
+  .user-avatar {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .logout-link {
+    font-size: 0.7rem !important;
+  }
+
+  /* 4. Tab navigation container */
+  .tabs-nav {
+    gap: 0.35rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .tab-btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.72rem !important;
+  }
+  
+  .tab-live-pulse-dot {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  /* 5. Class cards and lists */
+  .class-grid {
+    grid-template-columns: 1fr !important; /* Force single column on mobile */
+    gap: 1.25rem !important;
+  }
+  
+  .class-card {
+    padding: 1.5rem 1.25rem !important;
+    min-height: auto !important;
+    border-radius: 18px !important;
+  }
+  
+  .class-info h3 {
+    font-size: 1rem !important;
+  }
+  
+  .class-meta {
+    font-size: 0.72rem !important;
+  }
+  
+  .btn-zoom, .btn-secondary {
+    padding: 0.55rem 1rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 8px !important;
+  }
+
+  /* 6. Embedded Live Classroom mobile layout overrides */
+  .classroom-viewer-container {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  .classroom-header {
+    padding: 0 0.75rem !important;
+    height: 48px !important;
+  }
+  
+  .classroom-header-left {
+    gap: 0.5rem !important;
+  }
+  
+  #close-classroom-btn {
+    height: 28px !important;
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.72rem !important;
+    border-radius: 8px !important;
+  }
+  
+  #close-classroom-btn span {
+    display: none; /* Hide "Exit Class" text, only show arrow back icon to fit mobile header! */
+  }
+  
+  #classroom-title {
+    font-size: 0.85rem !important;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  #classroom-instructor {
+    display: none !important; /* Hide instructor name to fit layout */
+  }
+  
+  .classroom-meta span {
+    display: none !important; /* Hide dot separator */
+  }
+  
+  .classroom-header-right {
+    gap: 0.5rem !important;
+  }
+  
+  .classroom-content {
+    flex-direction: column !important;
+    height: calc(100vh - 48px) !important;
+  }
+  
+  .player-viewport {
+    flex: none !important;
+    width: 100% !important;
+    height: 56.25vw !important; /* Aspect ratio 16:9 box */
+  }
+  
+  .zoom-sdk-container {
+    height: calc(100% + 50px) !important; /* Shift to cover Zoom footer bottom seek overlay */
+  }
+  
+  .timeline-sidebar {
+    width: 100% !important;
+    height: calc(100vh - 48px - 56.25vw) !important; /* Fills remaining height */
+    border-left: none !important;
+    border-top: 1px solid rgba(255, 0, 85, 0.12) !important;
+    padding: 1rem !important;
+    flex: 1 !important;
+    background: rgba(6, 7, 14, 0.99) !important;
+  }
+  
+  .timeline-sidebar-header h3 {
+    font-size: 0.85rem !important;
+  }
+  
+  .timeline-sidebar-header p {
+    font-size: 0.65rem !important;
+  }
+  
+  .timeline-item {
+    border-radius: 8px !important;
+  }
+  
+  .timeline-item-time {
+    font-size: 0.65rem !important;
+    padding: 0.15rem 0.4rem !important;
+  }
+  
+  .sidebar-pull-tab {
+    display: none !important; /* Hide pull tab */
+  }
+  
+  /* Compact seek/timeline controls bar on mobile */
+  .classroom-timeline-bar {
+    height: 46px !important;
+    padding: 0 0.5rem !important;
+  }
+  
+  .bottom-volume-container {
+    display: none !important; /* Hide volume controls to prevent clutter */
+  }
+  
+  .timeline-slider {
+    margin: 0 0.35rem !important;
+  }
+  
+  .timeline-slider-time {
+    font-size: 0.65rem !important;
+  }
+  
+  .btn-timeline-nav {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  .btn-timeline-nav svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* 7. Recorded videos full screen modal */
+  .recording-viewer-header {
+    height: 48px !important;
+    padding: 0 0.75rem !important;
+  }
+  
+  #recording-viewer-title {
+    font-size: 0.85rem !important;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  #recording-viewer-instructor {
+    display: none !important;
+  }
+  
+  .btn-close-recording {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.72rem !important;
+    border-radius: 8px !important;
+  }
+  
+  .recording-video-player {
+    max-height: calc(100vh - 48px) !important;
+  }
+
+  /* 8. Custom Dialog popup responsive override */
+  .cyber-dialog-box {
+    width: 90% !important;
+    padding: 1.25rem !important;
+    gap: 1rem !important;
+  }
+  
+  .cyber-dialog-title {
+    font-size: 0.7rem !important;
+  }
+  
+  .cyber-dialog-body {
+    font-size: 0.82rem !important;
+  }
+  
+  .cyber-dialog-footer button {
+    padding: 0.45rem 1rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
