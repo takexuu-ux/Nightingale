@@ -5,24 +5,48 @@
   "cleanUrls": false,
   "rewrites": [
     {
+      "source": "/api/auth/v2/login/otp/send",
+      "destination": "https://prod-api.nnlone.com/auth/v2/login/otp/send/"
+    },
+    {
       "source": "/api/auth/v2/login/otp/send/",
       "destination": "https://prod-api.nnlone.com/auth/v2/login/otp/send/"
+    },
+    {
+      "source": "/api/auth/login/otp/validate",
+      "destination": "https://prod-api.nnlone.com/auth/login/otp/validate/"
     },
     {
       "source": "/api/auth/login/otp/validate/",
       "destination": "https://prod-api.nnlone.com/auth/login/otp/validate/"
     },
     {
+      "source": "/api/auth/token/refresh",
+      "destination": "https://prod-api.nnlone.com/auth/token/refresh/"
+    },
+    {
       "source": "/api/auth/token/refresh/",
       "destination": "https://prod-api.nnlone.com/auth/token/refresh/"
+    },
+    {
+      "source": "/api/cms/v2/live_classes",
+      "destination": "https://prod-api.nnlone.com/cms/v2/live_classes/"
     },
     {
       "source": "/api/cms/v2/live_classes/",
       "destination": "https://prod-api.nnlone.com/cms/v2/live_classes/"
     },
     {
+      "source": "/api/cms/v2/live_classes_recordings",
+      "destination": "https://prod-api.nnlone.com/cms/v2/live_classes_recordings/"
+    },
+    {
       "source": "/api/cms/v2/live_classes_recordings/",
       "destination": "https://prod-api.nnlone.com/cms/v2/live_classes_recordings/"
+    },
+    {
+      "source": "/api/cms/v2/live_classes/:id",
+      "destination": "https://prod-api.nnlone.com/cms/v2/live_classes/:id/"
     },
     {
       "source": "/api/cms/v2/live_classes/:id/",
