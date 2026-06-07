@@ -847,6 +847,12 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
 
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
 
+    // Set fallback Zoom launcher URL
+    const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
+    if (zoomFallbackBtn) {
+      zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    }
+
     // Auto-bypass pre-join name screen: poll iframe DOM until the form appears,
     // then fill in the name and click Join automatically.
     autoJoinZoomPrejoin(classroomIframe, 'Rajit');
