@@ -177,8 +177,63 @@ async function pruneOldSlides(meetingId) {
 }
 
 
+// Helper to extract a clear, human-readable error string from backend response objects or nested data structures
+function extractErrorMessage(data, defaultMsg = 'An error occurred. Please try again.') {
+  if (!data) return defaultMsg;
+  
+  function parseVal(val) {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (Array.isArray(val)) {
+      return val.map(v => parseVal(v)).filter(Boolean).join(', ');
+    }
+    if (typeof val === 'object') {
+      if (val.message) return parseVal(val.message);
+      if (val.detail) return parseVal(val.detail);
+      if (val.error) return parseVal(val.error);
+      
+      return Object.entries(val)
+        .map(([key, v]) => {
+          const inner = parseVal(v);
+          return inner ? `${key}: ${inner}` : '';
+        })
+        .filter(Boolean)
+        .join(', ');
+    }
+    return String(val);
+  }
+
+  const candidates = [data.message, data.detail, data.error, data.errors];
+  for (const cand of candidates) {
+    if (cand) {
+      const parsed = parseVal(cand);
+      if (parsed) return parsed;
+    }
+  }
+
+  if (typeof data === 'string') return data;
+
+  const parsedObj = parseVal(data);
+  if (parsedObj) return parsedObj;
+
+  return defaultMsg;
+}
+
 // Show Alert feedback
 function showAlert(message, type = 'error') {
+  let displayMessage = message;
+  if (message && typeof message === 'object') {
+    if (message instanceof Error) {
+      displayMessage = message.message;
+    } else {
+      displayMessage = JSON.stringify(message);
+    }
+  }
+
+  if (displayMessage === '[object Object]') {
+    displayMessage = 'An unexpected error occurred. Please try again.';
+  }
+
   const targetAlertContainer = classroomDashboard.classList.contains('hide') 
     ? authAlertContainer 
     : dashboardAlertContainer;
@@ -186,7 +241,7 @@ function showAlert(message, type = 'error') {
   if (targetAlertContainer) {
     targetAlertContainer.innerHTML = `
       <div class="alert alert-${type}">
-        <span>${message}</span>
+        <span>${displayMessage}</span>
       </div>
     `;
     targetAlertContainer.classList.remove('hide');
@@ -2310,7 +2365,7 @@ phoneForm.addEventListener('submit', async (e) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.detail || data.error || 'Failed to send OTP. Please try again.');
+      throw new Error(extractErrorMessage(data, 'Failed to send OTP. Please try again.'));
     }
 
     // Save token and transition UI
@@ -2372,7 +2427,7 @@ otpForm.addEventListener('submit', async (e) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.detail || 'OTP verification failed. Check the code.');
+      throw new Error(extractErrorMessage(data, 'OTP verification failed. Check the code.'));
     }
 
     // Capture token
