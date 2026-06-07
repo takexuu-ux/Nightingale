@@ -1536,16 +1536,26 @@ async function loadDashboard(isSilent = false) {
   if (!token) return;
 
   if (token === 'GUEST_DEMO_TOKEN') {
-    classesData = [];
-    renderBatchSelector();
-    renderClasses(classesData);
-    if (!isSilent) {
-      dashboardLoader.classList.add('hide');
-      if (refetchBtn) {
-        refetchBtn.classList.remove('spinning');
-        refetchBtn.disabled = false;
+    if (!isSilent && refetchBtn) {
+      refetchBtn.classList.add('spinning');
+      refetchBtn.disabled = true;
+      if (dashboardLoader) {
+        dashboardLoader.classList.remove('hide');
       }
     }
+
+    setTimeout(() => {
+      classesData = [];
+      renderBatchSelector();
+      renderClasses(classesData);
+      if (!isSilent) {
+        if (dashboardLoader) dashboardLoader.classList.add('hide');
+        if (refetchBtn) {
+          refetchBtn.classList.remove('spinning');
+          refetchBtn.disabled = false;
+        }
+      }
+    }, 600);
     return;
   }
 
@@ -2300,7 +2310,7 @@ phoneForm.addEventListener('submit', async (e) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to send OTP. Please try again.');
+      throw new Error(data.message || data.detail || data.error || 'Failed to send OTP. Please try again.');
     }
 
     // Save token and transition UI
