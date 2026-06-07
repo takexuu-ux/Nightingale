@@ -219,7 +219,7 @@
     <section id="classroom-viewer" class="classroom-viewer-container hide">
       <div class="classroom-header">
         <div class="classroom-header-left" style="display: flex; align-items: center; gap: 1rem;">
-          <button id="close-classroom-btn" class="btn btn-secondary" style="text-decoration: none; border: 1px solid var(--border-light); border-radius: 10px; padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; height: 32px; background: rgba(255,255,255,0.04); color: var(--text-primary);">
+          <button id="close-classroom-btn" class="btn btn-exit" style="text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; height: 32px; background: rgba(239, 68, 68, 0.08); color: #f87171; box-shadow: 0 0 10px rgba(239, 68, 68, 0.05); transition: all 0.2s ease-in-out;">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
             <span>Exit Class</span>
           </button>
@@ -230,9 +230,10 @@
           </div>
         </div>
         <div class="classroom-header-right" style="display: flex; align-items: center; gap: 0.75rem;">
-          <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; height: 32px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600;">
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-top: -1px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
-            <span>Launch Zoom in App / Tab</span>
+          <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; text-decoration: none; background: rgba(0, 132, 255, 0.1); border: 1px solid rgba(0, 132, 255, 0.4); color: #4dabf7; transition: all 0.2s ease-in-out;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+            </svg>
           </a>
         </div>
       </div>
@@ -287,16 +288,9 @@
           <svg id="sidebar-pull-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
         </button>
 
-        <!-- Sidebar for Smart Review, Chat, and Participants -->
+        <!-- Sidebar for Smart Review -->
         <div id="timeline-sidebar" class="timeline-sidebar">
           
-          <!-- Sidebar Tabs -->
-          <div class="sidebar-tabs" style="margin-bottom: 1rem;">
-            <button id="sidebar-tab-timeline" class="sidebar-tab-btn active">Timeline</button>
-            <button id="sidebar-tab-chat" class="sidebar-tab-btn">Chat</button>
-            <button id="sidebar-tab-participants" class="sidebar-tab-btn">Participants</button>
-          </div>
-
           <!-- Section 1: Timeline -->
           <div id="sidebar-section-timeline" class="sidebar-section">
             <div class="timeline-sidebar-header" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
@@ -323,36 +317,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Section 2: Chat -->
-          <div id="sidebar-section-chat" class="sidebar-section hide">
-            <div class="sidebar-section-header" style="margin-bottom: 1rem;">
-              <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Class Chat</h3>
-              <p style="margin-top: 0.25rem; font-size: 0.7rem; color: var(--text-muted);">Live stream of messages from the classroom.</p>
-            </div>
-            <div id="custom-chat-list" class="custom-chat-list" style="display: flex; flex-direction: column; gap: 0.75rem; overflow-y: auto; max-height: calc(100vh - 250px); padding-right: 0.25rem;">
-              <div class="sidebar-empty-state" style="padding: 2rem 1rem; text-align: center; background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.05); border-radius: 12px; font-size: 0.75rem; color: var(--text-muted);">
-                No messages yet. Chat is synced live from Zoom.
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 3: Participants -->
-          <div id="sidebar-section-participants" class="sidebar-section hide">
-            <div class="sidebar-section-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Classroom Participants</h3>
-                <p style="margin-top: 0.25rem; font-size: 0.7rem; color: var(--text-muted);">List of students and hosts in the session.</p>
-              </div>
-              <span id="custom-participant-count" class="badge" style="background: var(--primary); color: #000; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 8px;">0</span>
-            </div>
-            <div id="custom-participants-list" class="custom-participants-list" style="display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; max-height: calc(100vh - 250px); padding-right: 0.25rem;">
-              <div class="sidebar-empty-state" style="padding: 2rem 1rem; text-align: center; background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.05); border-radius: 12px; font-size: 0.75rem; color: var(--text-muted);">
-                Scanning participant list...
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </section>
@@ -424,6 +388,23 @@
           <div style="font-size: 3rem; margin-bottom: 1rem;">📹</div>
           <h3 style="font-family: var(--font-display); font-size: 1rem; margin-bottom: 0.5rem;">Recording Not Available Online</h3>
           <p style="color: var(--text-secondary); font-size: 0.85rem;">This recording is available on the NNL ONE mobile app.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Cyberpunk Alert / Confirm Modal Dialog -->
+    <div id="cyber-dialog-overlay" class="cyber-dialog-overlay hide">
+      <div class="cyber-dialog-box">
+        <div class="cyber-dialog-glow"></div>
+        <div class="cyber-dialog-header">
+          <span class="cyber-dialog-dot"></span>
+          <span class="cyber-dialog-title">// SYSTEM MESSAGE</span>
+        </div>
+        <div class="cyber-dialog-body">
+          <p id="cyber-dialog-message">Message text goes here.</p>
+        </div>
+        <div class="cyber-dialog-footer" id="cyber-dialog-footer">
+          <!-- Dynamically populated buttons -->
         </div>
       </div>
     </div>

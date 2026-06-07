@@ -2715,3 +2715,210 @@ body::-webkit-scrollbar {
   box-shadow: 0 0 10px rgba(0, 244, 208, 0.15) !important;
 }
 
+/* Exit button red styling override */
+.btn-exit:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  color: #ff8787 !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Zoom launcher small square icon button styling override */
+#zoom-fallback-btn {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 10px !important;
+  text-decoration: none !important;
+  font-size: 0.75rem !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  background: rgba(0, 132, 255, 0.1) !important;
+  border: 1px solid rgba(0, 132, 255, 0.45) !important;
+  color: #4dabf7 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+#zoom-fallback-btn:hover {
+  background: rgba(0, 132, 255, 0.25) !important;
+  border-color: rgba(0, 132, 255, 0.7) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(0, 132, 255, 0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Custom Cyberpunk Dialog Overlay & Box Styling */
+.cyber-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 5, 10, 0.82);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.cyber-dialog-overlay.hide {
+  opacity: 0;
+  pointer-events: none;
+  display: none !important;
+}
+
+.cyber-dialog-box {
+  position: relative;
+  width: 440px;
+  max-width: 90%;
+  background: rgba(12, 13, 23, 0.97);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 240, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: cyberDialogScale 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+/* Red accent class for danger actions */
+.cyber-dialog-box.danger-accent {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 10px 40px rgba(239, 68, 68, 0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+@keyframes cyberDialogScale {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.cyber-dialog-glow {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cyber-dialog-box.danger-accent .cyber-dialog-glow {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+}
+
+.cyber-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.75rem;
+}
+
+.cyber-dialog-dot {
+  width: 6px;
+  height: 6px;
+  background: #00f3d0;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00f3d0;
+}
+
+.cyber-dialog-box.danger-accent .cyber-dialog-dot {
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.cyber-dialog-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+}
+
+.cyber-dialog-body {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.cyber-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Dialog button styles */
+.btn-dialog-ok, .btn-dialog-confirm {
+  background: #00f3d0 !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 8px !important;
+  font-size: 0.8rem !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-dialog-ok:hover, .btn-dialog-confirm:hover {
+  background: #ffffff !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-dialog-danger {
+  background: #ef4444 !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 8px !important;
+  font-size: 0.8rem !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+}
+
+.btn-dialog-danger:hover {
+  background: #ff5555 !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.45) !important;
+  transform: translateY(-1px) !important;
+  border-color: #ff8787 !important;
+}
+
+.btn-dialog-cancel {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-light) !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-dialog-cancel:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+

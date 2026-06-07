@@ -87,92 +87,145 @@ let relativeTimeInterval = null; // Interval to update slide age, e.g. "5m ago"
 let currentVolume = parseInt(localStorage.getItem('nnl_classroom_volume') || '80', 10);
 let barsHideTimerId = null; // Timer ID for auto-hiding classroom bars on inactivity
 
-// IndexedDB setup for slide persistence
-const dbPromise = new Promise((resolve) => {
-  const request = indexedDB.open('nnl_classroom_db', 1);
-  request.onupgradeneeded = (e) => {
-    const db = e.target.result;
-    if (!db.objectStoreNames.contains('slides')) {
-      const store = db.createObjectStore('slides', { keyPath: 'id' });
-      store.createIndex('meetingId', 'meetingId', { unique: false });
+// Custom cyberpunk alert and confirm modal dialog functions
+function showCustomAlert(message, title = 'SYSTEM MESSAGE') {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('cyber-dialog-overlay');
+    const msgEl = document.getElementById('cyber-dialog-message');
+    const titleEl = overlay ? overlay.querySelector('.cyber-dialog-title') : null;
+    const footer = document.getElementById('cyber-dialog-footer');
+    const box = overlay ? overlay.querySelector('.cyber-dialog-box') : null;
+    
+    if (!overlay || !msgEl || !footer) {
+      alert(message);
+      resolve();
+      return;
     }
-  };
-  request.onsuccess = (e) => resolve(e.target.result);
-  request.onerror = (e) => {
-    console.error('IndexedDB failed to initialize:', e.target.error);
-    resolve(null);
-  };
-});
+    
+    if (box) {
+      box.classList.remove('danger-accent');
+    }
+    
+    if (titleEl) titleEl.textContent = `// ${title.toUpperCase()}`;
+    msgEl.textContent = message;
+    
+    footer.innerHTML = `
+      <button class="btn btn-dialog-ok" id="dialog-btn-ok">OK</button>
+    `;
+    
+    overlay.classList.remove('hide');
+    
+    const okBtn = document.getElementById('dialog-btn-ok');
+    if (okBtn) okBtn.focus();
+    
+    const handleClose = () => {
+      overlay.classList.add('hide');
+      resolve();
+    };
+    
+    okBtn.addEventListener('click', handleClose);
+  });
+}
+
+function showCustomConfirm(message, title = 'CONFIRM ACTION', isDangerous = false) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('cyber-dialog-overlay');
+    const msgEl = document.getElementById('cyber-dialog-message');
+    const titleEl = overlay ? overlay.querySelector('.cyber-dialog-title') : null;
+    const footer = document.getElementById('cyber-dialog-footer');
+    const box = overlay ? overlay.querySelector('.cyber-dialog-box') : null;
+    
+    if (!overlay || !msgEl || !footer) {
+      const res = confirm(message);
+      resolve(res);
+      return;
+    }
+    
+    if (box) {
+      if (isDangerous) {
+        box.classList.add('danger-accent');
+      } else {
+        box.classList.remove('danger-accent');
+      }
+    }
+    
+    if (titleEl) titleEl.textContent = `// ${title.toUpperCase()}`;
+    msgEl.textContent = message;
+    
+    const confirmClass = isDangerous ? 'btn-dialog-danger' : 'btn-dialog-confirm';
+    footer.innerHTML = `
+      <button class="btn btn-dialog-cancel" id="dialog-btn-cancel">Cancel</button>
+      <button class="btn ${confirmClass}" id="dialog-btn-confirm">Confirm</button>
+    `;
+    
+    overlay.classList.remove('hide');
+    
+    const cancelBtn = document.getElementById('dialog-btn-cancel');
+    const confirmBtn = document.getElementById('dialog-btn-confirm');
+    if (cancelBtn) cancelBtn.focus();
+    
+    const cleanup = (value) => {
+      overlay.classList.add('hide');
+      resolve(value);
+    };
+    
+    cancelBtn.addEventListener('click', () => cleanup(false));
+    confirmBtn.addEventListener('click', () => cleanup(true));
+  });
+}
+
+// Bind to window object for access from inline onclick handlers
+window.showCustomAlert = showCustomAlert;
+window.showCustomConfirm = showCustomConfirm;
+
+// localStorage helpers for slide persistence (quota safe, limited to 30 items)
+function saveSlidesToLocalStorage(meetingId, slides) {
+  try {
+    let toSave = slides;
+    if (toSave.length > 30) {
+      toSave = toSave.slice(0, 30);
+    }
+    localStorage.setItem(`nnl_slides_${meetingId}`, JSON.stringify(toSave));
+  } catch (e) {
+    console.error('Error saving slides to localStorage:', e);
+  }
+}
+
+function loadSlidesFromLocalStorage(meetingId) {
+  try {
+    const data = localStorage.getItem(`nnl_slides_${meetingId}`);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error('Error loading slides from localStorage:', e);
+    return [];
+  }
+}
+
+function clearSlidesFromLocalStorage(meetingId) {
+  try {
+    localStorage.removeItem(`nnl_slides_${meetingId}`);
+  } catch (e) {
+    console.error('Error clearing slides from localStorage:', e);
+  }
+}
 
 async function saveSlideToDb(meetingId, timestamp, timeStr, imgSrc) {
   try {
-    const db = await dbPromise;
-    if (!db) return;
-    const tx = db.transaction('slides', 'readwrite');
-    const store = tx.objectStore('slides');
-    const id = `${meetingId}_${timestamp}`;
-    await new Promise((resolve, reject) => {
-      const req = store.put({ id, meetingId, timestamp, timeStr, imgSrc });
-      req.onsuccess = resolve;
-      req.onerror = reject;
-    });
-    await pruneOldSlides(meetingId);
+    const slides = loadSlidesFromLocalStorage(meetingId);
+    // Add to start (newest first)
+    slides.unshift({ time: timeStr, timestamp, imgSrc });
+    saveSlidesToLocalStorage(meetingId, slides);
   } catch (e) {
-    console.error('Error saving slide to DB:', e);
+    console.error('Error saving slide:', e);
   }
 }
 
 async function loadSlidesFromDb(meetingId) {
   try {
-    const db = await dbPromise;
-    if (!db) return [];
-    const tx = db.transaction('slides', 'readonly');
-    const store = tx.objectStore('slides');
-    const index = store.index('meetingId');
-    const request = index.getAll(IDBKeyRange.only(meetingId));
-    const records = await new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    
-    // Sort descending (newest first) to match currentTimelineSlides memory layout
-    records.sort((a, b) => b.timestamp - a.timestamp);
-    return records.map(r => ({
-      time: r.timeStr,
-      timestamp: r.timestamp,
-      imgSrc: r.imgSrc
-    }));
+    return loadSlidesFromLocalStorage(meetingId);
   } catch (e) {
-    console.error('Error loading slides from DB:', e);
+    console.error('Error loading slides:', e);
     return [];
-  }
-}
-
-async function pruneOldSlides(meetingId) {
-  try {
-    const db = await dbPromise;
-    if (!db) return;
-    const tx = db.transaction('slides', 'readonly');
-    const store = tx.objectStore('slides');
-    const index = store.index('meetingId');
-    const request = index.getAll(IDBKeyRange.only(meetingId));
-    const records = await new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    
-    // Keep last 30 slides (exactly 5 minutes of class slides at 10s capture frequency)
-    if (records.length > 30) {
-      records.sort((a, b) => a.timestamp - b.timestamp);
-      const toDelete = records.slice(0, records.length - 30);
-      const deleteTx = db.transaction('slides', 'readwrite');
-      const deleteStore = deleteTx.objectStore('slides');
-      for (const rec of toDelete) {
-        deleteStore.delete(rec.id);
-      }
-    }
-  } catch (e) {
-    console.error('Error pruning old slides:', e);
   }
 }
 
@@ -374,16 +427,16 @@ function drawFallbackSlide(title, instructor, timeStr) {
   canvas.height = 720;
   const ctx = canvas.getContext('2d');
 
-  // Draw a premium dark gradient background
+  // Draw a premium dark gradient background with crimson / deep burgundy accents
   const grad = ctx.createLinearGradient(0, 0, 1280, 720);
-  grad.addColorStop(0, '#0f172a');
-  grad.addColorStop(0.5, '#1e1b4b');
-  grad.addColorStop(1, '#020617');
+  grad.addColorStop(0, '#19050b');
+  grad.addColorStop(0.5, '#2e0a16');
+  grad.addColorStop(1, '#0b0204');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 1280, 720);
 
-  // Draw modern circular grids
-  ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+  // Draw modern circular grids in red accent
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.12)';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(640, 360, 300, 0, Math.PI * 2);
@@ -392,8 +445,8 @@ function drawFallbackSlide(title, instructor, timeStr) {
   ctx.arc(640, 360, 450, 0, Math.PI * 2);
   ctx.stroke();
 
-  // NNL ONE Logo Icon
-  ctx.fillStyle = '#06b6d4';
+  // NNL ONE Logo Icon in neon red
+  ctx.fillStyle = '#ef4444';
   ctx.beginPath();
   ctx.arc(100, 100, 15, 0, Math.PI * 2);
   ctx.fill();
@@ -431,7 +484,7 @@ function drawFallbackSlide(title, instructor, timeStr) {
   ctx.font = '28px system-ui, -apple-system, sans-serif';
   ctx.fillText(`Faculty: ${instructor}`, 100, y + 70);
 
-  // Live time indicator
+  // Live time indicator in red
   ctx.fillStyle = '#ef4444';
   ctx.beginPath();
   ctx.arc(110, y + 150, 8, 0, Math.PI * 2);
@@ -454,9 +507,20 @@ async function captureClassroomSlide() {
   const iframe = document.getElementById('classroom-iframe');
   if (!iframe) return;
 
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  const title = document.getElementById('classroom-title')?.textContent || 'Live Class';
+  const instructor = document.getElementById('classroom-instructor')?.textContent || 'Instructor';
+
   try {
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!iframeDoc) return;
+    if (!iframeDoc) {
+      throw new Error('Iframe document not accessible');
+    }
 
     // Strategy: find the best canvas/video that has real pixel data
     // Priority: largest canvas with non-blank pixels > largest video
@@ -536,8 +600,7 @@ async function captureClassroomSlide() {
         await saveSlideFromDataUrl(dataUrl);
         return;
       }
-      console.log('No active class slide or video feed found to capture.');
-      return;
+      throw new Error('No active class slide or video feed found to capture.');
     }
 
     // Draw best canvas to a fresh canvas to get a clean snapshot
@@ -550,7 +613,10 @@ async function captureClassroomSlide() {
     await saveSlideFromDataUrl(dataUrl);
 
   } catch (err) {
-    console.error('captureClassroomSlide error:', err);
+    console.warn('captureClassroomSlide: using premium fallback slide generator due to browser cross-origin policy:', err.message || err);
+    // Draw and save beautiful fallback slide card
+    const fallbackDataUrl = drawFallbackSlide(title, instructor, timeStr);
+    await saveSlideFromDataUrl(fallbackDataUrl);
   }
 }
 
@@ -716,9 +782,9 @@ function seekToSliderValue(val) {
 }
 
 // Jump back 5 minutes (or the oldest captured slide in our 5-minute buffer)
-function rewindFiveMinutes() {
+async function rewindFiveMinutes() {
   if (currentTimelineSlides.length === 0) {
-    alert('No slides captured yet. Please wait for the class to progress.');
+    await showCustomAlert('No slides captured yet. Please wait for the class to progress.', 'Timeline Empty');
     return;
   }
 
@@ -875,7 +941,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
 
   } catch (error) {
     console.error('Error entering embedded class:', error);
-    alert(error.message || 'Failed to enter class. Verify connection.');
+    await showCustomAlert(error.message || 'Failed to enter class. Verify connection.', 'Connection Error');
     
     // Rollback UI
     appHeader.classList.remove('hide');
@@ -886,7 +952,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
 
 // Disconnect from Zoom and exit viewer
 async function exitClassroom() {
-  if (confirm('Are you sure you want to exit the live classroom?')) {
+  if (await showCustomConfirm('Are you sure you want to exit the live classroom?', 'Exit Classroom', true)) {
     stopTimelineCaptureLoop();
     stopClassroomMonitorLoop();
     
@@ -1482,28 +1548,16 @@ function startClassroomMonitorLoop() {
 
       // ── STEP 4: Clean popups/alerts — but NOT the audio join dialog ──
       cleanZoomIframeDOM(iframeDoc);
-      
-      // ── STEP 5: Keep panel elements off-screen for scraping ──
-      ensureZoomPanelsOpen(iframeDoc);
 
-      // ── STEP 6: Apply volume ──
+      // ── STEP 5: Apply volume ──
       applyVolumeToIframe();
 
-      // ── STEP 7: Mouse detection for bar auto-hide ──
+      // ── STEP 6: Mouse detection for bar auto-hide ──
       if (iframeDoc && !iframeDoc._hasHoverDetection) {
         iframeDoc.addEventListener('mousemove', showBarsTemporarily);
         iframeDoc.addEventListener('mouseenter', showBarsTemporarily);
         iframeDoc._hasHoverDetection = true;
       }
-
-      // ── STEP 8: Update header panel button states ──
-      updateHeaderPanelButtons();
-
-      // ── STEP 9: Scrape chat + participants ──
-      const msgs = scrapeZoomChat(iframeDoc);
-      renderCustomChat(msgs);
-      const parts = scrapeZoomParticipants(iframeDoc);
-      renderCustomParticipants(parts);
 
     } catch (e) {
       // Ignore cross-origin error during redirect phases
@@ -1574,16 +1628,7 @@ function stopClassroomMonitorLoop() {
 // One-shot helper to immediately scrape + render chat and participants
 // Used when switching tabs so data shows right away without waiting for the interval
 function syncClassroomData() {
-  const iframe = document.getElementById('classroom-iframe');
-  if (!iframe) return;
-  try {
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!iframeDoc || iframe.src === 'about:blank') return;
-    renderCustomChat(scrapeZoomChat(iframeDoc));
-    renderCustomParticipants(scrapeZoomParticipants(iframeDoc));
-  } catch (e) {
-    // Cross-origin — ignore
-  }
+  // Empty - panels removed
 }
 
 // Listen to classroom iframe onload to inject custom styles and start the monitor loop
@@ -1974,7 +2019,7 @@ function createClassCard(c, isCurrentlyLive) {
     if (recordingId) {
       buttonsHtml = `
         <div style="margin-top: 1rem; width: 100%;">
-          <button class="btn btn-primary" onclick="alert('Recording is available on the NNL ONE app. Recording ID: ${recordingId}')" style="width: 100%;">
+          <button class="btn btn-primary" onclick="showCustomAlert('Recording is available on the NNL ONE app. Recording ID: ${recordingId}', 'Watch Recording')" style="width: 100%;">
             <span>Watch Recording</span>
           </button>
         </div>
@@ -2143,18 +2188,7 @@ volumeMuteBtns.forEach(btn => {
   }
 });
 
-// Sidebar tab click listeners — also trigger an immediate data sync so chat/participants populate instantly
-document.getElementById('sidebar-tab-timeline')?.addEventListener('click', () => switchSidebarTab('timeline'));
-document.getElementById('sidebar-tab-chat')?.addEventListener('click', () => {
-  switchSidebarTab('chat');
-  // Force an immediate monitor cycle so chat renders without waiting for the interval
-  syncClassroomData();
-});
-document.getElementById('sidebar-tab-participants')?.addEventListener('click', () => {
-  switchSidebarTab('participants');
-  syncClassroomData();
-});
-
+// Sidebar tabs removed, no click listeners needed
 // Initialize volume UI
 updateVolumeUI();
 
@@ -2226,33 +2260,13 @@ if (bottomFullscreenBtn) {
 
 if (clearTimelineBtn) {
   clearTimelineBtn.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to clear all captured slides for this class?')) {
+    if (await showCustomConfirm('Are you sure you want to clear all captured slides for this class?', 'Clear Timeline', true)) {
       currentTimelineSlides = [];
       
-      // Clear from IndexedDB
+      // Clear from localStorage
       if (currentMeetingId) {
-        try {
-          const db = await dbPromise;
-          if (db) {
-            const tx = db.transaction('slides', 'readwrite');
-            const store = tx.objectStore('slides');
-            const index = store.index('meetingId');
-            const request = index.getAll(IDBKeyRange.only(currentMeetingId));
-            const records = await new Promise((resolve, reject) => {
-              request.onsuccess = () => resolve(request.result);
-              request.onerror = () => reject(request.error);
-            });
-            
-            const deleteTx = db.transaction('slides', 'readwrite');
-            const deleteStore = deleteTx.objectStore('slides');
-            for (const rec of records) {
-              deleteStore.delete(rec.id);
-            }
-            console.log(`Cleared all IndexedDB records for meeting: ${currentMeetingId}`);
-          }
-        } catch (e) {
-          console.error('Failed to clear slides from IndexedDB:', e);
-        }
+        clearSlidesFromLocalStorage(currentMeetingId);
+        console.log(`Cleared all localStorage records for meeting: ${currentMeetingId}`);
       }
 
       // Exit rewind mode
