@@ -1805,6 +1805,39 @@ body {
   gap: 0;
 }
 
+/* Column Wrappers and Spacers */
+.auth-hero-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+.auth-hero-wrapper:has(#cyber-hero.hide) {
+  display: none !important;
+}
+
+.right-column-spacer {
+  width: 100%;
+  pointer-events: none;
+}
+
+.container:has(#cyber-hero.hide) .right-column-spacer {
+  display: none !important;
+}
+
+/* Responsiveness for Smaller Screen Widths */
+@media (max-width: 1024px) {
+  .container:not(:has(#cyber-hero.hide)) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .right-column-spacer {
+    display: none !important;
+  }
+}
+
 /* Cyber Hero Presentation */
 .cyber-hero-section {
   display: flex;
