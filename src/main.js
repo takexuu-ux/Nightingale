@@ -1799,11 +1799,14 @@ function renderClasses(classes) {
           ? new Date(endVal)
           : new Date(start.getTime() + 2 * 60 * 60 * 1000);
         if (isNaN(start.getTime())) return;
+        const isToday = start.toDateString() === now.toDateString();
         const isLiveNow      = now >= start && now <= end;
         const isStartingSoon = start > now && (start - now) <= soonMs;
-        if (isLiveNow || isStartingSoon) {
+        const hasEndedToday  = isToday && now > end;
+        if (isLiveNow || isStartingSoon || hasEndedToday) {
           c._isLiveNow      = isLiveNow;
           c._isStartingSoon = isStartingSoon;
+          c._hasEndedToday  = hasEndedToday;
           upcomingOrPastClasses.push(c);
         }
       } catch (e) {}
@@ -1892,11 +1895,19 @@ function createClassCard(c, isCurrentlyLive) {
     }
   } else {
     // Join button for upcoming or live class
-    const buttonText = isCurrentlyLive ? 'Join Live Classroom' : 'Join Class';
-    const buttonClass = isCurrentlyLive ? 'btn-zoom' : 'btn-secondary';
+    let buttonText = isCurrentlyLive ? 'Join Live Classroom' : 'Join Class';
+    let buttonClass = isCurrentlyLive ? 'btn-zoom' : 'btn-secondary';
+    let isDisabled = '';
+
+    if (c._hasEndedToday) {
+      buttonText = 'Class Ended';
+      buttonClass = 'btn-secondary';
+      isDisabled = 'disabled';
+    }
+
     buttonsHtml = `
       <div style="margin-top: 1rem; width: 100%; display: flex; flex-direction: column; gap: 0.5rem;" class="zoom-action-container">
-        <button class="btn ${buttonClass} join-embedded-btn" data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
+        <button class="btn ${buttonClass} join-embedded-btn" ${isDisabled} data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
           <span>${buttonText}</span>
         </button>
       </div>
@@ -1911,10 +1922,17 @@ function createClassCard(c, isCurrentlyLive) {
 
   const card = document.createElement('div');
   card.className = `glass-panel class-card ${isCurrentlyLive ? 'live-card-border' : ''}`;
+  let badgeHtml = '';
+  if (isCurrentlyLive) {
+    badgeHtml = '<div class="live-indicator" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Live Now</div>';
+  } else if (c._hasEndedToday) {
+    badgeHtml = '<div class="live-indicator" style="position: static; margin-bottom: 0; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-color: rgba(255, 255, 255, 0.1);"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px; background: var(--text-muted); box-shadow: none; animation: none;"></div>Ended</div>';
+  }
+
   card.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; width: 100%;">
       <span class="badge-batch">${batchLabel}</span>
-      ${isCurrentlyLive ? '<div class="live-indicator" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Live Now</div>' : ''}
+      ${badgeHtml}
     </div>
     <span class="class-date-badge">${formattedTime}</span>
     <h3 class="class-title">${title}</h3>
