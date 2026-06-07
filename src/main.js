@@ -203,6 +203,19 @@ function extractErrorMessage(data, defaultMsg = 'An error occurred. Please try a
     return String(val);
   }
 
+  // Check if there are field-specific errors first (common in NNL ONE validation responses)
+  const fields = data.fields || data.error?.fields || data.errors?.fields;
+  if (fields && Array.isArray(fields)) {
+    const fieldMsgs = fields.map(f => {
+      const fieldName = f.field || f.name || '';
+      const m = parseVal(f.message || f.msg || f.error);
+      return fieldName && m ? `${fieldName}: ${m}` : m;
+    }).filter(Boolean);
+    if (fieldMsgs.length > 0) {
+      return fieldMsgs.join(', ');
+    }
+  }
+
   const candidates = [data.message, data.detail, data.error, data.errors];
   for (const cand of candidates) {
     if (cand) {
