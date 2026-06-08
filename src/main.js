@@ -910,8 +910,8 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     classroomViewer.classList.remove('hide');
     document.body.classList.add('in-classroom');
 
-    // Load Zoom Web Client in proxy iframe
-    const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}`;
+    // Load Zoom Web Client in proxy iframe (using canonical wc/{id}/join path)
+    const zoomWebLink = `/zoom/wc/${meetingId}/join?pwd=${passcode}`;
     classroomIframe.src = zoomWebLink;
 
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
@@ -2089,6 +2089,15 @@ function createClassCard(c, isCurrentlyLive) {
   return card;
 }
 
+// Device detection helper to identify phone/tablet users
+function isMobileDevice() {
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+  const isSmallScreen = window.innerWidth <= 768;
+  return isMobileUA || (isTouch && isSmallScreen);
+}
+
 // Delegated handler for Join Embedded Classroom buttons
 async function handleJoinClassroomClick(e) {
   const btn = e.target.closest('.join-embedded-btn');
@@ -2100,14 +2109,64 @@ async function handleJoinClassroomClick(e) {
 
   if (!classId) return;
 
+  const isMobile = isMobileDevice();
+  let mobileTab = null;
+
+  if (isMobile) {
+    // Open a blank tab immediately to bypass browser popup blockers
+    mobileTab = window.open('about:blank', '_blank');
+  }
+
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="width: 14px; height: 14px;"></div> Entering...';
 
   try {
-    await joinEmbeddedClassroom(classId, title, instructor);
+    if (isMobile) {
+      // Fetch class details and launch directly on mobile
+      const token = localStorage.getItem('nnl_access_token');
+      let meetingId = '';
+      let passcode = '';
+
+      if (token === 'GUEST_DEMO_TOKEN' || String(classId).startsWith('mock-')) {
+        meetingId = '98765432101';
+        passcode = '123456';
+      } else {
+        const response = await fetch(`/api/cms/v2/live_classes/${classId}/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Could not fetch meeting credentials. Class may not have started yet.');
+        }
+
+        const resJson = await response.json();
+        const classDetail = resJson.data || resJson;
+
+        meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
+        passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
+      }
+
+      if (!meetingId) {
+        throw new Error('No active Zoom credentials found for this class.');
+      }
+
+      // Redirect the pre-opened tab directly to the Zoom protocol handler
+      mobileTab.location.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    } else {
+      // Desktop behavior: Load in the embedded iframe
+      await joinEmbeddedClassroom(classId, title, instructor);
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Error entering class:', error);
+    if (isMobile && mobileTab) {
+      mobileTab.close();
+    }
+    await showCustomAlert(error.message || 'Failed to enter class. Verify connection.', 'Connection Error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
