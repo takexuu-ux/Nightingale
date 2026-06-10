@@ -37,6 +37,7 @@ const dashboardLoader = document.getElementById('dashboard-loader');
 const tabLive = document.getElementById('tab-live');
 const tabUpcoming = document.getElementById('tab-upcoming');
 const tabRecordings = document.getElementById('tab-recordings');
+const tabSubjects = document.getElementById('tab-subjects');
 const tabAllVideos = document.getElementById('btn-all-videos');
 const refetchBtn = document.getElementById('refetch-btn');
 
@@ -1661,6 +1662,11 @@ async function loadDashboard(isSilent = false) {
   const token = localStorage.getItem('nnl_access_token');
   if (!token) return;
 
+  if (activeTab === 'subjects') {
+    renderSubjectLibrary(isSilent);
+    return;
+  }
+
   if (token === 'GUEST_DEMO_TOKEN') {
     if (!isSilent && refetchBtn) {
       refetchBtn.classList.add('spinning');
@@ -2573,6 +2579,7 @@ tabLive.addEventListener('click', () => {
   tabLive.classList.add('active');
   tabUpcoming.classList.remove('active');
   tabRecordings.classList.remove('active');
+  if (tabSubjects) tabSubjects.classList.remove('active');
   loadDashboard();
 });
 
@@ -2582,6 +2589,7 @@ tabUpcoming.addEventListener('click', () => {
   tabUpcoming.classList.add('active');
   tabLive.classList.remove('active');
   tabRecordings.classList.remove('active');
+  if (tabSubjects) tabSubjects.classList.remove('active');
   loadDashboard();
 });
 
@@ -2591,8 +2599,21 @@ tabRecordings.addEventListener('click', () => {
   tabRecordings.classList.add('active');
   tabLive.classList.remove('active');
   tabUpcoming.classList.remove('active');
+  if (tabSubjects) tabSubjects.classList.remove('active');
   loadDashboard();
 });
+
+if (tabSubjects) {
+  tabSubjects.addEventListener('click', () => {
+    if (activeTab === 'subjects') return;
+    activeTab = 'subjects';
+    tabSubjects.classList.add('active');
+    tabLive.classList.remove('active');
+    tabUpcoming.classList.remove('active');
+    tabRecordings.classList.remove('active');
+    loadDashboard();
+  });
+}
 
 if (tabAllVideos) {
   tabAllVideos.addEventListener('click', () => {
@@ -3365,7 +3386,12 @@ function initRecordingsViewer() {
       if (videoEl) {
         videoEl.pause();
         videoEl.src = '';
+        videoEl.classList.remove('hide');
       }
+      const oldIframe = document.getElementById('recording-cipher-iframe');
+      if (oldIframe) oldIframe.remove();
+      const loader = document.getElementById('recording-cipher-loader');
+      if (loader) loader.remove();
     });
   }
   
@@ -3423,11 +3449,67 @@ function openRecordingPlayer(recording) {
   if (!viewer) return;
   
   if (titleEl) titleEl.textContent = recording.title;
-  if (instructorEl) instructorEl.textContent = `Instructor: ${recording.instructor || 'Faculty'}`;
+  const facultyName = recording.faculty ? (recording.faculty.name || recording.faculty) : (recording.instructor || 'Faculty');
+  if (instructorEl) instructorEl.textContent = `Instructor: ${facultyName}`;
   
   viewer.classList.remove('hide');
   
-  if (recording.videoUrl) {
+  // Clean up any existing VdoCipher iframe/loader
+  const oldIframe = document.getElementById('recording-cipher-iframe');
+  if (oldIframe) oldIframe.remove();
+  const oldLoader = document.getElementById('recording-cipher-loader');
+  if (oldLoader) oldLoader.remove();
+  if (videoEl) videoEl.classList.remove('hide');
+  if (noUrlEl) noUrlEl.classList.add('hide');
+
+  if (recording.video_cipher_id) {
+    if (videoEl) {
+      videoEl.pause();
+      videoEl.src = '';
+      videoEl.classList.add('hide');
+    }
+    
+    // Append loading spinner
+    const bodyEl = document.querySelector('.recording-viewer-body');
+    const loader = document.createElement('div');
+    loader.id = 'recording-cipher-loader';
+    loader.className = 'full-loader';
+    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing stream via VdoCipher...</p>';
+    bodyEl.appendChild(loader);
+    
+    const token = localStorage.getItem('nnl_access_token');
+    fetch(`${API_BASE}/batch_cms/videos/${recording.id}/generate_videocipher_otp/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (loader) loader.remove();
+      if (data && data.otp && data.playbackInfo) {
+        const iframe = document.createElement('iframe');
+        iframe.id = 'recording-cipher-iframe';
+        iframe.src = `https://player.vdocipher.com/v2/?otp=${data.otp}&playbackInfo=${data.playbackInfo}`;
+        iframe.style.border = 'none';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.borderRadius = '12px';
+        iframe.setAttribute('allow', 'encrypted-media');
+        iframe.setAttribute('allowfullscreen', 'true');
+        bodyEl.appendChild(iframe);
+      } else {
+        if (noUrlEl) noUrlEl.classList.remove('hide');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      if (loader) loader.remove();
+      if (noUrlEl) noUrlEl.classList.remove('hide');
+    });
+    
+  } else if (recording.videoUrl) {
     if (videoEl) {
       videoEl.src = recording.videoUrl;
       videoEl.classList.remove('hide');
@@ -3436,7 +3518,6 @@ function openRecordingPlayer(recording) {
         console.log('Video autoplay failed:', err);
       });
     }
-    if (noUrlEl) noUrlEl.classList.add('hide');
   } else {
     if (videoEl) {
       videoEl.src = '';
@@ -3449,9 +3530,684 @@ function openRecordingPlayer(recording) {
 // Auto-refresh the dashboard silently in the background every 10 seconds
 setInterval(() => {
   const token = localStorage.getItem('nnl_access_token');
-  if (token) {
+  if (token && activeTab !== 'subjects') {
     loadDashboard(true);
   }
 }, 10000);
+
+/* ─────────────────────────────────────────────────────────────────────
+   SUBJECT LIBRARY & QUIZ PLAYER REDESIGN
+───────────────────────────────────────────────────────────────────── */
+
+// Mappings of UI Batch names to backend Batch IDs
+function getApiBatchId(batchName) {
+  if (!batchName) return 8;
+  const name = batchName.toUpperCase();
+  if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
+  if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
+  if (name.includes('PEARL')) return 8; // Default Hinglish batch is 8
+  if (name.includes('FASTRACK')) return 3;
+  if (name.includes('BRAHMASTRA')) return 9;
+  if (name.includes('ECONOMY')) return 1;
+  return 8; 
+}
+
+const MOCK_SUBJECTS_DATA = {
+  'Blue Sapphire Batch': [
+    { id: 466, title: 'Pharmacology' },
+    { id: 458, title: 'Anatomy & Physiology' },
+    { id: 459, title: 'Biochemistry & Nutrition' },
+    { id: 465, title: 'Mental Health Nursing' },
+    { id: 472, title: 'Community Health Nursing' }
+  ],
+  'Pearl Batch': [
+    { id: 491, title: 'Community Health Nursing' },
+    { id: 494, title: 'Pediatrics' },
+    { id: 495, title: 'Pharmacology' },
+    { id: 497, title: 'Mental Health Nursing' }
+  ]
+};
+
+const MOCK_SUBJECT_MATERIALS = {
+  466: {
+    videos: [
+      { id: 'mock-vid-1', title: 'Pharmacology Day 1: Anti-Hypertensive Drugs & Cardiac Assessment', duration: 8100, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
+      { id: 'mock-vid-2', title: 'Pharmacology Day 2: Diuretics & Renin-Angiotensin System', duration: 6600, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' }
+    ],
+    notes: [
+      { id: 'mock-note-1', title: 'Anti-Hypertensive Class Notes Complete PDF', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { id: 'mock-note-2', title: 'Renin-Angiotensin System Flowcharts Notes', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+    ],
+    tests: [
+      { id: 9901, title: 'Pharmacology TAT 1 MCQ Practice (NORCET)', total_question: 2, duration: 600, level_str: 'Medium' }
+    ]
+  },
+  458: {
+    videos: [
+      { id: 'mock-vid-3', title: 'Anatomy Day 1: Cardiovascular System Structure & Chambers', duration: 7800, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4' },
+      { id: 'mock-vid-4', title: 'Anatomy Day 2: Nervous System & Cranial Nerve Pathways', duration: 6900, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4' }
+    ],
+    notes: [
+      { id: 'mock-note-3', title: 'Cardiovascular System Anatomy Handouts', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { id: 'mock-note-4', title: 'Nervous System Synapses and Pathways Notes', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+    ],
+    tests: [
+      { id: 9903, title: 'Cardiovascular Anatomy Practice Test', total_question: 2, duration: 600, level_str: 'Medium' }
+    ]
+  }
+};
+
+const MOCK_QUIZ_QUESTIONS = {
+  9901: [
+    {
+      id: 1,
+      type_str: 'MCQ',
+      level_str: 'Medium',
+      title: 'Which of the following is considered a first-line agent for primary hypertension in a patient with diabetes mellitus?',
+      choices: [
+        { id: 101, title: 'Beta-blockers', is_correct: false },
+        { id: 102, title: 'ACE Inhibitors (Lisinopril)', is_correct: true, correct_explanation: 'ACE inhibitors like Lisinopril are renoprotective and preferred first-line agents in hypertensive patients with diabetes.' },
+        { id: 103, title: 'Calcium Channel Blockers (Diltiazem)', is_correct: false },
+        { id: 104, title: 'Loop Diuretics (Furosemide)', is_correct: false }
+      ]
+    },
+    {
+      id: 2,
+      type_str: 'MCQ',
+      level_str: 'Easy',
+      title: 'What is the primary mechanism of action of nitroglycerin in relieving angina pectoris?',
+      choices: [
+        { id: 201, title: 'Vascular smooth muscle relaxation leading to venodilation and decreased preload', is_correct: true, correct_explanation: 'Nitroglycerin primarily causes venodilation, which decreases venous return (preload) and reduces myocardial oxygen demand.' },
+        { id: 202, title: 'Direct negative inotropic effect on myocardium', is_correct: false },
+        { id: 203, title: 'Inhibition of angiotensin converting enzyme', is_correct: false },
+        { id: 204, title: 'Blocking beta-adrenergic receptors', is_correct: false }
+      ]
+    }
+  ],
+  9903: [
+    {
+      id: 1,
+      type_str: 'MCQ',
+      level_str: 'Easy',
+      title: 'Which chamber of the heart has the thickest muscular wall?',
+      choices: [
+        { id: 301, title: 'Right Atrium', is_correct: false },
+        { id: 302, title: 'Left Atrium', is_correct: false },
+        { id: 303, title: 'Right Ventricle', is_correct: false },
+        { id: 304, title: 'Left Ventricle', is_correct: true, correct_explanation: 'The left ventricle has the thickest myocardium because it must generate enough pressure to pump blood to the entire systemic circulation.' }
+      ]
+    },
+    {
+      id: 2,
+      type_str: 'MCQ',
+      level_str: 'Medium',
+      title: 'What is the correct pathway of heart conduction?',
+      choices: [
+        { id: 401, title: 'SA Node -> AV Node -> Bundle of His -> Purkinje Fibers', is_correct: true, correct_explanation: 'The conduction impulse originates in SA node, propagates through AV node and Bundle of His, then spreads via Purkinje fibers.' },
+        { id: 402, title: 'AV Node -> SA Node -> Purkinje Fibers -> Bundle of His', is_correct: false },
+        { id: 403, title: 'SA Node -> Bundle of His -> AV Node -> Purkinje Fibers', is_correct: false },
+        { id: 404, title: 'Purkinje Fibers -> SA Node -> AV Node -> Bundle of His', is_correct: false }
+      ]
+    }
+  ]
+};
+
+async function renderSubjectLibrary(isSilent = false) {
+  if (!classListContainer) return;
+  classListContainer.innerHTML = '';
+  classListContainer.style.display = 'block';
+
+  if (!isSilent && dashboardLoader) {
+    dashboardLoader.classList.remove('hide');
+  }
+
+  const token = localStorage.getItem('nnl_access_token');
+  const isGuest = token === 'GUEST_DEMO_TOKEN';
+  const simplifiedBatch = getSimplifiedBatchTitle(activeBatch);
+  const batchId = getApiBatchId(activeBatch);
+
+  try {
+    let subjects = [];
+    if (isGuest) {
+      subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
+    } else {
+      // Fetch batches to extract subjects list
+      const response = await fetch(`${API_BASE}/cms/batches/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const apiBatches = result.data || result.results || [];
+        const currentBatchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
+        if (currentBatchData && currentBatchData.subjects) {
+          subjects = currentBatchData.subjects;
+        }
+      }
+      if (subjects.length === 0) {
+        // Fallback if empty
+        subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
+      }
+    }
+
+    if (dashboardLoader) dashboardLoader.classList.add('hide');
+
+    if (subjects.length === 0) {
+      classListContainer.innerHTML = `
+        <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);">
+          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No subjects available for ${activeBatch}.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const browserDiv = document.createElement('div');
+    browserDiv.className = 'recordings-browser';
+
+    const libraryHeader = document.createElement('div');
+    libraryHeader.style.marginBottom = '1.5rem';
+    libraryHeader.innerHTML = `
+      <span class="cyber-hero-badge" style="display: inline-block; margin-bottom: 0.5rem;">// SUBJECT LIBRARY</span>
+      <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.06em; margin: 0 0 0.35rem;">SUBJECT <span style="-webkit-text-fill-color: #00f3d0;">PORTAL</span></h2>
+      <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">${activeBatch} &mdash; Access video lectures, notes PDFs, and CBT tests</p>
+    `;
+    browserDiv.appendChild(libraryHeader);
+
+    subjects.forEach(sub => {
+      const subjectAccordion = document.createElement('div');
+      subjectAccordion.className = 'subject-accordion';
+      subjectAccordion.setAttribute('data-sub-id', sub.id);
+      subjectAccordion.setAttribute('data-loaded', 'false');
+
+      subjectAccordion.innerHTML = `
+        <div class="subject-accordion-header">
+          <div class="subject-accordion-title">
+            <div class="subject-icon">📚</div>
+            <span class="subject-name">${sub.title}</span>
+            <span class="subject-count" id="sub-meta-count-${sub.id}"></span>
+          </div>
+          <svg class="subject-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+        <div class="subject-accordion-body" id="sub-body-${sub.id}">
+          <div class="subject-materials-row">
+            <!-- Videos column -->
+            <div class="material-column" id="sub-vids-${sub.id}">
+              <div class="material-column-title">
+                📹 Recorded Classes
+              </div>
+              <div class="full-loader" style="padding: 1rem;"><div class="spinner"></div></div>
+            </div>
+            
+            <!-- Notes column -->
+            <div class="material-column" id="sub-notes-${sub.id}">
+              <div class="material-column-title">
+                📄 Class Notes
+              </div>
+              <div class="full-loader" style="padding: 1rem;"><div class="spinner"></div></div>
+            </div>
+            
+            <!-- Tests column -->
+            <div class="material-column" id="sub-tests-${sub.id}">
+              <div class="material-column-title">
+                📝 Practice Tests
+              </div>
+              <div class="full-loader" style="padding: 1rem;"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Collapse click event
+      const header = subjectAccordion.querySelector('.subject-accordion-header');
+      header.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = subjectAccordion.classList.toggle('open');
+        if (isOpen && subjectAccordion.getAttribute('data-loaded') === 'false') {
+          fetchSubjectMaterials(batchId, sub.id, subjectAccordion);
+        }
+      });
+
+      browserDiv.appendChild(subjectAccordion);
+    });
+
+    classListContainer.appendChild(browserDiv);
+
+  } catch (error) {
+    console.error('Error rendering subject library:', error);
+    if (dashboardLoader) dashboardLoader.classList.add('hide');
+  }
+}
+
+async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
+  const subVids = accordionEl.querySelector(`#sub-vids-${subjectId}`);
+  const subNotes = accordionEl.querySelector(`#sub-notes-${subjectId}`);
+  const subTests = accordionEl.querySelector(`#sub-tests-${subjectId}`);
+  const metaCount = accordionEl.querySelector(`#sub-meta-count-${subjectId}`);
+  
+  const token = localStorage.getItem('nnl_access_token');
+  const isGuest = token === 'GUEST_DEMO_TOKEN';
+
+  try {
+    let videos = [];
+    let notes = [];
+    let tests = [];
+
+    if (isGuest) {
+      const mock = MOCK_SUBJECT_MATERIALS[subjectId] || MOCK_SUBJECT_MATERIALS[466];
+      videos = mock.videos;
+      notes = mock.notes;
+      tests = mock.tests;
+    } else {
+      // Load real API materials in parallel
+      const [vResponse, nResponse, tResponse] = await Promise.all([
+        fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subjectId}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        }),
+        fetch(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        }),
+        fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&subject_id=${subjectId}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        })
+      ]);
+
+      if (vResponse.ok) {
+        const d = await vResponse.json();
+        videos = d.data || d.results || [];
+      }
+      if (nResponse.ok) {
+        const d = await nResponse.json();
+        notes = d.data || d.results || [];
+      }
+      if (tResponse.ok) {
+        const d = await tResponse.json();
+        tests = d.data || d.results || [];
+      }
+    }
+
+    accordionEl.setAttribute('data-loaded', 'true');
+    if (metaCount) {
+      metaCount.textContent = `(${videos.length} videos, ${notes.length} notes, ${tests.length} tests)`;
+    }
+
+    // 1. Populate videos
+    let vidsHtml = '<div class="material-column-title">📹 Recorded Classes</div>';
+    if (videos.length === 0) {
+      vidsHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No recorded lectures available.</p>';
+    } else {
+      videos.forEach(v => {
+        const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
+        const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
+        const durStr = `${durHrs}h ${durMins}m`;
+
+        vidsHtml += `
+          <div class="material-item">
+            <div class="material-item-info">
+              <span class="material-item-title" title="${v.title}">${v.title}</span>
+              <span class="material-item-meta">${v.faculty?.name || 'Faculty'} • ${durStr}</span>
+            </div>
+            <button class="material-item-btn play-class-btn" data-id="${v.id}">Play</button>
+          </div>
+        `;
+      });
+    }
+    subVids.innerHTML = vidsHtml;
+
+    // Bind play click listeners
+    subVids.querySelectorAll('.play-class-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const vidId = btn.getAttribute('data-id');
+        let selectedVid = videos.find(v => String(v.id) === String(vidId));
+        if (!selectedVid) {
+          // Check mock fallback
+          selectedVid = videos[0];
+        }
+        if (selectedVid) {
+          openRecordingPlayer(selectedVid);
+        }
+      });
+    });
+
+    // 2. Populate notes
+    let notesHtml = '<div class="material-column-title">📄 Class Notes</div>';
+    if (notes.length === 0) {
+      notesHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No PDF notes available.</p>';
+    } else {
+      notes.forEach(n => {
+        notesHtml += `
+          <div class="material-item">
+            <div class="material-item-info">
+              <span class="material-item-title" title="${n.title}">${n.title}</span>
+              <span class="material-item-meta">PDF Material</span>
+            </div>
+            <a href="${n.url}" target="_blank" class="material-item-btn" style="text-decoration: none;">View</a>
+          </div>
+        `;
+      });
+    }
+    subNotes.innerHTML = notesHtml;
+
+    // 3. Populate tests
+    let testsHtml = '<div class="material-column-title">📝 Practice Tests</div>';
+    if (tests.length === 0) {
+      testsHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No quizzes available.</p>';
+    } else {
+      tests.forEach(t => {
+        testsHtml += `
+          <div class="material-item">
+            <div class="material-item-info">
+              <span class="material-item-title" title="${t.title}">${t.title}</span>
+              <span class="material-item-meta">${t.total_question || 30} Qs • ${Math.floor(t.duration / 60)} mins</span>
+            </div>
+            <button class="material-item-btn btn-test start-test-btn" data-id="${t.id}" data-title="${t.title}" data-duration="${t.duration || 1800}">Start</button>
+          </div>
+        `;
+      });
+    }
+    subTests.innerHTML = testsHtml;
+
+    // Bind start test click listeners
+    subTests.querySelectorAll('.start-test-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const testId = btn.getAttribute('data-id');
+        const testTitle = btn.getAttribute('data-title');
+        const duration = parseInt(btn.getAttribute('data-duration'), 10);
+        loadQuiz(testId, testTitle, duration);
+      });
+    });
+
+  } catch (error) {
+    console.error('Error loading subject materials:', error);
+    subVids.innerHTML = '<div class="material-column-title">📹 Recorded Classes</div><p style="color:#f87171; font-size:0.7rem;">Sync failed.</p>';
+    subNotes.innerHTML = '<div class="material-column-title">📄 Class Notes</div><p style="color:#f87171; font-size:0.7rem;">Sync failed.</p>';
+    subTests.innerHTML = '<div class="material-column-title">📝 Practice Tests</div><p style="color:#f87171; font-size:0.7rem;">Sync failed.</p>';
+  }
+}
+
+// CBT QUIZ VIEWER ENGINE
+let quizTimerInterval = null;
+let quizQuestions = [];
+let quizAnswers = {}; // map index -> selected choice id
+let currentQuestionIndex = 0;
+let quizTimeRemaining = 0;
+let currentTestId = null;
+
+async function loadQuiz(testId, testTitle, duration) {
+  const viewer = document.getElementById('quiz-viewer');
+  const titleEl = document.getElementById('quiz-title');
+  const metaEl = document.getElementById('quiz-meta');
+  const loader = document.getElementById('dashboard-loader');
+  
+  if (!viewer) return;
+  
+  currentTestId = testId;
+  quizAnswers = {};
+  currentQuestionIndex = 0;
+  
+  if (titleEl) titleEl.textContent = testTitle;
+  
+  const token = localStorage.getItem('nnl_access_token');
+  const isGuest = token === 'GUEST_DEMO_TOKEN' || String(testId).startsWith('99');
+  
+  if (loader) loader.classList.remove('hide');
+  
+  try {
+    if (isGuest) {
+      quizQuestions = MOCK_QUIZ_QUESTIONS[testId] || MOCK_QUIZ_QUESTIONS[9901];
+    } else {
+      // Fetch live quiz questions
+      const response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        const d = await response.json();
+        quizQuestions = d.data || d.results || [];
+      } else {
+        quizQuestions = MOCK_QUIZ_QUESTIONS[9901];
+      }
+    }
+    
+    if (loader) loader.classList.add('hide');
+    
+    if (!quizQuestions || quizQuestions.length === 0) {
+      showCustomAlert('No questions available in this test.', 'ERROR');
+      return;
+    }
+    
+    if (metaEl) metaEl.textContent = `Total Questions: ${quizQuestions.length} • Duration: ${Math.floor(duration / 60)} mins`;
+    
+    viewer.classList.remove('hide');
+    document.getElementById('quiz-question-view').classList.remove('hide');
+    document.getElementById('quiz-result-view').classList.add('hide');
+    document.getElementById('quiz-prev-btn').classList.remove('hide');
+    document.getElementById('quiz-next-btn').classList.remove('hide');
+    document.getElementById('quiz-show-ans-btn').classList.remove('hide');
+    document.getElementById('quiz-submit-btn').classList.remove('hide');
+    
+    renderQuestion();
+    updateQuizNavigator();
+    
+    // Start countdown timer
+    if (quizTimerInterval) clearInterval(quizTimerInterval);
+    quizTimeRemaining = duration;
+    updateTimerDisplay();
+    
+    quizTimerInterval = setInterval(() => {
+      quizTimeRemaining--;
+      updateTimerDisplay();
+      if (quizTimeRemaining <= 0) {
+        clearInterval(quizTimerInterval);
+        submitQuiz();
+      }
+    }, 1000);
+    
+  } catch (err) {
+    console.error('Quiz initialization failed:', err);
+    if (loader) loader.classList.add('hide');
+    showCustomAlert('Unable to load quiz details. Try again.', 'ERROR');
+  }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('quiz-timer');
+  if (!el) return;
+  const m = Math.floor(quizTimeRemaining / 60).toString().padStart(2, '0');
+  const s = (quizTimeRemaining % 60).toString().padStart(2, '0');
+  el.textContent = `${m}:${s}`;
+  if (quizTimeRemaining < 60) {
+    el.style.color = '#f87171';
+    el.style.borderColor = 'rgba(239,68,68,0.4)';
+  } else {
+    el.style.color = '#00f3d0';
+    el.style.borderColor = 'rgba(0,243,208,0.35)';
+  }
+}
+
+function renderQuestion() {
+  const q = quizQuestions[currentQuestionIndex];
+  if (!q) return;
+  
+  document.getElementById('question-number-badge').textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+  document.getElementById('question-level-badge').textContent = q.level_str || 'Medium';
+  document.getElementById('question-text').innerHTML = q.title;
+  
+  const optionsList = document.getElementById('quiz-options-list');
+  optionsList.innerHTML = '';
+  
+  const explanationEl = document.getElementById('question-explanation');
+  explanationEl.classList.add('hide');
+
+  const selectedChoiceId = quizAnswers[currentQuestionIndex];
+  const markers = ['A', 'B', 'C', 'D', 'E', 'F'];
+  
+  q.choices.forEach((c, idx) => {
+    const isSelected = selectedChoiceId === c.id;
+    const optionBtn = document.createElement('button');
+    optionBtn.className = `quiz-option-btn ${isSelected ? 'selected' : ''}`;
+    optionBtn.innerHTML = `
+      <span class="option-marker">${markers[idx] || (idx+1)}</span>
+      <span class="option-title-text">${c.title}</span>
+    `;
+    
+    optionBtn.addEventListener('click', () => {
+      // Do not allow selecting if results or answer shown
+      if (!explanationEl.classList.contains('hide')) return;
+      
+      quizAnswers[currentQuestionIndex] = c.id;
+      
+      // Update styling instantly
+      optionsList.querySelectorAll('.quiz-option-btn').forEach(btn => btn.classList.remove('selected'));
+      optionBtn.classList.add('selected');
+      
+      updateQuizNavigator();
+    });
+    
+    optionsList.appendChild(optionBtn);
+  });
+}
+
+function showAnswer() {
+  const q = quizQuestions[currentQuestionIndex];
+  if (!q) return;
+  
+  const optionsList = document.getElementById('quiz-options-list');
+  const explanationEl = document.getElementById('question-explanation');
+  const explanationTextEl = document.getElementById('explanation-text');
+  
+  let explanationHtml = '';
+  
+  q.choices.forEach((c, idx) => {
+    const btn = optionsList.children[idx];
+    if (!btn) return;
+    
+    if (c.is_correct) {
+      btn.classList.add('correct');
+      if (c.correct_explanation) {
+        explanationHtml = c.correct_explanation;
+      }
+    } else if (quizAnswers[currentQuestionIndex] === c.id) {
+      btn.classList.add('incorrect');
+    }
+  });
+
+  if (!explanationHtml) {
+    // Check incorrect options correct explanations
+    const correctOpt = q.choices.find(c => c.is_correct);
+    if (correctOpt && correctOpt.correct_explanation) {
+      explanationHtml = correctOpt.correct_explanation;
+    }
+  }
+
+  if (explanationHtml) {
+    explanationTextEl.innerHTML = explanationHtml;
+    explanationEl.classList.remove('hide');
+  }
+}
+
+function updateQuizNavigator() {
+  const grid = document.getElementById('quiz-navigator-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  quizQuestions.forEach((_, idx) => {
+    const btn = document.createElement('button');
+    const isAnswered = quizAnswers[idx] !== undefined;
+    btn.className = `quiz-nav-item ${idx === currentQuestionIndex ? 'active' : ''} ${isAnswered ? 'answered' : ''}`;
+    btn.textContent = idx + 1;
+    
+    btn.addEventListener('click', () => {
+      // Do not allow jumping around if in result view
+      if (document.getElementById('quiz-question-view').classList.contains('hide')) return;
+      
+      currentQuestionIndex = idx;
+      renderQuestion();
+      updateQuizNavigator();
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function submitQuiz() {
+  if (quizTimerInterval) clearInterval(quizTimerInterval);
+  
+  // Calculate score
+  let correctCount = 0;
+  quizQuestions.forEach((q, idx) => {
+    const ans = quizAnswers[idx];
+    const correctChoice = q.choices.find(c => c.is_correct);
+    if (correctChoice && ans === correctChoice.id) {
+      correctCount++;
+    }
+  });
+  
+  const pct = Math.round((correctCount / quizQuestions.length) * 100);
+  
+  document.getElementById('result-percentage').textContent = `${pct}%`;
+  document.getElementById('result-ratio').textContent = `${correctCount} / ${quizQuestions.length} Correct`;
+  
+  let feedback = 'Practice more to master these topics!';
+  if (pct >= 85) feedback = 'Sensational! You are fully prepared for the NORCET board.';
+  else if (pct >= 70) feedback = 'Excellent job! Review your weak topics to target a higher rank.';
+  else if (pct >= 50) feedback = 'Good effort! Go through the class notes and videos to clarify concepts.';
+  
+  document.getElementById('result-feedback').textContent = feedback;
+  
+  document.getElementById('quiz-question-view').classList.add('hide');
+  document.getElementById('quiz-result-view').classList.remove('hide');
+  
+  document.getElementById('quiz-prev-btn').classList.add('hide');
+  document.getElementById('quiz-next-btn').classList.add('hide');
+  document.getElementById('quiz-show-ans-btn').classList.add('hide');
+  document.getElementById('quiz-submit-btn').classList.add('hide');
+}
+
+function closeQuiz() {
+  if (quizTimerInterval) clearInterval(quizTimerInterval);
+  document.getElementById('quiz-viewer').classList.add('hide');
+}
+
+// Bind Quiz Control actions
+document.getElementById('quiz-prev-btn').addEventListener('click', () => {
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    renderQuestion();
+    updateQuizNavigator();
+  }
+});
+
+document.getElementById('quiz-next-btn').addEventListener('click', () => {
+  if (currentQuestionIndex < quizQuestions.length - 1) {
+    currentQuestionIndex++;
+    renderQuestion();
+    updateQuizNavigator();
+  }
+});
+
+document.getElementById('quiz-show-ans-btn').addEventListener('click', showAnswer);
+document.getElementById('quiz-submit-btn').addEventListener('click', () => {
+  const unansweredCount = quizQuestions.length - Object.keys(quizAnswers).length;
+  if (unansweredCount > 0) {
+    showCustomConfirm(`You have ${unansweredCount} unanswered questions. Are you sure you want to submit?`, 'CONFIRM SUBMISSION')
+    .then(approved => {
+      if (approved) submitQuiz();
+    });
+  } else {
+    submitQuiz();
+  }
+});
+
+document.getElementById('quiz-close-btn').addEventListener('click', closeQuiz);
+document.getElementById('quiz-restart-btn').addEventListener('click', () => {
+  const duration = quizQuestions.length * 60; // 1 min per question
+  loadQuiz(currentTestId, document.getElementById('quiz-title').textContent, duration);
+});
+
 
 

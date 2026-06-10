@@ -174,6 +174,7 @@
                 <button id="tab-live" class="tab-btn active">Live Now</button>
                 <button id="tab-upcoming" class="tab-btn">Upcoming Classes</button>
                 <button id="tab-recordings" class="tab-btn">Recent Recordings</button>
+                <button id="tab-subjects" class="tab-btn">Subject Library</button>
               </div>
               <button id="refetch-btn" class="btn-refresh" title="Refetch classes">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="refresh-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"></path></svg>
@@ -380,6 +381,73 @@
           <div style="font-size: 3rem; margin-bottom: 1rem;">📹</div>
           <h3 style="font-family: var(--font-display); font-size: 1rem; margin-bottom: 0.5rem;">Recording Not Available Online</h3>
           <p style="color: var(--text-secondary); font-size: 0.85rem;">This recording is available on the NNL ONE mobile app.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ / CBT TEST VIEWER (Hidden by default) -->
+    <div id="quiz-viewer" class="quiz-viewer-overlay hide">
+      <div class="quiz-viewer-box">
+        <div class="quiz-viewer-header">
+          <div class="quiz-viewer-title-area">
+            <span class="cyber-hero-badge">// CBT PRACTICE ASSESSMENT</span>
+            <h2 id="quiz-title" style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Practice Quiz</h2>
+            <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
+          </div>
+          <div class="quiz-timer-container">
+            <div id="quiz-timer" class="quiz-timer">00:00</div>
+          </div>
+        </div>
+        
+        <div class="quiz-viewer-body">
+          <div id="quiz-question-view" class="quiz-question-container">
+            <div class="question-header">
+              <span id="question-number-badge" class="question-number-badge">Question 1 of 30</span>
+              <span id="question-level-badge" class="question-level-badge">Medium</span>
+            </div>
+            <div id="question-text" class="question-text">Question content goes here...</div>
+            <div id="quiz-options-list" class="quiz-options-list">
+              <!-- Choices populated dynamically -->
+            </div>
+            <div id="question-explanation" class="question-explanation hide">
+              <h4>Explanation:</h4>
+              <div id="explanation-text">Detailed explanation...</div>
+            </div>
+          </div>
+
+          <div id="quiz-result-view" class="quiz-result-view hide">
+            <div class="result-summary">
+              <div class="result-glow"></div>
+              <h3 style="font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.05em; margin-bottom: 1rem; color: var(--primary);">Assessment Completed</h3>
+              <div class="score-circle">
+                <span id="result-percentage" style="font-size: 2.2rem; font-family: var(--font-display); font-weight: 900; color: #00f3d0; text-shadow: 0 0 15px rgba(0,243,208,0.4);">80%</span>
+                <span id="result-ratio" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">24 / 30 Correct</span>
+              </div>
+              <p id="result-feedback" style="color: var(--text-secondary); font-size: 0.9rem; max-width: 320px; line-height: 1.5; margin: 1.5rem auto;">Excellent score! You are well prepared for the exam. Review your incorrect answers in the explorer.</p>
+              <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem;">
+                <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Try Again</button>
+                <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Close Test</button>
+              </div>
+            </div>
+          </div>
+          
+          <div id="quiz-sidebar" class="quiz-sidebar">
+            <div class="quiz-sidebar-title">Question Navigator</div>
+            <div id="quiz-navigator-grid" class="quiz-navigator-grid">
+              <!-- Navigation buttons dynamically generated -->
+            </div>
+            <div class="quiz-sidebar-legend">
+              <div class="legend-item"><span class="legend-dot unanswered"></span> Not Attempted</div>
+              <div class="legend-item"><span class="legend-dot answered"></span> Attempted</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="quiz-viewer-footer">
+          <button id="quiz-prev-btn" class="btn btn-secondary">Previous</button>
+          <button id="quiz-show-ans-btn" class="btn btn-zoom">Show Answer</button>
+          <button id="quiz-next-btn" class="btn btn-secondary">Next</button>
+          <button id="quiz-submit-btn" class="btn btn-exit" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.4); color: #f87171; box-shadow: 0 0 10px rgba(239, 68, 68, 0.05);">Submit Test</button>
         </div>
       </div>
     </div>
