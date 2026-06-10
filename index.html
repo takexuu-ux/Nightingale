@@ -12,6 +12,23 @@
     <title>Nightingale Classroom - Premium Nursing Portal</title>
   </head>
   <body>
+    <!-- App Loading Screen Preloader -->
+    <div id="app-preloader" class="app-preloader">
+      <div class="preloader-content">
+        <div class="preloader-logo">
+          <svg width="60" height="36" viewBox="0 0 40 24" fill="none" stroke="currentColor" class="heartbeat-svg preloader-heartbeat" style="color: var(--primary); filter: drop-shadow(0 0 10px var(--primary-glow));">
+            <path d="M2 12h10l3-8 4 16 3-11 2 3h16" class="heartbeat-track" />
+            <path d="M2 12h10l3-8 4 16 3-11 2 3h16" class="heartbeat-pulse" />
+          </svg>
+          <div class="logo-text" style="font-size: 1.5rem; font-weight: 900; letter-spacing: 0.15em; margin-top: 1rem; color: #fff; font-family: var(--font-display);">NIGHTINGALE</div>
+        </div>
+        <div class="preloader-spinner-container">
+          <div class="spinner"></div>
+          <p id="preloader-status" style="margin-top: 1rem; font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary);">Initializing Portal...</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Nightingale Static Background Image -->
     <div id="nightingale-bg-container" class="nightingale-bg-container">
       <div class="bg-drift-wrapper">
@@ -381,6 +398,10 @@
           <h3 style="font-family: var(--font-display); font-size: 1rem; margin-bottom: 0.5rem;">Recording Not Available Online</h3>
           <p style="color: var(--text-secondary); font-size: 0.85rem;">This recording is available on the NNL ONE mobile app.</p>
         </div>
+      </div>
+      <div class="recording-viewer-disclaimer" style="padding: 0.75rem 1.5rem; background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; justify-content: center; text-align: center;">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <span>Note: Premium lectures are protected. If you see Error 2127 or compatibility issues, please watch them on the NNL ONE Mobile App.</span>
       </div>
     </div>
 

@@ -1687,6 +1687,8 @@ async function loadDashboard(isSilent = false) {
           refetchBtn.disabled = false;
         }
       }
+      classesFetched = true;
+      checkPreloaderCompletion();
     }, 600);
     return;
   }
@@ -1705,6 +1707,8 @@ async function loadDashboard(isSilent = false) {
         hasCache = true;
         // Hide loader since we have content already
         dashboardLoader.classList.add('hide');
+        classesFetched = true;
+        checkPreloaderCompletion();
       }
     } catch (e) {
       console.warn('Failed to parse cached classes:', e);
@@ -1809,6 +1813,9 @@ async function loadDashboard(isSilent = false) {
       }
     }
   } finally {
+    classesFetched = true;
+    checkPreloaderCompletion();
+
     if (!isSilent) {
       const elapsed = Date.now() - animStart;
       const remainingDelay = Math.max(0, 800 - elapsed);
@@ -3165,6 +3172,41 @@ function autoJoinZoomPrejoin(iframe, displayName, passcode) {
   setTimeout(tryFill, 800);
 }
 
+// --- Full-screen Preloader State Management ---
+let bgLoaded = false;
+let classesFetched = false;
+
+function checkPreloaderCompletion() {
+  const token = localStorage.getItem('nnl_access_token');
+  const needsClassesFetch = !!token;
+  
+  if (bgLoaded && (!needsClassesFetch || classesFetched)) {
+    const preloader = document.getElementById('app-preloader');
+    if (preloader) {
+      preloader.classList.add('fade-out');
+      setTimeout(() => {
+        preloader.remove();
+      }, 600);
+    }
+  }
+}
+
+// Pre-load background image to ensure instant visual presence
+const bgImg = new Image();
+bgImg.src = '/nightingale.jpg';
+if (bgImg.complete) {
+  bgLoaded = true;
+} else {
+  bgImg.onload = () => {
+    bgLoaded = true;
+    checkPreloaderCompletion();
+  };
+  bgImg.onerror = () => {
+    bgLoaded = true;
+    checkPreloaderCompletion();
+  };
+}
+
 // Initialize on page load
 getOrCreateDeviceId();
 checkLoginState();
@@ -3173,6 +3215,7 @@ initTweaksPanel();
 initBatchSelection();
 initBackgroundParallax();
 initRecordingsViewer();
+checkPreloaderCompletion();
 
 
 // ─── Grouped Recorded Lectures & Interactive Parallax redone ─────────────────
@@ -3816,6 +3859,9 @@ async function renderSubjectLibrary(isSilent = false) {
         <p style="color: var(--text-secondary); font-size: 0.75rem; margin: 0;">Error: ${error.message}</p>
       </div>
     `;
+  } finally {
+    classesFetched = true;
+    checkPreloaderCompletion();
   }
 }
 
