@@ -3672,13 +3672,31 @@ async function renderSubjectLibrary(isSilent = false) {
       subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
     } else {
       // Fetch batches to extract subjects list
-      const response = await fetch(`${API_BASE}/cms/batches/`, {
+      let response = await fetch(`${API_BASE}/cms/batches/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
+      
+      if (response.status === 401) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          const newToken = localStorage.getItem('nnl_access_token');
+          response = await fetch(`${API_BASE}/cms/batches/`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'Accept': 'application/json'
+            }
+          });
+        } else {
+          handleLogout();
+          return;
+        }
+      }
+
       if (response.ok) {
         const result = await response.json();
         const apiBatches = result.data || result.results || [];
@@ -3686,7 +3704,10 @@ async function renderSubjectLibrary(isSilent = false) {
         if (currentBatchData && currentBatchData.subjects) {
           subjects = currentBatchData.subjects;
         }
+      } else {
+        throw new Error(`Failed to fetch batches (HTTP ${response.status})`);
       }
+      
       if (subjects.length === 0) {
         // Fallback if empty
         subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
@@ -3780,6 +3801,12 @@ async function renderSubjectLibrary(isSilent = false) {
   } catch (error) {
     console.error('Error rendering subject library:', error);
     if (dashboardLoader) dashboardLoader.classList.add('hide');
+    classListContainer.innerHTML = `
+      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 68, 68, 0.15); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);">
+        <p style="color: #f87171; font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 0.5rem;">Failed to render Subject Library</p>
+        <p style="color: var(--text-secondary); font-size: 0.75rem; margin: 0;">Error: ${error.message}</p>
+      </div>
+    `;
   }
 }
 
@@ -3804,29 +3831,54 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
       tests = mock.tests;
     } else {
       // Load real API materials in parallel
-      const [vResponse, nResponse, tResponse] = await Promise.all([
-        fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        }),
-        fetch(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        }),
-        fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        })
-      ]);
+      let vResponse = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subjectId}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      let nResponse = await fetch(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      let tResponse = await fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&subject_id=${subjectId}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+
+      if (vResponse.status === 401 || nResponse.status === 401 || tResponse.status === 401) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          const newToken = localStorage.getItem('nnl_access_token');
+          vResponse = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subjectId}`, {
+            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
+          });
+          nResponse = await fetch(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, {
+            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
+          });
+          tResponse = await fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&subject_id=${subjectId}`, {
+            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
+          });
+        } else {
+          handleLogout();
+          return;
+        }
+      }
 
       if (vResponse.ok) {
         const d = await vResponse.json();
         videos = d.data || d.results || [];
+      } else {
+        throw new Error(`Videos fetch failed with status ${vResponse.status}`);
       }
+
       if (nResponse.ok) {
         const d = await nResponse.json();
         notes = d.data || d.results || [];
+      } else {
+        throw new Error(`Notes fetch failed with status ${nResponse.status}`);
       }
+
       if (tResponse.ok) {
         const d = await tResponse.json();
         tests = d.data || d.results || [];
+      } else {
+        throw new Error(`Tests fetch failed with status ${tResponse.status}`);
       }
     }
 
@@ -3925,9 +3977,9 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
 
   } catch (error) {
     console.error('Error loading subject materials:', error);
-    subVids.innerHTML = '<div class="material-column-title">📹 Recorded Classes</div><p style="color:#f87171; font-size:0.7rem;">Sync failed.</p>';
-    subNotes.innerHTML = '<div class="material-column-title">📄 Class Notes</div><p style="color:#f87171; font-size:0.7rem;">Sync failed.</p>';
-    subTests.innerHTML = '<div class="material-column-title">📝 Practice Tests</div><p style="color:#f87171; font-size:0.7rem;">Sync failed.</p>';
+    subVids.innerHTML = `<div class="material-column-title">📹 Recorded Classes</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
+    subNotes.innerHTML = `<div class="material-column-title">📄 Class Notes</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
+    subTests.innerHTML = `<div class="material-column-title">📝 Practice Tests</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
   }
 }
 
@@ -3963,9 +4015,23 @@ async function loadQuiz(testId, testTitle, duration) {
       quizQuestions = MOCK_QUIZ_QUESTIONS[testId] || MOCK_QUIZ_QUESTIONS[9901];
     } else {
       // Fetch live quiz questions
-      const response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
+      let response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
+      
+      if (response.status === 401) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          const newToken = localStorage.getItem('nnl_access_token');
+          response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
+            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
+          });
+        } else {
+          handleLogout();
+          return;
+        }
+      }
+
       if (response.ok) {
         const d = await response.json();
         quizQuestions = d.data || d.results || [];
