@@ -922,9 +922,10 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
-    // Auto-bypass pre-join name screen: poll iframe DOM until the form appears,
-    // then fill in the name and click Join automatically.
-    autoJoinZoomPrejoin(classroomIframe, 'Rajit');
+    // Auto-bypass pre-join screens (name and passcode): poll iframe DOM until forms appear,
+    // then fill in the name and passcode, and click Join automatically.
+    const studentName = (document.getElementById('user-phone')?.textContent || 'Student').trim();
+    autoJoinZoomPrejoin(classroomIframe, studentName, passcode);
 
     // Load old snapshots from IndexedDB storage
     currentTimelineSlides = await loadSlidesFromDb(meetingId);
@@ -2089,15 +2090,6 @@ function createClassCard(c, isCurrentlyLive) {
   return card;
 }
 
-// Device detection helper to identify phone/tablet users
-function isMobileDevice() {
-  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  const isSmallScreen = window.innerWidth <= 768;
-  return isMobileUA || (isTouch && isSmallScreen);
-}
-
 // Delegated handler for Join Embedded Classroom buttons
 async function handleJoinClassroomClick(e) {
   const btn = e.target.closest('.join-embedded-btn');
@@ -2109,63 +2101,14 @@ async function handleJoinClassroomClick(e) {
 
   if (!classId) return;
 
-  const isMobile = isMobileDevice();
-  let mobileTab = null;
-
-  if (isMobile) {
-    // Open a blank tab immediately to bypass browser popup blockers
-    mobileTab = window.open('about:blank', '_blank');
-  }
-
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="width: 14px; height: 14px;"></div> Entering...';
 
   try {
-    if (isMobile) {
-      // Fetch class details and launch directly on mobile
-      const token = localStorage.getItem('nnl_access_token');
-      let meetingId = '';
-      let passcode = '';
-
-      if (token === 'GUEST_DEMO_TOKEN' || String(classId).startsWith('mock-')) {
-        meetingId = '98765432101';
-        passcode = '123456';
-      } else {
-        const response = await fetch(`/api/cms/v2/live_classes/${classId}/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Could not fetch meeting credentials. Class may not have started yet.');
-        }
-
-        const resJson = await response.json();
-        const classDetail = resJson.data || resJson;
-
-        meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
-        passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
-      }
-
-      if (!meetingId) {
-        throw new Error('No active Zoom credentials found for this class.');
-      }
-
-      // Redirect the pre-opened tab directly to the Zoom protocol handler
-      mobileTab.location.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
-    } else {
-      // Desktop behavior: Load in the embedded iframe
-      await joinEmbeddedClassroom(classId, title, instructor);
-    }
+    await joinEmbeddedClassroom(classId, title, instructor);
   } catch (error) {
     console.error('Error entering class:', error);
-    if (isMobile && mobileTab) {
-      mobileTab.close();
-    }
     await showCustomAlert(error.message || 'Failed to enter class. Verify connection.', 'Connection Error');
   } finally {
     btn.disabled = false;
@@ -3060,9 +3003,9 @@ function getMockClassesForBatch(batch, tab) {
 // ─── Auto-bypass Zoom Pre-join Name Screen ──────────────────────────────────
 // Polls the iframe DOM every 400ms (up to 30s) looking for the name input
 // and Join button, then auto-fills the name and clicks Join.
-function autoJoinZoomPrejoin(iframe, displayName) {
+function autoJoinZoomPrejoin(iframe, displayName, passcode) {
   let attempts = 0;
-  const maxAttempts = 75; // 30 seconds
+  const maxAttempts = 120; // 48 seconds
 
   function tryFill() {
     attempts++;
@@ -3082,7 +3025,7 @@ function autoJoinZoomPrejoin(iframe, displayName) {
       return;
     }
 
-    // Target the name input — Zoom Web Client uses several possible selectors
+    // 1. Check for Name Input and Join Button
     const nameInput =
       iframeDoc.querySelector('input#inputname') ||
       iframeDoc.querySelector('input[placeholder*="name" i]') ||
@@ -3091,17 +3034,34 @@ function autoJoinZoomPrejoin(iframe, displayName) {
       iframeDoc.querySelector('.preview-meeting-info input[type="text"]') ||
       iframeDoc.querySelector('input[type="text"]');
 
-    // Target the Join button
     const joinBtn =
       iframeDoc.querySelector('button#joinBtn') ||
       iframeDoc.querySelector('button[class*="join" i]') ||
       iframeDoc.querySelector('button[id*="join" i]') ||
       Array.from(iframeDoc.querySelectorAll('button')).find(b =>
-        /^join$/i.test(b.textContent.trim())
+        /^(join|join meeting)$/i.test(b.textContent.trim())
       );
 
-    if (nameInput && joinBtn) {
-      // Fill the name field using native input value setter so React/Vue state updates
+    // 2. Check for Passcode Input and Submit/Join Button
+    const passcodeInput =
+      iframeDoc.querySelector('input#inputpasscode') ||
+      iframeDoc.querySelector('input[id*="passcode" i]') ||
+      iframeDoc.querySelector('input[placeholder*="passcode" i]') ||
+      iframeDoc.querySelector('input[placeholder*="code" i]') ||
+      iframeDoc.querySelector('input[type="password"]');
+
+    const submitBtn =
+      iframeDoc.querySelector('button#joinBtn') ||
+      iframeDoc.querySelector('button[type="submit"]') ||
+      iframeDoc.querySelector('button.btn-primary') ||
+      Array.from(iframeDoc.querySelectorAll('button')).find(b =>
+        /^(join|ok|submit|confirm|verify)$/i.test(b.textContent.trim())
+      );
+
+    let filledSomething = false;
+
+    // Handle Name Input
+    if (nameInput && nameInput.value !== displayName) {
       const nativeInputSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype, 'value'
       )?.set;
@@ -3111,30 +3071,56 @@ function autoJoinZoomPrejoin(iframe, displayName) {
       } else {
         nameInput.value = displayName;
       }
-
-      // Fire input + change events so the framework registers the value
       nameInput.dispatchEvent(new Event('input', { bubbles: true }));
       nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+      filledSomething = true;
+      console.log('[AutoJoin] Filled Name:', displayName);
+    }
 
-      // Also check/uncheck "Remember my name" if present
-      const rememberCheckbox = iframeDoc.querySelector('input[type="checkbox"]');
-      if (rememberCheckbox && !rememberCheckbox.checked) {
-        // leave unchecked — don't save name in Zoom's own storage
+    // Handle Passcode Input (if passcode is provided)
+    if (passcodeInput && passcode && passcodeInput.value !== passcode) {
+      const nativeInputSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value'
+      )?.set;
+
+      if (nativeInputSetter) {
+        nativeInputSetter.call(passcodeInput, passcode);
+      } else {
+        passcodeInput.value = passcode;
       }
+      passcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+      passcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
+      filledSomething = true;
+      console.log('[AutoJoin] Filled Passcode:', passcode);
+    }
 
-      // Small delay so the framework can update button enabled-state
+    // If we filled something, wait a small delay for React/Vue state to update, then click
+    if (filledSomething) {
       setTimeout(() => {
-        if (!joinBtn.disabled) {
+        if (passcodeInput && submitBtn && !submitBtn.disabled) {
+          submitBtn.click();
+          console.log('[AutoJoin] Clicked Submit/Join for passcode screen');
+        } else if (nameInput && joinBtn && !joinBtn.disabled) {
           joinBtn.click();
-          console.log('[AutoJoin] Clicked Join button, name:', displayName);
-        } else {
-          // Button still disabled — wait and retry
-          setTimeout(tryFill, 400);
+          console.log('[AutoJoin] Clicked Join for name screen');
         }
+        // Always continue polling to handle subsequent screens (e.g. name screen followed by passcode screen)
+        setTimeout(tryFill, 500);
       }, 300);
     } else {
-      // Form not visible yet — keep polling
-      setTimeout(tryFill, 400);
+      // If we see the buttons and they are enabled, click them anyway just in case the value was already filled
+      if (passcodeInput && submitBtn && !submitBtn.disabled && passcodeInput.value === passcode) {
+        submitBtn.click();
+        console.log('[AutoJoin] Clicked submitBtn (passcode already matched)');
+        setTimeout(tryFill, 500);
+      } else if (nameInput && joinBtn && !joinBtn.disabled && nameInput.value === displayName) {
+        joinBtn.click();
+        console.log('[AutoJoin] Clicked joinBtn (name already matched)');
+        setTimeout(tryFill, 500);
+      } else {
+        // Nothing to fill or click yet — poll again
+        setTimeout(tryFill, 400);
+      }
     }
   }
 
