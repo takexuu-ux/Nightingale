@@ -34,46 +34,6 @@ const MOCK_RECORDINGS = [
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
   },
   {
-    id: 'rec-comm-1',
-    title: 'Community Health Nursing: Maternal & Child Health Indicators',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Community Health Nursing',
-    date: '2026-06-05',
-    duration: '1h 45m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'
-  },
-  {
-    id: 'rec-comm-2',
-    title: 'Community Health Nursing: Immunization Schedules & Cold Chain',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Community Health Nursing',
-    date: '2026-06-06',
-    duration: '2h 05m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4'
-  },
-  {
-    id: 'rec-ped-1',
-    title: 'Pediatric Care: Growth & Development Milestones',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Pediatrics',
-    date: '2026-06-03',
-    duration: '1h 30m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4'
-  },
-  {
-    id: 'rec-ped-2',
-    title: 'Pediatric Care: Neonatal Reflexes & Growth Assessment',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Pediatrics',
-    date: '2026-06-02',
-    duration: '1h 40m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-  },
-  {
     id: 'rec-anatomy-1',
     title: 'Anatomy Day 1: Cardiovascular System Structure & Chambers',
     instructor: 'Dr. Suresh Sharma',
@@ -92,93 +52,126 @@ const MOCK_RECORDINGS = [
     date: '2026-06-02',
     duration: '1h 55m',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
-  },
-  {
-    id: 'rec-mental-1',
-    title: 'Mental Health Nursing: Schizophrenia Spectrum Disorders & Nursing Care',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Pearl Batch',
-    subject: 'Mental Health Nursing',
-    date: '2026-05-28',
-    duration: '2h 05m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
-  },
-  {
-    id: 'rec-mental-2',
-    title: 'Mental Health Nursing: Therapeutic Communication in Psychiatry',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Pearl Batch',
-    subject: 'Mental Health Nursing',
-    date: '2026-05-29',
-    duration: '1h 35m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
   }
 ];
 
 let currentRecordings = [];
 const classListContainer = document.getElementById('class-list-container');
 
-function getSubjectFromTitle(title) {
-  const t = title.toUpperCase();
-  if (t.includes('PHARMACOLOGY') || t.includes('DRUG')) return 'Pharmacology';
-  if (t.includes('COMMUNITY') || t.includes('HEALTH') || t.includes('EPIDEMIOLOGY')) return 'Community Health Nursing';
-  if (t.includes('PEDIATRIC') || t.includes('NEONATAL') || t.includes('REFLEX')) return 'Pediatrics';
-  if (t.includes('CARDIAC') || t.includes('CARDIOVASCULAR') || t.includes('ECG') || t.includes('HEART') || t.includes('CARDIOLOGY')) return 'Cardiology';
-  if (t.includes('ANATOMY') || t.includes('PHYSIOLOGY')) return 'Anatomy & Physiology';
-  if (t.includes('MENTAL') || t.includes('PSYCHIATRY')) return 'Mental Health Nursing';
-  if (t.includes('ENDOCRINE') || t.includes('INSULIN') || t.includes('DIABETES')) return 'Endocrine System';
-  if (t.includes('NURSING') && t.includes('FOUNDATION')) return 'Nursing Foundations';
-  return 'General Nursing';
+function getSimplifiedBatchTitle(title) {
+  if (!title) return '';
+  const tUpper = title.toUpperCase();
+  if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) {
+    return 'Blue Sapphire Batch';
+  }
+  if (tUpper.includes('PEARL')) {
+    return 'Pearl Batch';
+  }
+  return title.trim();
+}
+
+function getApiBatchId(batchName) {
+  if (!batchName) return 8;
+  const name = batchName.toUpperCase();
+  if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
+  if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
+  if (name.includes('PEARL')) return 8;
+  if (name.includes('FASTRACK')) return 3;
+  if (name.includes('BRAHMASTRA')) return 9;
+  if (name.includes('ECONOMY')) return 1;
+  return 8;
 }
 
 function initBackgroundParallax() {
-  // Disabled JS-based drift to allow smooth hardware-accelerated CSS keyframe animation to handle it
+  // Handled by smooth hardware-accelerated CSS keyframe animation
 }
 
 async function loadRecordings() {
+  if (classListContainer) {
+    classListContainer.innerHTML = `
+      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
+        <div class="spinner"></div>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">Loading Recorded Lectures...</p>
+      </div>
+    `;
+  }
+
   const token = localStorage.getItem('nnl_access_token');
-  const allRecordings = [...MOCK_RECORDINGS];
-  
-  if (token) {
+  const activeBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
+  const batchId = getApiBatchId(activeBatch);
+  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
+
+  let allRecordings = [];
+
+  if (isGuest) {
+    // Show mock recordings filtered for guest
+    allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
+  } else {
     try {
-      const response = await fetch(`${API_BASE}/cms/v2/live_classes_recordings/`, {
-        method: 'GET',
+      // 1. Fetch batches to get subjects
+      const response = await fetch(`${API_BASE}/cms/batches/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
-        const freshClasses = data.data || data.results || data || [];
-        if (Array.isArray(freshClasses)) {
-          freshClasses.forEach(c => {
-            const title = c.title || c.topic || 'Recorded Lecture';
-            const batchTitle = c.batch?.title || (c.liveClass?.batch?.title) || 'General Batch';
-            const instructor = c.faculty ? (c.faculty.name || c.faculty.fullName || 'Faculty') : 'Faculty';
-            const recordingId = c.recordingId || c.recordings?.[0]?.id || '';
-            
-            if (recordingId && !allRecordings.some(r => r.id === c.id || r.title === title)) {
-              allRecordings.push({
-                id: c.id,
-                title: title,
-                instructor: instructor,
-                batch: batchTitle,
-                subject: getSubjectFromTitle(title),
-                date: c.start ? c.start.split('T')[0] : '',
-                duration: '2h 00m',
-                videoUrl: '' // Fallback Zoom notice
+        const apiBatches = data.data || data.results || data || [];
+        const targetBatchName = getSimplifiedBatchTitle(activeBatch);
+        const matchedBatch = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
+
+        if (matchedBatch && matchedBatch.subjects && matchedBatch.subjects.length > 0) {
+          // 2. Fetch videos for all subjects in parallel
+          const videoPromises = matchedBatch.subjects.map(async (subj) => {
+            try {
+              const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subj.id}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Accept': 'application/json'
+                }
               });
+              if (vRes.ok) {
+                const vData = await vRes.json();
+                const vList = vData.data || vData.results || [];
+                return vList.map(v => {
+                  const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
+                  const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
+                  const durStr = `${durHrs}h ${durMins}m`;
+                  return {
+                    id: v.id,
+                    title: v.title,
+                    instructor: v.faculty?.name || 'Faculty',
+                    batch: activeBatch,
+                    subject: subj.title,
+                    date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
+                    duration: durStr,
+                    video_cipher_id: v.video_cipher_id,
+                    videoUrl: ''
+                  };
+                });
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch videos for subject ${subj.title}:`, err);
             }
+            return [];
           });
+
+          const results = await Promise.all(videoPromises);
+          allRecordings = results.flat();
         }
       }
     } catch (e) {
       console.warn('Unable to fetch live recordings from API:', e);
     }
   }
-  
+
+  // Fallback to mock if nothing loaded
+  if (allRecordings.length === 0) {
+    allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
+  }
+
   currentRecordings = allRecordings;
   renderRecordingsList(allRecordings);
 }
@@ -211,7 +204,7 @@ function renderRecordingsList(recordings) {
     let rowsHtml = '';
     subjectClasses.forEach((rec, idx) => {
       const rowNum = (idx + 1).toString().padStart(2, '0');
-      const hasUrl = !!rec.videoUrl;
+      const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
       
       rowsHtml += `
         <div class="recording-row" data-rec-id="${rec.id}">
@@ -233,7 +226,7 @@ function renderRecordingsList(recordings) {
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
               <path d="M8 5v14l11-7z"/>
             </svg>
-            <span>${hasUrl ? 'Play' : 'Mobile App'}</span>
+            <span>Play</span>
           </button>
         </div>
       `;
@@ -272,7 +265,12 @@ function initRecordingsViewer() {
       if (videoEl) {
         videoEl.pause();
         videoEl.src = '';
+        videoEl.classList.remove('hide');
       }
+      const oldIframe = document.getElementById('recording-cipher-iframe');
+      if (oldIframe) oldIframe.remove();
+      const loader = document.getElementById('recording-cipher-loader');
+      if (loader) loader.remove();
     });
   }
   
@@ -291,7 +289,7 @@ function initRecordingsViewer() {
       if (playBtn) {
         e.stopPropagation();
         const recId = playBtn.getAttribute('data-rec-id');
-        const rec = currentRecordings.find(r => r.id === recId);
+        const rec = currentRecordings.find(r => String(r.id) === String(recId));
         if (rec) openRecordingPlayer(rec);
         return;
       }
@@ -299,7 +297,7 @@ function initRecordingsViewer() {
       const recRow = e.target.closest('.recording-row');
       if (recRow && !e.target.closest('.recording-row-action')) {
         const recId = recRow.getAttribute('data-rec-id');
-        const rec = currentRecordings.find(r => r.id === recId);
+        const rec = currentRecordings.find(r => String(r.id) === String(recId));
         if (rec) openRecordingPlayer(rec);
         return;
       }
@@ -320,8 +318,63 @@ function openRecordingPlayer(recording) {
   if (instructorEl) instructorEl.textContent = `Instructor: ${recording.instructor || 'Faculty'}`;
   
   viewer.classList.remove('hide');
+
+  // Clean up any existing VdoCipher iframe/loader
+  const oldIframe = document.getElementById('recording-cipher-iframe');
+  if (oldIframe) oldIframe.remove();
+  const oldLoader = document.getElementById('recording-cipher-loader');
+  if (oldLoader) oldLoader.remove();
+  if (videoEl) videoEl.classList.remove('hide');
+  if (noUrlEl) noUrlEl.classList.add('hide');
   
-  if (recording.videoUrl) {
+  if (recording.video_cipher_id) {
+    if (videoEl) {
+      videoEl.pause();
+      videoEl.src = '';
+      videoEl.classList.add('hide');
+    }
+
+    // Append loading spinner
+    const bodyEl = document.querySelector('.recording-viewer-body');
+    const loader = document.createElement('div');
+    loader.id = 'recording-cipher-loader';
+    loader.className = 'full-loader';
+    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing stream via VdoCipher...</p>';
+    bodyEl.appendChild(loader);
+
+    const token = localStorage.getItem('nnl_access_token');
+    fetch(`${API_BASE}/batch_cms/videos/${recording.id}/generate_videocipher_otp/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (loader) loader.remove();
+      if (data && data.otp && data.playbackInfo) {
+        const iframe = document.createElement('iframe');
+        iframe.id = 'recording-cipher-iframe';
+        iframe.src = `https://player.vdocipher.com/v2/?otp=${data.otp}&playbackInfo=${data.playbackInfo}`;
+        iframe.style.border = 'none';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.borderRadius = '12px';
+        iframe.setAttribute('allow', 'encrypted-media');
+        iframe.setAttribute('allowfullscreen', 'true');
+        bodyEl.appendChild(iframe);
+      } else {
+        if (noUrlEl) noUrlEl.classList.remove('hide');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      if (loader) loader.remove();
+      if (noUrlEl) noUrlEl.classList.remove('hide');
+    });
+
+  } else if (recording.videoUrl) {
     if (videoEl) {
       videoEl.src = recording.videoUrl;
       videoEl.classList.remove('hide');

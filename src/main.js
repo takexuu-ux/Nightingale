@@ -2578,7 +2578,7 @@ tabLive.addEventListener('click', () => {
   activeTab = 'live';
   tabLive.classList.add('active');
   tabUpcoming.classList.remove('active');
-  tabRecordings.classList.remove('active');
+  if (tabRecordings) tabRecordings.classList.remove('active');
   if (tabSubjects) tabSubjects.classList.remove('active');
   loadDashboard();
 });
@@ -2588,20 +2588,22 @@ tabUpcoming.addEventListener('click', () => {
   activeTab = 'upcoming';
   tabUpcoming.classList.add('active');
   tabLive.classList.remove('active');
-  tabRecordings.classList.remove('active');
+  if (tabRecordings) tabRecordings.classList.remove('active');
   if (tabSubjects) tabSubjects.classList.remove('active');
   loadDashboard();
 });
 
-tabRecordings.addEventListener('click', () => {
-  if (activeTab === 'recordings') return;
-  activeTab = 'recordings';
-  tabRecordings.classList.add('active');
-  tabLive.classList.remove('active');
-  tabUpcoming.classList.remove('active');
-  if (tabSubjects) tabSubjects.classList.remove('active');
-  loadDashboard();
-});
+if (tabRecordings) {
+  tabRecordings.addEventListener('click', () => {
+    if (activeTab === 'recordings') return;
+    activeTab = 'recordings';
+    tabRecordings.classList.add('active');
+    tabLive.classList.remove('active');
+    tabUpcoming.classList.remove('active');
+    if (tabSubjects) tabSubjects.classList.remove('active');
+    loadDashboard();
+  });
+}
 
 if (tabSubjects) {
   tabSubjects.addEventListener('click', () => {
@@ -2610,7 +2612,7 @@ if (tabSubjects) {
     tabSubjects.classList.add('active');
     tabLive.classList.remove('active');
     tabUpcoming.classList.remove('active');
-    tabRecordings.classList.remove('active');
+    if (tabRecordings) tabRecordings.classList.remove('active');
     loadDashboard();
   });
 }
