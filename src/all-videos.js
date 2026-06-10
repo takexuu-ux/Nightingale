@@ -1,5 +1,7 @@
 // Nightingale Recorded Lectures Library Logic
 
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://prod-api.nnlone.com';
+
 const MOCK_RECORDINGS = [
   {
     id: 'rec-pharma-1',
@@ -139,7 +141,7 @@ async function loadRecordings() {
   
   if (token) {
     try {
-      const response = await fetch('/api/cms/v2/live_classes_recordings/', {
+      const response = await fetch(`${API_BASE}/cms/v2/live_classes_recordings/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

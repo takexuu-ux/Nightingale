@@ -1,5 +1,7 @@
 // NNL ONE Web Client App Logic
 
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://prod-api.nnlone.com';
+
 // Helper to generate a UUID for device ID tracking
 function getOrCreateDeviceId() {
   let deviceId = localStorage.getItem('nnl_device_id');
@@ -875,7 +877,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       meetingId = '98765432101';
       passcode = '123456';
     } else {
-      const response = await fetch(`/api/cms/v2/live_classes/${classId}/`, {
+      const response = await fetch(`${API_BASE}/cms/v2/live_classes/${classId}/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1715,9 +1717,9 @@ async function loadDashboard(isSilent = false) {
   }
 
   try {
-    let url = '/api/cms/v2/live_classes/';
+    let url = `${API_BASE}/cms/v2/live_classes/`;
     if (activeTab === 'recordings') {
-      url = '/api/cms/v2/live_classes_recordings/';
+      url = `${API_BASE}/cms/v2/live_classes_recordings/`;
     }
     // Note: do NOT filter by ?status=live server-side; client-side time-based logic handles
     // classifying which classes are live, upcoming, or past.
@@ -1750,8 +1752,8 @@ async function loadDashboard(isSilent = false) {
     if (!response.ok) {
       // Try fallback endpoint
       const fallbackUrl = activeTab === 'recordings' 
-        ? '/api/cms/v2/live_classes_recordings/' 
-        : '/api/cms/v2/live_classes/';
+        ? `${API_BASE}/cms/v2/live_classes_recordings/` 
+        : `${API_BASE}/cms/v2/live_classes/`;
       
       const fbResponse = await fetch(fallbackUrl, {
         method: 'GET',
@@ -2378,7 +2380,7 @@ phoneForm.addEventListener('submit', async (e) => {
   sendBtn.innerHTML = '<div class="spinner"></div> Sending...';
 
   try {
-    const response = await fetch('/api/auth/v2/login/otp/send/', {
+    const response = await fetch(`${API_BASE}/auth/v2/login/otp/send/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2438,7 +2440,7 @@ otpForm.addEventListener('submit', async (e) => {
   verifyBtn.innerHTML = '<div class="spinner"></div> Verifying...';
 
   try {
-    const response = await fetch('/api/auth/login/otp/validate/', {
+    const response = await fetch(`${API_BASE}/auth/login/otp/validate/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2526,7 +2528,7 @@ async function refreshAccessToken() {
   if (!refreshToken) return false;
 
   try {
-    const response = await fetch('/api/auth/token/refresh/', {
+    const response = await fetch(`${API_BASE}/auth/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ refresh: refreshToken })
