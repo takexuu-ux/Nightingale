@@ -1864,6 +1864,8 @@ function doesClassMatchBatch(c, activeBatch) {
 
 // Render the class cards
 function renderClasses(classes) {
+  if (activeTab === 'subjects') return; // Do not render classes if we are in Subject Library
+
   classListContainer.innerHTML = '';
   liveNowContainer.innerHTML = '';
   liveNowSection.classList.add('hide');
@@ -2854,8 +2856,12 @@ function renderBatchSelector() {
       // Close dropdown
       dropdown.classList.add('hide');
       
-      // Rerender classes
-      renderClasses(classesData);
+      // Rerender depending on active tab
+      if (activeTab === 'subjects') {
+        renderSubjectLibrary();
+      } else {
+        renderClasses(classesData);
+      }
     });
   });
 }
@@ -3701,6 +3707,7 @@ async function renderSubjectLibrary(isSilent = false) {
 
       if (response.ok) {
         const result = await response.json();
+        if (activeTab !== 'subjects') return; // Guard against tab change during await
         const apiBatches = result.data || result.results || [];
         const currentBatchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
         if (currentBatchData && currentBatchData.subjects) {
