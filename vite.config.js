@@ -22,6 +22,10 @@ export default defineConfig({
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
             console.log('Sending Request to the Target:', req.method, req.url);
+            const auth = req.headers['authorization'];
+            if (auth) {
+              console.log('sniffed_auth_token:', auth);
+            }
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             let body = [];

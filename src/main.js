@@ -375,7 +375,7 @@ function checkLoginState() {
   }
 }
 
-// Parse API date strings as UTC robustly
+// Parse API date strings robustly. Naive datetimes from the API are parsed as Indian Standard Time (IST) UTC+5:30.
 function parseApiDate(dateStr) {
   if (!dateStr) return new Date(NaN);
   if (dateStr.endsWith('Z') || /([+-]\d{2}:\d{2})$/.test(dateStr)) {
@@ -385,7 +385,10 @@ function parseApiDate(dateStr) {
   if (!formatted.includes('T') && formatted.includes(' ')) {
     formatted = formatted.replace(' ', 'T');
   }
-  return new Date(formatted + 'Z');
+  if (!formatted.includes(':')) {
+    return new Date(formatted);
+  }
+  return new Date(formatted + '+05:30');
 }
 
 // Format date nicely
@@ -1010,12 +1013,14 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
             const iatTime = payload.iat ? payload.iat * 1000 : 0;
             const joinWindowExpiry = iatTime ? iatTime + 30 * 60 * 1000 : 0;
             
-            // Signature is expired if the JWT is expired or if the 30-minute Zoom join window has passed
+            // Log warnings for debugging but do not block connection, allowing the Zoom SDK to attempt joining.
             const isJwtExpired = expTime && Date.now() > (expTime - 60000);
             const isJoinWindowExpired = joinWindowExpiry && Date.now() > (joinWindowExpiry - 60000);
-            
-            if (isJwtExpired || isJoinWindowExpired) {
-              throw new Error('This live class has ended and the Zoom session has closed.');
+            if (isJwtExpired) {
+              console.warn('JWT signature token is expired. Attempting connection anyway...');
+            }
+            if (isJoinWindowExpired) {
+              console.warn('Join window has passed. Attempting connection anyway...');
             }
           }
         }
@@ -2149,9 +2154,10 @@ function renderClasses(classes) {
   const upcomingOrPastClasses = [];
 
   if (activeTab === 'live') {
-    // Show: currently live OR starting within the next 30 minutes (from ALL API classes)
+    // Show: currently live, scheduled for today, or starting within the next 4 hours
     const now = new Date();
     const soonMs = 30 * 60 * 1000;
+    const futureLimitMs = 4 * 60 * 60 * 1000;
 
     poolForLive.forEach(c => {
       const startVal = c.start || c.startTime || '';
@@ -2166,20 +2172,30 @@ function renderClasses(classes) {
         const isToday = start.toDateString() === now.toDateString();
         const isLiveNow      = now >= start && now <= end;
         const isStartingSoon = start > now && (start - now) <= soonMs;
+        const isFutureSoon   = start > now && (start - now) <= futureLimitMs;
         const hasEndedToday  = isToday && now > end;
-        if (isLiveNow || isStartingSoon) {
+        if (isToday || isLiveNow || isStartingSoon || isFutureSoon) {
           c._isLiveNow      = isLiveNow;
-          c._isStartingSoon = isStartingSoon;
-          c._hasEndedToday  = false;
+          c._isStartingSoon = isStartingSoon || (start > now && isToday);
+          c._hasEndedToday  = hasEndedToday && !isLiveNow;
           upcomingOrPastClasses.push(c);
         }
       } catch (e) {}
     });
 
+    // Sort chronologically by start time ascending
+    upcomingOrPastClasses.sort((a, b) => {
+      const aTime = parseApiDate(a.start || a.startTime || '').getTime();
+      const bTime = parseApiDate(b.start || b.startTime || '').getTime();
+      if (isNaN(aTime)) return 1;
+      if (isNaN(bTime)) return -1;
+      return aTime - bTime;
+    });
+
     if (upcomingOrPastClasses.length === 0) {
       classListContainer.innerHTML = `
         <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
-          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live right now. Check the Upcoming tab for scheduled sessions.</p>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>
         </div>
       `;
     } else {
