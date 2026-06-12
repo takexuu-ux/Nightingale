@@ -1000,7 +1000,18 @@ function startZoomIframeAutomation() {
       if (nameInput) {
         // Overwrite if empty, generic 'Student', base64 string containing '==', or not matching current name
         if (!nameInput.value || nameInput.value === 'Student' || nameInput.value.includes('==') || nameInput.value !== studentName) {
-          nameInput.value = studentName;
+          try {
+            // Bypass React 16+ value property setter to trigger onChange state update properly
+            const prototype = Object.getPrototypeOf(nameInput);
+            const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+            if (descriptor && descriptor.set) {
+              descriptor.set.call(nameInput, studentName);
+            } else {
+              nameInput.value = studentName;
+            }
+          } catch (err) {
+            nameInput.value = studentName;
+          }
           nameInput.dispatchEvent(new Event('input', { bubbles: true }));
           nameInput.dispatchEvent(new Event('change', { bubbles: true }));
           console.log('Autofilled name inside Zoom iframe:', studentName);
@@ -1015,15 +1026,23 @@ function startZoomIframeAutomation() {
       }
 
       // 2. Click the "Join" button
-      const buttons = Array.from(doc.querySelectorAll('button, input[type="button"], a, [role="button"], .join-btn, #join-btn'));
-      const joinBtn = buttons.find(btn => {
-        const text = (btn.textContent || btn.value || '').trim().toLowerCase();
-        return text === 'join' || text.includes('join meeting') || text.includes('join class') || btn.classList.contains('join-btn') || btn.id === 'join-btn';
-      });
+      let joinBtn = doc.querySelector('.preview-join-button') || 
+                    doc.querySelector('button.preview-join-button');
+      
+      const buttons = Array.from(doc.querySelectorAll('button, input[type="button"], a, [role="button"], .join-btn, #join-btn, .preview-join-button'));
+      if (!joinBtn) {
+        joinBtn = buttons.find(btn => {
+          const text = (btn.textContent || btn.value || '').trim().toLowerCase();
+          return text === 'join' || text.includes('join meeting') || text.includes('join class') || btn.classList.contains('join-btn') || btn.id === 'join-btn' || btn.classList.contains('preview-join-button');
+        });
+      }
 
       if (joinBtn && nameInput && nameInput.value && nameInput.value.length > 1) {
-        if (!joinBtn.disabled && !joinBtn.dataset.clicked) {
-          joinBtn.dataset.clicked = 'true';
+        const now = Date.now();
+        const lastClick = parseInt(joinBtn.dataset.lastClicked || '0', 10);
+        // Only click if it's not disabled, and retry every 2 seconds if still present in DOM
+        if (!joinBtn.disabled && (now - lastClick > 2000)) {
+          joinBtn.dataset.lastClicked = String(now);
           joinBtn.click();
           // Dispatch synthetic mouse events to ensure click is captured by React
           joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
@@ -1042,11 +1061,11 @@ function startZoomIframeAutomation() {
                text.includes('join audio');
       });
 
-      if (audioBtn && !audioBtn.dataset.clicked) {
-        // Wait, make sure we don't click if it's the main join button again
-        const isNotMainJoin = (audioBtn === joinBtn);
-        if (!isNotMainJoin) {
-          audioBtn.dataset.clicked = 'true';
+      if (audioBtn && audioBtn !== joinBtn) {
+        const now = Date.now();
+        const lastClick = parseInt(audioBtn.dataset.lastClicked || '0', 10);
+        if (!audioBtn.disabled && (now - lastClick > 2000)) {
+          audioBtn.dataset.lastClicked = String(now);
           audioBtn.click();
           audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
           audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
@@ -1113,14 +1132,6 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       floatingHelper.classList.add('hide');
     }
 
-    // Update the header troubleshooting tip dynamically
-    const headerTip = document.querySelector('.header-troubleshoot-tip');
-    if (headerTip) {
-      headerTip.innerHTML = `
-        <span>💡</span>
-        <span>Stream expired? Click the blue Launch button!</span>
-      `;
-    }
 
     if (meetingToken && !String(classId).startsWith('mock-')) {
       try {
