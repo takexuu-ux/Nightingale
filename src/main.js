@@ -1008,6 +1008,20 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
+    // Populate and show the floating helper buttons inside the player viewport
+    const floatingHelper = document.getElementById('classroom-floating-helper');
+    const floatingAppBtn = document.getElementById('floating-zoom-app-btn');
+    const floatingWebBtn = document.getElementById('floating-zoom-web-btn');
+    if (floatingAppBtn && meetingId) {
+      floatingAppBtn.href = `zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}`;
+    }
+    if (floatingWebBtn && meetingId) {
+      floatingWebBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    }
+    if (floatingHelper) {
+      floatingHelper.classList.remove('hide');
+    }
+
     if (meetingToken && !String(classId).startsWith('mock-')) {
       try {
         const parts = meetingToken.split('.');
@@ -1163,6 +1177,11 @@ async function exitClassroom() {
     if (meetingSDKElement) {
       meetingSDKElement.innerHTML = '';
       meetingSDKElement.classList.add('hide');
+    }
+
+    const floatingHelper = document.getElementById('classroom-floating-helper');
+    if (floatingHelper) {
+      floatingHelper.classList.add('hide');
     }
     
     // Clear the inactivity timer and restore bars for next session
@@ -1960,7 +1979,7 @@ async function loadDashboard(isSilent = false) {
       }
     });
 
-    if (response.status === 401) {
+    if (response.status === 401 || response.status === 403) {
       // Try to silently refresh the token before giving up
       const refreshed = await refreshAccessToken();
       if (refreshed) {
@@ -4090,7 +4109,7 @@ async function renderSubjectLibrary(isSilent = false) {
         }
       });
       
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
           const newToken = localStorage.getItem('nnl_access_token');
@@ -4497,7 +4516,7 @@ async function loadQuiz(testId, testTitle, duration) {
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
       
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
           const newToken = localStorage.getItem('nnl_access_token');

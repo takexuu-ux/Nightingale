@@ -346,7 +346,15 @@
             <!-- Fullscreen (moved from top header) -->
             <button id="bottom-fullscreen-btn" class="btn-timeline-nav" title="Toggle Fullscreen">
               <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m-11.25 11.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 5.25v-4.5m0 4.5h-4.5m4.5 0L15 15"></path></svg>
-            </button>
+          <!-- Floating troubleshooting helper badge -->
+          <div id="classroom-floating-helper" class="classroom-floating-helper hide" style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 0.75rem; justify-content: center; width: auto; max-width: 90%;">
+            <a id="floating-zoom-app-btn" class="btn" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: #00f0ff; color: #000; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+              <span>Join via Zoom App</span>
+            </a>
+            <a id="floating-zoom-web-btn" class="btn" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: rgba(30, 41, 59, 0.95); color: #e2e8f0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
+              <span>Join via Browser Tab</span>
+            </a>
           </div>
         </div>
 
