@@ -936,7 +936,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       if (cardPasscode) cardPasscode.textContent = passcode || 'None';
 
       if (cardWebBtn) {
-        cardWebBtn.href = `https://zoom.us/wc/${meetingId}/join?pwd=${passcode}`;
+        cardWebBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
       }
       if (cardAppBtn) {
         cardAppBtn.href = `zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}`;
@@ -948,7 +948,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Set fallback Zoom launcher URL in header
     const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
     if (zoomFallbackBtn) {
-      zoomFallbackBtn.href = `https://zoom.us/wc/${meetingId}/join?pwd=${passcode}`;
+      zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
     // Load old snapshots from IndexedDB storage
