@@ -226,9 +226,8 @@
     <section id="classroom-viewer" class="classroom-viewer-container hide">
       <div class="classroom-header">
         <div class="classroom-header-left" style="display: flex; align-items: center; gap: 1rem;">
-          <button id="close-classroom-btn" class="btn btn-exit" style="text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 0.4rem 0.8rem; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; height: 32px; background: rgba(239, 68, 68, 0.08); color: #f87171; box-shadow: 0 0 10px rgba(239, 68, 68, 0.05); transition: all 0.2s ease-in-out;">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
-            <span>Exit Class</span>
+          <button id="close-classroom-btn" class="btn btn-exit" title="Exit Class" style="text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(239, 68, 68, 0.08); color: #f87171; box-shadow: 0 0 10px rgba(239, 68, 68, 0.05); transition: all 0.2s ease-in-out; cursor: pointer;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
           </button>
           <div class="classroom-meta" style="text-align: left; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <h2 id="classroom-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap;">Class Title</h2>
@@ -237,16 +236,15 @@
             <span style="color: var(--text-muted); font-size: 0.75rem;">•</span>
             <span class="header-troubleshoot-tip" style="font-size: 0.72rem; color: #4dabf7; font-family: var(--font-display); letter-spacing: 0.05em; background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.15); padding: 0.2rem 0.6rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.25rem;">
               <span>💡</span>
-              <span>Stream expired? Click the blue "Launch in Zoom App" button!</span>
+              <span>Stream expired? Click the blue Launch button!</span>
             </span>
           </div>
         </div>
         <div class="classroom-header-right" style="display: flex; align-items: center; gap: 0.75rem;">
-          <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab" style="height: 32px; padding: 0 0.8rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border-radius: 10px; text-decoration: none; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.4); color: #4dabf7; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 132, 255, 0.15); white-space: nowrap;">
+          <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; text-decoration: none; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.4); color: #4dabf7; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 132, 255, 0.15); cursor: pointer;">
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
               <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
             </svg>
-            <span>Launch in Zoom App</span>
           </a>
         </div>
       </div>

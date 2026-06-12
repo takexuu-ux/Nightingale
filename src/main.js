@@ -84,6 +84,7 @@ let zoomClient = null;
 let zoomSdkLoaded = false;
 let zoomSdkLoading = false;
 let captureIntervalId = null;
+let zoomAutomationIntervalId = null;
 let currentTimelineSlides = [];
 let currentMeetingId = ''; // Traces current meeting room ID
 let currentSelectedSlideTimestamp = null; // Traces selected slide in rewind mode
@@ -970,6 +971,92 @@ function showFallbackJoinCard(meetingId, passcode, title, instructorName) {
   }
 }
 
+// Automatically pre-fill name and click join/audio buttons inside Zoom iframe
+function startZoomIframeAutomation() {
+  if (zoomAutomationIntervalId) {
+    clearInterval(zoomAutomationIntervalId);
+  }
+
+  console.log('Starting Zoom iframe automation loop...');
+  zoomAutomationIntervalId = setInterval(() => {
+    const iframe = document.getElementById('classroom-iframe');
+    if (!iframe) return;
+
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      if (!doc || iframe.src === 'about:blank' || iframe.src === '') return;
+
+      // 1. Autofill "Your Name" input box
+      const nameInput = doc.querySelector('input[name="name"]') || 
+                        doc.querySelector('input#name') || 
+                        doc.querySelector('input[placeholder*="Name"]') || 
+                        doc.querySelector('input[type="text"]');
+      
+      const studentName = localStorage.getItem('nnl_user_name') || 'Student';
+
+      if (nameInput) {
+        if (!nameInput.value || nameInput.value === 'Student' || nameInput.value !== studentName) {
+          nameInput.value = studentName;
+          nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+          nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+          console.log('Autofilled name inside Zoom iframe:', studentName);
+        }
+
+        // Also check the "Remember my name" checkbox if present
+        const checkbox = doc.querySelector('input[type="checkbox"]');
+        if (checkbox && !checkbox.checked) {
+          checkbox.checked = true;
+          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+
+      // 2. Click the "Join" button
+      const buttons = Array.from(doc.querySelectorAll('button, input[type="button"], a, div[role="button"]'));
+      const joinBtn = buttons.find(btn => {
+        const text = (btn.textContent || btn.value || '').trim().toLowerCase();
+        return text === 'join' || text.includes('join meeting') || text === 'join class';
+      });
+
+      if (joinBtn && nameInput && nameInput.value && nameInput.value.length > 1) {
+        if (!joinBtn.disabled && !joinBtn.dataset.clicked) {
+          joinBtn.dataset.clicked = 'true';
+          joinBtn.click();
+          console.log('Clicked Zoom Join button!');
+        }
+      }
+
+      // 3. Click "Join Audio by Computer" or "Join with Computer Audio"
+      const audioBtn = buttons.find(btn => {
+        const text = (btn.textContent || btn.value || '').trim().toLowerCase();
+        return text.includes('join with computer audio') || 
+               text.includes('join computer audio') || 
+               text === 'computer audio' ||
+               text.includes('join audio');
+      });
+
+      if (audioBtn && !audioBtn.dataset.clicked) {
+        // Wait, make sure we don't click if it's the main join button again
+        const isNotMainJoin = (audioBtn === joinBtn);
+        if (!isNotMainJoin) {
+          audioBtn.dataset.clicked = 'true';
+          audioBtn.click();
+          console.log('Clicked Join Computer Audio button!');
+        }
+      }
+    } catch (e) {
+      // Catch any security or DOM errors silently during transition states
+    }
+  }, 300);
+}
+
+function stopZoomIframeAutomation() {
+  if (zoomAutomationIntervalId) {
+    clearInterval(zoomAutomationIntervalId);
+    zoomAutomationIntervalId = null;
+    console.log('Stopped Zoom iframe automation.');
+  }
+}
+
 // Initialize and join embedded Zoom meeting
 async function joinEmbeddedClassroom(classId, title, instructorName) {
   const token = localStorage.getItem('nnl_access_token');
@@ -1008,30 +1095,19 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
-    // Populate and show the floating helper buttons inside the player viewport, including the passcode
+    // Make sure bottom floating helper is completely removed/hidden
     const floatingHelper = document.getElementById('classroom-floating-helper');
-    if (floatingHelper && meetingId) {
-      floatingHelper.innerHTML = `
-        <a id="floating-zoom-app-btn" class="btn" href="zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: #00f0ff; color: #000; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-          <span>Join via Zoom App</span>
-        </a>
-        <a id="floating-zoom-web-btn" class="btn" href="https://zoom.us/j/${meetingId}?pwd=${passcode}" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: rgba(30, 41, 59, 0.95); color: #e2e8f0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
-          <span>Join via Browser Tab</span>
-        </a>
-        <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.72rem; color: #fff; font-family: var(--font-display); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
-          <span>🔑 Passcode: <strong style="text-decoration: underline; cursor: pointer; color: #00f0ff;" onclick="navigator.clipboard.writeText('${passcode}'); showCustomAlert('Passcode copied to clipboard: ${passcode}', 'Copied');" title="Click to copy">${passcode || 'None'}</strong></span>
-        </div>
-      `;
-      floatingHelper.classList.remove('hide');
+    if (floatingHelper) {
+      floatingHelper.innerHTML = '';
+      floatingHelper.classList.add('hide');
     }
 
-    // Update the header troubleshooting tip dynamically to show the passcode
+    // Update the header troubleshooting tip dynamically
     const headerTip = document.querySelector('.header-troubleshoot-tip');
     if (headerTip) {
       headerTip.innerHTML = `
         <span>💡</span>
-        <span>Stream expired? Click "Launch in Zoom App" (Passcode: <strong style="color: #fff; font-size: 0.8rem; text-decoration: underline; cursor: pointer;" onclick="navigator.clipboard.writeText('${passcode}'); showCustomAlert('Passcode copied to clipboard: ${passcode}', 'Copied');" title="Click to copy">${passcode || 'None'}</strong>)</span>
+        <span>Stream expired? Click the blue Launch button!</span>
       `;
     }
 
@@ -1106,11 +1182,15 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Load Zoom Web Client in the proxy iframe
     const userName = localStorage.getItem('nnl_user_name') || 'Student';
     const base64Name = safeBtoa(userName);
-    const zoomWebLink = `/zoom/wc/join/${meetingId}/?pwd=${passcode}&prefer=1&un=${base64Name}`;
+    // Include both un and uname to be fully compatible with Zoom Web Client name pre-filling
+    const zoomWebLink = `/zoom/wc/join/${meetingId}/?pwd=${passcode}&prefer=1&un=${base64Name}&uname=${base64Name}`;
     
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
     classroomIframe.src = zoomWebLink;
     classroomIframe.classList.remove('hide');
+
+    // Start automated pre-fill and join helper
+    startZoomIframeAutomation();
 
     // Load old snapshots from IndexedDB storage
     currentTimelineSlides = await loadSlidesFromDb(meetingId);
@@ -1183,6 +1263,9 @@ async function exitClassroom() {
     // Reset iframe to blank and restore state
     classroomIframe.src = 'about:blank';
     classroomIframe.classList.remove('hide');
+    
+    // Stop automation loop
+    stopZoomIframeAutomation();
     
     // Hide Zoom Join Card
     const zoomJoinCard = document.getElementById('zoom-join-card');
