@@ -1002,6 +1002,12 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       meetingToken = classDetail.token || '';
     }
 
+    // Populate the fallback button URL in the header immediately so it's always ready
+    const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
+    if (zoomFallbackBtn && meetingId) {
+      zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    }
+
     if (meetingToken && !String(classId).startsWith('mock-')) {
       try {
         const parts = meetingToken.split('.');
