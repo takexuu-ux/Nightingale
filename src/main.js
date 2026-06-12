@@ -3884,8 +3884,9 @@ function openRecordingPlayer(recording) {
         iframe.style.borderRadius = '12px';
         iframe.setAttribute('allow', 'encrypted-media');
         iframe.setAttribute('allowfullscreen', 'true');
-        // referrerpolicy=no-referrer prevents VdoCipher from seeing our domain
-        // which bypasses the domain whitelist check (Error 2127)
+        // sandbox without allow-same-origin forces null origin on the iframe,
+        // which bypasses VdoCipher domain whitelist check (Error 2127)
+        iframe.setAttribute('sandbox', 'allow-scripts allow-encrypted-media allow-presentation allow-fullscreen allow-pointer-lock');
         iframe.setAttribute('referrerpolicy', 'no-referrer');
         bodyEl.appendChild(iframe);
       } else {
@@ -4207,12 +4208,62 @@ async function renderSubjectLibrary(isSilent = false) {
   }
 }
 
+// Client-side subject matching — the API ignores subject_id so we filter by keywords in titles
+function doesItemBelongToSubject(title, subjectName) {
+  const t = (title || '').toUpperCase();
+  const s = (subjectName || '').toUpperCase();
+
+  // Build keyword map from subject name
+  const kw = (keywords) => keywords.some(k => t.includes(k.toUpperCase()));
+
+  if (s.includes('ANATOMY') || s.includes('PHYSIOLOGY') || s.includes('A&P'))
+    return kw(['ANATOMY','PHYSIOL','A&P','A & P','CARDIOVASCULAR','CARDIAC','RESPIRATORY','MUSCULO','NERVOUS','SKELETAL','CIRCULATION','CARDIAC']);
+
+  if (s.includes('BIOCHEM') || s.includes('NUTRITION') || s.includes('B&N'))
+    return kw(['BIOCHEM','NUTRITION','NUTRIENT','B&N','METABOL','ENZYME','VITAMIN','MINERAL','DIETARY','PROTEIN','CARBOHYDRATE']);
+
+  if (s.includes('PHARMACOLOGY') || s.includes('PHARMA'))
+    return kw(['PHARMACOL','PHARMA','DRUG','MEDICATION','DOSE','ANTIBIOTIC','ANTIHYPERTENS']);
+
+  if (s.includes('PEDIATRIC') || s.includes('PAEDIATRIC') || s.includes('CHILD'))
+    return kw(['PEDIATRIC','PAEDIATRIC','NEONATAL','CHILD','INFANT','NEWBORN','IMMUNIZATION']);
+
+  if (s.includes('SURGERY') || s.includes('SURGICAL') || s.includes('OPERATIVE'))
+    return kw(['SURG','C&R','OPERATIVE','OPERATION','PRE-OP','POST-OP','WOUND','ANAESTH']);
+
+  if (s.includes('AHN') || s.includes('ADULT HEALTH') || s.includes('MEDICINE'))
+    return kw(['AHN','ADULT HEALTH','ADULT NURSING','MEDICINE','MEDICAL','INTERNAL']);
+
+  if (s.includes('OBGY') || s.includes('OBSTET') || s.includes('GYNEC') || s.includes('MIDWIFE') || s.includes('MIDWIFERY'))
+    return kw(['OBGY','OBG','OBSTET','GYNEC','MIDWIFE','MATERNAL','ANTENATAL','POSTNATAL','LABOUR','LABOR','DELIVERY','PRENATAL']);
+
+  if (s.includes('COMMUNITY') || s.includes('CHN'))
+    return kw(['COMMUNITY','CHN','PUBLIC HEALTH','EPIDEMIOL','IMMUNIZ','VACCINE','PRIMARY HEALTH']);
+
+  if (s.includes('NURSING FOUNDATION') || s.includes('FUNDAMENTAL'))
+    return kw(['NURSING FOUND','FUNDAMENTAL','BASIC NURSING','BEDSIDE','VITAL SIGN','HYGIENE','MICROBIOL']);
+
+  if (s.includes('NURSING RESEARCH') || s.includes('RESEARCH'))
+    return kw(['RESEARCH','STATISTIC','EPIDEMIOL','BIOSTATISTIC','STUDY DESIGN','EVIDENCE']);
+
+  if (s.includes('MENTAL') || s.includes('PSYCHI') || s.includes('PSYCHO'))
+    return kw(['MENTAL','PSYCHI','PSYCHO','PSYCHIATRIC','DEPRESSION','ANXIETY','SCHIZO']);
+
+  if (s.includes('NORCET') || s.includes('AIIMS'))
+    return kw(['NORCET','AIIMS','TAT','TEST']);
+
+  // Fallback: match if subject name words appear in title
+  const subjectWords = s.split(/[\s&,()]+/).filter(w => w.length > 3);
+  return subjectWords.some(w => t.includes(w));
+}
+
+
 async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
   const subVids = accordionEl.querySelector(`#sub-vids-${subjectId}`);
   const subNotes = accordionEl.querySelector(`#sub-notes-${subjectId}`);
   const subTests = accordionEl.querySelector(`#sub-tests-${subjectId}`);
   const metaCount = accordionEl.querySelector(`#sub-meta-count-${subjectId}`);
-  
+
   const token = localStorage.getItem('nnl_access_token');
   const isGuest = token === 'GUEST_DEMO_TOKEN';
 
@@ -4259,21 +4310,32 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
 
       if (vResponse.ok) {
         const d = await vResponse.json();
-        videos = d.data || d.results || [];
+        const allVideos = d.data || d.results || [];
+        // The API ignores subject_id — filter client-side by keyword matching
+        const subjectTitle = accordionEl.querySelector('.subject-name')?.textContent || '';
+        videos = allVideos.filter(v => doesItemBelongToSubject(v.title, subjectTitle));
+        // If nothing matches (e.g. subject not in our keyword map), show all to avoid empty section
+        if (videos.length === 0) videos = allVideos;
       } else {
         throw new Error(`Videos fetch failed with status ${vResponse.status}`);
       }
 
       if (nResponse.ok) {
         const d = await nResponse.json();
-        notes = d.data || d.results || [];
+        const allNotes = d.data || d.results || [];
+        const subjectTitle = accordionEl.querySelector('.subject-name')?.textContent || '';
+        notes = allNotes.filter(n => doesItemBelongToSubject(n.title, subjectTitle));
+        if (notes.length === 0) notes = allNotes;
       } else {
         throw new Error(`Notes fetch failed with status ${nResponse.status}`);
       }
 
       if (tResponse.ok) {
         const d = await tResponse.json();
-        tests = d.data || d.results || [];
+        const allTests = d.data || d.results || [];
+        const subjectTitle = accordionEl.querySelector('.subject-name')?.textContent || '';
+        tests = allTests.filter(t => doesItemBelongToSubject(t.title, subjectTitle));
+        if (tests.length === 0) tests = allTests;
       } else {
         throw new Error(`Tests fetch failed with status ${tResponse.status}`);
       }
