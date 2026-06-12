@@ -253,6 +253,57 @@
           <!-- Main Zoom Element (iframe) -->
           <iframe id="classroom-iframe" class="zoom-sdk-container" src="about:blank" allow="camera; microphone; display-capture; autoplay; clipboard-write; clipboard-read" style="border: none;"></iframe>
 
+          <!-- Premium Zoom Join Card (Replaces the broken iframe experience) -->
+          <div id="zoom-join-card" class="zoom-join-card hide">
+            <div class="zoom-card-glow"></div>
+            <div class="zoom-card-content">
+              <div class="zoom-card-status">
+                <span class="live-dot-glow pulse-orange"></span>
+                <span class="status-text">Zoom Meeting Channel Active</span>
+              </div>
+              <h1 id="zoom-card-class-title" class="zoom-card-title">Class Title</h1>
+              <p id="zoom-card-class-instructor" class="zoom-card-instructor">Instructor Name</p>
+              
+              <div class="zoom-info-grid">
+                <div class="zoom-info-item">
+                  <span class="info-label">Meeting ID</span>
+                  <div class="info-value-wrapper">
+                    <span id="zoom-card-meeting-id" class="info-value">--- --- ----</span>
+                    <button class="btn-copy-info" data-target="zoom-card-meeting-id" title="Copy Meeting ID">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="zoom-info-item">
+                  <span class="info-label">Passcode</span>
+                  <div class="info-value-wrapper">
+                    <span id="zoom-card-passcode" class="info-value">------</span>
+                    <button class="btn-copy-info" data-target="zoom-card-passcode" title="Copy Passcode">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <p class="zoom-card-note">
+                Security Policy: Due to browser security headers (X-Frame-Options) and camera sandboxing, Zoom sessions are best launched in a secure external tab or via the official Zoom application.
+              </p>
+              
+              <div class="zoom-action-buttons">
+                <a id="zoom-card-web-btn" class="btn btn-zoom-action btn-zoom-web" target="_blank" rel="noopener noreferrer">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                  <span>Launch Zoom Web Client</span>
+                </a>
+                <a id="zoom-card-app-btn" class="btn btn-zoom-action btn-zoom-app">
+                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                  </svg>
+                  <span>Launch Zoom App</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
           <!-- Rewind Overlay -->
           <div id="rewind-overlay" class="rewind-overlay hide">
             <img id="rewind-img" src="" alt="Rewound Slide" />

@@ -913,22 +913,43 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     classroomViewer.classList.remove('hide');
     document.body.classList.add('in-classroom');
 
-    // Load Zoom Web Client in proxy iframe (using canonical wc/{id}/join path)
-    const zoomWebLink = `/zoom/wc/${meetingId}/join?pwd=${passcode}`;
-    classroomIframe.src = zoomWebLink;
+    // Hide standard iframe & load blank to prevent empty error page
+    classroomIframe.src = 'about:blank';
+    classroomIframe.classList.add('hide');
 
-    console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
+    // Populate and display the Premium Zoom Join Card
+    const zoomJoinCard = document.getElementById('zoom-join-card');
+    if (zoomJoinCard) {
+      const cardTitle = document.getElementById('zoom-card-class-title');
+      const cardInstructor = document.getElementById('zoom-card-class-instructor');
+      const cardMeetingId = document.getElementById('zoom-card-meeting-id');
+      const cardPasscode = document.getElementById('zoom-card-passcode');
+      const cardWebBtn = document.getElementById('zoom-card-web-btn');
+      const cardAppBtn = document.getElementById('zoom-card-app-btn');
 
-    // Set fallback Zoom launcher URL
-    const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
-    if (zoomFallbackBtn) {
-      zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+      if (cardTitle) cardTitle.textContent = title;
+      if (cardInstructor) cardInstructor.textContent = instructorName;
+      
+      // Format meeting ID (e.g. 98765432101 -> 987 6543 2101)
+      const formattedMeetingId = String(meetingId).replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3');
+      if (cardMeetingId) cardMeetingId.textContent = formattedMeetingId;
+      if (cardPasscode) cardPasscode.textContent = passcode || 'None';
+
+      if (cardWebBtn) {
+        cardWebBtn.href = `https://zoom.us/wc/${meetingId}/join?pwd=${passcode}`;
+      }
+      if (cardAppBtn) {
+        cardAppBtn.href = `zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}`;
+      }
+
+      zoomJoinCard.classList.remove('hide');
     }
 
-    // Auto-bypass pre-join screens (name and passcode): poll iframe DOM until forms appear,
-    // then fill in the name and passcode, and click Join automatically.
-    const studentName = (document.getElementById('user-phone')?.textContent || 'Student').trim();
-    autoJoinZoomPrejoin(classroomIframe, studentName, passcode);
+    // Set fallback Zoom launcher URL in header
+    const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
+    if (zoomFallbackBtn) {
+      zoomFallbackBtn.href = `https://zoom.us/wc/${meetingId}/join?pwd=${passcode}`;
+    }
 
     // Load old snapshots from IndexedDB storage
     currentTimelineSlides = await loadSlidesFromDb(meetingId);
@@ -970,8 +991,15 @@ async function exitClassroom() {
       relativeTimeInterval = null;
     }
     
-    // Reset iframe to blank
+    // Reset iframe to blank and restore state
     classroomIframe.src = 'about:blank';
+    classroomIframe.classList.remove('hide');
+    
+    // Hide Zoom Join Card
+    const zoomJoinCard = document.getElementById('zoom-join-card');
+    if (zoomJoinCard) {
+      zoomJoinCard.classList.add('hide');
+    }
     
     // Return UI to normal
     classroomViewer.classList.add('hide');
@@ -2175,6 +2203,32 @@ if (toggleParticipantsBtn) {
   });
 }
 manualCaptureBtn.addEventListener('click', captureClassroomSlide);
+
+// Copy buttons inside Zoom Join Card
+document.querySelectorAll('#zoom-join-card .btn-copy-info').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const btnEl = e.currentTarget;
+    const targetId = btnEl.getAttribute('data-target');
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+    
+    // Extract raw text and strip spaces
+    const text = targetEl.textContent.replace(/\s+/g, '');
+    navigator.clipboard.writeText(text).then(() => {
+      // Toggle button SVG and color for copy success feedback
+      const originalSvg = btnEl.innerHTML;
+      btnEl.innerHTML = '<svg width="14" height="14" fill="none" stroke="#00f3d0" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>';
+      btnEl.style.color = '#00f3d0';
+      
+      setTimeout(() => {
+        btnEl.innerHTML = originalSvg;
+        btnEl.style.color = '';
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy text:', err);
+    });
+  });
+});
 
 // Volume Controls Event Listeners (Bottom Bar only now)
 const volumeSliders = [document.getElementById('bottom-volume-slider')];
