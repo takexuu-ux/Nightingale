@@ -1008,18 +1008,31 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
-    // Populate and show the floating helper buttons inside the player viewport
+    // Populate and show the floating helper buttons inside the player viewport, including the passcode
     const floatingHelper = document.getElementById('classroom-floating-helper');
-    const floatingAppBtn = document.getElementById('floating-zoom-app-btn');
-    const floatingWebBtn = document.getElementById('floating-zoom-web-btn');
-    if (floatingAppBtn && meetingId) {
-      floatingAppBtn.href = `zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}`;
-    }
-    if (floatingWebBtn && meetingId) {
-      floatingWebBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
-    }
-    if (floatingHelper) {
+    if (floatingHelper && meetingId) {
+      floatingHelper.innerHTML = `
+        <a id="floating-zoom-app-btn" class="btn" href="zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: #00f0ff; color: #000; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+          <span>Join via Zoom App</span>
+        </a>
+        <a id="floating-zoom-web-btn" class="btn" href="https://zoom.us/j/${meetingId}?pwd=${passcode}" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: rgba(30, 41, 59, 0.95); color: #e2e8f0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
+          <span>Join via Browser Tab</span>
+        </a>
+        <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.72rem; color: #fff; font-family: var(--font-display); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+          <span>🔑 Passcode: <strong style="text-decoration: underline; cursor: pointer; color: #00f0ff;" onclick="navigator.clipboard.writeText('${passcode}'); showCustomAlert('Passcode copied to clipboard: ${passcode}', 'Copied');" title="Click to copy">${passcode || 'None'}</strong></span>
+        </div>
+      `;
       floatingHelper.classList.remove('hide');
+    }
+
+    // Update the header troubleshooting tip dynamically to show the passcode
+    const headerTip = document.querySelector('.header-troubleshoot-tip');
+    if (headerTip) {
+      headerTip.innerHTML = `
+        <span>💡</span>
+        <span>Stream expired? Click "Launch in Zoom App" (Passcode: <strong style="color: #fff; font-size: 0.8rem; text-decoration: underline; cursor: pointer;" onclick="navigator.clipboard.writeText('${passcode}'); showCustomAlert('Passcode copied to clipboard: ${passcode}', 'Copied');" title="Click to copy">${passcode || 'None'}</strong>)</span>
+      `;
     }
 
     if (meetingToken && !String(classId).startsWith('mock-')) {
