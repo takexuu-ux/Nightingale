@@ -1868,6 +1868,11 @@ async function loadDashboard(isSilent = false) {
     return;
   }
 
+  if (activeTab === 'recordings') {
+    renderVideoLibrary(isSilent);
+    return;
+  }
+
   if (token === 'GUEST_DEMO_TOKEN') {
     if (!isSilent && refetchBtn) {
       refetchBtn.classList.add('spinning');
@@ -3523,131 +3528,230 @@ function getSubjectFromTitle(title) {
   return 'General Nursing';
 }
 
+// renderRecordings is now replaced by renderVideoLibrary (fetches from /batch_cms/videos/)
+// kept as stub in case of direct call from old code
 function renderRecordings(classes) {
+  renderVideoLibrary(false);
+}
+
+async function renderVideoLibrary(isSilent = false) {
+  if (!classListContainer) return;
   classListContainer.innerHTML = '';
-  classListContainer.style.display = 'block'; // Block display for structured accordion
-  
-  // Combine custom mock list and api-fetched classes (avoiding duplicates)
-  const allRecordings = [...MOCK_RECORDINGS];
-  
-  if (classes && classes.length > 0) {
-    classes.forEach(c => {
-      const title = c.title || c.topic || 'Recorded Lecture';
-      const batchTitle = c.batch?.title || (c.liveClass?.batch?.title) || activeBatch;
-      const instructor = c.faculty ? (c.faculty.name || c.faculty.fullName || 'Faculty') : 'Faculty';
-      const recordingId = c.recordingId || c.recordings?.[0]?.id || '';
-      
-      if (recordingId && !allRecordings.some(r => r.id === c.id || r.title === title)) {
-        allRecordings.push({
-          id: c.id,
-          title: title,
-          instructor: instructor,
-          batch: batchTitle,
-          subject: getSubjectFromTitle(title),
-          date: c.start ? c.start.split('T')[0] : '',
-          duration: '2h 00m',
-          videoUrl: '' // Zoom link fallback (unavailable directly online)
-        });
-      }
-    });
-  }
-  
-  currentRecordings = allRecordings;
+  classListContainer.style.display = 'block';
 
-  // Filter recordings for the selected batch
-  const filteredRecordings = allRecordings.filter(r => {
-    const recordBatch = getSimplifiedBatchTitle(r.batch);
-    const targetBatch = getSimplifiedBatchTitle(activeBatch);
-    return recordBatch === targetBatch;
-  });
-
-  // Group by Subject
-  const bySubject = {};
-  filteredRecordings.forEach(r => {
-    const s = r.subject || 'General Nursing';
-    if (!bySubject[s]) bySubject[s] = [];
-    bySubject[s].push(r);
-  });
-  
-  const subjectNames = Object.keys(bySubject).sort();
-  if (subjectNames.length === 0) {
-    classListContainer.innerHTML = `
-      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
-        <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No recorded lectures available for ${activeBatch}.</p>
-      </div>
-    `;
-    return;
+  if (!isSilent && dashboardLoader) {
+    dashboardLoader.classList.remove('hide');
   }
-  
-  const browserDiv = document.createElement('div');
-  browserDiv.className = 'recordings-browser';
-  
-  // Lecture Library heading
-  const libraryHeader = document.createElement('div');
-  libraryHeader.style.marginBottom = '1.5rem';
-  libraryHeader.innerHTML = `
-    <span class="cyber-hero-badge" style="display: inline-block; margin-bottom: 0.5rem;">// PAST RECORDINGS</span>
-    <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.06em; margin: 0 0 0.35rem;">LECTURE <span style="-webkit-text-fill-color: #00f3d0;">LIBRARY</span></h2>
-    <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">${activeBatch} &mdash; Past recorded sessions grouped by subject</p>
+  if (!isSilent && refetchBtn) {
+    refetchBtn.classList.add('spinning');
+    refetchBtn.disabled = true;
+  }
+
+  const token = localStorage.getItem('nnl_access_token');
+  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
+  const simplifiedBatch = getSimplifiedBatchTitle(activeBatch);
+  const batchId = getApiBatchId(activeBatch);
+
+  // Show loading state
+  classListContainer.innerHTML = `
+    <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
+      <div class="spinner"></div>
+      <p style="color: var(--text-secondary); margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">Loading Recorded Lectures...</p>
+    </div>
   `;
-  browserDiv.appendChild(libraryHeader);
 
-  subjectNames.forEach(subjectName => {
-    const subjectClasses = bySubject[subjectName];
-    
-    let rowsHtml = '';
-    subjectClasses.forEach((rec, idx) => {
-      const rowNum = (idx + 1).toString().padStart(2, '0');
-      const hasUrl = !!rec.videoUrl;
-      
-      rowsHtml += `
-        <div class="recording-row" data-rec-id="${rec.id}">
-          <div class="recording-row-num">${rowNum}</div>
-          <div class="recording-row-info">
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0;">${rec.title}</div>
-            </div>
-            <div class="recording-row-meta" style="margin-top: 0.25rem;">
-              <span class="recording-row-instructor">${rec.instructor}</span>
-              <span>•</span>
-              <span>${rec.date}</span>
-              <span>•</span>
-              <span>${rec.duration}</span>
-            </div>
-          </div>
-          <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <span>${hasUrl ? 'Play' : 'Mobile App'}</span>
-          </button>
+  try {
+    let subjects = [];
+    let allRecordingsBySubject = {};
+
+    if (isGuest) {
+      // Use mock data for guests
+      subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
+      const mockMaterials = MOCK_SUBJECT_MATERIALS;
+      subjects.forEach(sub => {
+        const mock = mockMaterials[sub.id] || mockMaterials[466];
+        if (mock && mock.videos && mock.videos.length > 0) {
+          allRecordingsBySubject[sub.title] = mock.videos.map(v => ({
+            id: v.id,
+            title: v.title,
+            instructor: v.faculty?.name || 'Faculty',
+            batch: activeBatch,
+            subject: sub.title,
+            date: '',
+            duration: v.duration ? `${Math.floor(v.duration / 3600)}h ${Math.floor((v.duration % 3600) / 60)}m` : '2h 0m',
+            videoUrl: v.videoUrl || '',
+            video_cipher_id: v.video_cipher_id || null
+          }));
+        }
+      });
+    } else {
+      // Fetch the batch's subject list
+      let batchRes = await fetch(`${API_BASE}/cms/batches/`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+
+      if (batchRes.status === 401) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          const newToken = localStorage.getItem('nnl_access_token');
+          batchRes = await fetch(`${API_BASE}/cms/batches/`, {
+            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
+          });
+        } else {
+          handleLogout();
+          return;
+        }
+      }
+
+      if (batchRes.ok) {
+        const result = await batchRes.json();
+        const apiBatches = result.data || result.results || [];
+        const batchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
+        if (batchData && batchData.subjects) {
+          subjects = batchData.subjects;
+        }
+      }
+
+      if (subjects.length === 0) {
+        subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
+      }
+
+      // Fetch videos for all subjects in parallel
+      const currentToken = localStorage.getItem('nnl_access_token');
+      const videoFetches = subjects.map(async sub => {
+        try {
+          const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${sub.id}`, {
+            headers: { 'Authorization': `Bearer ${currentToken}`, 'Accept': 'application/json' }
+          });
+          if (vRes.ok) {
+            const vData = await vRes.json();
+            const videos = vData.data || vData.results || [];
+            if (videos.length > 0) {
+              allRecordingsBySubject[sub.title] = videos.map(v => ({
+                id: v.id,
+                title: v.title,
+                instructor: v.faculty?.name || v.faculty?.fullName || 'Faculty',
+                batch: activeBatch,
+                subject: sub.title,
+                date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
+                duration: v.duration ? `${Math.floor(v.duration / 3600)}h ${Math.floor((v.duration % 3600) / 60)}m` : '',
+                videoUrl: '',
+                video_cipher_id: v.video_cipher_id || null,
+                thumbnails: v.thumbnails || null
+              }));
+            }
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch videos for subject ${sub.title}:`, err);
+        }
+      });
+
+      await Promise.all(videoFetches);
+    }
+
+    // Build flat list for currentRecordings (so openRecordingPlayer works)
+    currentRecordings = [];
+    Object.values(allRecordingsBySubject).forEach(vids => currentRecordings.push(...vids));
+
+    if (dashboardLoader) dashboardLoader.classList.add('hide');
+
+    const subjectNames = Object.keys(allRecordingsBySubject).sort();
+
+    classListContainer.innerHTML = '';
+    classListContainer.style.display = 'block';
+
+    if (subjectNames.length === 0) {
+      classListContainer.innerHTML = `
+        <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);">
+          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No recorded lectures available for ${activeBatch}.</p>
         </div>
       `;
-    });
-    
-    const subjectAccordion = document.createElement('div');
-    subjectAccordion.className = `subject-accordion open`;
-    
-    subjectAccordion.innerHTML = `
-      <div class="subject-accordion-header">
-        <div class="subject-accordion-title">
-          <div class="subject-icon">📚</div>
-          <span class="subject-name">${subjectName}</span>
-          <span class="subject-count">(${subjectClasses.length} lectures)</span>
+      return;
+    }
+
+    const browserDiv = document.createElement('div');
+    browserDiv.className = 'recordings-browser';
+
+    // Lecture Library heading
+    const libraryHeader = document.createElement('div');
+    libraryHeader.style.marginBottom = '1.5rem';
+    libraryHeader.innerHTML = `
+      <span class="cyber-hero-badge" style="display: inline-block; margin-bottom: 0.5rem;">// VIDEO LECTURES</span>
+      <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.06em; margin: 0 0 0.35rem;">RECORDED <span style="-webkit-text-fill-color: #00f3d0;">LECTURES</span></h2>
+      <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">${activeBatch} &mdash; ${currentRecordings.length} lectures grouped by subject</p>
+    `;
+    browserDiv.appendChild(libraryHeader);
+
+    subjectNames.forEach(subjectName => {
+      const subjectVids = allRecordingsBySubject[subjectName];
+      let rowsHtml = '';
+      subjectVids.forEach((rec, idx) => {
+        const rowNum = (idx + 1).toString().padStart(2, '0');
+        const isPlayable = !!(rec.video_cipher_id || rec.videoUrl);
+        const thumb = rec.thumbnails ? (rec.thumbnails[0]?.url || '') : '';
+        rowsHtml += `
+          <div class="recording-row" data-rec-id="${rec.id}">
+            ${thumb ? `<img src="${thumb}" alt="" style="width:52px;height:34px;object-fit:cover;border-radius:4px;margin-right:0.5rem;flex-shrink:0;">` : `<div class="recording-row-num">${rowNum}</div>`}
+            <div class="recording-row-info">
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0;">${rec.title}</div>
+                ${rec.video_cipher_id ? '<span style="font-size:0.6rem;background:rgba(0,243,208,0.15);color:#00f3d0;padding:0.15rem 0.4rem;border-radius:4px;letter-spacing:0.05em;">VdoCipher</span>' : ''}
+              </div>
+              <div class="recording-row-meta" style="margin-top: 0.25rem;">
+                <span class="recording-row-instructor">${rec.instructor}</span>
+                ${rec.date ? `<span>•</span><span>${rec.date}</span>` : ''}
+                ${rec.duration ? `<span>•</span><span>${rec.duration}</span>` : ''}
+              </div>
+            </div>
+            <button class="recording-row-action${isPlayable ? '' : ' unavailable'}" data-rec-id="${rec.id}">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span>${isPlayable ? 'Play' : 'App Only'}</span>
+            </button>
+          </div>
+        `;
+      });
+
+      const subjectAccordion = document.createElement('div');
+      subjectAccordion.className = 'subject-accordion open';
+      subjectAccordion.innerHTML = `
+        <div class="subject-accordion-header">
+          <div class="subject-accordion-title">
+            <div class="subject-icon">📚</div>
+            <span class="subject-name">${subjectName}</span>
+            <span class="subject-count">(${subjectVids.length} lecture${subjectVids.length !== 1 ? 's' : ''})</span>
+          </div>
+          <svg class="subject-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
         </div>
-        <svg class="subject-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-        </svg>
-      </div>
-      <div class="subject-accordion-body">
-        ${rowsHtml}
+        <div class="subject-accordion-body">
+          ${rowsHtml}
+        </div>
+      `;
+      browserDiv.appendChild(subjectAccordion);
+    });
+
+    classListContainer.appendChild(browserDiv);
+
+  } catch (err) {
+    console.error('Error rendering video library:', err);
+    if (dashboardLoader) dashboardLoader.classList.add('hide');
+    classListContainer.innerHTML = `
+      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 68, 68, 0.15); border-radius: 20px; padding: 3rem; text-align: center;">
+        <p style="color: #f87171; font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 0.5rem;">Failed to load recorded lectures</p>
+        <p style="color: var(--text-secondary); font-size: 0.75rem; margin: 0;">${err.message}</p>
       </div>
     `;
-    
-    browserDiv.appendChild(subjectAccordion);
-  });
-  
-  classListContainer.appendChild(browserDiv);
+  } finally {
+    classesFetched = true;
+    checkPreloaderCompletion();
+    if (!isSilent && refetchBtn) {
+      refetchBtn.classList.remove('spinning');
+      refetchBtn.disabled = false;
+    }
+  }
 }
 
 function initBackgroundParallax() {
@@ -3699,7 +3803,7 @@ function handleRecordingsClick(e) {
   if (playBtn) {
     e.stopPropagation();
     const recId = playBtn.getAttribute('data-rec-id');
-    const rec = currentRecordings.find(r => r.id === recId);
+    const rec = currentRecordings.find(r => String(r.id) === String(recId));
     if (rec) {
       openRecordingPlayer(rec);
     }
@@ -3709,7 +3813,7 @@ function handleRecordingsClick(e) {
   const recRow = e.target.closest('.recording-row');
   if (recRow && !e.target.closest('.recording-row-action')) {
     const recId = recRow.getAttribute('data-rec-id');
-    const rec = currentRecordings.find(r => r.id === recId);
+    const rec = currentRecordings.find(r => String(r.id) === String(recId));
     if (rec) {
       openRecordingPlayer(rec);
     }
