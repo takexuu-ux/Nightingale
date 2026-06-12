@@ -58,7 +58,7 @@
     },
     {
       "source": "/zoom/:path*",
-      "destination": "https://zoom.us/:path*"
+      "destination": "/api/zoom-proxy?path=:path*"
     }
   ],
   "headers": [

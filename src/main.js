@@ -1081,11 +1081,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     classroomViewer.classList.remove('hide');
     document.body.classList.add('in-classroom');
 
-    // Hide standard iframe & load blank to prevent empty error page
-    classroomIframe.src = 'about:blank';
-    classroomIframe.classList.add('hide');
-
-    // Reset Zoom Meeting SDK container
+    // Reset Zoom Meeting SDK container (no longer used, clean it up)
     const meetingSDKElement = document.getElementById('meetingSDKElement');
     if (meetingSDKElement) {
       meetingSDKElement.innerHTML = '';
@@ -1096,48 +1092,25 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       zoomJoinCard.classList.add('hide');
     }
 
-    // Try to join via Zoom SDK Component View if we have a token
-    if (meetingToken && !String(classId).startsWith('mock-')) {
-      const sdkLoaded = await loadZoomSdk();
-      if (sdkLoaded && window.ZoomMtgEmbedded) {
-        console.log('Initializing Zoom Meeting SDK Component View...');
-        meetingSDKElement.classList.remove('hide');
-
-        zoomClient = window.ZoomMtgEmbedded.createClient();
-
-        zoomClient.init({
-          zoomAppRoot: meetingSDKElement,
-          language: 'en-US',
-          patchJsMedia: true
-        }).then(() => {
-          console.log('Zoom SDK initialized successfully. Joining...');
-          zoomClient.join({
-            sdkKey: 'AFDRfHXtRz2xvV8EN8eIeQ', // NNL ONE Client ID
-            signature: meetingToken,
-            meetingNumber: meetingId,
-            password: passcode,
-            userName: localStorage.getItem('nnl_user_name') || 'Student',
-            userEmail: localStorage.getItem('nnl_user_email') || 'student@studywithme.in'
-          }).then(() => {
-            console.log('Zoom SDK joined successfully!');
-          }).catch((joinErr) => {
-            console.error('Zoom SDK Join failed:', joinErr);
-            meetingSDKElement.classList.add('hide');
-            showFallbackJoinCard(meetingId, passcode, title, instructorName);
-          });
-        }).catch((initErr) => {
-          console.error('Zoom SDK Init failed:', initErr);
-          meetingSDKElement.classList.add('hide');
-          showFallbackJoinCard(meetingId, passcode, title, instructorName);
-        });
-      } else {
-        console.warn('Failed to load Zoom SDK script dependencies. Falling back to Join Card.');
-        showFallbackJoinCard(meetingId, passcode, title, instructorName);
+    // Helper function to safely base64 encode username for Zoom URL
+    function safeBtoa(str) {
+      try {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+          return String.fromCharCode(parseInt(p1, 16));
+        }));
+      } catch (e) {
+        return btoa('Student');
       }
-    } else {
-      console.log('No backend Zoom signature token found or mock class. Showing Join Card.');
-      showFallbackJoinCard(meetingId, passcode, title, instructorName);
     }
+
+    // Load Zoom Web Client in the proxy iframe
+    const userName = localStorage.getItem('nnl_user_name') || 'Student';
+    const base64Name = safeBtoa(userName);
+    const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${base64Name}`;
+    
+    console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
+    classroomIframe.src = zoomWebLink;
+    classroomIframe.classList.remove('hide');
 
     // Load old snapshots from IndexedDB storage
     currentTimelineSlides = await loadSlidesFromDb(meetingId);
