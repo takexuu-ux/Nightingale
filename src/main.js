@@ -1282,6 +1282,9 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     classroomIframe.src = zoomWebLink;
     classroomIframe.classList.remove('hide');
 
+    // Inject hooks immediately into the iframe's window
+    injectAudioHooks(classroomIframe);
+
     // Start automated pre-fill and join helper
     startZoomIframeAutomation();
 
@@ -1579,26 +1582,118 @@ const zoomCssOverrides = `
   #zmmtg-root { width: 100% !important; height: 100% !important; }
 `;
 
+function injectAudioHooks(iframe) {
+  try {
+    const win = iframe.contentWindow;
+    if (!win) return;
+
+    if (!win._nnlAudioHooksInstalled) {
+      win._nnlAudioHooksInstalled = true;
+      win._nnlTrackedMedia = win._nnlTrackedMedia || new Set();
+      win._nnlTrackedGains = win._nnlTrackedGains || new Set();
+
+      // 1. Capture document.createElement('audio' | 'video')
+      const origCreateElement = win.Document.prototype.createElement;
+      win.Document.prototype.createElement = function(tagName) {
+        const el = origCreateElement.apply(this, arguments);
+        const tag = String(tagName).toLowerCase();
+        if (tag === 'audio' || tag === 'video') {
+          win._nnlTrackedMedia.add(el);
+          try {
+            const vol = currentVolume / 100;
+            el.volume = vol;
+            el.muted = (vol === 0);
+          } catch (e) {}
+        }
+        return el;
+      };
+
+      // 2. Capture new Audio()
+      const origAudio = win.Audio;
+      win.Audio = function() {
+        const el = new origAudio(...arguments);
+        win._nnlTrackedMedia.add(el);
+        try {
+          const vol = currentVolume / 100;
+          el.volume = vol;
+          el.muted = (vol === 0);
+        } catch (e) {}
+        return el;
+      };
+      win.Audio.prototype = origAudio.prototype;
+
+      // 3. Capture AudioNode.prototype.connect to control Web Audio API contexts
+      if (win.AudioNode && win.AudioNode.prototype && win.AudioNode.prototype.connect) {
+        const origConnect = win.AudioNode.prototype.connect;
+        win.AudioNode.prototype.connect = function(destination, output, input) {
+          if (destination === this.context.destination) {
+            if (!this.context._nnlGlobalGain) {
+              try {
+                const gainNode = this.context.createGain();
+                origConnect.call(gainNode, this.context.destination);
+                const vol = currentVolume / 100;
+                gainNode.gain.value = vol;
+                this.context._nnlGlobalGain = gainNode;
+                win._nnlTrackedGains.add(gainNode);
+              } catch (err) {
+                console.warn('Failed to setup Web Audio API gain interceptor:', err);
+              }
+            }
+            if (this.context._nnlGlobalGain) {
+              return origConnect.call(this, this.context._nnlGlobalGain, output, input);
+            }
+          }
+          return origConnect.apply(this, arguments);
+        };
+      }
+
+      console.log('Classroom Monitor: Installed audio/video creation and hook intercepts inside iframe.');
+    }
+  } catch (e) {
+    console.warn('Failed to install audio/video creation hooks inside iframe:', e.message);
+  }
+}
+
 function applyVolumeToIframe() {
   const iframe = document.getElementById('classroom-iframe');
   if (!iframe) return;
   try {
+    const win = iframe.contentWindow;
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!iframeDoc || iframe.src === 'about:blank' || iframe.src === '') return;
+    if (!iframeDoc || !win || iframe.src === 'about:blank' || iframe.src === '') return;
 
     const volumeVal = currentVolume / 100;
-    const mediaElements = iframeDoc.querySelectorAll('video, audio');
+    const shouldMute = currentVolume === 0;
+
+    // Collect all media elements (DOM + in-memory tracked ones)
+    const mediaElements = new Set(iframeDoc.querySelectorAll('video, audio'));
+    if (win._nnlTrackedMedia) {
+      win._nnlTrackedMedia.forEach(media => {
+        mediaElements.add(media);
+      });
+    }
+
     mediaElements.forEach(media => {
-      // Set volume if different to avoid redundant DOM updates
-      if (media.volume !== volumeVal) {
-        media.volume = volumeVal;
-      }
-      // Set muted state if different
-      const shouldMute = currentVolume === 0;
-      if (media.muted !== shouldMute) {
-        media.muted = shouldMute;
-      }
+      try {
+        if (media.volume !== volumeVal) {
+          media.volume = volumeVal;
+        }
+        if (media.muted !== shouldMute) {
+          media.muted = shouldMute;
+        }
+      } catch (e) {}
     });
+
+    // Update Web Audio API gain nodes
+    if (win._nnlTrackedGains) {
+      win._nnlTrackedGains.forEach(gainNode => {
+        try {
+          if (gainNode.gain.value !== volumeVal) {
+            gainNode.gain.value = volumeVal;
+          }
+        } catch (e) {}
+      });
+    }
   } catch (e) {
     // Ignore cross-origin error
   }
@@ -2225,6 +2320,9 @@ function startClassroomMonitorLoop() {
     try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       if (!iframeDoc || iframe.src === 'about:blank' || iframe.src === '') return;
+
+      // Install audio/video hooks inside the iframe
+      injectAudioHooks(iframe);
 
       // ── STEP 1: Audio join MUST run first before any cleanup hides the dialog ──
       autoClickAudioJoin(iframeDoc);
@@ -3087,6 +3185,31 @@ if (bottomFullscreenBtn) {
     }
   });
 }
+
+// Automatically trigger Big Screen Mode when entering browser fullscreen to hide participants
+document.addEventListener('fullscreenchange', () => {
+  if (!classroomViewer) return;
+  const isFullscreen = !!document.fullscreenElement;
+  
+  if (isFullscreen) {
+    classroomViewer.classList.add('big-screen-mode');
+    if (toggleBigScreenBtn) {
+      toggleBigScreenBtn.classList.add('btn-active');
+    }
+  }
+  
+  // Propagate class state to the iframe body
+  const iframe = document.getElementById('classroom-iframe');
+  if (iframe) {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      if (doc && doc.body) {
+        const isBigScreen = classroomViewer.classList.contains('big-screen-mode');
+        doc.body.classList.toggle('big-screen-mode', isBigScreen);
+      }
+    } catch (e) {}
+  }
+});
 
 if (clearTimelineBtn) {
   clearTimelineBtn.addEventListener('click', async () => {

@@ -226,7 +226,7 @@
     <section id="classroom-viewer" class="classroom-viewer-container hide">
       <div class="classroom-header">
         <div class="classroom-header-left" style="display: flex; align-items: center; gap: 1rem;">
-          <button id="close-classroom-btn" class="btn btn-exit" title="Exit Class" style="text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(239, 68, 68, 0.08); color: #f87171; box-shadow: 0 0 10px rgba(239, 68, 68, 0.05); transition: all 0.2s ease-in-out; cursor: pointer;">
+          <button id="close-classroom-btn" class="btn btn-header-action" title="Exit Class">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
           </button>
           <div class="classroom-meta" style="text-align: left; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -236,12 +236,12 @@
           </div>
         </div>
         <div class="classroom-header-right" style="display: flex; align-items: center; gap: 0.75rem;">
-          <button id="toggle-chat-panel-btn" class="btn btn-zoom" title="Open Class Chat" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); color: #00f0ff; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 240, 255, 0.15); cursor: pointer; padding: 0;">
+          <button id="toggle-chat-panel-btn" class="btn btn-header-action" title="Open Class Chat">
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
               <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
             </svg>
           </button>
-          <button id="toggle-big-screen-btn" class="btn btn-zoom" title="Toggle Big Screen Mode" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(168, 85, 247, 0.15); cursor: pointer; padding: 0;">
+          <button id="toggle-big-screen-btn" class="btn btn-header-action" title="Toggle Big Screen Mode">
             <!-- Expand Icon (default) -->
             <svg class="icon-expand" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink: 0;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m-11.25 11.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 5.25v-4.5m0 4.5h-4.5m4.5 0L15 15"/>
@@ -251,7 +251,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M15 9V4.5M15 9h4.5M15 9l5.25-5.25M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 15v4.5M15 15h4.5M15 15l5.25 5.25"/>
             </svg>
           </button>
-          <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; text-decoration: none; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.4); color: #4dabf7; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 132, 255, 0.15); cursor: pointer;">
+          <a id="zoom-fallback-btn" class="btn btn-header-action" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab">
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
               <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
             </svg>
@@ -354,6 +354,7 @@
             <!-- Fullscreen (moved from top header) -->
             <button id="bottom-fullscreen-btn" class="btn-timeline-nav" title="Toggle Fullscreen">
               <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m-11.25 11.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 5.25v-4.5m0 4.5h-4.5m4.5 0L15 15"></path></svg>
+            </button>
           <!-- Floating troubleshooting helper badge -->
           <div id="classroom-floating-helper" class="classroom-floating-helper hide" style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 0.75rem; justify-content: center; width: auto; max-width: 90%;">
             <a id="floating-zoom-app-btn" class="btn" target="_blank" rel="noopener noreferrer" style="padding: 0.6rem 1.2rem; border-radius: 12px; background: #00f0ff; color: #000; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35); display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px); transition: all 0.2s ease-in-out; cursor: pointer; white-space: nowrap;">
