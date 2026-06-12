@@ -3914,13 +3914,13 @@ function openRecordingPlayer(recording) {
   }
 }
 
-// Auto-refresh the dashboard silently in the background every 10 seconds
+// Auto-refresh live classes every 5 seconds
 setInterval(() => {
   const token = localStorage.getItem('nnl_access_token');
-  if (token && activeTab !== 'subjects') {
+  if (token) {
     loadDashboard(true);
   }
-}, 10000);
+}, 5000);
 
 /* ─────────────────────────────────────────────────────────────────────
    SUBJECT LIBRARY & QUIZ PLAYER REDESIGN
