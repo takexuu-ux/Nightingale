@@ -987,6 +987,7 @@ function startZoomIframeAutomation() {
       if (!doc || iframe.src === 'about:blank' || iframe.src === '') return;
 
       // 1. Autofill "Your Name" input box
+      // 1. Autofill "Your Name" input box
       const nameInput = doc.querySelector('input[name="name"]') || 
                         doc.querySelector('input#name') || 
                         doc.querySelector('input[placeholder*="Name"]') || 
@@ -1000,6 +1001,7 @@ function startZoomIframeAutomation() {
       if (nameInput) {
         // Overwrite if empty, generic 'Student', base64 string containing '==', or not matching current name
         if (!nameInput.value || nameInput.value === 'Student' || nameInput.value.includes('==') || nameInput.value !== studentName) {
+          nameInput.focus();
           try {
             // Bypass React 16+ value property setter to trigger onChange state update properly
             const prototype = Object.getPrototypeOf(nameInput);
@@ -1009,11 +1011,20 @@ function startZoomIframeAutomation() {
             } else {
               nameInput.value = studentName;
             }
+            const tracker = nameInput._valueTracker;
+            if (tracker) {
+              tracker.setValue('');
+            }
           } catch (err) {
             nameInput.value = studentName;
           }
           nameInput.dispatchEvent(new Event('input', { bubbles: true }));
           nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+          // Dispatch typing events
+          nameInput.dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }));
+          nameInput.dispatchEvent(new KeyboardEvent('keypress', { key: 't', bubbles: true }));
+          nameInput.dispatchEvent(new KeyboardEvent('keyup', { key: 't', bubbles: true }));
+          nameInput.blur();
           console.log('Autofilled name inside Zoom iframe:', studentName);
         }
 
@@ -1038,17 +1049,51 @@ function startZoomIframeAutomation() {
       }
 
       if (joinBtn && nameInput && nameInput.value && nameInput.value.length > 1) {
+        // If the Join button is disabled or has disabled styles, force-enable it in the DOM
+        if (joinBtn.disabled || joinBtn.classList.contains('disabled') || joinBtn.getAttribute('disabled') !== null) {
+          console.log('Join button is disabled in DOM. Force-enabling...');
+          joinBtn.disabled = false;
+          joinBtn.removeAttribute('disabled');
+          joinBtn.classList.remove('disabled');
+        }
+
         const now = Date.now();
         const lastClick = parseInt(joinBtn.dataset.lastClicked || '0', 10);
-        // Only click if it's not disabled, and retry every 2 seconds if still present in DOM
-        if (!joinBtn.disabled && (now - lastClick > 2000)) {
+        // Only click and retry every 2 seconds if still present in DOM
+        if (now - lastClick > 2000) {
           joinBtn.dataset.lastClicked = String(now);
-          joinBtn.click();
-          // Dispatch synthetic mouse events to ensure click is captured by React
-          joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-          joinBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-          joinBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-          console.log('Clicked Zoom Join button!');
+          console.log('Attempting to click Join button:', joinBtn);
+          
+          joinBtn.focus();
+
+          // Dispatch pointer events for modern UI frameworks
+          try {
+            joinBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+            joinBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+          } catch (e) {}
+
+          // Dispatch mouse events
+          try {
+            joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+            joinBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+            joinBtn.click();
+            joinBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          } catch (e) {}
+
+          // Dispatch touch events
+          try {
+            joinBtn.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, cancelable: true }));
+            joinBtn.dispatchEvent(new TouchEvent('touchend', { bubbles: true, cancelable: true }));
+          } catch (e) {}
+
+          // Form submission fallback
+          const form = joinBtn.closest('form') || nameInput.closest('form');
+          if (form) {
+            console.log('Submitting parent form as fallback...');
+            try {
+              form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            } catch (e) {}
+          }
         }
       }
 
@@ -1062,19 +1107,37 @@ function startZoomIframeAutomation() {
       });
 
       if (audioBtn && audioBtn !== joinBtn) {
+        // Force-enable audio button if disabled
+        if (audioBtn.disabled || audioBtn.classList.contains('disabled') || audioBtn.getAttribute('disabled') !== null) {
+          audioBtn.disabled = false;
+          audioBtn.removeAttribute('disabled');
+          audioBtn.classList.remove('disabled');
+        }
+
         const now = Date.now();
         const lastClick = parseInt(audioBtn.dataset.lastClicked || '0', 10);
-        if (!audioBtn.disabled && (now - lastClick > 2000)) {
+        if (now - lastClick > 2000) {
           audioBtn.dataset.lastClicked = String(now);
-          audioBtn.click();
-          audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-          audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-          audioBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-          console.log('Clicked Join Computer Audio button!');
+          console.log('Attempting to click Audio button:', audioBtn);
+          
+          audioBtn.focus();
+
+          try {
+            audioBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+            audioBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+          } catch (e) {}
+
+          try {
+            audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+            audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+            audioBtn.click();
+            audioBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          } catch (e) {}
         }
       }
     } catch (e) {
-      // Catch any security or DOM errors silently during transition states
+      // Log security/CORS or DOM errors to console for easier troubleshooting
+      console.warn('Zoom iframe automation check skipped/failed:', e.message);
     }
   }, 300);
 }
