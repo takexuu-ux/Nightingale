@@ -236,6 +236,11 @@
           </div>
         </div>
         <div class="classroom-header-right" style="display: flex; align-items: center; gap: 0.75rem;">
+          <button id="toggle-chat-panel-btn" class="btn btn-zoom" title="Open Class Chat" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); color: #00f0ff; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 240, 255, 0.15); cursor: pointer; padding: 0;">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
+              <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+            </svg>
+          </button>
           <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; text-decoration: none; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.4); color: #4dabf7; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 132, 255, 0.15); cursor: pointer;">
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
               <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
@@ -383,6 +388,19 @@
                 <p>No slides captured yet.</p>
                 <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Click "Capture Slide" at the top right to capture key moments.</p>
               </div>
+            </div>
+        </div>
+        
+        <!-- Custom Side Chat Panel (Hidden by default) -->
+        <div id="classroom-chat-panel" class="classroom-chat-panel hide">
+          <div class="chat-panel-header">
+            <h3>Class Chat</h3>
+            <button id="close-chat-panel-btn" class="btn-close-chat" title="Close Chat">&times;</button>
+          </div>
+          <div id="chat-messages-container" class="chat-messages-container">
+            <div class="chat-empty-state">
+              <p>No messages yet.</p>
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Chat messages from the Zoom live class will appear here.</p>
             </div>
           </div>
         </div>

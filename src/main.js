@@ -47,6 +47,10 @@ const closeClassroomBtn = document.getElementById('close-classroom-btn');
 const classroomTitle = document.getElementById('classroom-title');
 const classroomInstructor = document.getElementById('classroom-instructor');
 const toggleChatBtn = document.getElementById('toggle-chat-btn');
+const toggleChatPanelBtn = document.getElementById('toggle-chat-panel-btn');
+const classroomChatPanel = document.getElementById('classroom-chat-panel');
+const closeChatPanelBtn = document.getElementById('close-chat-panel-btn');
+const chatMessagesContainer = document.getElementById('chat-messages-container');
 const toggleParticipantsBtn = document.getElementById('toggle-participants-btn');
 const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
 const closeSidebarBtn = document.getElementById('close-sidebar-btn');
@@ -1354,6 +1358,23 @@ async function exitClassroom() {
     
     // Stop automation loop
     stopZoomIframeAutomation();
+
+    // Reset and hide custom chat panel
+    scrapedMessages = [];
+    if (classroomChatPanel) {
+      classroomChatPanel.classList.add('hide');
+    }
+    if (toggleChatPanelBtn) {
+      toggleChatPanelBtn.classList.remove('btn-active');
+    }
+    if (chatMessagesContainer) {
+      chatMessagesContainer.innerHTML = `
+        <div class="chat-empty-state">
+          <p>No messages yet.</p>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Chat messages from the Zoom live class will appear here.</p>
+        </div>
+      `;
+    }
     
     // Hide Zoom Join Card
     const zoomJoinCard = document.getElementById('zoom-join-card');
@@ -1477,6 +1498,15 @@ const zoomCssOverrides = `
   .wc-chat-out, .wc-participants-out,
   [class*="popout" i], [class*="pop-out" i],
   [class*="detach" i] { display: none !important; }
+
+  /* ── Suppress all Zoom chat preview notifications / toasts ── */
+  .message-preview, .chat-preview, .wc-chat-toast, .chat-message-preview, .meeting-message-preview,
+  [class*="message-preview" i], [class*="chat-preview" i], [class*="chat-toast" i] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
 
   /* ── Hide notifications / dialogs / tooltips ── */
   .notification-meeting-item, .mic-camera-notice,
@@ -1898,9 +1928,161 @@ function cleanZoomIframeDOM(iframeDoc) {
         }
       });
     });
-
   } catch (err) {
     // Ignore iframe error
+  }
+}
+
+// ─── Custom Zoom Chat Scraper and Panel Renderer ───────────────────────────
+let scrapedMessages = [];
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderScrapedChats() {
+  const container = document.getElementById('chat-messages-container');
+  if (!container) return;
+  
+  if (scrapedMessages.length === 0) {
+    container.innerHTML = `
+      <div class="chat-empty-state">
+        <p>No messages yet.</p>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Chat messages from the Zoom live class will appear here.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = scrapedMessages.map(msg => `
+    <div class="chat-message-item">
+      <span class="chat-message-sender">${escapeHtml(msg.sender)}</span>
+      <span class="chat-message-text">${escapeHtml(msg.text)}</span>
+      <span class="chat-message-time">${msg.time}</span>
+    </div>
+  `).join('');
+  
+  // Auto scroll to bottom
+  container.scrollTop = container.scrollHeight;
+}
+
+function ensureZoomChatOpenInIframe(iframeDoc) {
+  try {
+    // Check if Zoom chat sidebar or container is already open in the DOM
+    const chatPanel = iframeDoc.querySelector('.chat-container') ||
+                      iframeDoc.querySelector('.chat-panel') ||
+                      iframeDoc.querySelector('.chat-sidebar') ||
+                      iframeDoc.querySelector('#chat-panel') ||
+                      iframeDoc.querySelector('.wc-chat') ||
+                      iframeDoc.querySelector('[class*="chat-panel" i]') ||
+                      iframeDoc.querySelector('[class*="chat-container" i]');
+    if (chatPanel) return; // Already open, no need to click
+    
+    // Find the Chat button in Zoom's footer or navigation to open it in background
+    const chatBtn = iframeDoc.querySelector('button.footer-button-item__chat-btn') ||
+                    iframeDoc.querySelector('button[aria-label*="chat" i]') ||
+                    iframeDoc.querySelector('button[class*="chat-btn" i]') ||
+                    Array.from(iframeDoc.querySelectorAll('button, [role="button"]')).find(btn => {
+                      const txt = btn.textContent.trim().toLowerCase();
+                      return txt.includes('chat') || (btn.getAttribute('aria-label') || '').toLowerCase().includes('chat');
+                    });
+    
+    if (chatBtn) {
+      chatBtn.click();
+      console.log('Classroom Monitor: Clicked Zoom Chat button in background to enable message rendering.');
+    }
+  } catch (e) {
+    console.warn('Failed to ensure Zoom chat is open:', e.message);
+  }
+}
+
+function scrapeZoomChats(iframeDoc) {
+  try {
+    // Locate the chat container or messages list in Zoom iframe
+    const chatList = iframeDoc.querySelector('.chat-list') ||
+                     iframeDoc.querySelector('.wc-chat-list') ||
+                     iframeDoc.querySelector('.chat-messages') ||
+                     iframeDoc.querySelector('[class*="chat-list" i]') ||
+                     iframeDoc.querySelector('[class*="message-list" i]') ||
+                     iframeDoc.querySelector('.chat-container') ||
+                     iframeDoc.querySelector('.wc-chat') ||
+                     iframeDoc.querySelector('[class*="chat-panel" i]');
+                     
+    if (!chatList) return;
+    
+    // Find message elements
+    const messageItems = Array.from(chatList.querySelectorAll(
+      '.chat-message-item, .chat-item, .message-item, [class*="message-item" i], [class*="chat-item" i], li[class*="message" i], div[class*="message-wrap" i]'
+    ));
+    
+    // Fallback: if no specific message class found, use all direct children of the list container
+    const itemsToProcess = messageItems.length > 0 ? messageItems : Array.from(chatList.children);
+    
+    let newMessagesFound = false;
+    let lastSender = '';
+    
+    itemsToProcess.forEach(item => {
+      // Find sender name element
+      const senderEl = item.querySelector('[class*="sender" i], [class*="name" i], [class*="username" i]');
+      let sender = senderEl ? senderEl.textContent.trim() : '';
+      
+      // Find text elements
+      const textEls = Array.from(item.querySelectorAll('[class*="text" i], [class*="content" i], [class*="message" i]'));
+      // Filter out the sender element if it matches
+      const validTextEls = textEls.filter(el => el !== senderEl && !el.contains(senderEl));
+      
+      if (sender) {
+        // Strip out Zoom's "to Everyone" or "to Meeting Group" suffixes
+        sender = sender.replace(/\s+to\s+.*$/i, '').trim();
+        lastSender = sender;
+      } else {
+        sender = lastSender || 'System / Participant';
+      }
+      
+      if (validTextEls.length > 0) {
+        validTextEls.forEach(textEl => {
+          const text = textEl.textContent.trim();
+          if (text && text.length > 0 && text !== sender) {
+            const isDuplicate = scrapedMessages.some(msg => msg.sender === sender && msg.text === text);
+            if (!isDuplicate) {
+              const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              scrapedMessages.push({ sender, text, time });
+              newMessagesFound = true;
+            }
+          }
+        });
+      } else {
+        // Fallback: Parse whole text content if it matches name: message pattern
+        const textContent = item.textContent.trim();
+        if (textContent && textContent.length > 0) {
+          if (textContent.includes(':')) {
+            const parts = textContent.split(':');
+            const possibleSender = parts[0].trim().replace(/\s+to\s+.*$/i, '');
+            const possibleText = parts.slice(1).join(':').trim();
+            if (possibleText.length > 0) {
+              const isDuplicate = scrapedMessages.some(msg => msg.sender === possibleSender && msg.text === possibleText);
+              if (!isDuplicate) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                scrapedMessages.push({ sender: possibleSender, text: possibleText, time });
+                newMessagesFound = true;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (newMessagesFound) {
+      renderScrapedChats();
+    }
+  } catch (e) {
+    console.warn('Error scraping Zoom chats:', e.message);
   }
 }
 
@@ -1950,6 +2132,10 @@ function startClassroomMonitorLoop() {
         iframeDoc.addEventListener('mouseenter', showBarsTemporarily);
         iframeDoc._hasHoverDetection = true;
       }
+
+      // ── STEP 7: Ensure Zoom Chat panel is open in background and scrape chats ──
+      ensureZoomChatOpenInIframe(iframeDoc);
+      scrapeZoomChats(iframeDoc);
 
     } catch (e) {
       // Ignore cross-origin error during redirect phases
@@ -2561,6 +2747,42 @@ liveNowContainer.addEventListener('click', handleJoinClassroomClick);
 
 // Classroom control buttons listeners
 closeClassroomBtn.addEventListener('click', exitClassroom);
+
+// Toggle custom side chat panel
+if (toggleChatPanelBtn) {
+  toggleChatPanelBtn.addEventListener('click', () => {
+    if (!classroomChatPanel) return;
+    const isHidden = classroomChatPanel.classList.contains('hide');
+    classroomChatPanel.classList.toggle('hide', !isHidden);
+    toggleChatPanelBtn.classList.toggle('btn-active', isHidden);
+    
+    // If opening, force the Zoom chat to open inside the iframe so we scrape it immediately
+    if (isHidden) {
+      const iframe = document.getElementById('classroom-iframe');
+      if (iframe) {
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          if (iframeDoc && iframe.src !== 'about:blank' && iframe.src !== '') {
+            ensureZoomChatOpenInIframe(iframeDoc);
+            scrapeZoomChats(iframeDoc);
+          }
+        } catch (e) {}
+      }
+    }
+  });
+}
+
+// Close button inside the custom chat panel
+if (closeChatPanelBtn) {
+  closeChatPanelBtn.addEventListener('click', () => {
+    if (classroomChatPanel) {
+      classroomChatPanel.classList.add('hide');
+    }
+    if (toggleChatPanelBtn) {
+      toggleChatPanelBtn.classList.remove('btn-active');
+    }
+  });
+}
 
 // Hover / movement listener on viewport to show bars temporarily when collapsed
 const playerViewport = document.getElementById('player-viewport');
