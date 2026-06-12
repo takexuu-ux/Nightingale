@@ -992,10 +992,14 @@ function startZoomIframeAutomation() {
                         doc.querySelector('input[placeholder*="Name"]') || 
                         doc.querySelector('input[type="text"]');
       
-      const studentName = localStorage.getItem('nnl_user_name') || 'Student';
+      let studentName = localStorage.getItem('nnl_user_name') || 'Rajit';
+      if (studentName.toLowerCase() === 'student' || studentName.toLowerCase() === 'general student' || !studentName) {
+        studentName = 'Rajit';
+      }
 
       if (nameInput) {
-        if (!nameInput.value || nameInput.value === 'Student' || nameInput.value !== studentName) {
+        // Overwrite if empty, generic 'Student', base64 string containing '==', or not matching current name
+        if (!nameInput.value || nameInput.value === 'Student' || nameInput.value.includes('==') || nameInput.value !== studentName) {
           nameInput.value = studentName;
           nameInput.dispatchEvent(new Event('input', { bubbles: true }));
           nameInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1011,16 +1015,20 @@ function startZoomIframeAutomation() {
       }
 
       // 2. Click the "Join" button
-      const buttons = Array.from(doc.querySelectorAll('button, input[type="button"], a, div[role="button"]'));
+      const buttons = Array.from(doc.querySelectorAll('button, input[type="button"], a, [role="button"], .join-btn, #join-btn'));
       const joinBtn = buttons.find(btn => {
         const text = (btn.textContent || btn.value || '').trim().toLowerCase();
-        return text === 'join' || text.includes('join meeting') || text === 'join class';
+        return text === 'join' || text.includes('join meeting') || text.includes('join class') || btn.classList.contains('join-btn') || btn.id === 'join-btn';
       });
 
       if (joinBtn && nameInput && nameInput.value && nameInput.value.length > 1) {
         if (!joinBtn.disabled && !joinBtn.dataset.clicked) {
           joinBtn.dataset.clicked = 'true';
           joinBtn.click();
+          // Dispatch synthetic mouse events to ensure click is captured by React
+          joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+          joinBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+          joinBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           console.log('Clicked Zoom Join button!');
         }
       }
@@ -1040,6 +1048,9 @@ function startZoomIframeAutomation() {
         if (!isNotMainJoin) {
           audioBtn.dataset.clicked = 'true';
           audioBtn.click();
+          audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+          audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+          audioBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
           console.log('Clicked Join Computer Audio button!');
         }
       }
@@ -1180,10 +1191,13 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     }
 
     // Load Zoom Web Client in the proxy iframe
-    const userName = localStorage.getItem('nnl_user_name') || 'Student';
-    const base64Name = safeBtoa(userName);
-    // Include both un and uname to be fully compatible with Zoom Web Client name pre-filling
-    const zoomWebLink = `/zoom/wc/join/${meetingId}/?pwd=${passcode}&prefer=1&un=${base64Name}&uname=${base64Name}`;
+    const userName = localStorage.getItem('nnl_user_name') || 'Rajit';
+    let cleanName = userName;
+    if (cleanName.toLowerCase() === 'student' || cleanName.toLowerCase() === 'general student' || !cleanName) {
+      cleanName = 'Rajit';
+    }
+    // Include both un and uname to be fully compatible with Zoom Web Client name pre-filling (plain text URL encoded)
+    const zoomWebLink = `/zoom/wc/join/${meetingId}/?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
     classroomIframe.src = zoomWebLink;
