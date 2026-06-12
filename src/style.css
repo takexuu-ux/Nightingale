@@ -4279,5 +4279,24 @@ body::-webkit-scrollbar {
   padding: 2rem;
 }
 
+/* Big Screen Mode - shifts Zoom iframe to hide top participant videos/names */
+.classroom-viewer-container.big-screen-mode .zoom-sdk-container {
+  top: -160px !important;
+  height: calc(100% + 164px) !important;
+}
+
+/* Add a transition to make the shift smooth */
+.zoom-sdk-container {
+  transition: top 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Toggle icons for big screen button */
+#toggle-big-screen-btn.btn-active .icon-expand {
+  display: none !important;
+}
+#toggle-big-screen-btn.btn-active .icon-collapse {
+  display: inline-flex !important;
+}
+
 
 

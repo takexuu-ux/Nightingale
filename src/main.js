@@ -48,6 +48,7 @@ const classroomTitle = document.getElementById('classroom-title');
 const classroomInstructor = document.getElementById('classroom-instructor');
 const toggleChatBtn = document.getElementById('toggle-chat-btn');
 const toggleChatPanelBtn = document.getElementById('toggle-chat-panel-btn');
+const toggleBigScreenBtn = document.getElementById('toggle-big-screen-btn');
 const classroomChatPanel = document.getElementById('classroom-chat-panel');
 const closeChatPanelBtn = document.getElementById('close-chat-panel-btn');
 const chatMessagesContainer = document.getElementById('chat-messages-container');
@@ -1367,6 +1368,12 @@ async function exitClassroom() {
     if (toggleChatPanelBtn) {
       toggleChatPanelBtn.classList.remove('btn-active');
     }
+    if (toggleBigScreenBtn) {
+      toggleBigScreenBtn.classList.remove('btn-active');
+    }
+    if (classroomViewer) {
+      classroomViewer.classList.remove('big-screen-mode');
+    }
     if (chatMessagesContainer) {
       chatMessagesContainer.innerHTML = `
         <div class="chat-empty-state">
@@ -1536,6 +1543,36 @@ const zoomCssOverrides = `
     opacity: 0 !important;
     pointer-events: none !important;
     visibility: hidden !important;
+  }
+
+  /* ── In Big Screen Mode, hide name tags completely inside the iframe ── */
+  body.big-screen-mode .name-tag,
+  body.big-screen-mode .name-tag-container,
+  body.big-screen-mode .video-avatar__name,
+  body.big-screen-mode .video-avatar-name,
+  body.big-screen-mode .video-profile__name,
+  body.big-screen-mode .video-profile-name,
+  body.big-screen-mode .video-view__name,
+  body.big-screen-mode .avatar-name,
+  body.big-screen-mode .userName,
+  body.big-screen-mode .user-name,
+  body.big-screen-mode .speaker-name,
+  body.big-screen-mode .active-speaker-name,
+  body.big-screen-mode [class*="name-tag" i],
+  body.big-screen-mode [class*="avatar-name" i],
+  body.big-screen-mode [class*="video-name" i],
+  body.big-screen-mode [class*="profile-name" i],
+  body.big-screen-mode [class*="speaker-name" i],
+  body.big-screen-mode [class*="username" i],
+  body.big-screen-mode [class*="user-name" i],
+  body.big-screen-mode [class*="name-label" i],
+  body.big-screen-mode [class*="nametag" i],
+  body.big-screen-mode [class*="video-footer" i],
+  body.big-screen-mode .video-footer {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   /* ── Fill root ── */
@@ -1944,6 +1981,80 @@ function cleanZoomIframeDOM(iframeDoc) {
         }
       });
     });
+
+    // 4. Hide chat preview popups by text content keywords (e.g. "To Everyone", "To Meeting Group")
+    try {
+      const chatPreviewKeywords = ["to meeting group", "to everyone", "to organizer", "to direct message", "to group"];
+      const allDivs = iframeDoc.querySelectorAll('div, span, p');
+      for (const el of allDivs) {
+        if (el.children.length === 0) {
+          const text = el.textContent.toLowerCase();
+          const matches = chatPreviewKeywords.some(kw => text.includes(kw));
+          if (matches) {
+            const container = el.closest('[class*="preview" i]') ||
+                              el.closest('[class*="toast" i]') ||
+                              el.closest('[class*="popup" i]') ||
+                              el.closest('[class*="bubble" i]') ||
+                              el.closest('[class*="message" i]') ||
+                              el.closest('div');
+            if (container && container.style.display !== 'none' && container.id !== 'zmmtg-root' && container.tagName !== 'BODY') {
+              container.style.setProperty('display', 'none', 'important');
+              container.style.setProperty('opacity', '0', 'important');
+              container.style.setProperty('pointer-events', 'none', 'important');
+              container.style.setProperty('visibility', 'hidden', 'important');
+              container.style.setProperty('height', '0', 'important');
+              console.log('Classroom Monitor: Suppressed Zoom chat preview popup containing:', el.textContent.trim().substring(0, 50));
+            }
+          }
+        }
+      }
+    } catch (e) {}
+
+    // 5. Hide name tags and participant labels inside video elements in Big Screen Mode
+    try {
+      const isBigScreen = iframeDoc.body.classList.contains('big-screen-mode') || 
+                          (window.parent && window.parent.document.getElementById('classroom-viewer') && 
+                           window.parent.document.getElementById('classroom-viewer').classList.contains('big-screen-mode'));
+      
+      if (isBigScreen) {
+        const nameSelectors = [
+          '.name-tag', '.name-tag-container', '.video-avatar__name', '.video-avatar-name',
+          '.video-profile__name', '.video-profile-name', '.video-view__name', '.avatar-name',
+          '.userName', '.user-name', '.speaker-name', '.active-speaker-name', '.video-footer',
+          '.video-view-name', '.video-title', '.video-common-title'
+        ];
+        nameSelectors.forEach(sel => {
+          iframeDoc.querySelectorAll(sel).forEach(el => {
+            if (el.style.display !== 'none') {
+              el.style.setProperty('display', 'none', 'important');
+              el.style.setProperty('opacity', '0', 'important');
+              el.style.setProperty('visibility', 'hidden', 'important');
+            }
+          });
+        });
+
+        // Wildcard class name check for element names
+        const allDivs = iframeDoc.querySelectorAll('div, span, p');
+        for (const el of allDivs) {
+          const className = el.className;
+          if (typeof className === 'string' && (
+            className.toLowerCase().includes('name-tag') ||
+            className.toLowerCase().includes('avatar-name') ||
+            className.toLowerCase().includes('video-name') ||
+            className.toLowerCase().includes('speaker-name') ||
+            className.toLowerCase().includes('video-footer') ||
+            className.toLowerCase().includes('username')
+          )) {
+            if (el.style.display !== 'none') {
+              el.style.setProperty('display', 'none', 'important');
+              el.style.setProperty('opacity', '0', 'important');
+              el.style.setProperty('visibility', 'hidden', 'important');
+            }
+          }
+        }
+      }
+    } catch (e) {}
+
   } catch (err) {
     // Ignore iframe error
   }
@@ -2135,6 +2246,15 @@ function startClassroomMonitorLoop() {
 
       // ── STEP 3: Inject style overrides (keeps panels off-screen) ──
       ensureZoomStyleOverrides(iframeDoc);
+
+      // Keep iframe body class in sync with parent big-screen-mode state
+      const isBigScreen = classroomViewer ? classroomViewer.classList.contains('big-screen-mode') : false;
+      if (iframeDoc.body) {
+        const hasBigScreenClass = iframeDoc.body.classList.contains('big-screen-mode');
+        if (hasBigScreenClass !== isBigScreen) {
+          iframeDoc.body.classList.toggle('big-screen-mode', isBigScreen);
+        }
+      }
 
       // ── STEP 4: Clean popups/alerts — but NOT the audio join dialog ──
       cleanZoomIframeDOM(iframeDoc);
@@ -2796,6 +2916,29 @@ if (closeChatPanelBtn) {
     }
     if (toggleChatPanelBtn) {
       toggleChatPanelBtn.classList.remove('btn-active');
+    }
+  });
+}
+
+// Toggle big screen mode (crops/hides top participant videos)
+if (toggleBigScreenBtn) {
+  toggleBigScreenBtn.addEventListener('click', () => {
+    if (!classroomViewer) return;
+    const isBigScreen = classroomViewer.classList.contains('big-screen-mode');
+    classroomViewer.classList.toggle('big-screen-mode', !isBigScreen);
+    toggleBigScreenBtn.classList.toggle('btn-active', !isBigScreen);
+    
+    // Propagate big-screen-mode class to the iframe body immediately
+    const iframe = document.getElementById('classroom-iframe');
+    if (iframe) {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (doc && doc.body) {
+          doc.body.classList.toggle('big-screen-mode', !isBigScreen);
+        }
+      } catch (e) {
+        console.warn('Failed to toggle big-screen-mode class on iframe body:', e.message);
+      }
     }
   });
 }

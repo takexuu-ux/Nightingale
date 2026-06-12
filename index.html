@@ -241,6 +241,16 @@
               <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
             </svg>
           </button>
+          <button id="toggle-big-screen-btn" class="btn btn-zoom" title="Toggle Big Screen Mode" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(168, 85, 247, 0.15); cursor: pointer; padding: 0;">
+            <!-- Expand Icon (default) -->
+            <svg class="icon-expand" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink: 0;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m-11.25 11.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 5.25v-4.5m0 4.5h-4.5m4.5 0L15 15"/>
+            </svg>
+            <!-- Collapse Icon (active) -->
+            <svg class="icon-collapse" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink: 0; display: none;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M15 9V4.5M15 9h4.5M15 9l5.25-5.25M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 15v4.5M15 15h4.5M15 15l5.25 5.25"/>
+            </svg>
+          </button>
           <a id="zoom-fallback-btn" class="btn btn-zoom" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; text-decoration: none; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.4); color: #4dabf7; transition: all 0.2s ease-in-out; box-shadow: 0 0 10px rgba(0, 132, 255, 0.15); cursor: pointer;">
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
               <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
