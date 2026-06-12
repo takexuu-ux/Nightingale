@@ -977,6 +977,20 @@ body {
   z-index: 10;
 }
 
+.zoom-sdk-embedded-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: 15;
+}
+
+.zoom-sdk-embedded-container.hide {
+  display: none !important;
+}
+
 /* Premium Zoom Join Card Styles */
 .zoom-join-card {
   position: absolute;

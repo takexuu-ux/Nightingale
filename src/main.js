@@ -81,6 +81,8 @@ let flowToken = ''; // Returned by send OTP, needed for validate OTP
 let activeTab = 'live'; // 'live', 'upcoming', or 'recordings'
 let classesData = [];
 let zoomClient = null;
+let zoomSdkLoaded = false;
+let zoomSdkLoading = false;
 let captureIntervalId = null;
 let currentTimelineSlides = [];
 let currentMeetingId = ''; // Traces current meeting room ID
@@ -867,12 +869,98 @@ function toggleZoomPanel(type) {
   }
 }
 
+// Dynamically load Zoom Web SDK scripts on demand
+async function loadZoomSdk() {
+  if (zoomSdkLoaded) return true;
+  if (zoomSdkLoading) {
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (zoomSdkLoaded) {
+          clearInterval(checkInterval);
+          resolve(true);
+        }
+      }, 100);
+    });
+  }
+
+  zoomSdkLoading = true;
+  console.log('Loading Zoom Web SDK dynamically...');
+  
+  const scripts = [
+    'https://source.zoom.us/3.11.2/lib/vendor/react.min.js',
+    'https://source.zoom.us/3.11.2/lib/vendor/react-dom.min.js',
+    'https://source.zoom.us/3.11.2/lib/vendor/redux.min.js',
+    'https://source.zoom.us/3.11.2/lib/vendor/redux-thunk.min.js',
+    'https://source.zoom.us/3.11.2/lib/vendor/lodash.min.js',
+    'https://source.zoom.us/zoom-meeting-embedded-3.11.2.min.js'
+  ];
+
+  try {
+    for (const src of scripts) {
+      await new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load: ${src}`));
+        document.body.appendChild(script);
+      });
+    }
+    zoomSdkLoaded = true;
+    zoomSdkLoading = false;
+    console.log('Zoom Web SDK loaded successfully!');
+    return true;
+  } catch (err) {
+    zoomSdkLoading = false;
+    console.error('Error loading Zoom Web SDK:', err);
+    return false;
+  }
+}
+
+// Display the glassmorphic fallback credentials copy card
+function showFallbackJoinCard(meetingId, passcode, title, instructorName) {
+  const zoomJoinCard = document.getElementById('zoom-join-card');
+  if (zoomJoinCard) {
+    const cardTitle = document.getElementById('zoom-card-class-title');
+    const cardInstructor = document.getElementById('zoom-card-class-instructor');
+    const cardMeetingId = document.getElementById('zoom-card-meeting-id');
+    const cardPasscode = document.getElementById('zoom-card-passcode');
+    const cardWebBtn = document.getElementById('zoom-card-web-btn');
+    const cardAppBtn = document.getElementById('zoom-card-app-btn');
+
+    if (cardTitle) cardTitle.textContent = title;
+    if (cardInstructor) cardInstructor.textContent = instructorName;
+    
+    const formattedMeetingId = String(meetingId).replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3');
+    if (cardMeetingId) cardMeetingId.textContent = formattedMeetingId;
+    if (cardPasscode) cardPasscode.textContent = passcode || 'None';
+
+    if (cardWebBtn) {
+      cardWebBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    }
+    if (cardAppBtn) {
+      cardAppBtn.href = `zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}`;
+    }
+
+    zoomJoinCard.classList.remove('hide');
+  }
+
+  const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
+  if (zoomFallbackBtn) {
+    zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+  }
+}
+
 // Initialize and join embedded Zoom meeting
 async function joinEmbeddedClassroom(classId, title, instructorName) {
   const token = localStorage.getItem('nnl_access_token');
   try {
     let meetingId = '';
     let passcode = '';
+    let meetingToken = '';
 
     if (token === 'GUEST_DEMO_TOKEN' || String(classId).startsWith('mock-')) {
       meetingId = '98765432101';
@@ -895,6 +983,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
 
       meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
       passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
+      meetingToken = classDetail.token || '';
     }
 
     if (!meetingId) {
@@ -917,38 +1006,58 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     classroomIframe.src = 'about:blank';
     classroomIframe.classList.add('hide');
 
-    // Populate and display the Premium Zoom Join Card
+    // Reset Zoom Meeting SDK container
+    const meetingSDKElement = document.getElementById('meetingSDKElement');
+    if (meetingSDKElement) {
+      meetingSDKElement.innerHTML = '';
+      meetingSDKElement.classList.add('hide');
+    }
     const zoomJoinCard = document.getElementById('zoom-join-card');
     if (zoomJoinCard) {
-      const cardTitle = document.getElementById('zoom-card-class-title');
-      const cardInstructor = document.getElementById('zoom-card-class-instructor');
-      const cardMeetingId = document.getElementById('zoom-card-meeting-id');
-      const cardPasscode = document.getElementById('zoom-card-passcode');
-      const cardWebBtn = document.getElementById('zoom-card-web-btn');
-      const cardAppBtn = document.getElementById('zoom-card-app-btn');
-
-      if (cardTitle) cardTitle.textContent = title;
-      if (cardInstructor) cardInstructor.textContent = instructorName;
-      
-      // Format meeting ID (e.g. 98765432101 -> 987 6543 2101)
-      const formattedMeetingId = String(meetingId).replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3');
-      if (cardMeetingId) cardMeetingId.textContent = formattedMeetingId;
-      if (cardPasscode) cardPasscode.textContent = passcode || 'None';
-
-      if (cardWebBtn) {
-        cardWebBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
-      }
-      if (cardAppBtn) {
-        cardAppBtn.href = `zoommtg://zoom.us/join?confno=${meetingId}&pwd=${passcode}`;
-      }
-
-      zoomJoinCard.classList.remove('hide');
+      zoomJoinCard.classList.add('hide');
     }
 
-    // Set fallback Zoom launcher URL in header
-    const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
-    if (zoomFallbackBtn) {
-      zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    // Try to join via Zoom SDK Component View if we have a token
+    if (meetingToken && !String(classId).startsWith('mock-')) {
+      const sdkLoaded = await loadZoomSdk();
+      if (sdkLoaded && window.ZoomMtgEmbedded) {
+        console.log('Initializing Zoom Meeting SDK Component View...');
+        meetingSDKElement.classList.remove('hide');
+
+        zoomClient = window.ZoomMtgEmbedded.createClient();
+
+        zoomClient.init({
+          zoomAppRoot: meetingSDKElement,
+          language: 'en-US',
+          patchJsMedia: true
+        }).then(() => {
+          console.log('Zoom SDK initialized successfully. Joining...');
+          zoomClient.join({
+            sdkKey: 'AFDRfHXtRz2xvV8EN8eIeQ', // NNL ONE Client ID
+            signature: meetingToken,
+            meetingNumber: meetingId,
+            password: passcode,
+            userName: localStorage.getItem('nnl_user_name') || 'Student',
+            userEmail: localStorage.getItem('nnl_user_email') || 'student@studywithme.in'
+          }).then(() => {
+            console.log('Zoom SDK joined successfully!');
+          }).catch((joinErr) => {
+            console.error('Zoom SDK Join failed:', joinErr);
+            meetingSDKElement.classList.add('hide');
+            showFallbackJoinCard(meetingId, passcode, title, instructorName);
+          });
+        }).catch((initErr) => {
+          console.error('Zoom SDK Init failed:', initErr);
+          meetingSDKElement.classList.add('hide');
+          showFallbackJoinCard(meetingId, passcode, title, instructorName);
+        });
+      } else {
+        console.warn('Failed to load Zoom SDK script dependencies. Falling back to Join Card.');
+        showFallbackJoinCard(meetingId, passcode, title, instructorName);
+      }
+    } else {
+      console.log('No backend Zoom signature token found or mock class. Showing Join Card.');
+      showFallbackJoinCard(meetingId, passcode, title, instructorName);
     }
 
     // Load old snapshots from IndexedDB storage
@@ -980,6 +1089,29 @@ async function exitClassroom() {
   if (await showCustomConfirm('Are you sure you want to exit the live classroom?', 'Exit Classroom', true)) {
     stopTimelineCaptureLoop();
     stopClassroomMonitorLoop();
+
+    // Leave and destroy Zoom SDK Component Client if active
+    if (zoomClient) {
+      try {
+        zoomClient.leaveMeeting();
+      } catch (e) {
+        console.error('Error leaving Zoom meeting:', e);
+      }
+    }
+    if (window.ZoomMtgEmbedded) {
+      try {
+        window.ZoomMtgEmbedded.destroyClient();
+      } catch (e) {
+        console.error('Error destroying Zoom client:', e);
+      }
+    }
+    zoomClient = null;
+
+    const meetingSDKElement = document.getElementById('meetingSDKElement');
+    if (meetingSDKElement) {
+      meetingSDKElement.innerHTML = '';
+      meetingSDKElement.classList.add('hide');
+    }
     
     // Clear the inactivity timer and restore bars for next session
     clearTimeout(barsHideTimerId);
