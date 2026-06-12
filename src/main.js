@@ -1106,7 +1106,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Load Zoom Web Client in the proxy iframe
     const userName = localStorage.getItem('nnl_user_name') || 'Student';
     const base64Name = safeBtoa(userName);
-    const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${base64Name}`;
+    const zoomWebLink = `/zoom/wc/join/${meetingId}/?pwd=${passcode}&prefer=1&un=${base64Name}`;
     
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
     classroomIframe.src = zoomWebLink;
