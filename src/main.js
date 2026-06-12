@@ -3884,9 +3884,6 @@ function openRecordingPlayer(recording) {
         iframe.style.borderRadius = '12px';
         iframe.setAttribute('allow', 'encrypted-media');
         iframe.setAttribute('allowfullscreen', 'true');
-        // sandbox without allow-same-origin forces null origin on the iframe,
-        // which bypasses VdoCipher domain whitelist check (Error 2127)
-        iframe.setAttribute('sandbox', 'allow-scripts allow-encrypted-media allow-presentation allow-fullscreen allow-pointer-lock');
         iframe.setAttribute('referrerpolicy', 'no-referrer');
         bodyEl.appendChild(iframe);
       } else {
