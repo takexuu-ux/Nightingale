@@ -375,11 +375,24 @@ function checkLoginState() {
   }
 }
 
+// Parse API date strings as UTC robustly
+function parseApiDate(dateStr) {
+  if (!dateStr) return new Date(NaN);
+  if (dateStr.endsWith('Z') || /([+-]\d{2}:\d{2})$/.test(dateStr)) {
+    return new Date(dateStr);
+  }
+  let formatted = dateStr;
+  if (!formatted.includes('T') && formatted.includes(' ')) {
+    formatted = formatted.replace(' ', 'T');
+  }
+  return new Date(formatted + 'Z');
+}
+
 // Format date nicely
 function formatClassTime(dateStr, timeStr) {
   try {
     // Expecting date like "2026-06-07" and time like "10:30:00"
-    const dateObj = new Date(`${dateStr}T${timeStr}`);
+    const dateObj = parseApiDate(`${dateStr}T${timeStr}`);
     if (isNaN(dateObj.getTime())) return `${dateStr} ${timeStr}`;
     
     return dateObj.toLocaleDateString('en-US', {
@@ -984,6 +997,28 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
       passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
       meetingToken = classDetail.token || '';
+    }
+
+    if (meetingToken && !String(classId).startsWith('mock-')) {
+      try {
+        const parts = meetingToken.split('.');
+        if (parts.length === 3) {
+          const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(payloadBase64));
+          if (payload && payload.exp) {
+            const expTime = payload.exp * 1000;
+            // Pad by 60 seconds to prevent edge cases with clock drift
+            if (Date.now() > (expTime - 60000)) {
+              throw new Error('This live class has ended and the Zoom session has closed.');
+            }
+          }
+        }
+      } catch (e) {
+        if (e.message.includes('ended and the Zoom session has closed')) {
+          throw e;
+        }
+        console.warn('Failed to decode signature token:', e);
+      }
     }
 
     if (!meetingId) {
@@ -2082,8 +2117,8 @@ function renderClasses(classes) {
     if (startVal && endVal) {
       try {
         const now = new Date();
-        const start = new Date(startVal);
-        const end = new Date(endVal);
+        const start = parseApiDate(startVal);
+        const end = parseApiDate(endVal);
         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
           return now >= start && now <= end;
         }
@@ -2112,9 +2147,9 @@ function renderClasses(classes) {
       const endVal   = c.end   || c.endTime   || '';
       if (!startVal) return;
       try {
-        const start = new Date(startVal);
+        const start = parseApiDate(startVal);
         const end   = endVal
-          ? new Date(endVal)
+          ? parseApiDate(endVal)
           : new Date(start.getTime() + 2 * 60 * 60 * 1000);
         if (isNaN(start.getTime())) return;
         const isToday = start.toDateString() === now.toDateString();
@@ -2148,8 +2183,8 @@ function renderClasses(classes) {
   const now = new Date();
   const upcoming = batchFiltered.filter(c => {
     try {
-      const start = new Date(c.start || c.startTime || '');
-      const end   = new Date(c.end   || c.endTime   || '');
+      const start = parseApiDate(c.start || c.startTime || '');
+      const end   = parseApiDate(c.end   || c.endTime   || '');
       const isLive   = !isNaN(start) && !isNaN(end) && now >= start && now <= end;
       const isFuture = !isNaN(start) && start > now;
       return !isLive && isFuture;
