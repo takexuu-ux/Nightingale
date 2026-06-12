@@ -1005,10 +1005,16 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
         if (parts.length === 3) {
           const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
           const payload = JSON.parse(atob(payloadBase64));
-          if (payload && payload.exp) {
-            const expTime = payload.exp * 1000;
-            // Pad by 60 seconds to prevent edge cases with clock drift
-            if (Date.now() > (expTime - 60000)) {
+          if (payload) {
+            const expTime = payload.exp ? payload.exp * 1000 : 0;
+            const iatTime = payload.iat ? payload.iat * 1000 : 0;
+            const joinWindowExpiry = iatTime ? iatTime + 30 * 60 * 1000 : 0;
+            
+            // Signature is expired if the JWT is expired or if the 30-minute Zoom join window has passed
+            const isJwtExpired = expTime && Date.now() > (expTime - 60000);
+            const isJoinWindowExpired = joinWindowExpiry && Date.now() > (joinWindowExpiry - 60000);
+            
+            if (isJwtExpired || isJoinWindowExpired) {
               throw new Error('This live class has ended and the Zoom session has closed.');
             }
           }
