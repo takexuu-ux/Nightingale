@@ -11,8 +11,13 @@ export default function handler(req, res) {
   // 1. Extract path and other query parameters
   const { path, ...queryParams } = req.query;
   
-  // 2. Reconstruct target URL
-  const targetUrl = new URL(`https://zoom.us/${path || ''}`);
+  // 2. Reconstruct target URL, removing any trailing slash from the path to prevent invalid Zoom API routing
+  let cleanPath = path || '';
+  if (cleanPath.endsWith('/')) {
+    cleanPath = cleanPath.slice(0, -1);
+  }
+  
+  const targetUrl = new URL(`https://zoom.us/${cleanPath}`);
   for (const [key, value] of Object.entries(queryParams)) {
     if (Array.isArray(value)) {
       value.forEach((v) => targetUrl.searchParams.append(key, v));
