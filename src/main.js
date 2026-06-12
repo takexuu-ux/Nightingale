@@ -1446,7 +1446,22 @@ const zoomCssOverrides = `
   .active-speaker-video-carousel-container,
   .speaker-active-video-carousel-container,
   #speak-list,
-  .video-grid__carousel { display: none !important; }
+  .video-grid__carousel,
+  .filmstrip,
+  .gallery-layout,
+  [class*="carousel" i],
+  [class*="filmstrip" i],
+  [class*="gallery-container" i],
+  [class*="gallery-video" i],
+  [class*="active-speaker" i],
+  [class*="speaker-view" i],
+  [class*="speaker-active" i] {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
 
   /* ── Hide Zoom's own fullscreen button ── */
   button[aria-label="Enter Full Screen"],
@@ -1501,7 +1516,8 @@ const zoomCssOverrides = `
 
   /* ── Suppress all Zoom chat preview notifications / toasts ── */
   .message-preview, .chat-preview, .wc-chat-toast, .chat-message-preview, .meeting-message-preview,
-  [class*="message-preview" i], [class*="chat-preview" i], [class*="chat-toast" i] {
+  .zm-toast, .zm-notification, [class*="message-preview" i], [class*="chat-preview" i], [class*="chat-toast" i],
+  [class*="message-toast" i], [class*="meeting-message" i], [class*="toast" i], [class*="notification" i], [class*="preview" i] {
     display: none !important;
     opacity: 0 !important;
     pointer-events: none !important;
