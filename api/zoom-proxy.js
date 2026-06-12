@@ -64,6 +64,22 @@ export default function handler(req, res) {
       responseHeaders['access-control-allow-methods'] = 'GET, POST, OPTIONS, PUT, DELETE';
       responseHeaders['access-control-allow-headers'] = '*';
 
+      // Rewrite Location redirect headers to point to our proxy instead of zoom.us
+      if (responseHeaders['location']) {
+        responseHeaders['location'] = responseHeaders['location'].replace(/^https:\/\/zoom\.us\//i, '/zoom/');
+      }
+
+      // Strip domain parameter from Set-Cookie so the browser binds them to our domain
+      if (responseHeaders['set-cookie']) {
+        if (Array.isArray(responseHeaders['set-cookie'])) {
+          responseHeaders['set-cookie'] = responseHeaders['set-cookie'].map((cookie) => {
+            return cookie.replace(/domain=\.?zoom\.us;?\s*/gi, '');
+          });
+        } else if (typeof responseHeaders['set-cookie'] === 'string') {
+          responseHeaders['set-cookie'] = responseHeaders['set-cookie'].replace(/domain=\.?zoom\.us;?\s*/gi, '');
+        }
+      }
+
       // Apply headers to the response
       for (const [key, value] of Object.entries(responseHeaders)) {
         res.setHeader(key, value);
