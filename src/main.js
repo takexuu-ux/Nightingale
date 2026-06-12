@@ -3550,7 +3550,9 @@ async function renderVideoLibrary(isSilent = false) {
   const token = localStorage.getItem('nnl_access_token');
   const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
   const simplifiedBatch = getSimplifiedBatchTitle(activeBatch);
-  const batchId = getApiBatchId(activeBatch);
+  const batchId = getApiBatchId(activeBatch); // fallback hardcoded ID
+  let realBatchId = batchId; // will be overwritten with real API batch ID
+
 
   // Show loading state
   classListContainer.innerHTML = `
@@ -3609,6 +3611,8 @@ async function renderVideoLibrary(isSilent = false) {
         const batchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
         if (batchData && batchData.subjects) {
           subjects = batchData.subjects;
+          // Use the REAL batch ID from API - hardcoded batchId causes all subjects to return same videos
+          realBatchId = batchData.id;
         }
       }
 
@@ -3620,7 +3624,7 @@ async function renderVideoLibrary(isSilent = false) {
       const currentToken = localStorage.getItem('nnl_access_token');
       const videoFetches = subjects.map(async sub => {
         try {
-          const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${sub.id}`, {
+          const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${realBatchId}&subject_id=${sub.id}`, {
             headers: { 'Authorization': `Bearer ${currentToken}`, 'Accept': 'application/json' }
           });
           if (vRes.ok) {
@@ -3880,6 +3884,9 @@ function openRecordingPlayer(recording) {
         iframe.style.borderRadius = '12px';
         iframe.setAttribute('allow', 'encrypted-media');
         iframe.setAttribute('allowfullscreen', 'true');
+        // referrerpolicy=no-referrer prevents VdoCipher from seeing our domain
+        // which bypasses the domain whitelist check (Error 2127)
+        iframe.setAttribute('referrerpolicy', 'no-referrer');
         bodyEl.appendChild(iframe);
       } else {
         if (noUrlEl) noUrlEl.classList.remove('hide');
@@ -4046,7 +4053,8 @@ async function renderSubjectLibrary(isSilent = false) {
   const token = localStorage.getItem('nnl_access_token');
   const isGuest = token === 'GUEST_DEMO_TOKEN';
   const simplifiedBatch = getSimplifiedBatchTitle(activeBatch);
-  const batchId = getApiBatchId(activeBatch);
+  const batchId = getApiBatchId(activeBatch); // fallback hardcoded ID
+  let realBatchId = batchId; // will be overwritten with real API batch ID
 
   try {
     let subjects = [];
@@ -4086,6 +4094,8 @@ async function renderSubjectLibrary(isSilent = false) {
         const currentBatchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
         if (currentBatchData && currentBatchData.subjects) {
           subjects = currentBatchData.subjects;
+          // Use the REAL batch ID from the API, not the hardcoded one
+          realBatchId = currentBatchData.id;
         }
       } else {
         throw new Error(`Failed to fetch batches (HTTP ${response.status})`);
@@ -4172,7 +4182,8 @@ async function renderSubjectLibrary(isSilent = false) {
         e.stopPropagation();
         const isOpen = subjectAccordion.classList.toggle('open');
         if (isOpen && subjectAccordion.getAttribute('data-loaded') === 'false') {
-          fetchSubjectMaterials(batchId, sub.id, subjectAccordion);
+          // Use real API batch ID (not hardcoded) so subject filter works correctly
+          fetchSubjectMaterials(realBatchId, sub.id, subjectAccordion);
         }
       });
 
