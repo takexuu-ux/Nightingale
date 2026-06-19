@@ -1436,93 +1436,91 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
 
 // Disconnect from Zoom and exit viewer
 async function exitClassroom() {
-  if (await showCustomConfirm('Are you sure you want to exit the live classroom?', 'Exit Classroom', true)) {
-    stopTimelineCaptureLoop();
-    stopClassroomMonitorLoop();
-    currentMeetingId = '';
-    currentPasscode = '';
+  stopTimelineCaptureLoop();
+  stopClassroomMonitorLoop();
+  currentMeetingId = '';
+  currentPasscode = '';
 
-    // Leave and destroy Zoom SDK Component Client if active
-    if (zoomClient) {
-      try {
-        zoomClient.leaveMeeting();
-      } catch (e) {
-        console.error('Error leaving Zoom meeting:', e);
-      }
+  // Leave and destroy Zoom SDK Component Client if active
+  if (zoomClient) {
+    try {
+      zoomClient.leaveMeeting();
+    } catch (e) {
+      console.error('Error leaving Zoom meeting:', e);
     }
-    if (window.ZoomMtgEmbedded) {
-      try {
-        window.ZoomMtgEmbedded.destroyClient();
-      } catch (e) {
-        console.error('Error destroying Zoom client:', e);
-      }
-    }
-    zoomClient = null;
-
-    const meetingSDKElement = document.getElementById('meetingSDKElement');
-    if (meetingSDKElement) {
-      meetingSDKElement.innerHTML = '';
-      meetingSDKElement.classList.add('hide');
-    }
-
-    const floatingHelper = document.getElementById('classroom-floating-helper');
-    if (floatingHelper) {
-      floatingHelper.classList.add('hide');
-    }
-    
-    // Clear the inactivity timer and restore bars for next session
-    clearTimeout(barsHideTimerId);
-    barsHideTimerId = null;
-    showClassroomBars();
-    
-    if (relativeTimeInterval) {
-      clearInterval(relativeTimeInterval);
-      relativeTimeInterval = null;
-    }
-    
-    // Reset iframe to blank and restore state
-    classroomIframe.src = 'about:blank';
-    classroomIframe.classList.remove('hide');
-    
-    // Stop automation loop
-    stopZoomIframeAutomation();
-
-    // Reset and hide custom chat panel
-    scrapedMessages = [];
-    if (classroomChatPanel) {
-      classroomChatPanel.classList.add('hide');
-    }
-    if (toggleChatPanelBtn) {
-      toggleChatPanelBtn.classList.remove('btn-active');
-    }
-    if (toggleBigScreenBtn) {
-      toggleBigScreenBtn.classList.remove('btn-active');
-    }
-    if (classroomViewer) {
-      classroomViewer.classList.remove('big-screen-mode');
-    }
-    if (chatMessagesContainer) {
-      chatMessagesContainer.innerHTML = `
-        <div class="chat-empty-state">
-          <p>No messages yet.</p>
-          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Chat messages from the Zoom live class will appear here.</p>
-        </div>
-      `;
-    }
-    
-    // Hide Zoom Join Card
-    const zoomJoinCard = document.getElementById('zoom-join-card');
-    if (zoomJoinCard) {
-      zoomJoinCard.classList.add('hide');
-    }
-    
-    // Return UI to normal
-    classroomViewer.classList.add('hide');
-    appHeader.classList.remove('hide');
-    classroomDashboard.classList.remove('hide');
-    document.body.classList.remove('in-classroom');
-    loadDashboard();
   }
+  if (window.ZoomMtgEmbedded) {
+    try {
+      window.ZoomMtgEmbedded.destroyClient();
+    } catch (e) {
+      console.error('Error destroying Zoom client:', e);
+    }
+  }
+  zoomClient = null;
+
+  const meetingSDKElement = document.getElementById('meetingSDKElement');
+  if (meetingSDKElement) {
+    meetingSDKElement.innerHTML = '';
+    meetingSDKElement.classList.add('hide');
+  }
+
+  const floatingHelper = document.getElementById('classroom-floating-helper');
+  if (floatingHelper) {
+    floatingHelper.classList.add('hide');
+  }
+  
+  // Clear the inactivity timer and restore bars for next session
+  clearTimeout(barsHideTimerId);
+  barsHideTimerId = null;
+  showClassroomBars();
+  
+  if (relativeTimeInterval) {
+    clearInterval(relativeTimeInterval);
+    relativeTimeInterval = null;
+  }
+  
+  // Reset iframe to blank and restore state
+  classroomIframe.src = 'about:blank';
+  classroomIframe.classList.remove('hide');
+  
+  // Stop automation loop
+  stopZoomIframeAutomation();
+
+  // Reset and hide custom chat panel
+  scrapedMessages = [];
+  if (classroomChatPanel) {
+    classroomChatPanel.classList.add('hide');
+  }
+  if (toggleChatPanelBtn) {
+    toggleChatPanelBtn.classList.remove('btn-active');
+  }
+  if (toggleBigScreenBtn) {
+    toggleBigScreenBtn.classList.remove('btn-active');
+  }
+  if (classroomViewer) {
+    classroomViewer.classList.remove('big-screen-mode');
+  }
+  if (chatMessagesContainer) {
+    chatMessagesContainer.innerHTML = `
+      <div class="chat-empty-state">
+        <p>No messages yet.</p>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Chat messages from the Zoom live class will appear here.</p>
+      </div>
+    `;
+  }
+  
+  // Hide Zoom Join Card
+  const zoomJoinCard = document.getElementById('zoom-join-card');
+  if (zoomJoinCard) {
+    zoomJoinCard.classList.add('hide');
+  }
+  
+  // Return UI to normal
+  classroomViewer.classList.add('hide');
+  appHeader.classList.remove('hide');
+  classroomDashboard.classList.remove('hide');
+  document.body.classList.remove('in-classroom');
+  loadDashboard();
 }
 
 // Check iframe DOM to see if Zoom's panels are open and update custom header buttons

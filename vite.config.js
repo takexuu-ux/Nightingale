@@ -101,7 +101,15 @@ export default defineConfig({
           const headers = { ...req.headers };
           headers['host'] = targetHost;
           headers['origin'] = `https://${targetHost}`;
-          delete headers['accept-encoding']; // Force uncompressed response to allow body manipulation
+
+          const acceptHeader = req.headers['accept'] || '';
+          const isHtmlRequest = acceptHeader.includes('text/html') || 
+                                !url.pathname.includes('.') || 
+                                url.pathname.endsWith('.html');
+
+          if (isHtmlRequest) {
+            delete headers['accept-encoding']; // Force uncompressed response for HTML body manipulation
+          }
 
           if (headers['referer']) {
             try {
@@ -135,6 +143,42 @@ export default defineConfig({
   var interval = setInterval(function() {
     attempts++;
     
+    // 0. Auto-click recording consent OK button if it appears
+    var okBtn = null;
+    var allInteractive = Array.from(document.querySelectorAll('button, [role="button"], .zm-btn, a'));
+    okBtn = allInteractive.find(function(el) {
+      var text = (el.textContent || el.value || '').trim();
+      return text === 'OK' || text === 'Got it' || text === 'Agree' || text === 'Continue';
+    });
+    if (!okBtn) {
+      var divs = Array.from(document.querySelectorAll('div, span')).filter(function(el) {
+        var text = (el.textContent || el.value || '').trim();
+        return (text === 'OK' || text === 'Got it') && el.children.length === 0;
+      });
+      if (divs.length > 0) {
+        okBtn = divs[0];
+      }
+    }
+    if (okBtn) {
+      var now = Date.now();
+      var lastClick = parseInt(okBtn.dataset.lastClicked || '0', 10);
+      if (now - lastClick > 1500) {
+        okBtn.dataset.lastClicked = String(now);
+        remoteLog('log', 'Found recording consent button! Clicking it.');
+        okBtn.focus();
+        try {
+          okBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+          okBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+        } catch (e) {}
+        try {
+          okBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          okBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+          okBtn.click();
+          okBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        } catch (e) {}
+      }
+    }
+
     var allInputs = Array.from(document.querySelectorAll('input[type="text"], input[type="password"], input:not([type])')).filter(function(input) {
       try {
         var style = window.getComputedStyle(input);
@@ -303,7 +347,8 @@ export default defineConfig({
       return text.includes('join with computer audio') || 
              text.includes('join computer audio') || 
              text === 'computer audio' ||
-             text.includes('join audio');
+             text.includes('join audio') ||
+             text.includes('audio by computer');
     });
 
     if (audioBtn && audioBtn !== joinBtn) {
@@ -375,9 +420,8 @@ export default defineConfig({
 
               const contentType = responseHeaders['content-type'] || '';
               const isHtml = contentType.includes('text/html');
-              const isJs = contentType.includes('javascript') || contentType.includes('application/x-javascript');
 
-              if (isHtml || isJs) {
+              if (isHtml) {
                 const chunks = [];
                 proxyRes.on('data', (chunk) => {
                   chunks.push(chunk);
@@ -394,15 +438,13 @@ export default defineConfig({
                     .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
 
                   // 2. For HTML responses, inject our auto-joining script
-                  if (isHtml) {
-                    const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
-                    if (bodyString.includes('<head>')) {
-                      bodyString = bodyString.replace('<head>', `<head>\n${scriptTag}`);
-                    } else if (bodyString.includes('<body>')) {
-                      bodyString = bodyString.replace('<body>', `<body>\n${scriptTag}`);
-                    } else {
-                      bodyString = scriptTag + bodyString;
-                    }
+                  const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
+                  if (bodyString.includes('<head>')) {
+                    bodyString = bodyString.replace('<head>', `<head>\n${scriptTag}`);
+                  } else if (bodyString.includes('<body>')) {
+                    bodyString = bodyString.replace('<body>', `<body>\n${scriptTag}`);
+                  } else {
+                    bodyString = scriptTag + bodyString;
                   }
 
                   const updatedBuffer = Buffer.from(bodyString, 'utf8');
