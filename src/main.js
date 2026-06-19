@@ -1572,22 +1572,14 @@ let classroomMonitorIntervalId = null;
 // Define CSS rules globally so both load event and monitor loop can use them
 const zoomCssOverrides = `
   /* ── Hide top gallery strip of participant videos ── */
-  .gallery-video-container,
   .video-carousel,
-  .gallery-view,
   .active-speaker-video-carousel-container,
   .speaker-active-video-carousel-container,
   #speak-list,
   .video-grid__carousel,
   .filmstrip,
-  .gallery-layout,
   [class*="carousel" i],
-  [class*="filmstrip" i],
-  [class*="gallery-container" i],
-  [class*="gallery-video" i],
-  [class*="active-speaker" i],
-  [class*="speaker-view" i],
-  [class*="speaker-active" i] {
+  [class*="filmstrip" i] {
     display: none !important;
     height: 0 !important;
     min-height: 0 !important;

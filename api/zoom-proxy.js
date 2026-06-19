@@ -1,5 +1,19 @@
 import https from 'https';
 import { URL } from 'url';
+import zlib from 'zlib';
+
+function decompress(buffer, contentEncoding) {
+  if (!contentEncoding) return buffer;
+  const encoding = contentEncoding.trim().toLowerCase();
+  if (encoding.includes('gzip')) {
+    return zlib.gunzipSync(buffer);
+  } else if (encoding.includes('deflate')) {
+    return zlib.inflateSync(buffer);
+  } else if (encoding.includes('br')) {
+    return zlib.brotliDecompressSync(buffer);
+  }
+  return buffer;
+}
 
 export const config = {
   api: {
@@ -63,6 +77,23 @@ export default function handler(req, res) {
       headers: { 'Content-Type': 'text/plain' },
       body: '[Zoom-Injected-' + type + '] ' + msg
     }).catch(function() {});
+  }
+
+  // MutationObserver to replace "Joining Meeting" with "Joining Class"
+  try {
+    var textObserver = new MutationObserver(function(mutations) {
+      var walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT, null, false);
+      var node;
+      while (node = walker.nextNode()) {
+        if (node.nodeValue.indexOf('Joining Meeting') !== -1) {
+          node.nodeValue = node.nodeValue.replace(/Joining Meeting/g, 'Joining Class');
+        }
+      }
+    });
+    textObserver.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    remoteLog('log', 'MutationObserver for Joining Class text replacement installed.');
+  } catch (e) {
+    remoteLog('error', 'Failed to install MutationObserver: ' + e.message);
   }
 
   remoteLog('log', 'Automation script active. Path: ' + window.location.pathname);
@@ -356,14 +387,30 @@ export default function handler(req, res) {
 
       const contentType = responseHeaders['content-type'] || '';
       const isHtml = contentType.includes('text/html');
+      // Resolve path using req.url or cleanPath
+      const reqPath = cleanPath || '';
+      const isJs = contentType.includes('javascript') || reqPath.endsWith('.js');
+      const isJson = contentType.includes('json') || reqPath.endsWith('.json');
 
-      if (isHtml) {
+      if (isHtml || isJs || isJson) {
         const chunks = [];
         proxyRes.on('data', (chunk) => {
           chunks.push(chunk);
         });
         proxyRes.on('end', () => {
-          const bodyBuffer = Buffer.concat(chunks);
+          let bodyBuffer = Buffer.concat(chunks);
+
+          // Decompress if needed
+          const contentEncoding = responseHeaders['content-encoding'];
+          if (contentEncoding) {
+            try {
+              bodyBuffer = decompress(bodyBuffer, contentEncoding);
+              delete responseHeaders['content-encoding'];
+            } catch (e) {
+              console.error(`Decompression failed for ${reqPath}:`, e.message);
+            }
+          }
+
           let bodyString = bodyBuffer.toString('utf8');
 
           // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths
@@ -373,14 +420,16 @@ export default function handler(req, res) {
             .replace(/https:\/\/zoom\.us/g, '/zoom')
             .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
 
-          // 2. For HTML responses, inject our auto-joining script
-          const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
-          if (bodyString.includes('<head>')) {
-            bodyString = bodyString.replace('<head>', `<head>\n${scriptTag}`);
-          } else if (bodyString.includes('<body>')) {
-            bodyString = bodyString.replace('<body>', `<body>\n${scriptTag}`);
-          } else {
-            bodyString = scriptTag + bodyString;
+          if (isHtml) {
+            // 2. For HTML responses, inject our auto-joining script
+            const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
+            if (bodyString.includes('<head>')) {
+              bodyString = bodyString.replace('<head>', `<head>\n${scriptTag}`);
+            } else if (bodyString.includes('<body>')) {
+              bodyString = bodyString.replace('<body>', `<body>\n${scriptTag}`);
+            } else {
+              bodyString = scriptTag + bodyString;
+            }
           }
 
           const updatedBuffer = Buffer.from(bodyString, 'utf8');
