@@ -385,6 +385,7 @@ export default function handler(req, res) {
 
           const updatedBuffer = Buffer.from(bodyString, 'utf8');
           responseHeaders['content-length'] = String(updatedBuffer.length);
+          delete responseHeaders['transfer-encoding']; // Prevent Content-Length vs Transfer-Encoding conflict
 
           for (const [key, value] of Object.entries(responseHeaders)) {
             res.setHeader(key, value);

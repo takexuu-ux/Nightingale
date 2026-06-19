@@ -417,6 +417,8 @@ export default defineConfig({
               const contentType = responseHeaders['content-type'] || '';
               const isHtml = contentType.includes('text/html');
 
+              console.log(`[VITE RES] ${proxyRes.statusCode} for ${req.method} ${req.url} (Type: ${contentType})`);
+
               if (isHtml) {
                 const chunks = [];
                 proxyRes.on('data', (chunk) => {
@@ -445,6 +447,7 @@ export default defineConfig({
 
                   const updatedBuffer = Buffer.from(bodyString, 'utf8');
                   responseHeaders['content-length'] = String(updatedBuffer.length);
+                  delete responseHeaders['transfer-encoding']; // Prevent Content-Length vs Transfer-Encoding conflict
 
                   for (const [key, value] of Object.entries(responseHeaders)) {
                     res.setHeader(key, value);
