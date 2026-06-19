@@ -3072,16 +3072,12 @@ function createClassCard(c, isCurrentlyLive) {
         </div>
       `;
     } else {
-      // Upcoming: button toggles inline start-time display (no popup)
+      // Upcoming: button shows date/time on click with red glow, auto-reverts after 2s
       buttonsHtml = `
         <div style="margin-top: 0.75rem; width: 100%;">
-          <button class="btn btn-secondary" onclick="var d=this.nextElementSibling; d.style.display=d.style.display==='none'?'flex':'none';" style="width: 100%; opacity: 0.65; cursor: pointer; font-size: 0.78rem; letter-spacing: 0.08em;">
+          <button class="btn btn-secondary upcoming-info-btn" onclick="(function(btn){if(btn._busy)return;btn._busy=true;var sp=btn.querySelector('span');sp.textContent='${formattedTime.replace(/'/g, '\\&apos;').replace(/"/g, '&quot;')}';btn.style.outline='2px solid rgba(255,60,60,0.55)';btn.style.boxShadow='0 0 14px rgba(255,50,50,0.35)';btn.style.opacity='1';setTimeout(function(){sp.textContent='UPCOMING';btn.style.outline='';btn.style.boxShadow='';btn.style.opacity='0.65';btn._busy=false;},2000);})(this)" style="width:100%;opacity:0.65;cursor:pointer;font-size:0.78rem;letter-spacing:0.08em;transition:all 0.3s ease;">
             <span>UPCOMING</span>
           </button>
-          <div style="display:none; margin-top:0.45rem; padding:0.38rem 0.75rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--text-secondary);">
-            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="opacity:0.5;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
-            <span>Starts ${formattedTime}</span>
-          </div>
         </div>
       `;
     }

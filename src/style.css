@@ -665,7 +665,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 220px;
+  min-height: 190px;
   flex: 1 1 280px;
   max-width: 320px;
   transition: var(--transition-smooth);
@@ -739,13 +739,13 @@ body {
 }
 
 .live-indicator.status-upcoming {
-  background: rgba(255, 255, 255, 0.04) !important;
-  color: rgba(180, 200, 210, 0.55) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(80, 160, 180, 0.09) !important;
+  color: rgba(150, 210, 225, 0.75) !important;
+  border-color: rgba(80, 160, 180, 0.2) !important;
 }
 
 .live-indicator.status-upcoming .live-dot-glow {
-  background-color: rgba(180, 200, 210, 0.4) !important;
+  background-color: rgba(140, 200, 215, 0.55) !important;
   box-shadow: none !important;
 }
 
