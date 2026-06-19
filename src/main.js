@@ -3069,39 +3069,30 @@ function createClassCard(c, isCurrentlyLive) {
     `;
   }
 
-  let batchLabel = getSimplifiedBatchTitle(c.batch?.title || (c.liveClass?.batch?.title)) || activeBatch;
-  const blUpper = batchLabel.toUpperCase();
-  if (blUpper === 'NCLEX' || blUpper.includes('NCLEX')) batchLabel = 'NCLEX MASTERS';
-  else if (blUpper === 'PSC' || blUpper.includes('STATE PSC')) batchLabel = 'STATE PSC / CHO';
-  else if (blUpper === 'MSC' || blUpper.includes('M.SC')) batchLabel = 'M.SC ENTRANCE';
 
   const card = document.createElement('div');
   card.className = `glass-panel class-card ${isCurrentlyLive ? 'live-card-border' : ''}`;
   let badgeHtml = '';
   if (isCurrentlyLive) {
-    badgeHtml = '<div class="live-indicator" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Live Now</div>';
+    badgeHtml = '<div class="live-indicator live-pulse" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Live Now</div>';
   } else if (c._hasEndedToday) {
-    badgeHtml = '<div class="live-indicator" style="position: static; margin-bottom: 0; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border-color: rgba(255, 255, 255, 0.1);"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px; background: var(--text-muted); box-shadow: none; animation: none;"></div>Ended</div>';
+    badgeHtml = '<div class="live-indicator status-ended" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Ended</div>';
+  } else {
+    badgeHtml = '<div class="live-indicator status-upcoming" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Upcoming</div>';
   }
 
   card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; width: 100%;">
-      <span class="badge-batch">${batchLabel}</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; width: 100%;">
+      <span class="class-date-badge" style="margin-bottom: 0;">${formattedTime}</span>
       ${badgeHtml}
     </div>
-    <span class="class-date-badge">${formattedTime}</span>
-    <h3 class="class-title">${title}</h3>
-    <div class="class-instructor">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+    <h3 class="class-title" style="margin-top: 0; margin-bottom: 0.5rem;">${title}</h3>
+    <div class="class-instructor" style="margin-bottom: 1rem;">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
       <span>${instructor}</span>
-    </div>
-    <div class="class-details">
-      <span class="class-time">${c.zoom_meet_id ? 'Meeting ID: ' + c.zoom_meet_id : 'Video Lecture'}</span>
     </div>
     ${buttonsHtml}
   `;
-
-  return card;
 }
 
 // Delegated handler for Join Embedded Classroom buttons

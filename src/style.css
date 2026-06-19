@@ -624,11 +624,11 @@ body {
 
 .class-card {
   position: relative;
-  background: rgba(13, 14, 21, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 11, 16, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 24px;
   padding: 2.25rem 2rem;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -636,15 +636,15 @@ body {
   flex: 1 1 340px;
   max-width: 380px;
   transition: var(--transition-smooth);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 .class-card:hover {
-  background: rgba(20, 22, 33, 0.7);
-  border-color: rgba(0, 240, 255, 0.3); /* Cyan border glow on hover */
+  background: rgba(15, 17, 26, 0.35) !important;
+  border-color: rgba(0, 240, 255, 0.25) !important;
   transform: translateY(-5px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 240, 255, 0.1);
 }
 
 /* Premium styled secondary/upcoming join button inside classroom cards */
@@ -675,31 +675,82 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
-/* Live Badge Indicator */
+/* Live & Status Badges inside cards */
 .live-indicator {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background: rgba(255, 77, 77, 0.1);
-  color: #ff4d4d;
-  border: 1px solid rgba(255, 77, 77, 0.2);
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
   font-weight: 800;
   padding: 0.25rem 0.65rem;
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  animation: pulse 1.8s infinite;
+  border: 1px solid transparent;
 }
 
-.live-dot {
+.live-indicator.live-pulse {
+  background: rgba(255, 0, 127, 0.1) !important;
+  color: #ff007f !important;
+  border-color: rgba(255, 0, 127, 0.25) !important;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.15);
+  animation: liveBadgeGlow 2s infinite ease-in-out;
+}
+
+.live-indicator.live-pulse .live-dot-glow {
+  background-color: #ff007f !important;
+  box-shadow: 0 0 8px #ff007f !important;
+  animation: liveDotPulse 1.5s infinite ease-in-out;
+}
+
+.live-indicator.status-upcoming {
+  background: rgba(0, 240, 255, 0.08) !important;
+  color: #00f0ff !important;
+  border-color: rgba(0, 240, 255, 0.2) !important;
+}
+
+.live-indicator.status-upcoming .live-dot-glow {
+  background-color: #00f0ff !important;
+  box-shadow: 0 0 6px rgba(0, 240, 255, 0.4) !important;
+}
+
+.live-indicator.status-ended {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-muted) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.live-indicator.status-ended .live-dot-glow {
+  background-color: var(--text-muted) !important;
+  box-shadow: none !important;
+}
+
+.live-dot-glow {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #ff4d4d;
+}
+
+@keyframes liveBadgeGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 0, 127, 0.15);
+    border-color: rgba(255, 0, 127, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 0, 127, 0.4);
+    border-color: rgba(255, 0, 127, 0.5);
+  }
+}
+
+@keyframes liveDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.6;
+  }
 }
 
 .class-date-badge {
