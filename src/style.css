@@ -13,6 +13,7 @@
   --card-bg-hover: rgba(16, 18, 26, 0.85);
   --border-glow: rgba(255, 0, 85, 0.15);
   --border-light: rgba(255, 255, 255, 0.08);
+  --primary-glow: rgba(255, 0, 85, 0.4);
 
   --text-primary: #f1f3f5;
   --text-secondary: #8a9ab0;
@@ -39,6 +40,7 @@ body.tweak-cyan-mode {
   --secondary: #ff0055;
   --border-glow: rgba(0, 240, 255, 0.15);
   --glow-primary: 0 0 15px rgba(0, 240, 255, 0.4);
+  --primary-glow: rgba(0, 240, 255, 0.4);
   --grad-zoom: linear-gradient(to right, var(--primary) 0%, rgba(0, 100, 110, 0.6) 100%);
   --grad-zoom-hover: linear-gradient(to right, var(--primary) 20%, rgba(0, 100, 110, 0.9) 100%);
   --glow-zoom: 0 0 20px rgba(0, 240, 255, 0.55);
@@ -48,6 +50,7 @@ body.tweak-amber-mode {
   --secondary: #00f0ff;
   --border-glow: rgba(255, 170, 0, 0.15);
   --glow-primary: 0 0 15px rgba(255, 170, 0, 0.4);
+  --primary-glow: rgba(255, 170, 0, 0.4);
   --grad-zoom: linear-gradient(to right, var(--primary) 0%, rgba(110, 70, 0, 0.6) 100%);
   --grad-zoom-hover: linear-gradient(to right, var(--primary) 20%, rgba(110, 70, 0, 0.9) 100%);
   --glow-zoom: 0 0 20px rgba(255, 170, 0, 0.55);
@@ -57,6 +60,7 @@ body.tweak-emerald-mode {
   --secondary: #ff0055;
   --border-glow: rgba(0, 255, 102, 0.15);
   --glow-primary: 0 0 15px rgba(0, 255, 102, 0.4);
+  --primary-glow: rgba(0, 255, 102, 0.4);
   --grad-zoom: linear-gradient(to right, var(--primary) 0%, rgba(0, 110, 40, 0.6) 100%);
   --grad-zoom-hover: linear-gradient(to right, var(--primary) 20%, rgba(0, 110, 40, 0.9) 100%);
   --glow-zoom: 0 0 20px rgba(0, 255, 102, 0.55);
@@ -495,10 +499,24 @@ body {
 }
 
 /* Alerts Toast (Sleek UI inside the Card container) */
-#auth-alert-container, #dashboard-alert-container {
+#auth-alert-container {
   width: 100%;
   margin-bottom: 1.25rem;
   animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#dashboard-alert-container {
+  width: 100%;
+  max-width: 500px;
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#dashboard-alert-container .alert {
+  padding: 0.6rem 1rem;
+  font-size: 0.78rem;
+  border-radius: 10px;
 }
 
 .alert {
@@ -563,9 +581,8 @@ body {
   font-weight: 800;
   letter-spacing: 0.05em;
   font-family: var(--font-display);
-  background: var(--grad-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--primary);
+  text-shadow: 0 0 10px var(--primary-glow);
   text-transform: uppercase;
 }
 
@@ -886,18 +903,18 @@ body {
 
 /* Refresh Button Styling */
 .btn-refresh {
-  background: rgba(0, 240, 255, 0.03);
-  border: 1px solid rgba(0, 240, 255, 0.15);
-  color: #00f0ff;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .btn-refresh svg {
@@ -907,15 +924,19 @@ body {
 }
 
 .btn-refresh:hover:not(:disabled) {
-  background: rgba(0, 240, 255, 0.15);
-  color: #00f0ff;
-  border-color: rgba(0, 240, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
-  transform: rotate(180deg) scale(1.05);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 10px var(--primary-glow);
+  transform: rotate(90deg) scale(1.05);
 }
 
 .btn-refresh:active {
   transform: scale(0.92);
+  background: var(--primary) !important;
+  color: #000000 !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 15px var(--primary-glow) !important;
 }
 
 .refresh-icon {
@@ -923,15 +944,16 @@ body {
 }
 
 .btn-refresh.spinning {
-  background: rgba(0, 240, 255, 0.1) !important;
-  border-color: rgba(0, 240, 255, 0.3) !important;
-  color: #00f0ff !important;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: var(--border-light) !important;
+  color: var(--primary) !important;
+  box-shadow: 0 0 12px var(--primary-glow) !important;
   pointer-events: none;
 }
 
 .btn-refresh.spinning .refresh-icon {
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
+  filter: drop-shadow(0 0 8px var(--primary));
 }
 
 /* Live Now Section highlights */
@@ -4349,27 +4371,21 @@ body::-webkit-scrollbar {
 
 @keyframes preloader-heartbeat-pulse {
   0% {
-    transform: scale(1);
     filter: drop-shadow(0 0 6px var(--primary-glow)) brightness(1);
   }
   14% {
-    transform: scale(1.14);
-    filter: drop-shadow(0 0 22px var(--primary-glow)) brightness(1.25);
+    filter: drop-shadow(0 0 20px var(--primary-glow)) brightness(1.2);
   }
   28% {
-    transform: scale(1.04);
     filter: drop-shadow(0 0 10px var(--primary-glow)) brightness(1.05);
   }
   42% {
-    transform: scale(1.2);
     filter: drop-shadow(0 0 30px var(--primary-glow)) brightness(1.35);
   }
   70% {
-    transform: scale(1);
     filter: drop-shadow(0 0 6px var(--primary-glow)) brightness(1);
   }
   100% {
-    transform: scale(1);
     filter: drop-shadow(0 0 6px var(--primary-glow)) brightness(1);
   }
 }
