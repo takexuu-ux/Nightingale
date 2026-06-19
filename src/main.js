@@ -19,7 +19,8 @@ function remoteLog(type, ...args) {
   } catch (e) {}
 }
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://prod-api.nnlone.com';
+// Always use /api prefix — Vite proxy handles this on localhost, Vercel rewrites handle it in production
+const API_BASE = '/api';
 
 // Helper to generate a UUID for device ID tracking
 function getOrCreateDeviceId() {
@@ -3732,7 +3733,7 @@ if (tabAllVideos) {
 
 // Refetch button handler
 if (refetchBtn) {
-  refetchBtn.addEventListener('click', loadDashboard);
+  refetchBtn.addEventListener('click', () => loadDashboard(false));
 }
 
 // Header logo click handler (act as Home/Refresh button)
