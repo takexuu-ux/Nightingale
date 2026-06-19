@@ -808,6 +808,7 @@ function updateTimelineSlider() {
   timelineSlider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(255, 255, 255, 0.08) ${pct}%, rgba(255, 255, 255, 0.08) 100%)`;
 }
 
+
 // Seek to a specific slider index value
 function seekToSliderValue(val) {
   const len = currentTimelineSlides.length;
@@ -3051,30 +3052,36 @@ function createClassCard(c, isCurrentlyLive) {
         </div>
       `;
     }
-    if (isCurrentlyLive) {
+  } else {
+    if (c._hasEndedToday) {
+      // Ended: disabled button
+      buttonsHtml = `
+        <div style="margin-top: 0.75rem; width: 100%;" class="zoom-action-container">
+          <button class="btn btn-secondary join-embedded-btn" disabled data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%; opacity: 0.5;">
+            <span>Class Ended</span>
+          </button>
+        </div>
+      `;
+    } else if (isCurrentlyLive) {
       // Live: show join button
       buttonsHtml = `
-        <div style="margin-top: 1rem; width: 100%; display: flex; flex-direction: column; gap: 0.5rem;" class="zoom-action-container">
+        <div style="margin-top: 0.75rem; width: 100%;" class="zoom-action-container">
           <button class="btn btn-zoom join-embedded-btn" data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
             <span>Join Live Classroom</span>
           </button>
         </div>
       `;
-    } else if (c._hasEndedToday) {
-      // Ended: disabled button
-      buttonsHtml = `
-        <div style="margin-top: 1rem; width: 100%;">
-          <button class="btn btn-secondary" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed;">
-            <span>Class Ended</span>
-          </button>
-        </div>
-      `;
     } else {
-      // Upcoming: show starts-at info, no join button
+      // Upcoming: button toggles inline start-time display (no popup)
       buttonsHtml = `
-        <div style="margin-top: 1rem; width: 100%; padding: 0.6rem 0.9rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); display: flex; align-items: center; gap: 0.5rem;">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0; opacity:0.6;"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
-          <span style="font-size: 0.78rem; color: var(--text-secondary); opacity: 0.75; font-family: var(--font-display); letter-spacing: 0.03em;">Starts at ${formattedTime}</span>
+        <div style="margin-top: 0.75rem; width: 100%;">
+          <button class="btn btn-secondary" onclick="var d=this.nextElementSibling; d.style.display=d.style.display==='none'?'flex':'none';" style="width: 100%; opacity: 0.65; cursor: pointer; font-size: 0.78rem; letter-spacing: 0.08em;">
+            <span>UPCOMING</span>
+          </button>
+          <div style="display:none; margin-top:0.45rem; padding:0.38rem 0.75rem; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--text-secondary);">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="opacity:0.5;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+            <span>Starts ${formattedTime}</span>
+          </div>
         </div>
       `;
     }
@@ -3100,11 +3107,11 @@ function createClassCard(c, isCurrentlyLive) {
         <span>${instructor}</span>
       </div>
     </div>
-    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start;">
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 0.5rem;">
       <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.35rem; line-height: 1.25;">${title}</h3>
     </div>
     <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.9rem; margin-bottom: 0.5rem; width: 100%;">
-      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.7rem; opacity: 0.7;">${formattedTime}</span>
+      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.68rem; opacity: 0.65;">${formattedTime}</span>
     </div>
     ${buttonsHtml}
   `;

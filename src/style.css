@@ -739,24 +739,24 @@ body {
 }
 
 .live-indicator.status-upcoming {
-  background: rgba(0, 240, 255, 0.08) !important;
-  color: #00f0ff !important;
-  border-color: rgba(0, 240, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(180, 200, 210, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .live-indicator.status-upcoming .live-dot-glow {
-  background-color: #00f0ff !important;
-  box-shadow: 0 0 6px rgba(0, 240, 255, 0.4) !important;
+  background-color: rgba(180, 200, 210, 0.4) !important;
+  box-shadow: none !important;
 }
 
 .live-indicator.status-ended {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: var(--text-muted) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(220, 38, 38, 0.1) !important;
+  color: rgba(248, 113, 113, 0.85) !important;
+  border-color: rgba(220, 38, 38, 0.25) !important;
 }
 
 .live-indicator.status-ended .live-dot-glow {
-  background-color: var(--text-muted) !important;
+  background-color: rgba(248, 113, 113, 0.7) !important;
   box-shadow: none !important;
 }
 
