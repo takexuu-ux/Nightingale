@@ -3096,6 +3096,7 @@ function createClassCard(c, isCurrentlyLive) {
     </div>
     ${buttonsHtml}
   `;
+  return card;
 }
 
 // Delegated handler for Join Embedded Classroom buttons
