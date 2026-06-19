@@ -2737,10 +2737,10 @@ async function loadDashboard(isSilent = false) {
         loadDashboard(isSilent); // Retry with the new token
         return;
       }
-      // Refresh also failed — user must re-authenticate
-      handleLogout();
+      // Refresh failed — could be a transient server hiccup, not a real session expiry.
+      // Show a soft error and let the next silent auto-refresh recover automatically.
       if (!isSilent) {
-        showAlert('Your session has expired. Please log in again.');
+        showAlert('Unable to fetch classes. Please try refreshing.');
       }
       return;
     }
@@ -2789,6 +2789,8 @@ async function loadDashboard(isSilent = false) {
 
     renderBatchSelector();
     renderClasses(classesData);
+    // Always clear any stale error alert on successful fetch — even during silent refresh
+    clearAlert();
 
   } catch (error) {
     console.error('Error fetching classes:', error);
