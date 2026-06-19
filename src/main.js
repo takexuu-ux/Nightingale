@@ -3735,6 +3735,20 @@ if (refetchBtn) {
   refetchBtn.addEventListener('click', loadDashboard);
 }
 
+// Header logo click handler (act as Home/Refresh button)
+const headerLogo = document.getElementById('header-logo');
+if (headerLogo) {
+  headerLogo.addEventListener('click', () => {
+    // If classroom viewer is open, exit the classroom and return to dashboard
+    if (classroomViewer && !classroomViewer.classList.contains('hide')) {
+      exitClassroom();
+    } else {
+      // Otherwise, refresh dashboard classes
+      loadDashboard();
+    }
+  });
+}
+
 // ─── Nightingale Redesign Scripts ───────────────────────────────────────
 
 let activeBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
