@@ -3051,25 +3051,33 @@ function createClassCard(c, isCurrentlyLive) {
         </div>
       `;
     }
-  } else {
-    // Join button for upcoming or live class
-    let buttonText = isCurrentlyLive ? 'Join Live Classroom' : 'Join Class';
-    let buttonClass = isCurrentlyLive ? 'btn-zoom' : 'btn-secondary';
-    let isDisabled = '';
-
-    if (c._hasEndedToday) {
-      buttonText = 'Class Ended';
-      buttonClass = 'btn-secondary';
-      isDisabled = 'disabled';
+    if (isCurrentlyLive) {
+      // Live: show join button
+      buttonsHtml = `
+        <div style="margin-top: 1rem; width: 100%; display: flex; flex-direction: column; gap: 0.5rem;" class="zoom-action-container">
+          <button class="btn btn-zoom join-embedded-btn" data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
+            <span>Join Live Classroom</span>
+          </button>
+        </div>
+      `;
+    } else if (c._hasEndedToday) {
+      // Ended: disabled button
+      buttonsHtml = `
+        <div style="margin-top: 1rem; width: 100%;">
+          <button class="btn btn-secondary" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed;">
+            <span>Class Ended</span>
+          </button>
+        </div>
+      `;
+    } else {
+      // Upcoming: show starts-at info, no join button
+      buttonsHtml = `
+        <div style="margin-top: 1rem; width: 100%; padding: 0.6rem 0.9rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0; opacity:0.6;"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+          <span style="font-size: 0.78rem; color: var(--text-secondary); opacity: 0.75; font-family: var(--font-display); letter-spacing: 0.03em;">Starts at ${formattedTime}</span>
+        </div>
+      `;
     }
-
-    buttonsHtml = `
-      <div style="margin-top: 1rem; width: 100%; display: flex; flex-direction: column; gap: 0.5rem;" class="zoom-action-container">
-        <button class="btn ${buttonClass} join-embedded-btn" ${isDisabled} data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
-          <span>${buttonText}</span>
-        </button>
-      </div>
-    `;
   }
 
 
@@ -3093,10 +3101,10 @@ function createClassCard(c, isCurrentlyLive) {
       </div>
     </div>
     <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start;">
-      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.15rem; line-height: 1.3;">${title}</h3>
+      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.35rem; line-height: 1.25;">${title}</h3>
     </div>
-    <div style="display: flex; justify-content: flex-start; align-items: center; margin-top: 0.9rem; margin-bottom: 0.75rem; width: 100%;">
-      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.7rem; opacity: 0.75;">${formattedTime}</span>
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.9rem; margin-bottom: 0.5rem; width: 100%;">
+      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.7rem; opacity: 0.7;">${formattedTime}</span>
     </div>
     ${buttonsHtml}
   `;
