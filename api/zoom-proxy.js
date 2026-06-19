@@ -8,8 +8,8 @@ export const config = {
 };
 
 export default function handler(req, res) {
-  // 1. Extract path and other query parameters
-  const { path, ...queryParams } = req.query;
+  // 1. Extract path, subdomain, and other query parameters
+  const { path, subdomain, ...queryParams } = req.query;
   
   // 2. Reconstruct target URL, removing any trailing slash from the path to prevent invalid Zoom API routing
   let cleanPath = path || '';
@@ -17,7 +17,8 @@ export default function handler(req, res) {
     cleanPath = cleanPath.slice(0, -1);
   }
   
-  const targetUrl = new URL(`https://zoom.us/${cleanPath}`);
+  const host = subdomain ? `${subdomain}.zoom.us` : 'zoom.us';
+  const targetUrl = new URL(`https://${host}/${cleanPath}`);
   for (const [key, value] of Object.entries(queryParams)) {
     if (Array.isArray(value)) {
       value.forEach((v) => targetUrl.searchParams.append(key, v));
@@ -29,22 +30,244 @@ export default function handler(req, res) {
   // 3. Prepare headers for the target request
   const headers = { ...req.headers };
   
-  // Override headers to simulate requests originating from zoom.us
-  headers['host'] = 'zoom.us';
-  headers['origin'] = 'https://zoom.us';
+  // Override headers to simulate requests originating from target host
+  headers['host'] = host;
+  headers['origin'] = `https://${host}`;
+  delete headers['accept-encoding']; // Force uncompressed response to allow body manipulation
   
   if (headers['referer']) {
     try {
       const refUrl = new URL(headers['referer']);
-      refUrl.host = 'zoom.us';
+      refUrl.host = host;
       refUrl.protocol = 'https:';
       headers['referer'] = refUrl.toString();
     } catch (e) {
-      headers['referer'] = 'https://zoom.us/';
+      headers['referer'] = `https://${host}/`;
     }
   } else {
-    headers['referer'] = 'https://zoom.us/';
+    headers['referer'] = `https://${host}/`;
   }
+
+  const INJECTED_SCRIPT = `
+(function() {
+  console.log('[Zoom-Injected] Script successfully loaded inside Zoom iframe!', window.location.href);
+
+  function remoteLog(type, msg) {
+    console.log('[Injected-' + type + ']', msg);
+    fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: '[Zoom-Injected-' + type + '] ' + msg
+    }).catch(function() {});
+  }
+
+  remoteLog('log', 'Automation script active. Path: ' + window.location.pathname);
+
+  var attempts = 0;
+  var interval = setInterval(function() {
+    attempts++;
+    
+    var allInputs = Array.from(document.querySelectorAll('input[type="text"], input[type="password"], input:not([type])')).filter(function(input) {
+      try {
+        var style = window.getComputedStyle(input);
+        return style.display !== 'none' && style.visibility !== 'hidden' && input.type !== 'hidden';
+      } catch (e) {
+        return true;
+      }
+    });
+
+    if (allInputs.length === 0) {
+      if (attempts % 30 === 0) {
+        remoteLog('log', 'Still waiting for inputs inside iframe (attempt ' + attempts + ')...');
+      }
+      return;
+    }
+
+    var passcodeInput = allInputs.find(function(input) {
+      var name = (input.name || '').toLowerCase();
+      var id = (input.id || '').toLowerCase();
+      var placeholder = (input.placeholder || '').toLowerCase();
+      return name.includes('passcode') || id.includes('passcode') || 
+             name.includes('password') || id.includes('password') ||
+             placeholder.includes('passcode') || placeholder.includes('password') ||
+             input.type === 'password';
+    });
+
+    var nameInput = allInputs.find(function(input) {
+      var name = (input.name || '').toLowerCase();
+      var id = (input.id || '').toLowerCase();
+      var placeholder = (input.placeholder || '').toLowerCase();
+      return (name.includes('name') || id.includes('name') || placeholder.includes('name')) && input !== passcodeInput;
+    });
+
+    if (!passcodeInput && !nameInput) {
+      if (allInputs.length >= 2) {
+        passcodeInput = allInputs[0];
+        nameInput = allInputs[1];
+      } else if (allInputs.length === 1) {
+        nameInput = allInputs[0];
+      }
+    } else if (passcodeInput && !nameInput) {
+      nameInput = allInputs.find(function(input) { return input !== passcodeInput; });
+    } else if (!passcodeInput && allInputs.length >= 2 && nameInput) {
+      passcodeInput = allInputs.find(function(input) { return input !== nameInput; });
+    }
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var passcode = urlParams.get('pwd') || '';
+    var userName = urlParams.get('un') || urlParams.get('uname') || 'Rajit';
+
+    if (passcodeInput && passcode) {
+      if (!passcodeInput.value || passcodeInput.value !== passcode) {
+        passcodeInput.focus();
+        try {
+          var prototype = Object.getPrototypeOf(passcodeInput);
+          var descriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+          if (descriptor && descriptor.set) {
+            descriptor.set.call(passcodeInput, passcode);
+          } else {
+            passcodeInput.value = passcode;
+          }
+          var tracker = passcodeInput._valueTracker;
+          if (tracker) tracker.setValue('');
+        } catch (e) {
+          passcodeInput.value = passcode;
+        }
+        passcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        passcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
+        remoteLog('log', 'Filled passcode inside iframe.');
+      }
+    }
+
+    if (nameInput && userName) {
+      if (!nameInput.value || nameInput.value !== userName) {
+        nameInput.focus();
+        try {
+          var prototype = Object.getPrototypeOf(nameInput);
+          var descriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+          if (descriptor && descriptor.set) {
+            descriptor.set.call(nameInput, userName);
+          } else {
+            nameInput.value = userName;
+          }
+          var tracker = nameInput._valueTracker;
+          if (tracker) tracker.setValue('');
+        } catch (e) {
+          nameInput.value = userName;
+        }
+        nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+        nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+        remoteLog('log', 'Filled name inside iframe: ' + userName);
+
+        var checkbox = document.querySelector('input[type="checkbox"]');
+        if (checkbox && !checkbox.checked) {
+          checkbox.checked = true;
+          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
+
+    var joinBtn = document.querySelector('.preview-join-button') || 
+                  document.querySelector('button.preview-join-button') ||
+                  document.querySelector('button#joinBtn') ||
+                  document.querySelector('button[class*="join" i]') ||
+                  document.querySelector('button[id*="join" i]');
+
+    var buttons = Array.from(document.querySelectorAll('button, input[type="button"], a, [role="button"], .join-btn, #join-btn'));
+    if (!joinBtn) {
+      joinBtn = buttons.find(function(btn) {
+        var text = (btn.textContent || btn.value || '').trim().toLowerCase();
+        return text === 'join' || text.includes('join meeting') || text.includes('join class') || btn.classList.contains('join-btn') || btn.id === 'join-btn';
+      });
+    }
+
+    if (!joinBtn) {
+      var allElements = Array.from(document.querySelectorAll('button, input[type="button"], a, [role="button"], div, span'));
+      joinBtn = allElements.find(function(el) {
+        var text = (el.textContent || el.value || '').trim().toLowerCase();
+        if (text === 'join' || text === 'join meeting' || text === 'join class') {
+          return el.querySelectorAll('div').length === 0;
+        }
+        return false;
+      });
+    }
+
+    var isPasscodeReady = !passcodeInput || (passcodeInput.value && passcodeInput.value.length > 0);
+    var isNameReady = nameInput && nameInput.value && nameInput.value.length > 1;
+
+    if (joinBtn && isNameReady && isPasscodeReady) {
+      if (joinBtn.disabled || joinBtn.classList.contains('disabled') || joinBtn.getAttribute('disabled') !== null) {
+        joinBtn.disabled = false;
+        joinBtn.removeAttribute('disabled');
+        joinBtn.classList.remove('disabled');
+      }
+
+      var now = Date.now();
+      var lastClick = parseInt(joinBtn.dataset.lastClicked || '0', 10);
+      if (now - lastClick > 1500) {
+        joinBtn.dataset.lastClicked = String(now);
+        remoteLog('log', 'Found join button! Simulating click event.');
+        joinBtn.focus();
+        
+        try {
+          joinBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+          joinBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+        } catch (e) {}
+
+        try {
+          joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          joinBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+          joinBtn.click();
+          joinBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        } catch (e) {}
+
+        var form = joinBtn.closest('form');
+        if (form) {
+          try {
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          } catch (e) {}
+        }
+      }
+    }
+
+    var audioBtn = buttons.find(function(btn) {
+      var text = (btn.textContent || btn.value || '').trim().toLowerCase();
+      return text.includes('join with computer audio') || 
+             text.includes('join computer audio') || 
+             text === 'computer audio' ||
+             text.includes('join audio');
+    });
+
+    if (audioBtn && audioBtn !== joinBtn) {
+      if (audioBtn.disabled || audioBtn.classList.contains('disabled') || audioBtn.getAttribute('disabled') !== null) {
+        audioBtn.disabled = false;
+        audioBtn.removeAttribute('disabled');
+        audioBtn.classList.remove('disabled');
+      }
+
+      var now = Date.now();
+      var lastClick = parseInt(audioBtn.dataset.lastClicked || '0', 10);
+      if (now - lastClick > 1500) {
+        audioBtn.dataset.lastClicked = String(now);
+        remoteLog('log', 'Found audio button! Simulating click event.');
+        audioBtn.focus();
+
+        try {
+          audioBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+          audioBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+        } catch (e) {}
+
+        try {
+          audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+          audioBtn.click();
+          audioBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        } catch (e) {}
+      }
+    }
+  }, 250);
+})();
+`;
 
   // 4. Perform proxy request
   const proxyReq = https.request(
@@ -69,29 +292,75 @@ export default function handler(req, res) {
       responseHeaders['access-control-allow-methods'] = 'GET, POST, OPTIONS, PUT, DELETE';
       responseHeaders['access-control-allow-headers'] = '*';
 
-      // Rewrite Location redirect headers to point to our proxy instead of zoom.us
+      // Rewrite Location redirect headers to point to our proxy instead of zoom.us / subdomains
       if (responseHeaders['location']) {
-        responseHeaders['location'] = responseHeaders['location'].replace(/^https:\/\/zoom\.us\//i, '/zoom/');
+        responseHeaders['location'] = responseHeaders['location']
+          .replace(/^https:\/\/zoom\.us\//i, '/zoom/')
+          .replace(/^https:\/\/([a-z0-9\-]+)\.zoom\.us\//i, '/zoom-subdomain/$1/');
       }
 
       // Strip domain parameter from Set-Cookie so the browser binds them to our domain
       if (responseHeaders['set-cookie']) {
+        const stripCookie = (cookie) => {
+          return cookie
+            .replace(/domain=\.?[a-z0-9\-]+\.zoom\.us;?\s*/gi, '')
+            .replace(/domain=\.?zoom\.us;?\s*/gi, '');
+        };
         if (Array.isArray(responseHeaders['set-cookie'])) {
-          responseHeaders['set-cookie'] = responseHeaders['set-cookie'].map((cookie) => {
-            return cookie.replace(/domain=\.?zoom\.us;?\s*/gi, '');
-          });
+          responseHeaders['set-cookie'] = responseHeaders['set-cookie'].map(stripCookie);
         } else if (typeof responseHeaders['set-cookie'] === 'string') {
-          responseHeaders['set-cookie'] = responseHeaders['set-cookie'].replace(/domain=\.?zoom\.us;?\s*/gi, '');
+          responseHeaders['set-cookie'] = stripCookie(responseHeaders['set-cookie']);
         }
       }
 
-      // Apply headers to the response
-      for (const [key, value] of Object.entries(responseHeaders)) {
-        res.setHeader(key, value);
-      }
+      const contentType = responseHeaders['content-type'] || '';
+      const isHtml = contentType.includes('text/html');
+      const isJs = contentType.includes('javascript') || contentType.includes('application/x-javascript');
 
-      // Pipe the response stream back to the client
-      proxyRes.pipe(res);
+      if (isHtml || isJs) {
+        const chunks = [];
+        proxyRes.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+        proxyRes.on('end', () => {
+          const bodyBuffer = Buffer.concat(chunks);
+          let bodyString = bodyBuffer.toString('utf8');
+
+          // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths
+          bodyString = bodyString
+            .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
+            .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
+            .replace(/https:\/\/zoom\.us/g, '/zoom')
+            .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+
+          // 2. For HTML responses, inject our auto-joining script
+          if (isHtml) {
+            const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
+            if (bodyString.includes('<head>')) {
+              bodyString = bodyString.replace('<head>', `<head>\n${scriptTag}`);
+            } else if (bodyString.includes('<body>')) {
+              bodyString = bodyString.replace('<body>', `<body>\n${scriptTag}`);
+            } else {
+              bodyString = scriptTag + bodyString;
+            }
+          }
+
+          const updatedBuffer = Buffer.from(bodyString, 'utf8');
+          responseHeaders['content-length'] = String(updatedBuffer.length);
+
+          for (const [key, value] of Object.entries(responseHeaders)) {
+            res.setHeader(key, value);
+          }
+          res.end(updatedBuffer);
+        });
+      } else {
+        // Apply headers to the response
+        for (const [key, value] of Object.entries(responseHeaders)) {
+          res.setHeader(key, value);
+        }
+        // Pipe the response stream back to the client
+        proxyRes.pipe(res);
+      }
     }
   );
 
@@ -103,3 +372,4 @@ export default function handler(req, res) {
   // Pipe the request body (if any) into the proxy request
   req.pipe(proxyReq);
 }
+

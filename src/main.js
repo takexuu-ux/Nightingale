@@ -1,5 +1,24 @@
 // NNL ONE Web Client App Logic
 
+// Safe remote logging helper for backend visibility during development
+function remoteLog(type, ...args) {
+  try {
+    const message = args.map(arg => {
+      if (arg instanceof Error) return arg.stack || arg.message;
+      if (typeof arg === 'object') {
+        try { return JSON.stringify(arg); } catch (e) { return String(arg); }
+      }
+      return String(arg);
+    }).join(' ');
+    
+    fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: `[BROWSER ${type.toUpperCase()}] ${message}`
+    }).catch(() => {});
+  } catch (e) {}
+}
+
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://prod-api.nnlone.com';
 
 // Helper to generate a UUID for device ID tracking
@@ -92,6 +111,7 @@ let captureIntervalId = null;
 let zoomAutomationIntervalId = null;
 let currentTimelineSlides = [];
 let currentMeetingId = ''; // Traces current meeting room ID
+let currentPasscode = ''; // Traces current meeting passcode
 let currentSelectedSlideTimestamp = null; // Traces selected slide in rewind mode
 let inRewindMode = false; // Flag to trace if user is looking at historic slide
 let relativeTimeInterval = null; // Interval to update slide age, e.g. "5m ago"
@@ -982,22 +1002,103 @@ function startZoomIframeAutomation() {
     clearInterval(zoomAutomationIntervalId);
   }
 
-  console.log('Starting Zoom iframe automation loop...');
+  remoteLog('log', 'Starting Zoom iframe automation loop...');
   zoomAutomationIntervalId = setInterval(() => {
     const iframe = document.getElementById('classroom-iframe');
     if (!iframe) return;
+
+    // Check if iframe is in cross-origin state
+    let isCrossOrigin = false;
+    try {
+      const href = iframe.contentWindow.location.href;
+    } catch (e) {
+      isCrossOrigin = true;
+    }
+
+    if (isCrossOrigin) {
+      // Quietly return since the injected script inside the proxy handles automation same-origin
+      return;
+    }
 
     try {
       const doc = iframe.contentDocument || iframe.contentWindow.document;
       if (!doc || iframe.src === 'about:blank' || iframe.src === '') return;
 
-      // 1. Autofill "Your Name" input box
-      // 1. Autofill "Your Name" input box
-      const nameInput = doc.querySelector('input[name="name"]') || 
-                        doc.querySelector('input#name') || 
-                        doc.querySelector('input[placeholder*="Name"]') || 
-                        doc.querySelector('input[type="text"]');
-      
+      // Find all visible text, password, and typable inputs in the iframe DOM
+      const allInputs = Array.from(doc.querySelectorAll('input[type="text"], input[type="password"], input:not([type])')).filter(input => {
+        try {
+          const style = iframe.contentWindow.getComputedStyle(input);
+          return style.display !== 'none' && style.visibility !== 'hidden' && input.type !== 'hidden';
+        } catch (e) {
+          return true; // fallback
+        }
+      });
+
+      // 0. Detect "Meeting Passcode" input box (only search in visible inputs!)
+      let passcodeInput = allInputs.find(input => {
+        const name = (input.name || '').toLowerCase();
+        const id = (input.id || '').toLowerCase();
+        const placeholder = (input.placeholder || '').toLowerCase();
+        return name.includes('passcode') || id.includes('passcode') || 
+               name.includes('password') || id.includes('password') ||
+               placeholder.includes('passcode') || placeholder.includes('password') ||
+               input.type === 'password';
+      });
+
+      // 1. Detect "Your Name" input box (only search in visible inputs!)
+      let nameInput = allInputs.find(input => {
+        const name = (input.name || '').toLowerCase();
+        const id = (input.id || '').toLowerCase();
+        const placeholder = (input.placeholder || '').toLowerCase();
+        return (name.includes('name') || id.includes('name') || placeholder.includes('name')) && input !== passcodeInput;
+      });
+
+      // Robust index-based fallback if attributes are not matched clearly
+      if (!passcodeInput && !nameInput) {
+        if (allInputs.length >= 2) {
+          passcodeInput = allInputs[0];
+          nameInput = allInputs[1];
+        } else if (allInputs.length === 1) {
+          nameInput = allInputs[0];
+        }
+      } else if (passcodeInput && !nameInput) {
+        nameInput = allInputs.find(input => input !== passcodeInput);
+      } else if (!passcodeInput && allInputs.length >= 2 && nameInput) {
+        passcodeInput = allInputs.find(input => input !== nameInput);
+      }
+
+      // Fill passcode if present and different
+      if (passcodeInput && currentPasscode) {
+        if (!passcodeInput.value || passcodeInput.value !== currentPasscode) {
+          passcodeInput.focus();
+          try {
+            // Bypass React 16+ value property setter to trigger onChange state update properly
+            const prototype = Object.getPrototypeOf(passcodeInput);
+            const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+            if (descriptor && descriptor.set) {
+              descriptor.set.call(passcodeInput, currentPasscode);
+            } else {
+              passcodeInput.value = currentPasscode;
+            }
+            const tracker = passcodeInput._valueTracker;
+            if (tracker) {
+              tracker.setValue('');
+            }
+          } catch (err) {
+            passcodeInput.value = currentPasscode;
+          }
+          passcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+          passcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
+          // Dispatch typing events
+          passcodeInput.dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }));
+          passcodeInput.dispatchEvent(new KeyboardEvent('keypress', { key: 't', bubbles: true }));
+          passcodeInput.dispatchEvent(new KeyboardEvent('keyup', { key: 't', bubbles: true }));
+          passcodeInput.blur();
+          remoteLog('log', 'Autofilled passcode inside Zoom iframe:', currentPasscode);
+        }
+      }
+
+      // Fill name
       let studentName = localStorage.getItem('nnl_user_name') || 'Rajit';
       if (studentName.toLowerCase() === 'student' || studentName.toLowerCase() === 'general student' || !studentName) {
         studentName = 'Rajit';
@@ -1030,7 +1131,7 @@ function startZoomIframeAutomation() {
           nameInput.dispatchEvent(new KeyboardEvent('keypress', { key: 't', bubbles: true }));
           nameInput.dispatchEvent(new KeyboardEvent('keyup', { key: 't', bubbles: true }));
           nameInput.blur();
-          console.log('Autofilled name inside Zoom iframe:', studentName);
+          remoteLog('log', 'Autofilled name inside Zoom iframe:', studentName);
         }
 
         // Also check the "Remember my name" checkbox if present
@@ -1043,7 +1144,10 @@ function startZoomIframeAutomation() {
 
       // 2. Click the "Join" button
       let joinBtn = doc.querySelector('.preview-join-button') || 
-                    doc.querySelector('button.preview-join-button');
+                    doc.querySelector('button.preview-join-button') ||
+                    doc.querySelector('button#joinBtn') ||
+                    doc.querySelector('button[class*="join" i]') ||
+                    doc.querySelector('button[id*="join" i]');
       
       const buttons = Array.from(doc.querySelectorAll('button, input[type="button"], a, [role="button"], .join-btn, #join-btn, .preview-join-button'));
       if (!joinBtn) {
@@ -1053,10 +1157,27 @@ function startZoomIframeAutomation() {
         });
       }
 
-      if (joinBtn && nameInput && nameInput.value && nameInput.value.length > 1) {
+      // Fallback search in all elements (divs, spans) for "Join" text button
+      if (!joinBtn) {
+        const allElements = Array.from(doc.querySelectorAll('button, input[type="button"], a, [role="button"], div, span'));
+        joinBtn = allElements.find(el => {
+          const text = (el.textContent || el.value || '').trim().toLowerCase();
+          if (text === 'join' || text === 'join meeting' || text === 'join class') {
+            // Ensure it's not a container element by checking if it has no child divs
+            const hasNoChildDivs = el.querySelectorAll('div').length === 0;
+            return hasNoChildDivs;
+          }
+          return false;
+        });
+      }
+
+      const isPasscodeReady = !passcodeInput || (passcodeInput.value && passcodeInput.value.length > 0);
+      const isNameReady = nameInput && nameInput.value && nameInput.value.length > 1;
+
+      if (joinBtn && isNameReady && isPasscodeReady) {
         // If the Join button is disabled or has disabled styles, force-enable it in the DOM
         if (joinBtn.disabled || joinBtn.classList.contains('disabled') || joinBtn.getAttribute('disabled') !== null) {
-          console.log('Join button is disabled in DOM. Force-enabling...');
+          remoteLog('log', 'Join button is disabled in DOM. Force-enabling...');
           joinBtn.disabled = false;
           joinBtn.removeAttribute('disabled');
           joinBtn.classList.remove('disabled');
@@ -1067,7 +1188,7 @@ function startZoomIframeAutomation() {
         // Only click and retry every 2 seconds if still present in DOM
         if (now - lastClick > 2000) {
           joinBtn.dataset.lastClicked = String(now);
-          console.log('Attempting to click Join button:', joinBtn);
+          remoteLog('log', 'Attempting to click Join button:', joinBtn.tagName, joinBtn.id, joinBtn.className);
           
           joinBtn.focus();
 
@@ -1094,7 +1215,7 @@ function startZoomIframeAutomation() {
           // Form submission fallback
           const form = joinBtn.closest('form') || nameInput.closest('form');
           if (form) {
-            console.log('Submitting parent form as fallback...');
+            remoteLog('log', 'Submitting parent form as fallback...');
             try {
               form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
             } catch (e) {}
@@ -1236,6 +1357,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     }
 
     currentMeetingId = meetingId; // Save current meeting ID
+    currentPasscode = passcode; // Save current meeting passcode
 
     // Set UI metadata
     classroomTitle.textContent = title;
@@ -1317,6 +1439,8 @@ async function exitClassroom() {
   if (await showCustomConfirm('Are you sure you want to exit the live classroom?', 'Exit Classroom', true)) {
     stopTimelineCaptureLoop();
     stopClassroomMonitorLoop();
+    currentMeetingId = '';
+    currentPasscode = '';
 
     // Leave and destroy Zoom SDK Component Client if active
     if (zoomClient) {
@@ -1582,10 +1706,70 @@ const zoomCssOverrides = `
   #zmmtg-root { width: 100% !important; height: 100% !important; }
 `;
 
+function injectIframeAjaxLogger(iframe) {
+  try {
+    const win = iframe.contentWindow;
+    if (!win || win._nnlAjaxLoggerInstalled) return;
+    win._nnlAjaxLoggerInstalled = true;
+
+    // Intercept fetch
+    if (win.fetch) {
+      const origFetch = win.fetch;
+      win.fetch = function(resource, options) {
+        let url = '';
+        if (typeof resource === 'string') {
+          url = resource;
+        } else if (resource && typeof resource === 'object') {
+          url = resource.url || String(resource);
+        } else {
+          url = String(resource);
+        }
+
+        console.log(`[IFRAME FETCH] Requesting: ${url}`);
+        return origFetch.apply(this, arguments).then(res => {
+          console.log(`[IFRAME FETCH RESPONSE] ${url} -> Status: ${res.status}`);
+          return res;
+        }).catch(err => {
+          console.error(`[IFRAME FETCH ERROR] ${url} -> Error: ${err.message}`);
+          throw err;
+        });
+      };
+    }
+
+    // Intercept XMLHttpRequest
+    if (win.XMLHttpRequest) {
+      const origOpen = win.XMLHttpRequest.prototype.open;
+      const origSend = win.XMLHttpRequest.prototype.send;
+
+      win.XMLHttpRequest.prototype.open = function(method, url) {
+        this._nnlMethod = method;
+        this._nnlUrl = url;
+        return origOpen.apply(this, arguments);
+      };
+
+      win.XMLHttpRequest.prototype.send = function() {
+        console.log(`[IFRAME XHR] Requesting: [${this._nnlMethod}] ${this._nnlUrl}`);
+        this.addEventListener('load', () => {
+          console.log(`[IFRAME XHR RESPONSE] ${this._nnlUrl} -> Status: ${this.status}`);
+        });
+        this.addEventListener('error', () => {
+          console.error(`[IFRAME XHR ERROR] ${this._nnlUrl} -> Error / Failed`);
+        });
+        return origSend.apply(this, arguments);
+      };
+    }
+  } catch (e) {
+    console.error('Error injecting AJAX logger into iframe:', e.message);
+  }
+}
+
 function injectAudioHooks(iframe) {
   try {
     const win = iframe.contentWindow;
     if (!win) return;
+
+    // Inject AJAX logger to trace Zoom errors
+    injectIframeAjaxLogger(iframe);
 
     if (!win._nnlAudioHooksInstalled) {
       win._nnlAudioHooksInstalled = true;
@@ -2329,8 +2513,7 @@ function startClassroomMonitorLoop() {
 
       // ── STEP 2: Auto-fill name if pre-join screen is showing ──
       const nameInput = iframeDoc.querySelector('input[name="inputname"]') || 
-                        iframeDoc.querySelector('#inputname') || 
-                        iframeDoc.querySelector('input[type="text"]');
+                        iframeDoc.querySelector('#inputname');
       const joinBtn = iframeDoc.querySelector('button[type="submit"]') || 
                       iframeDoc.querySelector('.join-btn') ||
                       Array.from(iframeDoc.querySelectorAll('button')).find(btn => btn.textContent.toLowerCase().includes('join'));
