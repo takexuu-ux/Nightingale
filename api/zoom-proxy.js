@@ -34,13 +34,9 @@ export default function handler(req, res) {
   headers['host'] = host;
   headers['origin'] = `https://${host}`;
   
-  const acceptHeader = req.headers['accept'] || '';
-  const isHtmlRequest = acceptHeader.includes('text/html') || 
-                        (cleanPath && !cleanPath.includes('.')) || 
-                        (cleanPath && cleanPath.endsWith('.html'));
-
-  if (isHtmlRequest) {
-    delete headers['accept-encoding']; // Force uncompressed response for HTML body manipulation
+  const isAsset = /\.(js|css|wasm|png|jpg|jpeg|gif|svg|woff2?|ttf|otf|mp4|webm|wav|mp3|json)$/i.test(cleanPath || '');
+  if (!isAsset) {
+    delete headers['accept-encoding']; // Force uncompressed response for pages/apis to allow safe HTML interception
   }
   
   if (headers['referer']) {

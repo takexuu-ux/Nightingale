@@ -102,13 +102,9 @@ export default defineConfig({
           headers['host'] = targetHost;
           headers['origin'] = `https://${targetHost}`;
 
-          const acceptHeader = req.headers['accept'] || '';
-          const isHtmlRequest = acceptHeader.includes('text/html') || 
-                                !url.pathname.includes('.') || 
-                                url.pathname.endsWith('.html');
-
-          if (isHtmlRequest) {
-            delete headers['accept-encoding']; // Force uncompressed response for HTML body manipulation
+          const isAsset = /\.(js|css|wasm|png|jpg|jpeg|gif|svg|woff2?|ttf|otf|mp4|webm|wav|mp3|json)$/i.test(url.pathname);
+          if (!isAsset) {
+            delete headers['accept-encoding']; // Force uncompressed response for pages/apis to allow safe HTML interception
           }
 
           if (headers['referer']) {
