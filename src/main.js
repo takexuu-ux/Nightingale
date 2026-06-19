@@ -3085,19 +3085,22 @@ function createClassCard(c, isCurrentlyLive) {
   }
 
   card.innerHTML = `
-    <div style="flex: 1; display: flex; flex-direction: column;">
-      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0.4rem; font-size: 1rem; line-height: 1.35;">${title}</h3>
-      <div class="class-instructor" style="margin-bottom: 0;">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 4px; flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-        <span style="font-size: 0.8rem;">${instructor}</span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; width: 100%;">
+      ${badgeHtml}
+      <div class="class-instructor" style="margin-bottom: 0; font-size: 0.78rem; opacity: 0.85;">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 3px; flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span>${instructor}</span>
       </div>
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; margin-bottom: 0.75rem; width: 100%;">
-      ${badgeHtml}
-      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.7rem; opacity: 0.8;">${formattedTime}</span>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start;">
+      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.15rem; line-height: 1.3;">${title}</h3>
+    </div>
+    <div style="display: flex; justify-content: flex-start; align-items: center; margin-top: 0.9rem; margin-bottom: 0.75rem; width: 100%;">
+      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.7rem; opacity: 0.75;">${formattedTime}</span>
     </div>
     ${buttonsHtml}
   `;
+
   return card;
 }
 
