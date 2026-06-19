@@ -364,6 +364,8 @@ function checkLoginState() {
   const token = localStorage.getItem('nnl_access_token');
   const savedPhone = localStorage.getItem('nnl_phone');
   const cyberHero = document.getElementById('cyber-hero');
+  const toggleBtn = document.getElementById('tweak-panel-toggle-btn');
+  const tweaksWidget = document.querySelector('.cyber-tweaks-widget');
 
   // Pre-fill phone field if they have logged in before
   if (savedPhone && phoneInput && savedPhone !== 'Guest User' && !isNaN(savedPhone.replace(/\s+/g, ''))) {
@@ -378,6 +380,7 @@ function checkLoginState() {
     appHeader.classList.remove('hide');
     classroomDashboard.classList.remove('hide');
     if (cyberHero) cyberHero.classList.add('hide');
+    if (toggleBtn) toggleBtn.classList.remove('hide');
 
     // Update profile info
     let displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone || 'Student');
@@ -399,6 +402,8 @@ function checkLoginState() {
     appHeader.classList.add('hide');
     classroomDashboard.classList.add('hide');
     if (cyberHero) cyberHero.classList.remove('hide');
+    if (toggleBtn) toggleBtn.classList.add('hide');
+    if (tweaksWidget) tweaksWidget.classList.remove('open');
   }
 }
 

@@ -4631,5 +4631,52 @@ body:has(#app-header:not(.hide)) .dashboard-container {
   box-shadow: 0 0 12px rgba(0, 132, 255, 0.25) !important;
 }
 
+/* Minimal Auth Screen Overrides */
+.auth-container {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  max-width: 380px !important;
+}
 
+.auth-container:hover {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
 
+.auth-container .brand-logo-container,
+.auth-container .brand-badge,
+.auth-container .brand-subtitle {
+  display: none !important;
+}
+
+.auth-container .brand-header {
+  text-align: left !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.auth-container .brand-title {
+  font-family: var(--font-display) !important;
+  font-size: 1.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  color: #fff !important;
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+  text-shadow: var(--glow-primary) !important;
+  margin-bottom: 0 !important;
+}
+
+/* On mobile, center the title since the hero section gets centered */
+@media (max-width: 768px) {
+  .auth-container .brand-header {
+    text-align: center !important;
+  }
+  .auth-container {
+    max-width: 340px !important;
+    margin: 0 auto !important;
+  }
+}
