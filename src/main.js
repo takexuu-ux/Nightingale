@@ -999,7 +999,7 @@ function showFallbackJoinCard(meetingId, passcode, title, instructorName) {
 
   const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
   if (zoomFallbackBtn) {
-    zoomFallbackBtn.href = `zoommtg://zoom.us/join?action=join&confno=${meetingId}&pwd=${passcode}`;
+    zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
   }
 }
 
@@ -1318,7 +1318,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Populate the fallback button URL in the header immediately so it's always ready
     const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
     if (zoomFallbackBtn && meetingId) {
-      zoomFallbackBtn.href = `zoommtg://zoom.us/join?action=join&confno=${meetingId}&pwd=${passcode}`;
+      zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
     // Make sure bottom floating helper is completely removed/hidden
