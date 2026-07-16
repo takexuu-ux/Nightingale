@@ -384,9 +384,20 @@ export default function handler(req, res) {
       // Strip domain parameter from Set-Cookie so the browser binds them to our domain
       if (responseHeaders['set-cookie']) {
         const stripCookie = (cookie) => {
-          return cookie
+          let c = cookie
             .replace(/domain=\.?[a-z0-9\-]+\.zoom\.us;?\s*/gi, '')
             .replace(/domain=\.?zoom\.us;?\s*/gi, '');
+          
+          // Force SameSite=None and Secure for cross-site iframe compatibility
+          if (!c.toLowerCase().includes('samesite=')) {
+            c = c.trim().endsWith(';') ? `${c} SameSite=None;` : `${c}; SameSite=None;`;
+          } else {
+            c = c.replace(/samesite=[a-z]+/gi, 'SameSite=None');
+          }
+          if (!c.toLowerCase().includes('secure')) {
+            c = c.trim().endsWith(';') ? `${c} Secure;` : `${c}; Secure;`;
+          }
+          return c;
         };
         if (Array.isArray(responseHeaders['set-cookie'])) {
           responseHeaders['set-cookie'] = responseHeaders['set-cookie'].map(stripCookie);
