@@ -4789,7 +4789,6 @@ function openRecordingPlayer(recording) {
         iframe.style.borderRadius = '12px';
         iframe.setAttribute('allow', 'encrypted-media');
         iframe.setAttribute('allowfullscreen', 'true');
-        iframe.setAttribute('referrerpolicy', 'no-referrer');
         bodyEl.appendChild(iframe);
       } else {
         if (noUrlEl) noUrlEl.classList.remove('hide');
