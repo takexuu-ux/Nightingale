@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import https from 'https';
+import http from 'http';
+import net from 'net';
 import zlib from 'zlib';
 
 function decompress(buffer, contentEncoding) {
@@ -170,10 +172,53 @@ export default defineConfig({
   remoteLog('log', 'Automation script active. Path: ' + window.location.pathname);
 
   var attempts = 0;
+  var audioClicked = false;
   var interval = setInterval(function() {
     attempts++;
-    
-    // 0. Auto-click recording consent OK button if it appears
+
+    // STEP A: Check for audio join button FIRST — it appears after joining
+    // MUST run before any early return so we catch it on the loading screen
+    if (!audioClicked) {
+      var allPageEls = Array.from(document.querySelectorAll('button, input[type="button"], a, [role="button"], div, span'));
+      var audioBtn = allPageEls.find(function(el) {
+        var text = (el.textContent || el.value || '').trim().toLowerCase();
+        return (text.includes('join audio by computer') ||
+                text.includes('join with computer audio') ||
+                text.includes('join computer audio') ||
+                text === 'computer audio' ||
+                text.includes('audio by computer')) &&
+               el.children.length < 3;
+      });
+      if (audioBtn) {
+        if (audioBtn.disabled || audioBtn.classList.contains('disabled') || audioBtn.getAttribute('disabled') !== null) {
+          audioBtn.disabled = false;
+          audioBtn.removeAttribute('disabled');
+          audioBtn.classList.remove('disabled');
+        }
+        var nowA = Date.now();
+        var lastClickA = parseInt(audioBtn.dataset.lastClicked || '0', 10);
+        if (nowA - lastClickA > 3000) {
+          audioBtn.dataset.lastClicked = String(nowA);
+          remoteLog('log', 'Found audio button: "' + audioBtn.textContent.trim() + '". Auto-clicking!');
+          audioBtn.focus();
+          try {
+            audioBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+            audioBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+          } catch (e) {}
+          try {
+            audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+            audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+            audioBtn.click();
+            audioBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          } catch (e) {}
+          audioClicked = true;
+          setTimeout(function() { clearInterval(interval); remoteLog('log', 'Audio joined. Automation complete.'); }, 4000);
+        }
+        return;
+      }
+    }
+
+    // STEP B: Auto-click recording consent OK button if it appears
     var okBtn = null;
     var allInteractive = Array.from(document.querySelectorAll('button, [role="button"], .zm-btn, a'));
     okBtn = allInteractive.find(function(el) {
@@ -209,6 +254,7 @@ export default defineConfig({
       }
     }
 
+    // STEP C: Fill pre-join form inputs
     var allInputs = Array.from(document.querySelectorAll('input[type="text"], input[type="password"], input:not([type])')).filter(function(input) {
       try {
         var style = window.getComputedStyle(input);
@@ -220,7 +266,7 @@ export default defineConfig({
 
     if (allInputs.length === 0) {
       if (attempts % 30 === 0) {
-        remoteLog('log', 'Still waiting for inputs inside iframe (attempt ' + attempts + ')...');
+        remoteLog('log', 'No form inputs (attempt ' + attempts + '). Meeting may be loading...');
       }
       return;
     }
@@ -382,45 +428,6 @@ export default defineConfig({
       }
     }
 
-    // Search broadly for "Join Audio by Computer" — covers buttons, divs, spans, anchors
-    var allPageElements = Array.from(document.querySelectorAll('button, input[type="button"], a, [role="button"], div, span'));
-    var audioBtn = allPageElements.find(function(el) {
-      var text = (el.textContent || el.value || '').trim().toLowerCase();
-      return (text.includes('join audio by computer') ||
-              text.includes('join with computer audio') ||
-              text.includes('join computer audio') ||
-              text === 'computer audio' ||
-              text.includes('audio by computer')) &&
-             el.children.length < 3; // avoid parent wrappers with the same text
-    });
-
-    if (audioBtn && audioBtn !== joinBtn) {
-      if (audioBtn.disabled || audioBtn.classList.contains('disabled') || audioBtn.getAttribute('disabled') !== null) {
-        audioBtn.disabled = false;
-        audioBtn.removeAttribute('disabled');
-        audioBtn.classList.remove('disabled');
-      }
-
-      var now = Date.now();
-      var lastClick = parseInt(audioBtn.dataset.lastClicked || '0', 10);
-      if (now - lastClick > 3000) {
-        audioBtn.dataset.lastClicked = String(now);
-        remoteLog('log', 'Found audio button! Text: "' + audioBtn.textContent.trim() + '". Clicking.');
-        audioBtn.focus();
-
-        try {
-          audioBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
-          audioBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
-        } catch (e) {}
-
-        try {
-          audioBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-          audioBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
-          audioBtn.click();
-          audioBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-        } catch (e) {}
-      }
-    }
   }, 250);
 })();
 `;
@@ -505,11 +512,13 @@ export default defineConfig({
                   let bodyString = bodyBuffer.toString('utf8');
 
                   // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths.
-                  // IMPORTANT: JS/JSON files get absolute localhost URLs so that Zoom's internal
-                  // `new URL(someVar)` calls don't throw "Invalid URL" (relative paths require a base).
-                  // HTML files get relative paths, which work fine for src/href attributes.
+                  // IMPORTANT: JS/JSON files get absolute localhost URLs so Zoom's `new URL()` never throws.
+                  // HTML files get relative paths (fine for src/href).
+                  // WebSocket URLs (wss://) are also rewritten so they go through our WS tunnel.
                   if (isJs || isJson) {
                     bodyString = bodyString
+                      .replace(/wss:\/\/([a-z0-9\-]+)\.zoom\.us/g, 'ws://localhost:5173/zoom-subdomain/$1')
+                      .replace(/wss:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, 'ws:\\/\\/localhost:5173\\/zoom-subdomain\\/$1')
                       .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, 'http://localhost:5173/zoom-subdomain/$1')
                       .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, 'http:\\/\\/localhost:5173\\/zoom-subdomain\\/$1')
                       .replace(/https:\/\/zoom\.us/g, 'http://localhost:5173/zoom')
@@ -560,6 +569,67 @@ export default defineConfig({
           });
 
           req.pipe(proxyReq);
+        });
+
+        // WebSocket upgrade handler: tunnels ws://localhost:5173/zoom-subdomain/<sub>/... 
+        // to wss://<sub>.zoom.us/... so Zoom's media signaling works through our proxy.
+        server.httpServer.on('upgrade', (req, socket, head) => {
+          const pathname = req.url ? req.url.split('?')[0] : '';
+          const isZoomWs = pathname.startsWith('/zoom-subdomain/') || pathname.startsWith('/zoom/');
+          if (!isZoomWs) return;
+
+          let targetHost, targetPath;
+          if (pathname.startsWith('/zoom-subdomain/')) {
+            const match = pathname.match(/^\/zoom-subdomain\/([a-z0-9\-]+)(.*)/i);
+            if (match) {
+              targetHost = `${match[1]}.zoom.us`;
+              targetPath = match[2] || '/';
+            } else {
+              targetHost = 'zoom.us';
+              targetPath = pathname.slice(16);
+            }
+          } else {
+            targetHost = 'zoom.us';
+            targetPath = pathname.slice(5);
+          }
+
+          const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+          const fullPath = targetPath + queryString;
+
+          console.log(`[VITE WS] Tunnelling WebSocket to wss://${targetHost}${fullPath}`);
+
+          // Open a TLS socket to Zoom's server and splice the upgrade
+          const tlsSocket = require('tls').connect({ host: targetHost, port: 443, servername: targetHost }, () => {
+            const upgradeReq = [
+              `GET ${fullPath} HTTP/1.1`,
+              `Host: ${targetHost}`,
+              `Upgrade: websocket`,
+              `Connection: Upgrade`,
+              `Sec-WebSocket-Version: ${req.headers['sec-websocket-version'] || 13}`,
+              `Sec-WebSocket-Key: ${req.headers['sec-websocket-key'] || ''}`,
+              `Origin: https://${targetHost}`,
+            ];
+            if (req.headers['sec-websocket-extensions']) {
+              upgradeReq.push(`Sec-WebSocket-Extensions: ${req.headers['sec-websocket-extensions']}`);
+            }
+            if (req.headers['sec-websocket-protocol']) {
+              upgradeReq.push(`Sec-WebSocket-Protocol: ${req.headers['sec-websocket-protocol']}`);
+            }
+            upgradeReq.push('', '');
+            tlsSocket.write(upgradeReq.join('\r\n'));
+            if (head && head.length) tlsSocket.write(head);
+            tlsSocket.pipe(socket);
+            socket.pipe(tlsSocket);
+          });
+
+          tlsSocket.on('error', (err) => {
+            console.error('[VITE WS] Tunnel error:', err.message);
+            socket.destroy();
+          });
+          socket.on('error', (err) => {
+            console.error('[VITE WS] Client socket error:', err.message);
+            tlsSocket.destroy();
+          });
         });
       }
     }
