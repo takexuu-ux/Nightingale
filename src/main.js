@@ -999,7 +999,7 @@ function showFallbackJoinCard(meetingId, passcode, title, instructorName) {
 
   const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
   if (zoomFallbackBtn) {
-    zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    zoomFallbackBtn.href = `zoommtg://zoom.us/join?action=join&confno=${meetingId}&pwd=${passcode}`;
   }
 }
 
