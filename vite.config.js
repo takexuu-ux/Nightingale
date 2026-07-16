@@ -350,33 +350,6 @@ export default defineConfig({
         joinBtn.removeAttribute('disabled');
         joinBtn.classList.remove('disabled');
       }
-
-      var now = Date.now();
-      var lastClick = parseInt(joinBtn.dataset.lastClicked || '0', 10);
-      if (now - lastClick > 1500) {
-        joinBtn.dataset.lastClicked = String(now);
-        remoteLog('log', 'Found join button! Simulating click event.');
-        joinBtn.focus();
-        
-        try {
-          joinBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
-          joinBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
-        } catch (e) {}
-
-        try {
-          joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-          joinBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
-          joinBtn.click();
-          joinBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-        } catch (e) {}
-
-        var form = joinBtn.closest('form');
-        if (form) {
-          try {
-            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-          } catch (e) {}
-        }
-      }
     }
 
     var audioBtn = buttons.find(function(btn) {
