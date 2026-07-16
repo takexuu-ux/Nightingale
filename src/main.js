@@ -1411,7 +1411,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       cleanName = 'Rajit';
     }
     // Include both un and uname to be fully compatible with Zoom Web Client name pre-filling (plain text URL encoded)
-    const zoomWebLink = `/zoom/wc/join/${meetingId}/?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
+    const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
     classroomIframe.src = zoomWebLink;
