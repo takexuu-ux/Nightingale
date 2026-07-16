@@ -185,8 +185,18 @@ export default function handler(req, res) {
     }
 
     var urlParams = new URLSearchParams(window.location.search);
-    var passcode = urlParams.get('pwd') || '';
-    var userName = urlParams.get('un') || urlParams.get('uname') || 'Rajit';
+    var urlPasscode = urlParams.get('pwd') || '';
+    var urlUserName = urlParams.get('un') || urlParams.get('uname') || '';
+
+    if (urlPasscode) {
+      sessionStorage.setItem('nnl_zoom_pwd', urlPasscode);
+    }
+    if (urlUserName) {
+      sessionStorage.setItem('nnl_zoom_un', urlUserName);
+    }
+
+    var passcode = urlPasscode || sessionStorage.getItem('nnl_zoom_pwd') || '';
+    var userName = urlUserName || sessionStorage.getItem('nnl_zoom_un') || 'Rajit';
 
     if (passcodeInput && passcode) {
       if (!passcodeInput.value || passcodeInput.value !== passcode) {
