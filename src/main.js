@@ -1410,17 +1410,14 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     if (cleanName.toLowerCase() === 'student' || cleanName.toLowerCase() === 'general student' || !cleanName) {
       cleanName = 'Rajit';
     }
-    // Include both un and uname to be fully compatible with Zoom Web Client name pre-filling (plain text URL encoded)
+    // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
     const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
     console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
     classroomIframe.src = zoomWebLink;
     classroomIframe.classList.remove('hide');
 
-    // Inject hooks immediately into the iframe's window
-    injectAudioHooks(classroomIframe);
-
-    // Start automated pre-fill and join helper
+    // Start automated pre-fill helper
     startZoomIframeAutomation();
 
     // Load old snapshots from IndexedDB storage
