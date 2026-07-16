@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import https from 'https';
 import http from 'http';
 import net from 'net';
+import tls from 'tls';
 import zlib from 'zlib';
 
 function decompress(buffer, contentEncoding) {
@@ -634,7 +635,7 @@ export default defineConfig({
           console.log(`[VITE WS] Tunnelling WebSocket to wss://${targetHost}${fullPath}`);
 
           // Open a TLS socket to Zoom's server and splice the upgrade
-          const tlsSocket = require('tls').connect({ host: targetHost, port: 443, servername: targetHost }, () => {
+          const tlsSocket = tls.connect({ host: targetHost, port: 443, servername: targetHost }, () => {
             const upgradeReq = [
               `GET ${fullPath} HTTP/1.1`,
               `Host: ${targetHost}`,
