@@ -53,8 +53,12 @@
       "destination": "https://prod-api.nnlone.com/cms/v2/live_classes/:id/"
     },
     {
-      "source": "/api/:path*",
-      "destination": "https://prod-api.nnlone.com/:path*"
+      "source": "/zoom-subdomain/:subdomain/:path*",
+      "destination": "/api/zoom-proxy/?subdomain=:subdomain&path=:path*"
+    },
+    {
+      "source": "/zoom-subdomain/:subdomain/:path*/",
+      "destination": "/api/zoom-proxy/?subdomain=:subdomain&path=:path*"
     },
     {
       "source": "/zoom/:path*",
@@ -63,6 +67,10 @@
     {
       "source": "/zoom/:path*/",
       "destination": "/api/zoom-proxy/?path=:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://prod-api.nnlone.com/:path*"
     }
   ],
   "headers": [
