@@ -86,6 +86,41 @@ export default function handler(req, res) {
   window.onunhandledrejection = function(event) {
     remoteLog('error', 'Unhandled Promise Rejection: ' + (event.reason ? event.reason.message || event.reason : 'unknown'));
   };
+
+  // Intercept WebSocket connections to rewrite Zoom's wss:// URLs to use our proxy origin
+  var OriginalWebSocket = window.WebSocket;
+  window.WebSocket = function(url, protocols) {
+    remoteLog('log', 'Intercepted WebSocket connection request to: ' + url);
+    var modifiedUrl = url;
+    if (typeof url === 'string') {
+      if (url.indexOf('wss://') === 0) {
+        var withoutWss = url.substring(6);
+        var slashIdx = withoutWss.indexOf('/');
+        var host = slashIdx !== -1 ? withoutWss.substring(0, slashIdx) : withoutWss;
+        var path = slashIdx !== -1 ? withoutWss.substring(slashIdx) : '';
+        if (host.endsWith('.zoom.us')) {
+          var subdomain = host.substring(0, host.length - 8);
+          modifiedUrl = 'ws://' + window.location.host + '/zoom-subdomain/' + subdomain + path;
+        } else if (host === 'zoom.us') {
+          modifiedUrl = 'ws://' + window.location.host + '/zoom' + path;
+        }
+      }
+    }
+    remoteLog('log', 'Routing WebSocket connection through proxy: ' + modifiedUrl);
+    try {
+      return protocols ? new OriginalWebSocket(modifiedUrl, protocols) : new OriginalWebSocket(modifiedUrl);
+    } catch (e) {
+      remoteLog('error', 'Failed to construct WebSocket: ' + e.message);
+      throw e;
+    }
+  };
+  window.WebSocket.prototype = OriginalWebSocket.prototype;
+  for (var key in OriginalWebSocket) {
+    if (OriginalWebSocket.hasOwnProperty(key)) {
+      window.WebSocket[key] = OriginalWebSocket[key];
+    }
+  }
+
   var originalConsoleError = console.error;
   console.error = function() {
     var args = Array.prototype.slice.call(arguments);
