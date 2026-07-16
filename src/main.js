@@ -1319,10 +1319,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       throw new Error('No active Zoom credentials found for this class.');
     }
 
-    // Direct launch standard Zoom in a new tab, bypassing the iframe blocks completely
-    const zoomUrl = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
-    window.open(zoomUrl, '_blank');
-    return;
+
 
     // Populate the fallback button URL in the header immediately so it's always ready
     const zoomFallbackBtn = document.getElementById('zoom-fallback-btn');
