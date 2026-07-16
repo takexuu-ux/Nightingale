@@ -357,6 +357,10 @@ export default function handler(req, res) {
       responseHeaders['access-control-allow-methods'] = 'GET, POST, OPTIONS, PUT, DELETE';
       responseHeaders['access-control-allow-headers'] = '*';
 
+      // Set COOP and COEP headers to enable SharedArrayBuffer/WebAssembly for Zoom inside the iframe
+      responseHeaders['cross-origin-opener-policy'] = 'same-origin';
+      responseHeaders['cross-origin-embedder-policy'] = 'credentialless';
+
       // Rewrite Location redirect headers to point to our proxy instead of zoom.us / subdomains
       if (responseHeaders['location']) {
         responseHeaders['location'] = responseHeaders['location']
