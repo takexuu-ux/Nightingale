@@ -147,23 +147,6 @@ export default defineConfig({
     }).catch(function() {});
   }
 
-  // MutationObserver to replace "Joining Meeting" with "Joining Class"
-  try {
-    var textObserver = new MutationObserver(function(mutations) {
-      var walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT, null, false);
-      var node;
-      while (node = walker.nextNode()) {
-        if (node.nodeValue.indexOf('Joining Meeting') !== -1) {
-          node.nodeValue = node.nodeValue.replace(/Joining Meeting/g, 'Joining Class');
-        }
-      }
-    });
-    textObserver.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-    remoteLog('log', 'MutationObserver for Joining Class text replacement installed.');
-  } catch (e) {
-    remoteLog('error', 'Failed to install MutationObserver: ' + e.message);
-  }
-
   remoteLog('log', 'Automation script active. Path: ' + window.location.pathname);
 
   var attempts = 0;
@@ -349,6 +332,33 @@ export default defineConfig({
         joinBtn.disabled = false;
         joinBtn.removeAttribute('disabled');
         joinBtn.classList.remove('disabled');
+      }
+
+      var now = Date.now();
+      var lastClick = parseInt(joinBtn.dataset.lastClicked || '0', 10);
+      if (now - lastClick > 1500) {
+        joinBtn.dataset.lastClicked = String(now);
+        remoteLog('log', 'Found join button! Simulating click event.');
+        joinBtn.focus();
+        
+        try {
+          joinBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true }));
+          joinBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, isPrimary: true }));
+        } catch (e) {}
+
+        try {
+          joinBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          joinBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+          joinBtn.click();
+          joinBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        } catch (e) {}
+
+        var form = joinBtn.closest('form');
+        if (form) {
+          try {
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          } catch (e) {}
+        }
       }
     }
 
