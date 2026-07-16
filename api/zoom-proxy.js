@@ -79,6 +79,26 @@ export default function handler(req, res) {
     }).catch(function() {});
   }
 
+  window.onerror = function(message, source, lineno, colno, error) {
+    remoteLog('error', 'Uncaught Exception: ' + message + ' at ' + source + ':' + lineno + ':' + colno + (error ? ' | ' + error.stack : ''));
+    return false;
+  };
+  window.onunhandledrejection = function(event) {
+    remoteLog('error', 'Unhandled Promise Rejection: ' + (event.reason ? event.reason.message || event.reason : 'unknown'));
+  };
+  var originalConsoleError = console.error;
+  console.error = function() {
+    var args = Array.prototype.slice.call(arguments);
+    remoteLog('error', 'Console Error: ' + args.join(' '));
+    originalConsoleError.apply(console, arguments);
+  };
+  var originalConsoleWarn = console.warn;
+  console.warn = function() {
+    var args = Array.prototype.slice.call(arguments);
+    remoteLog('warn', 'Console Warn: ' + args.join(' '));
+    originalConsoleWarn.apply(console, arguments);
+  };
+
   remoteLog('log', 'Automation script active. Path: ' + window.location.pathname);
 
   var attempts = 0;
