@@ -501,12 +501,23 @@ export default defineConfig({
 
                   let bodyString = bodyBuffer.toString('utf8');
 
-                  // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths
-                  bodyString = bodyString
-                    .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
-                    .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
-                    .replace(/https:\/\/zoom\.us/g, '/zoom')
-                    .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+                  // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths.
+                  // IMPORTANT: JS/JSON files get absolute localhost URLs so that Zoom's internal
+                  // `new URL(someVar)` calls don't throw "Invalid URL" (relative paths require a base).
+                  // HTML files get relative paths, which work fine for src/href attributes.
+                  if (isJs || isJson) {
+                    bodyString = bodyString
+                      .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, 'http://localhost:5173/zoom-subdomain/$1')
+                      .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, 'http:\\/\\/localhost:5173\\/zoom-subdomain\\/$1')
+                      .replace(/https:\/\/zoom\.us/g, 'http://localhost:5173/zoom')
+                      .replace(/https:\\\/\\\/zoom\.us/g, 'http:\\/\\/localhost:5173\\/zoom');
+                  } else {
+                    bodyString = bodyString
+                      .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
+                      .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
+                      .replace(/https:\/\/zoom\.us/g, '/zoom')
+                      .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+                  }
 
                   if (isHtml) {
                     // 2. For HTML responses, inject our auto-joining script

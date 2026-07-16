@@ -441,12 +441,24 @@ export default function handler(req, res) {
 
           let bodyString = bodyBuffer.toString('utf8');
 
-          // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths
-          bodyString = bodyString
-            .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
-            .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
-            .replace(/https:\/\/zoom\.us/g, '/zoom')
-            .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+          // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths.
+          // IMPORTANT: JS/JSON files must get absolute origin URLs so Zoom's internal
+          // `new URL(someVar)` calls never throw "Invalid URL" (relative paths need a base).
+          // On Vercel we use the request origin; locally this is http://localhost:5173.
+          const requestOrigin = (req.headers['x-forwarded-proto'] ? `${req.headers['x-forwarded-proto']}://${req.headers['x-forwarded-host'] || req.headers['host']}` : `http://${req.headers['host']}`) || 'http://localhost:5173';
+          if (isJs || isJson) {
+            bodyString = bodyString
+              .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, `${requestOrigin}/zoom-subdomain/$1`)
+              .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, `${requestOrigin.replace(/\//g, '\\/')}\\/zoom-subdomain\\/$1`)
+              .replace(/https:\/\/zoom\.us/g, `${requestOrigin}/zoom`)
+              .replace(/https:\\\/\\\/zoom\.us/g, `${requestOrigin.replace(/\//g, '\\/')}\\/zoom`);
+          } else {
+            bodyString = bodyString
+              .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
+              .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
+              .replace(/https:\/\/zoom\.us/g, '/zoom')
+              .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+          }
 
           if (isHtml) {
             // 2. For HTML responses, inject our auto-joining script
