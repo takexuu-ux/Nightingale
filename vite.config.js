@@ -382,13 +382,16 @@ export default defineConfig({
       }
     }
 
-    var audioBtn = buttons.find(function(btn) {
-      var text = (btn.textContent || btn.value || '').trim().toLowerCase();
-      return text.includes('join with computer audio') || 
-             text.includes('join computer audio') || 
-             text === 'computer audio' ||
-             text.includes('join audio') ||
-             text.includes('audio by computer');
+    // Search broadly for "Join Audio by Computer" — covers buttons, divs, spans, anchors
+    var allPageElements = Array.from(document.querySelectorAll('button, input[type="button"], a, [role="button"], div, span'));
+    var audioBtn = allPageElements.find(function(el) {
+      var text = (el.textContent || el.value || '').trim().toLowerCase();
+      return (text.includes('join audio by computer') ||
+              text.includes('join with computer audio') ||
+              text.includes('join computer audio') ||
+              text === 'computer audio' ||
+              text.includes('audio by computer')) &&
+             el.children.length < 3; // avoid parent wrappers with the same text
     });
 
     if (audioBtn && audioBtn !== joinBtn) {
@@ -400,9 +403,9 @@ export default defineConfig({
 
       var now = Date.now();
       var lastClick = parseInt(audioBtn.dataset.lastClicked || '0', 10);
-      if (now - lastClick > 1500) {
+      if (now - lastClick > 3000) {
         audioBtn.dataset.lastClicked = String(now);
-        remoteLog('log', 'Found audio button! Simulating click event.');
+        remoteLog('log', 'Found audio button! Text: "' + audioBtn.textContent.trim() + '". Clicking.');
         audioBtn.focus();
 
         try {
