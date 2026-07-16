@@ -4680,3 +4680,9 @@ body:has(#app-header:not(.hide)) .dashboard-container {
     margin: 0 auto !important;
   }
 }
+
+
+/* Hide Chat Panel Button in Video Player */
+#toggle-chat-panel-btn {
+  display: none !important;
+}
