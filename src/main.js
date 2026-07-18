@@ -2798,23 +2798,30 @@ async function loadDashboard(isSilent = false) {
 
     classesData = freshClasses;
     
-    // Save to cache
+    // Save to cache with robust error recovery/retry
     try {
       localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
     } catch (e) {
-      console.warn('LocalStorage cache write failed:', e);
-      // Try to clear space
+      console.warn('First cache write attempt failed, clearing space...', e);
       try {
         localStorage.removeItem('nnl_cache_live_classes_completed');
         localStorage.removeItem('nnl_cache_live_classes_upcoming');
+        localStorage.removeItem('nnl_cache_live_classes_recordings');
         // Clear all old slide caches to free up substantial space
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const k = localStorage.key(i);
-          if (k && k.startsWith('nnl_slides_')) {
-            localStorage.removeItem(k);
+          if (k && (k.startsWith('nnl_slides_') || k.startsWith('nnl_cache_'))) {
+            if (k !== cacheKey) {
+              localStorage.removeItem(k);
+            }
           }
         }
-      } catch (err) {}
+        // Retry saving cache
+        localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
+        console.log('Cache save retry succeeded after cleaning.');
+      } catch (retryError) {
+        console.error('Final cache write failed after cleaning:', retryError);
+      }
     }
 
     renderBatchSelector();
@@ -4854,13 +4861,13 @@ function openRecordingPlayer(recording) {
   }
 }
 
-// Auto-refresh live classes every 5 seconds
+// Auto-refresh live classes every 30 seconds
 setInterval(() => {
   const token = localStorage.getItem('nnl_access_token');
   if (token) {
     loadDashboard(true);
   }
-}, 5000);
+}, 30000);
 
 /* ─────────────────────────────────────────────────────────────────────
    SUBJECT LIBRARY & QUIZ PLAYER REDESIGN
