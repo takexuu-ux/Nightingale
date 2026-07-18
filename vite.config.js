@@ -75,12 +75,13 @@ export default defineConfig({
           const url = new URL(req.url, 'http://' + (req.headers.host || 'localhost:5173'));
           const isZoom = url.pathname.startsWith('/zoom');
           const isZoomSubdomain = url.pathname.startsWith('/zoom-subdomain');
+          const isCaptcha = url.pathname.startsWith('/captcha-image') || url.pathname.startsWith('/captcha-audio') || url.pathname.startsWith('/captcha');
           const isLog = url.pathname === '/api/log';
 
           // Print every incoming request to see what Zoom is requesting from localhost
           console.log('[VITE REQ]', req.method, req.url);
 
-          if (!isZoom && !isZoomSubdomain && !isLog) {
+          if (!isZoom && !isZoomSubdomain && !isCaptcha && !isLog) {
             return next();
           }
 
@@ -96,6 +97,21 @@ export default defineConfig({
             return;
           }
 
+          // Parse referer to extract the correct Zoom subdomain for captcha requests
+          let refererSubdomain = null;
+          const referer = req.headers['referer'];
+          if (referer) {
+            try {
+              const refUrl = new URL(referer);
+              if (refUrl.pathname.startsWith('/zoom-subdomain/')) {
+                const match = refUrl.pathname.match(/^\/zoom-subdomain\/([a-z0-9\-]+)/i);
+                if (match) {
+                  refererSubdomain = match[1];
+                }
+              }
+            } catch (e) {}
+          }
+
           let targetHost = 'zoom.us';
           let targetPath = '';
 
@@ -108,9 +124,12 @@ export default defineConfig({
               targetHost = 'zoom.us';
               targetPath = url.pathname.slice(15);
             }
-          } else {
+          } else if (isZoom) {
             targetHost = 'zoom.us';
             targetPath = url.pathname.slice(5);
+          } else if (isCaptcha) {
+            targetHost = refererSubdomain ? `${refererSubdomain}.zoom.us` : 'zoom.us';
+            targetPath = url.pathname;
           }
 
           if (targetPath.endsWith('/')) {

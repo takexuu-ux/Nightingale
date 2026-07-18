@@ -25,13 +25,36 @@ export default function handler(req, res) {
   // 1. Extract path, subdomain, and other query parameters
   const { path, subdomain, ...queryParams } = req.query;
   
-  // 2. Reconstruct target URL, removing any trailing slash from the path to prevent invalid Zoom API routing
+  // Reconstruct target path and host. For captcha requests, parse referer to use the correct Zoom subdomain.
+  const urlObj = new URL(req.url, 'http://localhost');
+  const pathname = urlObj.pathname;
   let cleanPath = path || '';
+  
+  let refererSubdomain = null;
+  const referer = req.headers['referer'];
+  if (referer) {
+    try {
+      const refUrl = new URL(referer);
+      if (refUrl.pathname.startsWith('/zoom-subdomain/')) {
+        const match = refUrl.pathname.match(/^\/zoom-subdomain\/([a-z0-9\-]+)/i);
+        if (match) {
+          refererSubdomain = match[1];
+        }
+      }
+    } catch (e) {}
+  }
+
+  let host = subdomain ? `${subdomain}.zoom.us` : 'zoom.us';
+
+  if (pathname.startsWith('/captcha-image') || pathname.startsWith('/captcha-audio') || pathname.startsWith('/captcha')) {
+    host = refererSubdomain ? `${refererSubdomain}.zoom.us` : 'zoom.us';
+    cleanPath = pathname.startsWith('/') ? pathname.slice(1) : pathname;
+  }
+
   if (cleanPath.endsWith('/')) {
     cleanPath = cleanPath.slice(0, -1);
   }
   
-  const host = subdomain ? `${subdomain}.zoom.us` : 'zoom.us';
   const targetUrl = new URL(`https://${host}/${cleanPath}`);
   for (const [key, value] of Object.entries(queryParams)) {
     if (Array.isArray(value)) {
