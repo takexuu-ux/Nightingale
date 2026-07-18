@@ -4745,3 +4745,50 @@ body:has(#app-header:not(.hide)) .dashboard-container {
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.25) !important;
 }
 
+/* FORCE LARGE OUTLINE DESIGN OVERRIDING ALL SPECIFICITY RULES */
+.auth-container .brand-subtitle {
+  display: block !important;
+  font-size: 0.75rem !important; /* Slightly smaller to fit clean on one line */
+  color: #fda4af !important; /* Soft rose tint to match red/pink theme */
+  font-style: italic !important;
+  margin-top: 0.8rem !important;
+  opacity: 0.9 !important;
+  line-height: 1.4 !important;
+  max-width: none !important; /* Remove max-width constraint */
+  white-space: nowrap !important; /* Force quote to stay on a single line */
+  font-weight: 500 !important;
+}
+
+.auth-container .brand-header {
+  text-align: left !important;
+  margin-bottom: 10.5rem !important; /* Pushes number input block further down */
+  margin-left: -15px !important; /* Shifts the heading and sub-quote slightly to the left */
+}
+
+.auth-container .brand-title.interactive-outline {
+  font-family: var(--font-display) !important;
+  font-size: 7.2rem !important; /* Huge prominent brand heading */
+  font-weight: 950 !important;
+  letter-spacing: 5px !important;
+  line-height: 1.05 !important;
+  margin-bottom: 0.5rem !important;
+  margin-top: 0 !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  background: radial-gradient(circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%), #ffffff 0%, #fca5a5 50%, #e11d48 100%) !important; /* Premium White to Pink to Rose Red gradient that tracks the cursor */
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease !important;
+  filter: drop-shadow(0 0 15px rgba(225, 29, 72, 0.35)) !important; /* Subtle rose-red drop shadow glow */
+  text-shadow: none !important;
+  cursor: default !important;
+  width: max-content !important;
+  display: block !important;
+  overflow: visible !important;
+}
+
+.auth-container .brand-title.interactive-outline:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  filter: drop-shadow(0 0 25px rgba(225, 29, 72, 0.7)) !important; /* Intense neon pink-red bloom on hover */
+}
+

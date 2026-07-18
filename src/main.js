@@ -4893,8 +4893,9 @@ function openRecordingPlayer(recording) {
   }
 }
 
-// Auto-refresh live classes every 30 seconds
+// Auto-refresh live classes every 30 seconds (only if tab is in focus)
 setInterval(() => {
+  if (document.hidden) return;
   const token = localStorage.getItem('nnl_access_token');
   if (token) {
     loadDashboard(true);
@@ -5708,6 +5709,19 @@ document.getElementById('quiz-close-btn').addEventListener('click', closeQuiz);
 document.getElementById('quiz-restart-btn').addEventListener('click', () => {
   const duration = quizQuestions.length * 60; // 1 min per question
   loadQuiz(currentTestId, document.getElementById('quiz-title').textContent, duration);
+});
+
+// Interactive brand title spotlight mouse tracker
+document.addEventListener('mousemove', (e) => {
+  const title = document.querySelector('.brand-title.interactive-outline');
+  if (!title) return;
+  
+  const rect = title.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  title.style.setProperty('--mouse-x', `${x}px`);
+  title.style.setProperty('--mouse-y', `${y}px`);
 });
 
 
