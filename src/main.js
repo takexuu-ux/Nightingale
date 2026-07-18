@@ -1405,10 +1405,15 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     }
 
     // Load Zoom Web Client in the proxy iframe
-    const userName = localStorage.getItem('nnl_user_name') || 'Rajit';
+    const RANDOM_NAMES = [
+      'Aarav', 'Amit', 'Rahul', 'Vikram', 'Ananya', 'Neha', 'Pooja', 'Rohan',
+      'Karan', 'Siddharth', 'Aditya', 'Riya', 'Sneha', 'Kabir', 'Dev', 'Rudra',
+      'Kunal', 'Abhishek', 'Priya', 'Deepak', 'Sanjay', 'Manish', 'Alok'
+    ];
+    const userName = localStorage.getItem('nnl_user_name') || '';
     let cleanName = userName;
-    if (cleanName.toLowerCase() === 'student' || cleanName.toLowerCase() === 'general student' || !cleanName) {
-      cleanName = 'Rajit';
+    if (cleanName.toLowerCase() === 'student' || cleanName.toLowerCase() === 'general student' || cleanName.toLowerCase() === 'rajit' || !cleanName) {
+      cleanName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
     }
     // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
     const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
@@ -3173,6 +3178,18 @@ liveNowContainer.addEventListener('click', handleJoinClassroomClick);
 
 // Classroom control buttons listeners
 closeClassroomBtn.addEventListener('click', exitClassroom);
+
+// Toggle timeline bar collapse
+const toggleTimelineBarBtn = document.getElementById('toggle-timeline-bar-btn');
+if (toggleTimelineBarBtn) {
+  toggleTimelineBarBtn.addEventListener('click', () => {
+    const timelineBar = document.getElementById('classroom-timeline-bar');
+    if (timelineBar) {
+      const isCollapsed = timelineBar.classList.toggle('collapsed');
+      toggleTimelineBarBtn.classList.toggle('collapsed', isCollapsed);
+    }
+  });
+}
 
 // Toggle custom side chat panel
 if (toggleChatPanelBtn) {

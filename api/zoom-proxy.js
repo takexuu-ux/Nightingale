@@ -277,7 +277,12 @@ export default function handler(req, res) {
     }
 
     var passcode = urlPasscode || sessionStorage.getItem('nnl_zoom_pwd') || '';
-    var userName = urlUserName || sessionStorage.getItem('nnl_zoom_un') || 'Rajit';
+    var RANDOM_NAMES = ['Aarav','Amit','Rahul','Vikram','Ananya','Neha','Pooja','Rohan','Karan','Siddharth','Aditya','Riya','Sneha','Kabir','Dev','Rudra','Kunal','Abhishek','Priya','Deepak','Sanjay','Manish','Alok'];
+    var fallbackName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    var userName = urlUserName || sessionStorage.getItem('nnl_zoom_un') || fallbackName;
+    if (userName.toLowerCase() === 'rajit') {
+      userName = fallbackName;
+    }
 
     if (passcodeInput && passcode) {
       if (!passcodeInput.value || passcodeInput.value !== passcode) {
