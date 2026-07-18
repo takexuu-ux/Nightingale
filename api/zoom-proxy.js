@@ -70,6 +70,20 @@ export default function handler(req, res) {
   // 3. Prepare headers for the target request
   const headers = { ...req.headers };
   
+  // Strip proxy/forwarding/Vercel headers that leak serverless origin to Zoom's security system
+  for (const key of Object.keys(headers)) {
+    const lowerKey = key.toLowerCase();
+    if (
+      lowerKey.startsWith('x-vercel-') || 
+      lowerKey.startsWith('x-forwarded-') || 
+      lowerKey.startsWith('x-real-') ||
+      lowerKey === 'forwarded' || 
+      lowerKey === 'via'
+    ) {
+      delete headers[key];
+    }
+  }
+  
   // Override headers to simulate requests originating from target host
   headers['host'] = host;
   headers['origin'] = `https://${host}`;

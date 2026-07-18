@@ -140,6 +140,18 @@ export default defineConfig({
           const targetUrl = new URL(`https://${targetHost}${targetPath}${url.search}`);
 
           const headers = { ...req.headers };
+          for (const key of Object.keys(headers)) {
+            const lowerKey = key.toLowerCase();
+            if (
+              lowerKey.startsWith('x-vercel-') || 
+              lowerKey.startsWith('x-forwarded-') || 
+              lowerKey.startsWith('x-real-') ||
+              lowerKey === 'forwarded' || 
+              lowerKey === 'via'
+            ) {
+              delete headers[key];
+            }
+          }
           headers['host'] = targetHost;
           headers['origin'] = `https://${targetHost}`;
 
