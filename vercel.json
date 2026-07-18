@@ -81,6 +81,18 @@
       "destination": "/api/zoom-proxy/?path=captcha/:path*"
     },
     {
+      "source": "/csrf_js",
+      "destination": "/api/zoom-proxy"
+    },
+    {
+      "source": "/csrf_data",
+      "destination": "/api/zoom-proxy"
+    },
+    {
+      "source": "/csrf/:path*",
+      "destination": "/api/zoom-proxy/?path=csrf/:path*"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://prod-api.nnlone.com/:path*"
     }

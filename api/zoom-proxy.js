@@ -46,7 +46,10 @@ export default function handler(req, res) {
 
   let host = subdomain ? `${subdomain}.zoom.us` : 'zoom.us';
 
-  if (pathname.startsWith('/captcha-image') || pathname.startsWith('/captcha-audio') || pathname.startsWith('/captcha')) {
+  const isCaptcha = pathname.startsWith('/captcha-image') || pathname.startsWith('/captcha-audio') || pathname.startsWith('/captcha');
+  const isCsrf = pathname.startsWith('/csrf_js') || pathname.startsWith('/csrf_data') || pathname.startsWith('/csrf');
+
+  if (isCaptcha || isCsrf) {
     host = refererSubdomain ? `${refererSubdomain}.zoom.us` : 'zoom.us';
     cleanPath = pathname.startsWith('/') ? pathname.slice(1) : pathname;
   }

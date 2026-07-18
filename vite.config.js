@@ -76,12 +76,13 @@ export default defineConfig({
           const isZoom = url.pathname.startsWith('/zoom');
           const isZoomSubdomain = url.pathname.startsWith('/zoom-subdomain');
           const isCaptcha = url.pathname.startsWith('/captcha-image') || url.pathname.startsWith('/captcha-audio') || url.pathname.startsWith('/captcha');
+          const isCsrf = url.pathname.startsWith('/csrf_js') || url.pathname.startsWith('/csrf_data') || url.pathname.startsWith('/csrf');
           const isLog = url.pathname === '/api/log';
 
           // Print every incoming request to see what Zoom is requesting from localhost
           console.log('[VITE REQ]', req.method, req.url);
 
-          if (!isZoom && !isZoomSubdomain && !isCaptcha && !isLog) {
+          if (!isZoom && !isZoomSubdomain && !isCaptcha && !isCsrf && !isLog) {
             return next();
           }
 
@@ -97,7 +98,7 @@ export default defineConfig({
             return;
           }
 
-          // Parse referer to extract the correct Zoom subdomain for captcha requests
+          // Parse referer to extract the correct Zoom subdomain for captcha and csrf requests
           let refererSubdomain = null;
           const referer = req.headers['referer'];
           if (referer) {
@@ -127,7 +128,7 @@ export default defineConfig({
           } else if (isZoom) {
             targetHost = 'zoom.us';
             targetPath = url.pathname.slice(5);
-          } else if (isCaptcha) {
+          } else if (isCaptcha || isCsrf) {
             targetHost = refererSubdomain ? `${refererSubdomain}.zoom.us` : 'zoom.us';
             targetPath = url.pathname;
           }
