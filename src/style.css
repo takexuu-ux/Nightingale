@@ -4792,3 +4792,49 @@ body:has(#app-header:not(.hide)) .dashboard-container {
   filter: drop-shadow(0 0 25px rgba(225, 29, 72, 0.7)) !important; /* Intense neon pink-red bloom on hover */
 }
 
+/* THEMED PREVIEWS FOR ZOOM CARD IN PRODUCTION */
+.zoom-join-card {
+  border-color: rgba(225, 29, 72, 0.45) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(225, 29, 72, 0.2) !important;
+  background: rgba(10, 11, 18, 0.9) !important;
+}
+.zoom-card-glow {
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.25) 0%, rgba(225, 29, 72, 0) 70%) !important;
+}
+.zoom-join-card .btn-zoom-web {
+  background: #db2777 !important; /* Rose pink match */
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(219, 39, 119, 0.4) !important;
+  border: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+.zoom-join-card .btn-zoom-web:hover {
+  background: #be185d !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(219, 39, 119, 0.55) !important;
+}
+.zoom-join-card .btn-zoom-app {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease-in-out !important;
+}
+.zoom-join-card .btn-zoom-app:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px) !important;
+}
+.zoom-join-card .info-value {
+  color: #fda4af !important; /* Rose-red highlighted values */
+}
+.zoom-join-card .btn-copy-info {
+  color: #fda4af !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.zoom-join-card .btn-copy-info:hover {
+  color: #ffffff !important;
+  background: rgba(225, 29, 72, 0.2) !important;
+  border-color: rgba(225, 29, 72, 0.5) !important;
+}
+
