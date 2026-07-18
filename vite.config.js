@@ -640,7 +640,7 @@ export default defineConfig({
                   let bodyString = bodyBuffer.toString('utf8');
 
                   // Bypass OWASP CSRFGuard domain verification check
-                  bodyString = bodyString.replace(/isValidDomain\(document\.domain,\s*['"]zoom\.us['"]\)/g, 'true');
+                  bodyString = bodyString.replace(/isValidDomain\(document\.domain,\s*[^)]+\)/g, 'true');
 
                   // 1. Rewrite absolute Zoom URLs in the response body to our proxy paths.
                   // IMPORTANT: JS/JSON files get absolute localhost URLs so Zoom's `new URL()` never throws.
