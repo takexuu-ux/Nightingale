@@ -163,6 +163,16 @@ export default defineConfig({
 
           const INJECTED_SCRIPT = `
 (function() {
+  // Override alert to silent OWASP CSRFGuard warnings
+  var originalAlert = window.alert;
+  window.alert = function(msg) {
+    if (typeof msg === 'string' && msg.indexOf('OWASP CSRFGuard') !== -1) {
+      console.warn('[Zoom-Injected] Blocked OWASP alert:', msg);
+      return;
+    }
+    return originalAlert.apply(this, arguments);
+  };
+
   console.log('[Zoom-Injected] Script successfully loaded inside Zoom iframe!', window.location.href);
 
   function remoteLog(type, msg) {
