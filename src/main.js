@@ -2799,7 +2799,23 @@ async function loadDashboard(isSilent = false) {
     classesData = freshClasses;
     
     // Save to cache
-    localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
+    } catch (e) {
+      console.warn('LocalStorage cache write failed:', e);
+      // Try to clear space
+      try {
+        localStorage.removeItem('nnl_cache_live_classes_completed');
+        localStorage.removeItem('nnl_cache_live_classes_upcoming');
+        // Clear all old slide caches to free up substantial space
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('nnl_slides_')) {
+            localStorage.removeItem(k);
+          }
+        }
+      } catch (err) {}
+    }
 
     renderBatchSelector();
     renderClasses(classesData);
