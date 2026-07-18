@@ -383,10 +383,7 @@ function checkLoginState() {
     if (toggleBtn) toggleBtn.classList.remove('hide');
 
     // Update profile info
-    let displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone || 'Student');
-    if (savedPhone === '7827209926') {
-      displayName = 'Rajit';
-    }
+    let displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone ? savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2') : 'Student');
     userPhone.textContent = displayName;
     userAvatar.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
