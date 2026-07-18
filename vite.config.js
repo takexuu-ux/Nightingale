@@ -613,7 +613,7 @@ export default defineConfig({
 
               const contentType = responseHeaders['content-type'] || '';
               const isHtml = contentType.includes('text/html');
-              const isJs = contentType.includes('javascript') || url.pathname.endsWith('.js');
+              const isJs = contentType.includes('javascript') || url.pathname.endsWith('.js') || url.pathname.includes('/csrf_js');
               const isJson = contentType.includes('json') || url.pathname.endsWith('.json');
 
               console.log(`[VITE RES] ${proxyRes.statusCode} for ${req.method} ${req.url} (Type: ${contentType})`);

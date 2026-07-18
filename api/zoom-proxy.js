@@ -553,7 +553,7 @@ export default function handler(req, res) {
       const isHtml = contentType.includes('text/html');
       // Resolve path using req.url or cleanPath
       const reqPath = cleanPath || '';
-      const isJs = contentType.includes('javascript') || reqPath.endsWith('.js');
+      const isJs = contentType.includes('javascript') || reqPath.endsWith('.js') || reqPath.includes('csrf_js');
       const isJson = contentType.includes('json') || reqPath.endsWith('.json');
 
       if (isHtml || isJs || isJson) {
