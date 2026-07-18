@@ -207,10 +207,9 @@ export default function handler(req, res) {
     attempts++;
 
     // Stop pre-join automation once inside the meeting
-    var hasJoined = document.querySelector('.join-audio-container') || 
-                    document.querySelector('.footer-button-base__img-layout') || 
-                    document.querySelector('button[class*="leave" i]') || 
-                    document.querySelector('div[class*="meeting" i]');
+    var hasJoined = document.querySelector('button[class*="leave" i]') || 
+                    document.querySelector('.footer-button-base__img-layout') ||
+                    document.querySelector('.meet-layout');
     if (hasJoined) {
       clearInterval(interval);
       remoteLog('log', 'Meeting UI joined. Terminating pre-join automation loop.');
