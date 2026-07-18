@@ -606,6 +606,14 @@ export default defineConfig({
               responseHeaders['cross-origin-opener-policy'] = 'same-origin';
               responseHeaders['cross-origin-embedder-policy'] = 'credentialless';
 
+              if (url.pathname.includes('/csrf_js')) {
+                delete responseHeaders['etag'];
+                delete responseHeaders['last-modified'];
+                responseHeaders['cache-control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
+                responseHeaders['pragma'] = 'no-cache';
+                responseHeaders['expires'] = '0';
+              }
+
               if (responseHeaders['location']) {
                 responseHeaders['location'] = responseHeaders['location']
                   .replace(/^https:\/\/zoom\.us\//i, '/zoom/')
