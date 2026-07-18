@@ -633,6 +633,9 @@ export default function handler(req, res) {
           }
 
           if (isHtml) {
+            // Force the browser to bypass cache for the security scripts
+            bodyString = bodyString.replace(/src=['"]\/csrf_js([^'"]*)['"]/gi, `src="/csrf_js$1&_cb=${Date.now()}"`);
+
             // 2. For HTML responses, inject our auto-joining script
             const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
             if (bodyString.includes('<head>')) {
