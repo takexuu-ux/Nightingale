@@ -275,6 +275,17 @@ export default defineConfig({
   var interval = setInterval(function() {
     attempts++;
 
+    // Stop pre-join automation once inside the meeting
+    var hasJoined = document.querySelector('.join-audio-container') || 
+                    document.querySelector('.footer-button-base__img-layout') || 
+                    document.querySelector('button[class*="leave" i]') || 
+                    document.querySelector('div[class*="meeting" i]');
+    if (hasJoined) {
+      clearInterval(interval);
+      remoteLog('log', 'Meeting UI joined. Terminating pre-join automation loop.');
+      return;
+    }
+
     // STEP A: Check for audio join button FIRST — it appears after joining
     // MUST run before any early return so we catch it on the loading screen
     if (!audioClicked) {
@@ -413,7 +424,12 @@ export default defineConfig({
 
     var passcode = urlPasscode || sessionStorage.getItem('nnl_zoom_pwd') || '';
     var RANDOM_NAMES = ['Aarav','Amit','Rahul','Vikram','Ananya','Neha','Pooja','Rohan','Karan','Siddharth','Aditya','Riya','Sneha','Kabir','Dev','Rudra','Kunal','Abhishek','Priya','Deepak','Sanjay','Manish','Alok'];
-    var fallbackName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    var persistedName = sessionStorage.getItem('nnl_randomized_username');
+    if (!persistedName) {
+      persistedName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+      sessionStorage.setItem('nnl_randomized_username', persistedName);
+    }
+    var fallbackName = persistedName;
     var userName = urlUserName || sessionStorage.getItem('nnl_zoom_un') || fallbackName;
     if (userName.toLowerCase() === 'rajit') {
       userName = fallbackName;
