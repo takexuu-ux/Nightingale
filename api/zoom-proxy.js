@@ -110,6 +110,35 @@ export default function handler(req, res) {
     remoteLog('error', 'Unhandled Promise Rejection: ' + (event.reason ? event.reason.message || event.reason : 'unknown'));
   };
 
+  // Intercept and sanitize window.postMessage calls to fix "Invalid target origin" errors
+  var originalPostMessage = window.postMessage;
+  window.postMessage = function(message, targetOrigin, transfer) {
+    var cleanedOrigin = targetOrigin;
+    if (typeof targetOrigin === 'string' && targetOrigin.indexOf('/') !== -1) {
+      if (targetOrigin.indexOf('http') === 0) {
+        try {
+          var u = new URL(targetOrigin);
+          cleanedOrigin = u.origin;
+        } catch (e) {
+          cleanedOrigin = '*';
+        }
+      } else if (targetOrigin.indexOf('/') === 0) {
+        cleanedOrigin = window.location.origin;
+      }
+    }
+    try {
+      if (transfer) {
+        return originalPostMessage.call(this, message, cleanedOrigin, transfer);
+      } else {
+        return originalPostMessage.call(this, message, cleanedOrigin);
+      }
+    } catch (e) {
+      try {
+        return originalPostMessage.call(this, message, '*', transfer);
+      } catch (err) {}
+    }
+  };
+
   // Intercept WebSocket connections to rewrite Zoom's wss:// URLs to use our proxy origin
   var OriginalWebSocket = window.WebSocket;
   window.WebSocket = function(url, protocols) {
