@@ -626,10 +626,10 @@ export default function handler(req, res) {
               .replace(/https:\\\/\\\/zoom\.us/g, `${requestOrigin.replace(/\//g, '\\/')}\\/zoom`);
           } else {
             bodyString = bodyString
-              .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
-              .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
-              .replace(/https:\/\/zoom\.us/g, '/zoom')
-              .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+              .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, `${requestOrigin}/zoom-subdomain/$1`)
+              .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, `${requestOrigin.replace(/\//g, '\\/')}\\/zoom-subdomain\\/$1`)
+              .replace(/https:\/\/zoom\.us/g, `${requestOrigin}/zoom`)
+              .replace(/https:\\\/\\\/zoom\.us/g, `${requestOrigin.replace(/\//g, '\\/')}\\/zoom`);
           }
 
           if (isHtml) {

@@ -689,10 +689,10 @@ export default defineConfig({
                       .replace(/https:\\\/\\\/zoom\.us/g, 'http:\\/\\/localhost:5173\\/zoom');
                   } else {
                     bodyString = bodyString
-                      .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, '/zoom-subdomain/$1')
-                      .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, '\\/zoom-subdomain\\/$1')
-                      .replace(/https:\/\/zoom\.us/g, '/zoom')
-                      .replace(/https:\\\/\\\/zoom\.us/g, '\\/zoom');
+                      .replace(/https:\/\/([a-z0-9\-]+)\.zoom\.us/g, 'http://localhost:5173/zoom-subdomain/$1')
+                      .replace(/https:\\\/\\\/([a-z0-9\-]+)\.zoom\.us/g, 'http:\\/\\/localhost:5173\\/zoom-subdomain\\/$1')
+                      .replace(/https:\/\/zoom\.us/g, 'http://localhost:5173/zoom')
+                      .replace(/https:\\\/\\\/zoom\.us/g, 'http:\\/\\/localhost:5173\\/zoom');
                   }
 
                   if (isHtml) {

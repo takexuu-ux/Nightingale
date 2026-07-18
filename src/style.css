@@ -4733,3 +4733,15 @@ body:has(#app-header:not(.hide)) .dashboard-container {
   transform: rotate(180deg);
 }
 
+#zoom-passcode-display.btn-header-action {
+  background: rgba(0, 240, 255, 0.08) !important;
+  border: 1px solid rgba(0, 240, 255, 0.3) !important;
+  color: #00f0ff !important;
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.1) !important;
+}
+#zoom-passcode-display.btn-header-action:hover {
+  background: rgba(0, 240, 255, 0.2) !important;
+  border-color: rgba(0, 240, 255, 0.6) !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25) !important;
+}
+

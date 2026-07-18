@@ -1422,6 +1422,32 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     classroomIframe.src = zoomWebLink;
     classroomIframe.classList.remove('hide');
 
+    // Update and show passcode display button in the header
+    const passcodeDisplay = document.getElementById('zoom-passcode-display');
+    if (passcodeDisplay) {
+      passcodeDisplay.style.display = 'flex';
+      passcodeDisplay.onclick = () => {
+        navigator.clipboard.writeText(passcode || '').then(() => {
+          passcodeDisplay.innerHTML = `
+            <svg width="14" height="14" fill="none" stroke="#10b981" stroke-width="3" viewBox="0 0 24 24" style="flex-shrink: 0;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          `;
+          passcodeDisplay.title = 'Copied!';
+          setTimeout(() => {
+            passcodeDisplay.innerHTML = `
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink: 0; color: #00f0ff;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-.999.43-1.563A6 6 0 1121.75 8.25z" />
+              </svg>
+            `;
+            passcodeDisplay.title = 'Copy Zoom Passcode';
+          }, 1500);
+        }).catch(err => {
+          console.error('Failed to copy passcode:', err);
+        });
+      };
+    }
+
     // Start automated pre-fill helper
     startZoomIframeAutomation();
 
@@ -1528,6 +1554,12 @@ async function exitClassroom() {
   const zoomJoinCard = document.getElementById('zoom-join-card');
   if (zoomJoinCard) {
     zoomJoinCard.classList.add('hide');
+  }
+
+  // Hide passcode display badge
+  const passcodeDisplay = document.getElementById('zoom-passcode-display');
+  if (passcodeDisplay) {
+    passcodeDisplay.style.display = 'none';
   }
   
   // Return UI to normal
