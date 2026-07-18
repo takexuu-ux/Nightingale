@@ -1415,20 +1415,9 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
     const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
-    // Fallback: Zoom strictly blocks Vercel's serverless function IP ranges in production.
-    // If running in localhost, load proxy iframe. Otherwise, show direct launch card.
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
-    if (isLocalhost) {
-      console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
-      classroomIframe.src = zoomWebLink;
-      classroomIframe.classList.remove('hide');
-    } else {
-      console.log('Production: Hiding iframe and showing direct credentials fallback card.');
-      classroomIframe.src = 'about:blank';
-      classroomIframe.classList.add('hide');
-      showFallbackJoinCard(meetingId, passcode, title, instructorName);
-    }
+    console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
+    classroomIframe.src = zoomWebLink;
+    classroomIframe.classList.remove('hide');
 
     // Update and show passcode display button in the header
     const passcodeDisplay = document.getElementById('zoom-passcode-display');
