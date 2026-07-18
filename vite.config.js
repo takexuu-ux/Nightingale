@@ -438,7 +438,41 @@ export default defineConfig({
     var isPasscodeReady = !passcodeInput || (passcodeInput.value && passcodeInput.value.length > 0);
     var isNameReady = nameInput && nameInput.value && nameInput.value.length > 1;
 
+    // Check for captcha. If present, don't simulate click on the join button so the user can fill it.
+    var hasCaptcha = false;
+    var captchaInput = document.querySelector('input[name*="captcha" i], input[id*="captcha" i], input[placeholder*="captcha" i]');
+    if (captchaInput) {
+      hasCaptcha = true;
+    }
+    var captchaSelectors = [
+      '[class*="captcha" i]', '[id*="captcha" i]',
+      'iframe[src*="recaptcha" i]', 'iframe[src*="captcha" i]', 'iframe[src*="challenge" i]',
+      '.g-recaptcha', '#recaptcha', '#captcha'
+    ];
+    for (var i = 0; i < captchaSelectors.length; i++) {
+      var elements = document.querySelectorAll(captchaSelectors[i]);
+      for (var j = 0; j < elements.length; j++) {
+        try {
+          var style = window.getComputedStyle(elements[j]);
+          if (style.display !== 'none' && style.visibility !== 'hidden') {
+            hasCaptcha = true;
+            break;
+          }
+        } catch (e) {
+          hasCaptcha = true;
+          break;
+        }
+      }
+      if (hasCaptcha) break;
+    }
+
     if (joinBtn && isNameReady && isPasscodeReady) {
+      if (hasCaptcha) {
+        if (attempts % 30 === 0) {
+          remoteLog('log', 'Captcha detected on page. Suspending automatic join button click to let user solve it.');
+        }
+        return;
+      }
       if (joinBtn.disabled || joinBtn.classList.contains('disabled') || joinBtn.getAttribute('disabled') !== null) {
         joinBtn.disabled = false;
         joinBtn.removeAttribute('disabled');
