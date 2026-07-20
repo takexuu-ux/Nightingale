@@ -321,20 +321,61 @@ async function loadRecordings() {
   debugBtn.id = 'api-debug-btn';
   debugBtn.textContent = `🔍 API Debug (${allRecordings.length} lectures)`;
   debugBtn.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:rgba(0,0,0,0.8);color:#00f3d0;border:1px solid rgba(0,243,208,0.4);border-radius:10px;padding:0.5rem 1rem;font-size:0.75rem;font-family:monospace;cursor:pointer;backdrop-filter:blur(8px);';
-  debugBtn.onclick = () => {
+  debugBtn.onclick = async () => {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);overflow-y:auto;padding:1.5rem;font-family:monospace;font-size:0.72rem;color:#eee;';
     overlay.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-        <strong style="color:#00f3d0;font-size:0.9rem;">C+ API Debug Log</strong>
+        <strong style="color:#00f3d0;font-size:0.9rem;">C+ API Debug Log & Endpoint Scanner</strong>
         <button onclick="this.closest('div[style]').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;padding:0.4rem 0.8rem;border-radius:8px;cursor:pointer;font-size:0.8rem;">✕ Close</button>
+      </div>
+      <div style="margin-bottom:1rem;padding:0.85rem;background:rgba(0,243,208,0.05);border:1px solid rgba(0,243,208,0.2);border-radius:8px;">
+        <strong style="color:#00f3d0;display:block;margin-bottom:0.5rem;">🔍 Running Endpoint Scan...</strong>
+        <div id="scanner-results" style="line-height:1.6;color:#85ffd6;">Testing video endpoints...</div>
       </div>
       <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:1rem;line-height:1.8;">
         ${capturedLogs.map(l => `<div style="border-bottom:1px solid rgba(255,255,255,0.04);padding:0.15rem 0;">${l.replace(/</g,'&lt;')}</div>`).join('')}
       </div>`;
     document.body.appendChild(overlay);
+
+    // Run tests
+    const resultsContainer = document.getElementById('scanner-results');
+    const tests = [
+      `/cms/videos/?batch=8&subject=458`,
+      `/batch_cms/videos/?batch=8&subject=458`,
+      `/cms/videos/?batch_id=8&subject_id=458`,
+      `/batch_cms/videos/?batch_id=8&subject_id=458`,
+      `/cms/videos/?batch=8`,
+      `/batch_cms/videos/?batch=8`,
+      `/cms/videos/?batch_id=8`,
+      `/batch_cms/videos/?batch_id=8`,
+      `/cms/videos/`,
+      `/batch_cms/videos/`
+    ];
+
+    let output = '';
+    for (const path of tests) {
+      try {
+        const start = Date.now();
+        const res = await fetchWithTimeout(`${API_BASE}${path}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        });
+        const duration = Date.now() - start;
+        if (res.ok) {
+          const json = await res.json();
+          const items = json.data || json.results || (Array.isArray(json) ? json : []);
+          output += `<div>✅ <strong>${path}</strong> → <span style="color:#fff;">${items.length} videos found</span> (${duration}ms)</div>`;
+        } else {
+          output += `<div style="color:#ff8080;">✗ <strong>${path}</strong> → HTTP ${res.status} (${duration}ms)</div>`;
+        }
+      } catch (e) {
+        output += `<div style="color:#ff8080;">✗ <strong>${path}</strong> → Error: ${e.message}</div>`;
+      }
+      resultsContainer.innerHTML = output;
+    }
   };
   document.body.appendChild(debugBtn);
+
 
   // Fallback to mock if nothing loaded
   if (allRecordings.length === 0) {
