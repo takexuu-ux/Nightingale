@@ -552,7 +552,7 @@ export default function handler(req, res) {
     },
     (proxyRes) => {
       // Set the status code
-      res.status(proxyRes.statusCode);
+      res.statusCode = proxyRes.statusCode;
 
       // Copy headers, stripping security/framing restrictions
       const responseHeaders = { ...proxyRes.headers };
@@ -697,7 +697,9 @@ export default function handler(req, res) {
 
   proxyReq.on('error', (err) => {
     console.error('Zoom proxy request error:', err);
-    res.status(500).json({ error: 'Proxy error', message: err.message });
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Proxy error', message: err.message }));
   });
 
   // Pipe the request body (if any) into the proxy request
