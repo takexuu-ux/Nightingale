@@ -29,7 +29,21 @@ export default function handler(req, res) {
   const urlObj = new URL(req.url, 'http://localhost');
   const pathname = urlObj.pathname;
   let cleanPath = path || '';
-  
+  let extractedSubdomain = subdomain || '';
+
+  // Fallback: If path/subdomain are not in query params, parse them directly from the request pathname
+  if (!cleanPath) {
+    if (pathname.startsWith('/zoom-subdomain/')) {
+      const match = pathname.match(/^\/zoom-subdomain\/([a-z0-9\-]+)\/(.*)/i);
+      if (match) {
+        extractedSubdomain = match[1];
+        cleanPath = match[2];
+      }
+    } else if (pathname.startsWith('/zoom/')) {
+      cleanPath = pathname.slice(6);
+    }
+  }
+
   let refererSubdomain = null;
   const referer = req.headers['referer'];
   if (referer) {
@@ -44,7 +58,7 @@ export default function handler(req, res) {
     } catch (e) {}
   }
 
-  let host = subdomain ? `${subdomain}.zoom.us` : 'zoom.us';
+  let host = (subdomain || extractedSubdomain) ? `${subdomain || extractedSubdomain}.zoom.us` : 'zoom.us';
 
   const isCaptcha = pathname.startsWith('/captcha-image') || pathname.startsWith('/captcha-audio') || pathname.startsWith('/captcha');
   const isCsrf = pathname.startsWith('/csrf_js') || pathname.startsWith('/csrf_data') || pathname.startsWith('/csrf');
