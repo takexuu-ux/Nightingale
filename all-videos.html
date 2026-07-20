@@ -5,89 +5,253 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Nightingale Recorded Lectures Library - Access all past video lectures grouped by subject." />
+    <meta name="description" content="Nightingale C+ Plan - Access all recorded lectures grouped by subject." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/style.css" />
-    <title>Nightingale Classroom - Recorded Lectures Library</title>
+    <title>Nightingale — C+ Plan Lectures</title>
     <style>
-      .container {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 2rem !important;
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
+      * { scrollbar-width: thin; scrollbar-color: rgba(0,243,208,0.2) transparent; }
+      *::-webkit-scrollbar { width: 4px; }
+      *::-webkit-scrollbar-track { background: transparent; }
+      *::-webkit-scrollbar-thumb { background: rgba(0,243,208,0.2); border-radius: 4px; }
+      *::-webkit-scrollbar-thumb:hover { background: rgba(0,243,208,0.4); }
+
+      #app {
+        margin-top: 80px;
+        padding: 2rem 2rem 4rem;
+        min-height: calc(100vh - 80px);
       }
-      .recordings-browser-container {
-        position: fixed;
-        top: 90px;
-        left: 20px;
-        width: 330px;
-        background: rgba(10, 11, 18, 0.85);
-        border: 1px solid rgba(0, 243, 208, 0.2);
-        border-radius: 14px;
-        overflow: hidden;
-        z-index: 1000;
-        backdrop-filter: blur(15px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .recordings-browser-container.expanded {
-        width: 520px;
-      }
-      .recordings-browser-header {
-        padding: 0.8rem 1.2rem;
-        background: rgba(255, 255, 255, 0.02);
-        border-bottom: 1px solid rgba(0, 243, 208, 0.15);
+
+      .cplus-header {
+        margin-bottom: 2rem;
         display: flex;
+        align-items: flex-end;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .cplus-title-badge {
+        font-family: var(--font-display);
+        font-size: 0.68rem;
+        letter-spacing: 0.15em;
+        color: #00f3d0;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
+      .cplus-title {
+        font-family: var(--font-display);
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+        font-weight: 900;
+        background: linear-gradient(135deg, #fff 30%, #00f3d0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        line-height: 1.1;
+      }
+      .cplus-stats {
+        font-family: var(--font-display);
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        display: flex;
+        gap: 1.5rem;
         align-items: center;
+      }
+      .cplus-stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.1rem;
+      }
+      .cplus-stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #00f3d0;
+        line-height: 1;
+      }
+      .cplus-stat-label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-secondary);
+      }
+
+      /* Subject Cards Grid */
+      .subjects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+      }
+
+      .subject-card {
+        background: rgba(10, 12, 22, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 18px;
+        overflow: hidden;
+        backdrop-filter: blur(12px);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      .subject-card:hover {
+        border-color: rgba(0, 243, 208, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+      .subject-card.open {
+        border-color: rgba(0, 243, 208, 0.18);
+        box-shadow: 0 12px 40px rgba(0, 243, 208, 0.05);
+      }
+
+      .subject-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem;
         cursor: pointer;
         user-select: none;
         transition: background 0.2s ease;
       }
-      .recordings-browser-header:hover {
-        background: rgba(255, 255, 255, 0.04);
+      .subject-card-header:hover {
+        background: rgba(255, 255, 255, 0.025);
       }
-      .recordings-browser-title {
-        font-family: var(--font-display);
-        font-size: 0.82rem;
-        font-weight: 800;
-        color: #00f3d0;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
+      .subject-card-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(0,243,208,0.15), rgba(0,180,155,0.08));
+        border: 1px solid rgba(0,243,208,0.2);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
       }
-      .recordings-browser-chevron {
-        transition: transform 0.3s ease;
+      .subject-card-meta {
+        flex: 1;
+        min-width: 0;
+      }
+      .subject-card-name {
+        font-family: var(--font-display);
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.02em;
+        margin-bottom: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .subject-card-count {
+        font-size: 0.72rem;
         color: var(--text-secondary);
+        font-family: var(--font-display);
+        font-weight: 500;
       }
-      .recordings-browser-container.expanded .recordings-browser-chevron {
+      .subject-card-chevron {
+        color: var(--text-secondary);
+        transition: transform 0.3s ease, color 0.2s ease;
+        flex-shrink: 0;
+      }
+      .subject-card.open .subject-card-chevron {
         transform: rotate(180deg);
+        color: #00f3d0;
       }
-      .recordings-browser-body {
+
+      /* Lecture List inside card */
+      .lecture-list {
         max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border-top: 1px solid transparent;
+      }
+      .subject-card.open .lecture-list {
+        max-height: 600px;
         overflow-y: auto;
-        transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        border-top-color: rgba(255, 255, 255, 0.06);
       }
-      .recordings-browser-container.expanded .recordings-browser-body {
-        max-height: 520px;
-        padding: 0.75rem;
+      .lecture-list-inner {
+        padding: 0.6rem 0.75rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
       }
-      /* Override row styles for list nesting */
-      .recordings-browser-body .recording-row {
-        margin-bottom: 0.5rem;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+
+      .lecture-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 0.75rem;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.04);
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease;
       }
-      .recordings-browser-body .recording-row:hover {
-        background: rgba(255, 255, 255, 0.04);
-        border-color: rgba(0, 243, 208, 0.2);
+      .lecture-item:hover {
+        background: rgba(0, 243, 208, 0.06);
+        border-color: rgba(0, 243, 208, 0.15);
+      }
+      .lecture-num {
+        font-family: var(--font-display);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #00f3d0;
+        min-width: 22px;
+        text-align: center;
+        opacity: 0.7;
+      }
+      .lecture-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .lecture-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 0.15rem;
+      }
+      .lecture-meta {
+        font-size: 0.68rem;
+        color: var(--text-secondary);
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+      }
+      .lecture-play-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        color: rgba(255,255,255,0.7);
+      }
+      .lecture-play-btn:hover {
+        background: rgba(0,243,208,0.15);
+        border-color: rgba(0,243,208,0.35);
+        color: #00f3d0;
+      }
+      .lecture-play-btn.active {
+        background: linear-gradient(135deg, rgba(0,243,208,0.25), rgba(0,180,155,0.15));
+        border-color: rgba(0,243,208,0.5);
+        color: #00f3d0;
+      }
+
+      /* Loading state */
+      .subjects-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 5rem 2rem;
+        gap: 1rem;
       }
     </style>
   </head>
@@ -110,9 +274,8 @@
         </div>
         <span class="logo-text">NIGHTINGALE</span>
       </div>
-      
       <div class="header-nav">
-        <button id="btn-back-dashboard" class="nav-btn" style="color: #fff; border-color: rgba(255, 255, 255, 0.15); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 0.4rem;">
+        <button id="btn-back-dashboard" class="nav-btn" style="color: #fff; border-color: rgba(255,255,255,0.15); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 0.4rem;">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
           <span>Back to Dashboard</span>
         </button>
@@ -121,21 +284,30 @@
 
     <!-- Main Content -->
     <main id="app">
-      <!-- Compact sidebar container in top-left -->
-      <div id="library-widget-container" class="recordings-browser-container">
-        <div id="library-widget-header" class="recordings-browser-header">
-          <div class="recordings-browser-title">
-            <span>📚 C+ Plan Lectures</span>
-            <span id="lectures-count-badge" style="font-size: 0.65rem; background: rgba(0, 243, 208, 0.15); color: #00f3d0; padding: 0.1rem 0.35rem; border-radius: 6px; font-weight: 700;">Loading...</span>
-          </div>
-          <svg class="recordings-browser-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-          </svg>
+      <!-- Page Header -->
+      <div class="cplus-header">
+        <div>
+          <div class="cplus-title-badge">// C+ Subscription Plan</div>
+          <h1 class="cplus-title">Recorded Lectures</h1>
         </div>
-        <div class="recordings-browser-body">
-          <div id="class-list-container" class="recordings-browser">
-            <!-- Dynamically populated via JS -->
+        <div class="cplus-stats" id="cplus-stats" style="display:none;">
+          <div class="cplus-stat-item">
+            <span class="cplus-stat-value" id="stat-subjects">—</span>
+            <span class="cplus-stat-label">Subjects</span>
           </div>
+          <div class="cplus-stat-item">
+            <span class="cplus-stat-value" id="stat-lectures">—</span>
+            <span class="cplus-stat-label">Lectures</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subjects Grid -->
+      <div id="class-list-container" class="subjects-grid">
+        <!-- Loading state -->
+        <div class="subjects-loading" style="grid-column: 1/-1;">
+          <div class="spinner"></div>
+          <p style="color: var(--text-secondary); font-family: var(--font-display); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0;">Loading C+ Lectures...</p>
         </div>
       </div>
     </main>
@@ -148,7 +320,7 @@
           <h2 id="recording-viewer-title" style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;"></h2>
           <span id="recording-viewer-instructor" style="font-size: 0.8rem; color: var(--text-secondary);"></span>
         </div>
-        <button id="close-recording-viewer" class="btn-close-recording" title="Back to Dashboard">
+        <button id="close-recording-viewer" class="btn-close-recording" title="Back">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
           <span>Back</span>
         </button>
@@ -165,7 +337,7 @@
       </div>
       <div class="recording-viewer-disclaimer" style="padding: 0.75rem 1.5rem; background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; justify-content: center; text-align: center;">
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-        <span>Note: Premium lectures are protected. If you see Error 2127 or compatibility issues, please watch them on the NNL ONE Mobile App.</span>
+        <span>Premium lectures are DRM protected. If you see playback issues, please watch on the NNL ONE Mobile App.</span>
       </div>
     </div>
 

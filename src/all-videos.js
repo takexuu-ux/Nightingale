@@ -272,18 +272,33 @@ function getLectureNumber(title) {
   return match ? parseInt(match[1], 10) : 999;
 }
 
+// Map subject names to emojis for visual flair
+const SUBJECT_ICONS = {
+  'Pharmacology': '💊', 'Anatomy': '🦴', 'Physiology': '🫀', 'Biochemistry': '🧪',
+  'Microbiology': '🔬', 'Pathology': '🩺', 'Medicine': '⚕️', 'Surgery': '🔪',
+  'Obstetrics': '👶', 'OBG': '👶', 'Gynecology': '🌸', 'Pediatrics': '🧒',
+  'Pediatric Nursing': '🧒', 'Community': '🏘️', 'Psychiatry': '🧠',
+  'Orthopedics': '🦴', 'ENT': '👂', 'Ophthalmology': '👁️', 'Dermatology': '🩹',
+  'Critical Care': '🚨', 'Emergency': '🚑', 'Nutrition': '🥗', 'Nursing': '💉'
+};
+
+function getSubjectIcon(name) {
+  for (const [key, icon] of Object.entries(SUBJECT_ICONS)) {
+    if (name.toLowerCase().includes(key.toLowerCase())) return icon;
+  }
+  return '📖';
+}
+
 function renderRecordingsList(recordings) {
   if (!classListContainer) return;
   classListContainer.innerHTML = '';
 
   if (recordings.length === 0) {
     classListContainer.innerHTML = `
-      <div style="background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 2rem; text-align: center;">
-        <p style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin: 0;">No recorded lectures available.</p>
+      <div style="grid-column: 1/-1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 4rem; text-align: center;">
+        <p style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; font-family: var(--font-display);">No recorded lectures available for your subscription.</p>
       </div>
     `;
-    const badge = document.getElementById('lectures-count-badge');
-    if (badge) badge.textContent = '0 Lectures';
     return;
   }
 
@@ -296,80 +311,73 @@ function renderRecordingsList(recordings) {
   });
 
   const subjectNames = Object.keys(bySubject).sort();
+
+  // Update stats
+  const statSubjects = document.getElementById('stat-subjects');
+  const statLectures = document.getElementById('stat-lectures');
+  const statsEl = document.getElementById('cplus-stats');
+  if (statSubjects) statSubjects.textContent = subjectNames.length;
+  if (statLectures) statLectures.textContent = recordings.length;
+  if (statsEl) statsEl.style.display = 'flex';
+
   subjectNames.forEach(subjectName => {
     const subjectClasses = bySubject[subjectName];
 
-    // Sort sequentially by lecture/day number inside each subject
-    subjectClasses.sort((a, b) => {
-      const numA = getLectureNumber(a.title);
-      const numB = getLectureNumber(b.title);
-      return numA - numB;
-    });
+    // Sort by lecture number
+    subjectClasses.sort((a, b) => getLectureNumber(a.title) - getLectureNumber(b.title));
 
-    let rowsHtml = '';
+    // Build lecture items HTML
+    let lecturesHtml = '';
     subjectClasses.forEach((rec, idx) => {
       const rowNum = (idx + 1).toString().padStart(2, '0');
       const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
-
-      rowsHtml += `
-        <div class="recording-row" data-rec-id="${rec.id}">
-          <div class="recording-row-num">${rowNum}</div>
-          <div class="recording-row-info">
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0; font-size: 0.82rem; line-height: 1.3;">${rec.title}</div>
-            </div>
-            <div class="recording-row-meta" style="margin-top: 0.25rem; font-size: 0.7rem;">
-              <span class="recording-row-instructor">${rec.instructor}</span>
+      lecturesHtml += `
+        <div class="lecture-item" data-rec-id="${rec.id}">
+          <span class="lecture-num">${rowNum}</span>
+          <div class="lecture-info">
+            <div class="lecture-title" title="${rec.title}">${rec.title}</div>
+            <div class="lecture-meta">
+              <span>${rec.instructor}</span>
               <span>•</span>
               <span>${rec.duration}</span>
             </div>
           </div>
-          <div class="recording-row-actions-group" style="display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0;">
-            <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.2rem;">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-              <span>Play</span>
-            </button>
-            ${rec.videoUrl ? `
-            <a href="${rec.videoUrl}" download="${rec.title}.mp4" class="recording-row-action download-btn" target="_blank" style="background: linear-gradient(135deg, #10B981, #059669); border-color: #10B981; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; gap: 0.35rem; cursor: pointer; transition: all 0.2s ease;">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              <span>Download</span>
-            </a>
-            ` : ''}
-          </div>
+          <button class="lecture-play-btn ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}" title="Play">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
         </div>
       `;
     });
 
-    const subjectAccordion = document.createElement('div');
-    subjectAccordion.className = 'subject-accordion open';
-    subjectAccordion.innerHTML = `
-      <div class="subject-accordion-header" style="padding: 0.6rem 0.8rem;">
-        <div class="subject-accordion-title">
-          <div class="subject-icon">📚</div>
-          <span class="subject-name" style="font-size: 0.8rem; font-weight: 700;">${subjectName}</span>
-          <span class="subject-count" style="font-size: 0.7rem; color: var(--text-secondary);">(${subjectClasses.length})</span>
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.innerHTML = `
+      <div class="subject-card-header">
+        <div class="subject-card-icon">${getSubjectIcon(subjectName)}</div>
+        <div class="subject-card-meta">
+          <div class="subject-card-name">${subjectName}</div>
+          <div class="subject-card-count">${subjectClasses.length} lecture${subjectClasses.length !== 1 ? 's' : ''}</div>
         </div>
-        <svg class="subject-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <svg class="subject-card-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
         </svg>
       </div>
-      <div class="subject-accordion-body">
-        ${rowsHtml}
+      <div class="lecture-list">
+        <div class="lecture-list-inner">${lecturesHtml}</div>
       </div>
     `;
 
-    classListContainer.appendChild(subjectAccordion);
+    classListContainer.appendChild(card);
   });
 
-  // Update badge count
-  const badge = document.getElementById('lectures-count-badge');
-  if (badge) {
-    badge.textContent = `${recordings.length} Lectures`;
-  }
+  // Bind subject card toggle
+  classListContainer.querySelectorAll('.subject-card-header').forEach(header => {
+    header.addEventListener('click', () => {
+      header.closest('.subject-card').classList.toggle('open');
+    });
+  });
 }
 
 function initRecordingsViewer() {
@@ -391,29 +399,11 @@ function initRecordingsViewer() {
     });
   }
 
-  // Handle compact card expand/collapse toggle
-  const widgetContainer = document.getElementById('library-widget-container');
-  const widgetHeader = document.getElementById('library-widget-header');
-  if (widgetHeader && widgetContainer) {
-    widgetHeader.addEventListener('click', () => {
-      widgetContainer.classList.toggle('expanded');
-    });
-  }
-
-  // Handle play row and subject header click triggers
+  // Handle lecture play button clicks via event delegation
   if (classListContainer) {
     classListContainer.addEventListener('click', (e) => {
-      const subjectHeader = e.target.closest('.subject-accordion-header');
-      if (subjectHeader) {
-        const accordion = subjectHeader.closest('.subject-accordion');
-        if (accordion) {
-          accordion.classList.toggle('open');
-        }
-        return;
-      }
-
-      const playBtn = e.target.closest('.recording-row-action');
-      if (playBtn && !playBtn.classList.contains('download-btn')) {
+      const playBtn = e.target.closest('.lecture-play-btn');
+      if (playBtn) {
         e.stopPropagation();
         const recId = playBtn.getAttribute('data-rec-id');
         const rec = currentRecordings.find(r => String(r.id) === String(recId));
@@ -421,9 +411,9 @@ function initRecordingsViewer() {
         return;
       }
 
-      const recRow = e.target.closest('.recording-row');
-      if (recRow && !e.target.closest('.recording-row-actions-group')) {
-        const recId = recRow.getAttribute('data-rec-id');
+      const lectureItem = e.target.closest('.lecture-item');
+      if (lectureItem && !e.target.closest('.lecture-play-btn')) {
+        const recId = lectureItem.getAttribute('data-rec-id');
         const rec = currentRecordings.find(r => String(r.id) === String(recId));
         if (rec) openRecordingPlayer(rec);
         return;
