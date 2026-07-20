@@ -2921,6 +2921,9 @@ function getSimplifiedBatchTitle(title) {
   if (tUpper.includes('PEARL')) {
     return 'Pearl Batch';
   }
+  if (tUpper.includes('C+') || tUpper.includes('C PLUS')) {
+    return 'C+ Batch';
+  }
   return title.trim();
 }
 
@@ -4048,7 +4051,8 @@ function renderBatchSelector() {
     'Pearl Batch',
     'Fastrack 10.0 (Live Class)',
     'Live Classes for Brahmastra (NORCET 10.0 Mains)',
-    'Economy Batch (NORCET 10.0)'
+    'Economy Batch (NORCET 10.0)',
+    'C+ Batch'
   ]);
   cleanClasses.forEach(c => {
     const title = c.batch?.title || (c.liveClass?.batch?.title);
@@ -4642,7 +4646,7 @@ async function renderVideoLibrary(isSilent = false) {
                 subject: sub.title,
                 date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
                 duration: v.duration ? `${Math.floor(v.duration / 3600)}h ${Math.floor((v.duration % 3600) / 60)}m` : '',
-                videoUrl: '',
+                videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || v.download_link || '',
                 video_cipher_id: v.video_cipher_id || null,
                 thumbnails: v.thumbnails || null
               }));

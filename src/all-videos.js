@@ -52,6 +52,67 @@ const MOCK_RECORDINGS = [
     date: '2026-06-02',
     duration: '1h 55m',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
+  },
+  // C+ Batch Mock Recorded Lectures
+  {
+    id: 'rec-cplus-medsurg-1',
+    title: 'Medical-Surgical Day 1: Fluid & Electrolyte Balance & IV Therapy',
+    instructor: 'Prof. Priyanka Bansal',
+    batch: 'C+ Batch',
+    subject: 'Medical-Surgical Nursing',
+    date: '2026-07-01',
+    duration: '2h 45m',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+  },
+  {
+    id: 'rec-cplus-medsurg-2',
+    title: 'Medical-Surgical Day 2: Acid-Base Balance & ABG Interpretation',
+    instructor: 'Prof. Priyanka Bansal',
+    batch: 'C+ Batch',
+    subject: 'Medical-Surgical Nursing',
+    date: '2026-07-02',
+    duration: '2h 20m',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
+  },
+  {
+    id: 'rec-cplus-obg-1',
+    title: 'OBG Day 1: Antenatal Assessment & Fetal Circulation',
+    instructor: 'Dr. Suresh Sharma',
+    batch: 'C+ Batch',
+    subject: 'Obstetrics & Gynecology',
+    date: '2026-07-03',
+    duration: '2h 10m',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+  },
+  {
+    id: 'rec-cplus-obg-2',
+    title: 'OBG Day 2: Stages of Labor & Obstetric Emergencies',
+    instructor: 'Dr. Suresh Sharma',
+    batch: 'C+ Batch',
+    subject: 'Obstetrics & Gynecology',
+    date: '2026-07-04',
+    duration: '2h 35m',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
+  },
+  {
+    id: 'rec-cplus-peds-1',
+    title: 'Pediatric Day 1: Growth & Development Milestones',
+    instructor: 'Prof. Priyanka Bansal',
+    batch: 'C+ Batch',
+    subject: 'Pediatric Nursing',
+    date: '2026-07-05',
+    duration: '1h 45m',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
+  },
+  {
+    id: 'rec-cplus-pharma-1',
+    title: 'Pharmacology Day 1: Antimicrobials & Drug Calculations',
+    instructor: 'Dr. Suresh Sharma',
+    batch: 'C+ Batch',
+    subject: 'Pharmacology',
+    date: '2026-07-06',
+    duration: '2h 15m',
+    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
   }
 ];
 
@@ -67,6 +128,9 @@ function getSimplifiedBatchTitle(title) {
   if (tUpper.includes('PEARL')) {
     return 'Pearl Batch';
   }
+  if (tUpper.includes('C+') || tUpper.includes('C PLUS')) {
+    return 'C+ Batch';
+  }
   return title.trim();
 }
 
@@ -79,6 +143,7 @@ function getApiBatchId(batchName) {
   if (name.includes('FASTRACK')) return 3;
   if (name.includes('BRAHMASTRA')) return 9;
   if (name.includes('ECONOMY')) return 1;
+  if (name.includes('C+') || name.includes('C PLUS')) return 11;
   return 8;
 }
 
@@ -148,7 +213,7 @@ async function loadRecordings() {
                     date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
                     duration: durStr,
                     video_cipher_id: v.video_cipher_id,
-                    videoUrl: ''
+                    videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || v.download_link || ''
                   };
                 });
               }
@@ -222,12 +287,22 @@ function renderRecordingsList(recordings) {
               <span>${rec.duration}</span>
             </div>
           </div>
-          <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <span>Play</span>
-          </button>
+          <div class="recording-row-actions-group" style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span>Play</span>
+            </button>
+            ${rec.videoUrl ? `
+            <a href="${rec.videoUrl}" download="${rec.title}.mp4" class="recording-row-action download-btn" target="_blank" style="background: linear-gradient(135deg, #10B981, #059669); border-color: #10B981; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; gap: 0.35rem; cursor: pointer; transition: all 0.2s ease;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <span>Download</span>
+            </a>
+            ` : ''}
+          </div>
         </div>
       `;
     });
