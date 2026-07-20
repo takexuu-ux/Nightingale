@@ -1410,7 +1410,12 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     const userName = localStorage.getItem('nnl_user_name') || '';
     let cleanName = userName;
     if (cleanName.toLowerCase() === 'student' || cleanName.toLowerCase() === 'general student' || cleanName.toLowerCase() === 'rajit' || !cleanName) {
-      cleanName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+      let persistedRandName = localStorage.getItem('nnl_persisted_rand_name');
+      if (!persistedRandName) {
+        persistedRandName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+        localStorage.setItem('nnl_persisted_rand_name', persistedRandName);
+      }
+      cleanName = persistedRandName;
     }
     // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
     const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
