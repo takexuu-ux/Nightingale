@@ -180,19 +180,25 @@ async function loadRecordings() {
     `;
   }
 
-  const token = localStorage.getItem('nnl_access_token');
-  const activeBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
-  const batchId = getApiBatchId(activeBatch);
-  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
+  // ── On-screen debug overlay (visible on mobile — no DevTools needed) ──
+  const debugLog = [];
+  const _origLog = console.log.bind(console);
+  const _origWarn = console.warn.bind(console);
+
+  // Temporarily capture logs
+  const capturedLogs = [];
+  const origLog = console.log;
+  const origWarn = console.warn;
+  console.log = (...args) => { capturedLogs.push('✓ ' + args.join(' ')); origLog(...args); };
+  console.warn = (...args) => { capturedLogs.push('⚠ ' + args.join(' ')); origWarn(...args); };
 
   let allRecordings = [];
 
   if (isGuest) {
-    // Show mock recordings filtered for guest
     allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
+    capturedLogs.push('ℹ Guest mode — showing mock data');
   } else {
     try {
-      // Try multiple API endpoints to find the C+ batch
       const BATCH_ENDPOINTS = [
         `${API_BASE}/batch_cms/batches/`,
         `${API_BASE}/cms/batches/`,
@@ -208,20 +214,19 @@ async function loadRecordings() {
           const res = await fetch(endpoint, {
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
           });
-          if (!res.ok) continue;
+          if (!res.ok) { capturedLogs.push(`✗ ${endpoint} → HTTP ${res.status}`); continue; }
           const data = await res.json();
           const list = data.data || data.results || (Array.isArray(data) ? data : []);
-          console.log(`[C+ API] Endpoint ${endpoint} returned ${list.length} batches:`, list.map(b => `${b.id}:${b.title}`));
+          capturedLogs.push(`📋 ${endpoint} → ${list.length} batches: ${list.map(b => `[${b.id}] ${b.title}`).join(', ')}`);
           const found = list.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
-          if (found) { matchedBatch = found; console.log('[C+ API] Matched batch:', found.id, found.title); break; }
-        } catch(e) { console.warn('[C+ API] Endpoint failed:', endpoint, e); }
+          if (found) { matchedBatch = found; capturedLogs.push(`✅ Matched batch: [${found.id}] ${found.title}`); break; }
+          else { capturedLogs.push(`⚠ No match for "${targetBatchName}" (looking for id=${batchId})`); }
+        } catch(e) { capturedLogs.push(`✗ ${endpoint} → Error: ${e.message}`); }
       }
 
       if (matchedBatch) {
-        // Get subjects — may be embedded or need separate fetch
         let subjects = matchedBatch.subjects || [];
         if (subjects.length === 0) {
-          // Try fetching subjects separately
           const SUBJECT_ENDPOINTS = [
             `${API_BASE}/batch_cms/subjects/?batch_id=${matchedBatch.id}`,
             `${API_BASE}/cms/subjects/?batch_id=${matchedBatch.id}`,
@@ -230,19 +235,19 @@ async function loadRecordings() {
           ];
           for (const sEndpoint of SUBJECT_ENDPOINTS) {
             try {
-              const sRes = await fetch(sEndpoint, {
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-              });
-              if (!sRes.ok) continue;
+              const sRes = await fetch(sEndpoint, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+              if (!sRes.ok) { capturedLogs.push(`✗ ${sEndpoint} → HTTP ${sRes.status}`); continue; }
               const sData = await sRes.json();
               const subjList = sData.subjects || sData.data || sData.results || (Array.isArray(sData) ? sData : []);
-              console.log(`[C+ API] Subject endpoint ${sEndpoint} returned:`, subjList.map(s => `${s.id}:${s.title}`));
+              capturedLogs.push(`📚 ${sEndpoint} → ${subjList.length} subjects: ${subjList.map(s => `[${s.id}] ${s.title}`).join(', ')}`);
               if (subjList.length > 0) { subjects = subjList; break; }
-            } catch(e) { console.warn('[C+ API] Subject endpoint failed:', sEndpoint, e); }
+            } catch(e) { capturedLogs.push(`✗ ${sEndpoint} → ${e.message}`); }
           }
+        } else {
+          capturedLogs.push(`📚 Subjects embedded in batch: ${subjects.map(s => `[${s.id}] ${s.title}`).join(', ')}`);
         }
 
-        console.log(`[C+ API] Found ${subjects.length} subjects for batch ${matchedBatch.id}`);
+        capturedLogs.push(`🔢 Total subjects: ${subjects.length}`);
 
         if (subjects.length > 0) {
           const VIDEO_ENDPOINTS = [
@@ -254,24 +259,19 @@ async function loadRecordings() {
           const videoPromises = subjects.map(async (subj) => {
             for (const urlFn of VIDEO_ENDPOINTS) {
               try {
-                const vRes = await fetch(urlFn(matchedBatch.id, subj.id), {
-                  headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                });
+                const vRes = await fetch(urlFn(matchedBatch.id, subj.id), { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                 if (!vRes.ok) continue;
                 const vData = await vRes.json();
                 const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);
                 if (vList.length > 0) {
-                  console.log(`[C+ API] Subject "${subj.title}" (${subj.id}): ${vList.length} videos. Keys:`, Object.keys(vList[0]));
-                  console.log(`[C+ API] First video full object:`, JSON.stringify(vList[0], null, 2));
+                  capturedLogs.push(`🎬 Subject "${subj.title}": ${vList.length} videos`);
                   return vList.map(v => {
                     const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
                     const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
                     return {
-                      id: v.id,
-                      title: v.title,
+                      id: v.id, title: v.title,
                       instructor: v.faculty?.name || v.instructor || 'Faculty',
-                      batch: activeBatch,
-                      subject: subj.title,
+                      batch: activeBatch, subject: subj.title,
                       date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
                       duration: `${durHrs}h ${durMins}m`,
                       video_cipher_id: v.video_cipher_id || '',
@@ -279,26 +279,54 @@ async function loadRecordings() {
                     };
                   });
                 }
-              } catch(err) { console.warn(`[C+ API] Video fetch failed for subject ${subj.title}:`, err); }
+              } catch(err) { capturedLogs.push(`✗ Video fetch for "${subj.title}": ${err.message}`); }
             }
+            capturedLogs.push(`⚠ No videos found for subject "${subj.title}"`);
             return [];
           });
 
           const results = await Promise.all(videoPromises);
           allRecordings = results.flat();
-          console.log(`[C+ API] Total recordings loaded: ${allRecordings.length}`);
+          capturedLogs.push(`✅ TOTAL LECTURES LOADED: ${allRecordings.length}`);
         }
       } else {
-        console.warn('[C+ API] No matching batch found across all endpoints for:', activeBatch);
+        capturedLogs.push(`❌ No matching batch found. Active batch: "${activeBatch}", batchId: ${batchId}, target: "${targetBatchName}"`);
       }
     } catch (e) {
-      console.warn('[C+ API] Fatal error in loadRecordings:', e);
+      capturedLogs.push(`💥 Fatal error: ${e.message}`);
     }
   }
+
+  // Restore console
+  console.log = origLog;
+  console.warn = origWarn;
+
+  // Show floating debug button (always visible)
+  const existingBtn = document.getElementById('api-debug-btn');
+  if (existingBtn) existingBtn.remove();
+  const debugBtn = document.createElement('button');
+  debugBtn.id = 'api-debug-btn';
+  debugBtn.textContent = `🔍 API Debug (${allRecordings.length} lectures)`;
+  debugBtn.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:rgba(0,0,0,0.8);color:#00f3d0;border:1px solid rgba(0,243,208,0.4);border-radius:10px;padding:0.5rem 1rem;font-size:0.75rem;font-family:monospace;cursor:pointer;backdrop-filter:blur(8px);';
+  debugBtn.onclick = () => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);overflow-y:auto;padding:1.5rem;font-family:monospace;font-size:0.72rem;color:#eee;';
+    overlay.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <strong style="color:#00f3d0;font-size:0.9rem;">C+ API Debug Log</strong>
+        <button onclick="this.closest('div[style]').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;padding:0.4rem 0.8rem;border-radius:8px;cursor:pointer;font-size:0.8rem;">✕ Close</button>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:1rem;line-height:1.8;">
+        ${capturedLogs.map(l => `<div style="border-bottom:1px solid rgba(255,255,255,0.04);padding:0.15rem 0;">${l.replace(/</g,'&lt;')}</div>`).join('')}
+      </div>`;
+    document.body.appendChild(overlay);
+  };
+  document.body.appendChild(debugBtn);
 
   // Fallback to mock if nothing loaded
   if (allRecordings.length === 0) {
     allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
+    capturedLogs.push(`ℹ Fell back to ${allRecordings.length} mock lectures`);
   }
 
   currentRecordings = allRecordings;

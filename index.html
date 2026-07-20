@@ -195,50 +195,13 @@
             </div>
           </div>
 
-          <!-- Two-column layout: live classes left, sidebar right -->
+          <!-- Two-column layout: live classes left, tomorrow right (same card style) -->
           <div id="live-tab-layout" style="display:flex; gap:1.25rem; align-items:flex-start; width:100%;">
             <!-- Main: today's live classes -->
-            <div id="class-list-container" class="class-grid" style="flex:1; min-width:0;">
-              <!-- Dynamically populated via JS -->
-            </div>
-
-            <!-- Sidebar: upcoming classes — matches live card glass style -->
-            <div id="schedule-sidebar" style="width:300px; flex-shrink:0; align-self:stretch;">
-              <div style="
-                height:100%;
-                min-height:220px;
-                background:rgba(10,11,20,0.35);
-                border:1px solid rgba(255,255,255,0.08);
-                border-radius:20px;
-                overflow:hidden;
-                backdrop-filter:blur(24px) saturate(180%);
-                -webkit-backdrop-filter:blur(24px) saturate(180%);
-                box-shadow:0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
-                display:flex;
-                flex-direction:column;
-              ">
-                <!-- Header -->
-                <div style="
-                  display:flex; align-items:center; gap:0.5rem;
-                  padding:0.85rem 1.1rem;
-                  border-bottom:1px solid rgba(255,255,255,0.06);
-                ">
-                  <svg width="12" height="12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/>
-                  </svg>
-                  <span style="font-family:var(--font-display); font-size:0.62rem; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.14em; font-weight:700;">Upcoming Classes</span>
-                </div>
-                <!-- List -->
-                <div id="upcoming-sidebar-list" style="
-                  flex:1;
-                  padding:0.6rem 0.75rem;
-                  overflow-y:auto;
-                  scrollbar-width:thin;
-                  scrollbar-color:rgba(255,255,255,0.08) transparent;
-                ">
-                  <!-- populated by JS -->
-                </div>
-              </div>
+            <div id="class-list-container" class="class-grid" style="flex:1; min-width:0;"></div>
+            <!-- Tomorrow: same card style, just date differs -->
+            <div id="schedule-sidebar" style="flex:0 0 360px; display:flex; flex-direction:column; gap:0.75rem;">
+              <div id="upcoming-sidebar-list"></div>
             </div>
           </div>
         </section>

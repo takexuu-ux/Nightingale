@@ -3078,86 +3078,55 @@ function renderClasses(classes) {
       });
     }
 
-    // ── Populate unified Upcoming sidebar (tomorrow + beyond, all in one list) ──
+    // ── Tomorrow sidebar: render using createClassCard() — identical to live cards ──
     const upcomingSidebarEl = document.getElementById('upcoming-sidebar-list');
     if (upcomingSidebarEl) {
+      upcomingSidebarEl.innerHTML = '';
+
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(tomorrow);
+      dayEnd.setHours(23, 59, 59, 999);
 
-      const futureClasses = poolForLive.filter(c => {
+      const tomorrowClasses = poolForLive.filter(c => {
         try {
           const start = parseApiDate(c.start || c.startTime || '');
-          return !isNaN(start.getTime()) && start >= tomorrow;
+          return !isNaN(start.getTime()) && start >= tomorrow && start <= dayEnd;
         } catch (e) { return false; }
       }).sort((a, b) =>
         parseApiDate(a.start || a.startTime || '').getTime() -
         parseApiDate(b.start || b.startTime || '').getTime()
-      ).slice(0, 15);
+      );
 
-      upcomingSidebarEl.innerHTML = '';
+      // Date label matching the theme
+      const tomorrowFull = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+      const labelEl = document.createElement('div');
+      labelEl.style.cssText = 'font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0 0.25rem 0.5rem;';
+      labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
+      upcomingSidebarEl.appendChild(labelEl);
 
-      if (futureClasses.length === 0) {
-        upcomingSidebarEl.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;gap:0.75rem;">
-            <svg width="32" height="32" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" viewBox="0 0 24 24">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-            </svg>
-            <p style="color:rgba(255,255,255,0.25);font-size:0.65rem;font-family:var(--font-display);text-align:center;margin:0;text-transform:uppercase;letter-spacing:0.1em;">No upcoming classes</p>
-          </div>`;
-
+      if (tomorrowClasses.length === 0) {
+        // No-class card — same glass style as a class card
+        const noCard = document.createElement('div');
+        noCard.className = 'class-card';
+        noCard.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;min-height:120px;opacity:0.6;';
+        noCard.innerHTML = `
+          <svg width="28" height="28" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          <p style="color:rgba(255,255,255,0.35);font-size:0.72rem;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.08em;margin:0;">No class tomorrow</p>
+        `;
+        upcomingSidebarEl.appendChild(noCard);
       } else {
-        let lastDateStr = '';
-        futureClasses.forEach(c => {
-          const start = (() => { try { return parseApiDate(c.start || c.startTime || ''); } catch(e) { return null; } })();
-          if (!start) return;
-
-          const dayLabel = start.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-          const timeLabel = start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-          const instructor = c.faculty?.name || c.instructor || '';
-
-          // Date group header
-          if (dayLabel !== lastDateStr) {
-            lastDateStr = dayLabel;
-            const dateHeader = document.createElement('div');
-            dateHeader.style.cssText = 'padding:0.3rem 0.5rem 0.15rem; font-family:var(--font-display); font-size:0.58rem; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.1em; margin-top:0.25rem;';
-            dateHeader.textContent = dayLabel;
-            upcomingSidebarEl.appendChild(dateHeader);
-          }
-
-          const item = document.createElement('div');
-          item.style.cssText = [
-            'padding:0.5rem 0.65rem',
-            'border-radius:10px',
-            'border:1px solid rgba(255,255,255,0.05)',
-            'background:rgba(255,255,255,0.025)',
-            'margin-bottom:0.3rem',
-            'transition:background 0.15s,border-color 0.15s',
-            'cursor:default'
-          ].join(';');
-
-          item.onmouseenter = () => {
-            item.style.background = 'rgba(255,255,255,0.05)';
-            item.style.borderColor = 'rgba(255,255,255,0.12)';
-          };
-          item.onmouseleave = () => {
-            item.style.background = 'rgba(255,255,255,0.025)';
-            item.style.borderColor = 'rgba(255,255,255,0.05)';
-          };
-
-          item.innerHTML = `
-            <div style="font-size:0.76rem;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:0.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${c.title || c.name || 'Class'}</div>
-            <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;">
-              <svg width="10" height="10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/></svg>
-              <span style="font-size:0.65rem;color:rgba(255,255,255,0.45);font-family:var(--font-display);font-weight:600;">${timeLabel}</span>
-              ${instructor ? `<span style="font-size:0.6rem;color:rgba(255,255,255,0.2);">·</span><span style="font-size:0.65rem;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${instructor}</span>` : ''}
-            </div>
-          `;
-
-          upcomingSidebarEl.appendChild(item);
+        tomorrowClasses.forEach(c => {
+          // Use same createClassCard — not live, not starting soon → shows as scheduled
+          const card = createClassCard(c, false, false);
+          upcomingSidebarEl.appendChild(card);
         });
       }
     }
+
 
     return;
   }
