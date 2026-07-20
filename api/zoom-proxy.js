@@ -570,7 +570,7 @@ export default function handler(req, res) {
       responseHeaders['cross-origin-opener-policy'] = 'same-origin';
       responseHeaders['cross-origin-embedder-policy'] = 'credentialless';
 
-      if (reqPath.includes('csrf_js')) {
+      if (cleanPath.includes('csrf_js')) {
         delete responseHeaders['etag'];
         delete responseHeaders['last-modified'];
         responseHeaders['cache-control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
