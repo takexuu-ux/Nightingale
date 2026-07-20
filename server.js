@@ -6,6 +6,11 @@ import zoomProxyHandler from './api/zoom-proxy.js';
 const PORT = process.env.PORT || 10000;
 
 const server = http.createServer(async (req, res) => {
+  // Parse and pre-populate query parameters and path to match Vercel API signature
+  const parsedUrl = url.parse(req.url || '', true);
+  req.query = parsedUrl.query || {};
+  req.path = parsedUrl.pathname || '';
+
   // Pass HTTP requests to our existing zoom-proxy handler
   try {
     await zoomProxyHandler(req, res);
