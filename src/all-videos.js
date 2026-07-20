@@ -259,9 +259,8 @@ async function loadRecordings() {
 
         if (subjects.length > 0) {
           const VIDEO_ENDPOINTS = [
-            (bid, sid) => `${API_BASE}/batch_cms/videos/?batch_id=${bid}&subject_id=${sid}`,
-            (bid, sid) => `${API_BASE}/cms/videos/?batch_id=${bid}&subject_id=${sid}`,
             (bid, sid) => `${API_BASE}/batch_cms/videos/?batch=${bid}&subject=${sid}`,
+            (bid, sid) => `${API_BASE}/cms/videos/?batch=${bid}&subject=${sid}`,
           ];
 
           const videoPromises = subjects.map(async (subj) => {
@@ -272,8 +271,14 @@ async function loadRecordings() {
                 const vData = await vRes.json();
                 const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);
                 if (vList.length > 0) {
-                  capturedLogs.push(`🎬 Subject "${subj.title}": ${vList.length} videos`);
-                  return vList.map(v => {
+                  // Client-side safety filter: ensure video matches subject ID if the API returned extra
+                  const filteredList = vList.filter(v => {
+                    if (!v.subject) return true; // fallback
+                    const vSubjId = v.subject.id || v.subject;
+                    return String(vSubjId) === String(subj.id);
+                  });
+                  capturedLogs.push(`🎬 Subject "${subj.title}": ${filteredList.length} videos`);
+                  return filteredList.map(v => {
                     const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
                     const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
                     return {
