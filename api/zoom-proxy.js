@@ -29,11 +29,14 @@ export default function handler(req, res) {
     console.log(`[Vercel Tunnel] Forwarding request to Render: ${req.url}`);
     const renderTarget = `https://nightingale-9n2c.onrender.com${req.url}`;
     
+    const headers = { ...req.headers };
+    delete headers['host']; // Let Node generate the correct host header for Render's SSL cert
+    
     const proxyReq = https.request(
       renderTarget,
       {
         method: req.method,
-        headers: req.headers,
+        headers: headers,
       },
       (proxyRes) => {
         res.statusCode = proxyRes.statusCode;
