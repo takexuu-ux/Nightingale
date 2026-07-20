@@ -159,6 +159,7 @@ export default function handler(req, res) {
 
   const INJECTED_SCRIPT = `
 (function() {
+  var PROXY_HOST = "${req.headers['host'] || 'nightingale-9n2c.onrender.com'}";
   // Override alert to silent OWASP CSRFGuard warnings
   var originalAlert = window.alert;
   window.alert = function(msg) {
@@ -230,9 +231,9 @@ export default function handler(req, res) {
         var path = slashIdx !== -1 ? withoutWss.substring(slashIdx) : '';
         if (host.endsWith('.zoom.us')) {
           var subdomain = host.substring(0, host.length - 8);
-          modifiedUrl = 'ws://' + window.location.host + '/zoom-subdomain/' + subdomain + path;
+          modifiedUrl = 'ws://' + PROXY_HOST + '/zoom-subdomain/' + subdomain + path;
         } else if (host === 'zoom.us') {
-          modifiedUrl = 'ws://' + window.location.host + '/zoom' + path;
+          modifiedUrl = 'ws://' + PROXY_HOST + '/zoom' + path;
         }
       }
     }
