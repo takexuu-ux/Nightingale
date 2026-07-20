@@ -206,105 +206,102 @@ async function loadRecordings() {
     capturedLogs.push('ℹ Guest mode — showing mock data');
   } else {
     try {
-      const BATCH_ENDPOINTS = [
-        `${API_BASE}/batch_cms/batches/`,
-        `${API_BASE}/cms/batches/`,
-        `${API_BASE}/batch_cms/enrolled_batches/`,
-        `${API_BASE}/cms/enrolled_batches/`,
-      ];
-
-      let matchedBatch = null;
-      const targetBatchName = getSimplifiedBatchTitle(activeBatch);
-
-      for (const endpoint of BATCH_ENDPOINTS) {
-        try {
-          const res = await fetchWithTimeout(endpoint, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-          });
-          if (!res.ok) { capturedLogs.push(`✗ ${endpoint} → HTTP ${res.status}`); continue; }
-          const data = await res.json();
-          const list = data.data || data.results || (Array.isArray(data) ? data : []);
-          capturedLogs.push(`📋 ${endpoint} → ${list.length} batches: ${list.map(b => `[${b.id}] ${b.title}`).join(', ')}`);
-          // Use loose equality (==) to handle string vs number IDs from API
-          const found = list.find(b => b.id == batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
-          if (found) { matchedBatch = found; capturedLogs.push(`✅ Matched batch: [${found.id}] ${found.title}`); break; }
-          else { capturedLogs.push(`⚠ No match for "${targetBatchName}" (looking for id=${batchId})`); }
-        } catch(e) { capturedLogs.push(`✗ ${endpoint} → Error: ${e.message}`); }
+      capturedLogs.push(`🚀 Starting batch video pagination load for batch ID: ${batchId}`);
+      
+      // Step 1: Fetch the first page to get total count
+      const pageSize = 250;
+      const firstPageUrl = `${API_BASE}/batch_cms/videos/?batch_id=${batchId}&page_size=${pageSize}&page=1`;
+      const res = await fetchWithTimeout(firstPageUrl, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      
+      if (!res.ok) {
+        throw new Error(`First page fetch failed with status ${res.status}`);
       }
-
-      if (matchedBatch) {
-        let subjects = matchedBatch.subjects || [];
-        if (subjects.length === 0) {
-          const SUBJECT_ENDPOINTS = [
-            `${API_BASE}/batch_cms/subjects/?batch_id=${matchedBatch.id}`,
-            `${API_BASE}/cms/subjects/?batch_id=${matchedBatch.id}`,
-            `${API_BASE}/batch_cms/batches/${matchedBatch.id}/`,
-            `${API_BASE}/cms/batches/${matchedBatch.id}/`,
-          ];
-          for (const sEndpoint of SUBJECT_ENDPOINTS) {
-            try {
-              const sRes = await fetchWithTimeout(sEndpoint, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
-              if (!sRes.ok) { capturedLogs.push(`✗ ${sEndpoint} → HTTP ${sRes.status}`); continue; }
-              const sData = await sRes.json();
-              const subjList = sData.subjects || sData.data || sData.results || (Array.isArray(sData) ? sData : []);
-              capturedLogs.push(`📚 ${sEndpoint} → ${subjList.length} subjects: ${subjList.map(s => `[${s.id}] ${s.title}`).join(', ')}`);
-              if (subjList.length > 0) { subjects = subjList; break; }
-            } catch(e) { capturedLogs.push(`✗ ${sEndpoint} → ${e.message}`); }
+      
+      const firstPageData = await res.json();
+      const firstPageList = firstPageData.data || firstPageData.results || (Array.isArray(firstPageData) ? firstPageData : []);
+      const totalCount = firstPageData.total_count || firstPageData.count || firstPageList.length;
+      capturedLogs.push(`📋 First page loaded. Total batch videos: ${totalCount}`);
+      
+      let rawVideos = [...firstPageList];
+      
+      // Step 2: Fetch remaining pages concurrently if there are more
+      if (totalCount > pageSize) {
+        const totalPages = Math.ceil(totalCount / pageSize);
+        capturedLogs.push(`📚 Fetching remaining ${totalPages - 1} pages concurrently...`);
+        
+        const pagePromises = [];
+        for (let p = 2; p <= totalPages; p++) {
+          const url = `${API_BASE}/batch_cms/videos/?batch_id=${batchId}&page_size=${pageSize}&page=${p}`;
+          pagePromises.push(
+            fetchWithTimeout(url, {
+              headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+            }).then(r => r.ok ? r.json() : null)
+          );
+        }
+        
+        const pagesResults = await Promise.all(pagePromises);
+        pagesResults.forEach((pageData, index) => {
+          if (pageData) {
+            const list = pageData.data || pageData.results || (Array.isArray(pageData) ? pageData : []);
+            rawVideos = rawVideos.concat(list);
+            capturedLogs.push(`✓ Page ${index + 2} loaded: ${list.length} videos`);
+          } else {
+            capturedLogs.push(`⚠ Page ${index + 2} failed to load`);
           }
-        } else {
-          capturedLogs.push(`📚 Subjects embedded in batch: ${subjects.map(s => `[${s.id}] ${s.title}`).join(', ')}`);
-        }
-
-        capturedLogs.push(`🔢 Total subjects: ${subjects.length}`);
-
-        if (subjects.length > 0) {
-          const VIDEO_ENDPOINTS = [
-            (bid, sid) => `${API_BASE}/batch_cms/videos/?batch=${bid}&subject=${sid}`,
-            (bid, sid) => `${API_BASE}/cms/videos/?batch=${bid}&subject=${sid}`,
-          ];
-
-          const videoPromises = subjects.map(async (subj) => {
-            for (const urlFn of VIDEO_ENDPOINTS) {
-              try {
-                const vRes = await fetchWithTimeout(urlFn(matchedBatch.id, subj.id), { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
-                if (!vRes.ok) continue;
-                const vData = await vRes.json();
-                const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);
-                if (vList.length > 0) {
-                  // Client-side safety filter: ensure video matches subject ID if the API returned extra
-                  const filteredList = vList.filter(v => {
-                    if (!v.subject) return true; // fallback
-                    const vSubjId = v.subject.id || v.subject;
-                    return String(vSubjId) === String(subj.id);
-                  });
-                  capturedLogs.push(`🎬 Subject "${subj.title}": ${filteredList.length} videos`);
-                  return filteredList.map(v => {
-                    const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
-                    const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
-                    return {
-                      id: v.id, title: v.title,
-                      instructor: v.faculty?.name || v.instructor || 'Faculty',
-                      batch: activeBatch, subject: subj.title,
-                      date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
-                      duration: `${durHrs}h ${durMins}m`,
-                      video_cipher_id: v.video_cipher_id || '',
-                      videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || findVideoUrl(v) || ''
-                    };
-                  });
-                }
-              } catch(err) { capturedLogs.push(`✗ Video fetch for "${subj.title}": ${err.message}`); }
-            }
-            capturedLogs.push(`⚠ No videos found for subject "${subj.title}"`);
-            return [];
-          });
-
-          const results = await Promise.all(videoPromises);
-          allRecordings = results.flat();
-          capturedLogs.push(`✅ TOTAL LECTURES LOADED: ${allRecordings.length}`);
-        }
-      } else {
-        capturedLogs.push(`❌ No matching batch found. Active batch: "${activeBatch}", batchId: ${batchId}, target: "${targetBatchName}"`);
+        });
       }
+      
+      // Step 3: Fetch subjects to map IDs to titles
+      let subjects = [];
+      const SUBJECT_ENDPOINTS = [
+        `${API_BASE}/batch_cms/subjects/?batch_id=${batchId}`,
+        `${API_BASE}/cms/subjects/?batch_id=${batchId}`
+      ];
+      for (const sEndpoint of SUBJECT_ENDPOINTS) {
+        try {
+          const sRes = await fetchWithTimeout(sEndpoint, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+          if (!sRes.ok) continue;
+          const sData = await sRes.json();
+          subjects = sData.subjects || sData.data || sData.results || (Array.isArray(sData) ? sData : []);
+          capturedLogs.push(`📚 Loaded ${subjects.length} subjects for mapping`);
+          break;
+        } catch(e) { capturedLogs.push(`✗ Subject endpoint failed: ${e.message}`); }
+      }
+      
+      // Create subject ID to title map
+      const subjectMap = {};
+      subjects.forEach(s => {
+        subjectMap[String(s.id)] = s.title;
+      });
+      
+      // Step 4: Map raw videos to our schema and group them
+      allRecordings = rawVideos.map(v => {
+        const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
+        const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
+        
+        // Resolve subject name using mapping or item subject
+        let subjTitle = 'General Nursing';
+        if (v.subject) {
+          const vSubjId = String(v.subject.id || v.subject);
+          subjTitle = subjectMap[vSubjId] || v.subject.title || v.subject.name || 'General Nursing';
+        }
+        
+        return {
+          id: v.id,
+          title: v.title,
+          instructor: v.faculty?.name || v.instructor || 'Faculty',
+          batch: activeBatch,
+          subject: subjTitle,
+          date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
+          duration: `${durHrs}h ${durMins}m`,
+          video_cipher_id: v.video_cipher_id || '',
+          videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || findVideoUrl(v) || ''
+        };
+      });
+      
+      capturedLogs.push(`✅ TOTAL LECTURES MAPPED: ${allRecordings.length}`);
     } catch (e) {
       capturedLogs.push(`💥 Fatal error: ${e.message}`);
     }
