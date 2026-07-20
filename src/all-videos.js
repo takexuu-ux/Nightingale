@@ -206,54 +206,9 @@ async function loadRecordings() {
     capturedLogs.push('ℹ Guest mode — showing mock data');
   } else {
     try {
-      capturedLogs.push(`🚀 Starting batch video pagination load for batch ID: ${batchId}`);
+      capturedLogs.push(`🚀 Starting subject-based query for batch ID: ${batchId}`);
       
-      // Step 1: Fetch the first page to get total count
-      const pageSize = 250;
-      const firstPageUrl = `${API_BASE}/batch_cms/videos/?batch_id=${batchId}&page_size=${pageSize}&page=1`;
-      const res = await fetchWithTimeout(firstPageUrl, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-      });
-      
-      if (!res.ok) {
-        throw new Error(`First page fetch failed with status ${res.status}`);
-      }
-      
-      const firstPageData = await res.json();
-      const firstPageList = firstPageData.data || firstPageData.results || (Array.isArray(firstPageData) ? firstPageData : []);
-      const totalCount = firstPageData.total_count || firstPageData.count || firstPageList.length;
-      capturedLogs.push(`📋 First page loaded. Total batch videos: ${totalCount}`);
-      
-      let rawVideos = [...firstPageList];
-      
-      // Step 2: Fetch remaining pages concurrently if there are more
-      if (totalCount > pageSize) {
-        const totalPages = Math.ceil(totalCount / pageSize);
-        capturedLogs.push(`📚 Fetching remaining ${totalPages - 1} pages concurrently...`);
-        
-        const pagePromises = [];
-        for (let p = 2; p <= totalPages; p++) {
-          const url = `${API_BASE}/batch_cms/videos/?batch_id=${batchId}&page_size=${pageSize}&page=${p}`;
-          pagePromises.push(
-            fetchWithTimeout(url, {
-              headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-            }).then(r => r.ok ? r.json() : null)
-          );
-        }
-        
-        const pagesResults = await Promise.all(pagePromises);
-        pagesResults.forEach((pageData, index) => {
-          if (pageData) {
-            const list = pageData.data || pageData.results || (Array.isArray(pageData) ? pageData : []);
-            rawVideos = rawVideos.concat(list);
-            capturedLogs.push(`✓ Page ${index + 2} loaded: ${list.length} videos`);
-          } else {
-            capturedLogs.push(`⚠ Page ${index + 2} failed to load`);
-          }
-        });
-      }
-      
-      // Step 3: Fetch batches to extract subject mapping (which we know has the subjects)
+      // Step 1: Fetch subjects to map IDs to titles and iterate
       let subjects = [];
       try {
         const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/`, {
@@ -272,46 +227,50 @@ async function loadRecordings() {
         capturedLogs.push(`✗ Batch mapping fetch failed: ${e.message}`);
       }
 
-      // Create subject ID to title map
-      const subjectMap = {};
-      subjects.forEach(s => {
-        subjectMap[String(s.id)] = s.title;
-      });
-      
-      capturedLogs.push(`📋 Total raw videos fetched: ${rawVideos.length}`);
-      if (rawVideos.length > 0) {
-        capturedLogs.push(`ℹ First video keys: ${Object.keys(rawVideos[0]).join(', ')}`);
-        capturedLogs.push(`ℹ First video raw subject: ${JSON.stringify(rawVideos[0].subject || rawVideos[0].subject_id)}`);
-      }
+      if (subjects.length > 0) {
+        const limit = 250;
+        const videoPromises = subjects.map(async (subj) => {
+          // Query directly using correct batch_id and subject_id parameters with page_size=250 override
+          const url = `${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subj.id}&page_size=${limit}`;
+          try {
+            const vRes = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            if (!vRes.ok) return [];
+            const vData = await vRes.json();
+            const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);
+            
+            // Client-side safety filter: verify subject ID matches to be absolutely certain
+            const filteredList = vList.filter(v => {
+              if (!v.subject) return true;
+              const vSubjId = v.subject.id || v.subject;
+              return String(vSubjId) === String(subj.id);
+            });
 
-      // Step 4: Map raw videos to our schema and group them
-      allRecordings = rawVideos.map(v => {
-        const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
-        const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
-        
-        // Resolve subject name using mapping or item subject
-        let subjTitle = 'General Nursing';
-        if (v.subject) {
-          const vSubjId = String(v.subject.id || v.subject);
-          subjTitle = subjectMap[vSubjId] || v.subject.title || v.subject.name || 'General Nursing';
-        } else if (v.subject_id) {
-          subjTitle = subjectMap[String(v.subject_id)] || 'General Nursing';
-        }
-        
-        return {
-          id: v.id,
-          title: v.title,
-          instructor: v.faculty?.name || v.instructor || 'Faculty',
-          batch: activeBatch,
-          subject: subjTitle,
-          date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
-          duration: `${durHrs}h ${durMins}m`,
-          video_cipher_id: v.video_cipher_id || '',
-          videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || findVideoUrl(v) || ''
-        };
-      });
-      
-      capturedLogs.push(`✅ TOTAL LECTURES MAPPED: ${allRecordings.length}`);
+            capturedLogs.push(`🎬 Subject "${subj.title}": ${filteredList.length} videos`);
+            return filteredList.map(v => {
+              const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
+              const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
+              return {
+                id: v.id,
+                title: v.title,
+                instructor: v.faculty?.name || v.instructor || 'Faculty',
+                batch: activeBatch,
+                subject: subj.title,
+                date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
+                duration: `${durHrs}h ${durMins}m`,
+                video_cipher_id: v.video_cipher_id || '',
+                videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || findVideoUrl(v) || ''
+              };
+            });
+          } catch(err) {
+            capturedLogs.push(`✗ Video fetch for "${subj.title}": ${err.message}`);
+            return [];
+          }
+        });
+
+        const results = await Promise.all(videoPromises);
+        allRecordings = results.flat();
+        capturedLogs.push(`✅ TOTAL LECTURES MAPPED: ${allRecordings.length}`);
+      }
     } catch (e) {
       capturedLogs.push(`💥 Fatal error: ${e.message}`);
     }
@@ -595,14 +554,18 @@ function openRecordingPlayer(recording) {
     bodyEl.appendChild(loader);
 
     const token = localStorage.getItem('nnl_access_token');
-    fetch(`${API_BASE}/batch_cms/videos/${recording.id}/generate_videocipher_otp/`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      }
-    })
-    .then(res => res.json())
+    const tryGetOtp = (url) => {
+      return fetch(url, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      }).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      });
+    };
+
+    tryGetOtp(`${API_BASE}/batch_cms/videos/${recording.id}/generate_videocipher_otp/`)
+    .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recording.id}/generate_videocipher_otp/`))
     .then(data => {
       if (loader) loader.remove();
       if (data && data.otp && data.playbackInfo) {
@@ -621,7 +584,7 @@ function openRecordingPlayer(recording) {
       }
     })
     .catch(err => {
-      console.error(err);
+      console.error('VdoCipher OTP generation failed:', err);
       if (loader) loader.remove();
       if (noUrlEl) noUrlEl.classList.remove('hide');
     });
