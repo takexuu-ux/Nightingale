@@ -196,36 +196,22 @@
           </div>
 
           <!-- Two-column layout: live classes left, sidebar right -->
-          <div style="display: flex; gap: 1.25rem; align-items: flex-start; width: 100%;">
-            <!-- Main: today's live / upcoming classes -->
-            <div id="class-list-container" class="class-grid" style="flex: 1; min-width: 0;">
+          <div id="live-tab-layout" style="display:flex; gap:1.25rem; align-items:flex-start; width:100%;">
+            <!-- Main: today's live classes -->
+            <div id="class-list-container" class="class-grid" style="flex:1; min-width:0;">
               <!-- Dynamically populated via JS -->
             </div>
 
-            <!-- Sidebar: tomorrow + upcoming -->
-            <div id="schedule-sidebar" style="width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem;">
-              <!-- Tomorrow section -->
-              <div id="tomorrow-section" style="background: rgba(8,10,20,0.65); border: 1px solid rgba(139,92,246,0.18); border-radius: 16px; overflow: hidden; backdrop-filter: blur(12px);">
-                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(139,92,246,0.1);">
-                  <svg width="13" height="13" fill="none" stroke="rgba(167,139,250,0.85)" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
-                  </svg>
-                  <span id="tomorrow-label" style="font-family: var(--font-display); font-size: 0.65rem; color: rgba(167,139,250,0.85); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Tomorrow</span>
-                </div>
-                <div id="tomorrow-list" style="padding: 0.5rem;">
-                  <!-- populated by JS -->
-                </div>
-              </div>
-
-              <!-- Upcoming section -->
-              <div id="upcoming-sidebar-section" style="background: rgba(8,10,20,0.65); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; backdrop-filter: blur(12px);">
-                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <!-- Sidebar: upcoming classes -->
+            <div id="schedule-sidebar" style="width:265px; flex-shrink:0;">
+              <div style="background:rgba(8,10,20,0.7); border:1px solid rgba(255,255,255,0.07); border-radius:16px; overflow:hidden; backdrop-filter:blur(14px);">
+                <div style="display:flex; align-items:center; gap:0.5rem; padding:0.7rem 1rem; border-bottom:1px solid rgba(255,255,255,0.05);">
                   <svg width="13" height="13" fill="none" stroke="rgba(0,243,208,0.7)" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/>
                   </svg>
-                  <span style="font-family: var(--font-display); font-size: 0.65rem; color: rgba(0,243,208,0.7); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Upcoming</span>
+                  <span style="font-family:var(--font-display); font-size:0.62rem; color:rgba(0,243,208,0.7); text-transform:uppercase; letter-spacing:0.12em; font-weight:700;">Upcoming Classes</span>
                 </div>
-                <div id="upcoming-sidebar-list" style="padding: 0.5rem;">
+                <div id="upcoming-sidebar-list" style="padding:0.5rem; max-height:420px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(0,243,208,0.15) transparent;">
                   <!-- populated by JS -->
                 </div>
               </div>

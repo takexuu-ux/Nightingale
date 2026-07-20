@@ -3078,70 +3078,79 @@ function renderClasses(classes) {
       });
     }
 
-    // ── Populate tomorrow sidebar ──
-    const tomorrowListEl = document.getElementById('tomorrow-list');
-    const tomorrowLabelEl = document.getElementById('tomorrow-label');
-    if (tomorrowListEl) {
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowLabel = tomorrow.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-      if (tomorrowLabelEl) tomorrowLabelEl.textContent = `Tomorrow · ${tomorrowLabel}`;
-
-      const tomorrowClasses = poolForLive.filter(c => {
-        try {
-          const start = parseApiDate(c.start || c.startTime || '');
-          return !isNaN(start.getTime()) && start.toDateString() === tomorrow.toDateString();
-        } catch (e) { return false; }
-      }).sort((a, b) => parseApiDate(a.start || a.startTime || '').getTime() - parseApiDate(b.start || b.startTime || '').getTime());
-
-      tomorrowListEl.innerHTML = '';
-      if (tomorrowClasses.length === 0) {
-        tomorrowListEl.innerHTML = `<p style="color: rgba(167,139,250,0.45); font-size: 0.7rem; font-family: var(--font-display); text-align: center; padding: 0.75rem 0.5rem; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">No classes tomorrow</p>`;
-      } else {
-        tomorrowClasses.forEach(c => {
-          const startTime = (() => { try { return parseApiDate(c.start || c.startTime || '').toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }); } catch(e){ return ''; } })();
-          const item = document.createElement('div');
-          item.style.cssText = 'padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid rgba(139,92,246,0.1); background: rgba(139,92,246,0.04); margin-bottom: 0.35rem;';
-          item.innerHTML = `
-            <div style="font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.title || c.name || 'Class'}</div>
-            <div style="font-size: 0.65rem; color: rgba(167,139,250,0.6); display: flex; align-items: center; gap: 0.35rem;">
-              <span>${c.faculty?.name || c.instructor || ''}</span>
-              ${startTime ? `<span>·</span><span>${startTime}</span>` : ''}
-            </div>
-          `;
-          tomorrowListEl.appendChild(item);
-        });
-      }
-    }
-
-    // ── Populate upcoming sidebar (next 7 days after tomorrow) ──
+    // ── Populate unified Upcoming sidebar (tomorrow + beyond, all in one list) ──
     const upcomingSidebarEl = document.getElementById('upcoming-sidebar-list');
     if (upcomingSidebarEl) {
-      const dayAfterTomorrow = new Date(now);
-      dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-      dayAfterTomorrow.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
 
-      const soonClasses = poolForLive.filter(c => {
+      const futureClasses = poolForLive.filter(c => {
         try {
           const start = parseApiDate(c.start || c.startTime || '');
-          return !isNaN(start.getTime()) && start >= dayAfterTomorrow;
+          return !isNaN(start.getTime()) && start >= tomorrow;
         } catch (e) { return false; }
-      }).sort((a, b) => parseApiDate(a.start || a.startTime || '').getTime() - parseApiDate(b.start || b.startTime || '').getTime()).slice(0, 6);
+      }).sort((a, b) =>
+        parseApiDate(a.start || a.startTime || '').getTime() -
+        parseApiDate(b.start || b.startTime || '').getTime()
+      ).slice(0, 15);
 
       upcomingSidebarEl.innerHTML = '';
-      if (soonClasses.length === 0) {
-        upcomingSidebarEl.innerHTML = `<p style="color: rgba(0,243,208,0.35); font-size: 0.7rem; font-family: var(--font-display); text-align: center; padding: 0.75rem 0.5rem; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">No upcoming classes</p>`;
+
+      if (futureClasses.length === 0) {
+        upcomingSidebarEl.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1rem;gap:0.5rem;">
+            <svg width="28" height="28" fill="none" stroke="rgba(0,243,208,0.2)" stroke-width="1.5" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            <p style="color:rgba(0,243,208,0.3);font-size:0.68rem;font-family:var(--font-display);text-align:center;margin:0;text-transform:uppercase;letter-spacing:0.08em;">No upcoming classes</p>
+          </div>`;
       } else {
-        soonClasses.forEach(c => {
+        let lastDateStr = '';
+        futureClasses.forEach(c => {
           const start = (() => { try { return parseApiDate(c.start || c.startTime || ''); } catch(e) { return null; } })();
-          const dateStr = start ? start.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
-          const timeStr = start ? start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : '';
+          if (!start) return;
+
+          const dayLabel = start.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+          const timeLabel = start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+          const instructor = c.faculty?.name || c.instructor || '';
+
+          // Date group header
+          if (dayLabel !== lastDateStr) {
+            lastDateStr = dayLabel;
+            const dateHeader = document.createElement('div');
+            dateHeader.style.cssText = 'padding:0.3rem 0.5rem 0.15rem; font-family:var(--font-display); font-size:0.58rem; font-weight:700; color:rgba(0,243,208,0.5); text-transform:uppercase; letter-spacing:0.1em; margin-top:0.25rem;';
+            dateHeader.textContent = dayLabel;
+            upcomingSidebarEl.appendChild(dateHeader);
+          }
+
           const item = document.createElement('div');
-          item.style.cssText = 'padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); margin-bottom: 0.35rem;';
+          item.style.cssText = [
+            'padding:0.5rem 0.65rem',
+            'border-radius:10px',
+            'border:1px solid rgba(255,255,255,0.05)',
+            'background:rgba(255,255,255,0.025)',
+            'margin-bottom:0.3rem',
+            'backdrop-filter:blur(8px)',
+            'transition:background 0.15s,border-color 0.15s',
+            'cursor:default'
+          ].join(';');
+
+          item.onmouseenter = () => {
+            item.style.background = 'rgba(0,243,208,0.04)';
+            item.style.borderColor = 'rgba(0,243,208,0.14)';
+          };
+          item.onmouseleave = () => {
+            item.style.background = 'rgba(255,255,255,0.025)';
+            item.style.borderColor = 'rgba(255,255,255,0.05)';
+          };
+
           item.innerHTML = `
-            <div style="font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.82); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.title || c.name || 'Class'}</div>
-            <div style="font-size: 0.65rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
-              ${dateStr ? `<span>${dateStr}</span><span>·</span>` : ''}<span>${timeStr}</span>
+            <div style="font-size:0.76rem;font-weight:600;color:rgba(255,255,255,0.88);margin-bottom:0.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${c.title || c.name || 'Class'}</div>
+            <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;">
+              <svg width="10" height="10" fill="none" stroke="rgba(0,243,208,0.45)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/></svg>
+              <span style="font-size:0.65rem;color:rgba(0,243,208,0.55);font-family:var(--font-display);font-weight:600;">${timeLabel}</span>
+              ${instructor ? `<span style="font-size:0.6rem;color:rgba(255,255,255,0.3);">·</span><span style="font-size:0.65rem;color:rgba(255,255,255,0.38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${instructor}</span>` : ''}
             </div>
           `;
           upcomingSidebarEl.appendChild(item);
