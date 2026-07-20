@@ -148,28 +148,28 @@ function findVideoUrl(obj) {
 function getSimplifiedBatchTitle(title) {
   if (!title) return '';
   const tUpper = title.toUpperCase();
-  if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) {
-    return 'Blue Sapphire Batch';
-  }
-  if (tUpper.includes('PEARL')) {
-    return 'Pearl Batch';
-  }
-  if (tUpper.includes('C+') || tUpper.includes('C PLUS')) {
-    return 'C+ Batch';
-  }
+  // C+ subscription = Blue Sapphire batch
+  if (tUpper.includes('C+') || tUpper.includes('C PLUS')) return 'Blue Sapphire Batch';
+  if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) return 'Blue Sapphire Batch';
+  if (tUpper.includes('PEARL') && tUpper.includes('ENGLISH')) return 'Pearl Batch English';
+  if (tUpper.includes('PEARL')) return 'Pearl Batch';
+  if (tUpper.includes('FASTRACK')) return 'Fastrack Batch';
+  if (tUpper.includes('BRAHMASTRA')) return 'Brahmastra Batch';
+  if (tUpper.includes('ECONOMY')) return 'Economy Batch';
   return title.trim();
 }
 
 function getApiBatchId(batchName) {
   if (!batchName) return 8;
   const name = batchName.toUpperCase();
+  // C+ subscription maps to Blue Sapphire = batch ID 8
+  if (name.includes('C+') || name.includes('C PLUS')) return 8;
   if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
   if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
   if (name.includes('PEARL')) return 8;
   if (name.includes('FASTRACK')) return 3;
   if (name.includes('BRAHMASTRA')) return 9;
   if (name.includes('ECONOMY')) return 1;
-  if (name.includes('C+') || name.includes('C PLUS')) return 11;
   return 8;
 }
 
@@ -225,7 +225,8 @@ async function loadRecordings() {
           const data = await res.json();
           const list = data.data || data.results || (Array.isArray(data) ? data : []);
           capturedLogs.push(`📋 ${endpoint} → ${list.length} batches: ${list.map(b => `[${b.id}] ${b.title}`).join(', ')}`);
-          const found = list.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
+          // Use loose equality (==) to handle string vs number IDs from API
+          const found = list.find(b => b.id == batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
           if (found) { matchedBatch = found; capturedLogs.push(`✅ Matched batch: [${found.id}] ${found.title}`); break; }
           else { capturedLogs.push(`⚠ No match for "${targetBatchName}" (looking for id=${batchId})`); }
         } catch(e) { capturedLogs.push(`✗ ${endpoint} → Error: ${e.message}`); }
