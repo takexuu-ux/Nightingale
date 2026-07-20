@@ -84,7 +84,7 @@ const closeLightbox = document.getElementById('close-lightbox');
 const downloadSlideBtn = document.getElementById('download-slide-btn');
 const liveNowSection = document.getElementById('live-now-section');
 const liveNowContainer = document.getElementById('live-now-container');
-const classroomIframe = document.getElementById('classroom-iframe');
+let classroomIframe = document.getElementById('classroom-iframe');
 
 // New Rewind & Timeline Navigation UI Elements
 const rewindOverlay = document.getElementById('rewind-overlay');
@@ -1517,8 +1517,8 @@ async function exitClassroom() {
     relativeTimeInterval = null;
   }
   
-  // Reset iframe to blank and restore state
-  classroomIframe.src = 'about:blank';
+  // Reset and purge iframe
+  recreateClassroomIframe();
   classroomIframe.classList.remove('hide');
   
   // Stop automation loop
@@ -2660,8 +2660,7 @@ function syncClassroomData() {
   // Empty - panels removed
 }
 
-// Listen to classroom iframe onload to inject custom styles and start the monitor loop
-classroomIframe.addEventListener('load', () => {
+function onIframeLoad() {
   try {
     const iframeDoc = classroomIframe.contentDocument || classroomIframe.contentWindow.document;
     if (!iframeDoc || classroomIframe.src === 'about:blank' || classroomIframe.src === '') return;
@@ -2675,7 +2674,29 @@ classroomIframe.addEventListener('load', () => {
   } catch (e) {
     console.error('Failed to access iframe document on load:', e);
   }
-});
+}
+
+// Completely destroy and recreate the iframe to purge all running script loops, websockets, and cached session storage
+function recreateClassroomIframe() {
+  const oldIframe = document.getElementById('classroom-iframe');
+  if (!oldIframe) return;
+
+  console.log('Purging Zoom environment: Re-creating classroom iframe DOM element...');
+  const parent = oldIframe.parentNode;
+  const newIframe = document.createElement('iframe');
+  newIframe.id = 'classroom-iframe';
+  newIframe.className = oldIframe.className;
+  newIframe.style.cssText = oldIframe.style.cssText;
+  newIframe.setAttribute('allow', oldIframe.getAttribute('allow'));
+  newIframe.src = 'about:blank';
+  
+  parent.replaceChild(newIframe, oldIframe);
+  classroomIframe = newIframe; // Update global reference
+  classroomIframe.addEventListener('load', onIframeLoad);
+}
+
+// Bind load listener to initial iframe
+classroomIframe.addEventListener('load', onIframeLoad);
 
 // Fetch and render classes
 async function loadDashboard(isSilent = false) {
