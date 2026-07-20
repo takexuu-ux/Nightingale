@@ -54,43 +54,59 @@
     },
     {
       "source": "/zoom-subdomain/:subdomain/:path*",
-      "destination": "https://nightingale-9n2c.onrender.com/zoom-subdomain/:subdomain/:path*"
+      "destination": "/api/zoom-proxy/?subdomain=:subdomain&path=:path*"
     },
     {
       "source": "/zoom-subdomain/:subdomain/:path*/",
-      "destination": "https://nightingale-9n2c.onrender.com/zoom-subdomain/:subdomain/:path*"
+      "destination": "/api/zoom-proxy/?subdomain=:subdomain&path=:path*"
     },
     {
       "source": "/zoom/:path*",
-      "destination": "https://nightingale-9n2c.onrender.com/zoom/:path*"
+      "destination": "/api/zoom-proxy/?path=:path*"
     },
     {
       "source": "/zoom/:path*/",
-      "destination": "https://nightingale-9n2c.onrender.com/zoom/:path*"
+      "destination": "/api/zoom-proxy/?path=:path*"
     },
     {
       "source": "/captcha-image",
-      "destination": "https://nightingale-9n2c.onrender.com/captcha-image"
+      "destination": "/api/zoom-proxy"
+    },
+    {
+      "source": "/captcha-image/",
+      "destination": "/api/zoom-proxy"
     },
     {
       "source": "/captcha-audio",
-      "destination": "https://nightingale-9n2c.onrender.com/captcha-audio"
+      "destination": "/api/zoom-proxy"
+    },
+    {
+      "source": "/captcha-audio/",
+      "destination": "/api/zoom-proxy"
     },
     {
       "source": "/captcha/:path*",
-      "destination": "https://nightingale-9n2c.onrender.com/captcha/:path*"
+      "destination": "/api/zoom-proxy/?path=captcha/:path*"
     },
     {
       "source": "/csrf_js",
-      "destination": "https://nightingale-9n2c.onrender.com/csrf_js"
+      "destination": "/api/zoom-proxy"
+    },
+    {
+      "source": "/csrf_js/",
+      "destination": "/api/zoom-proxy"
     },
     {
       "source": "/csrf_data",
-      "destination": "https://nightingale-9n2c.onrender.com/csrf_data"
+      "destination": "/api/zoom-proxy"
+    },
+    {
+      "source": "/csrf_data/",
+      "destination": "/api/zoom-proxy"
     },
     {
       "source": "/csrf/:path*",
-      "destination": "https://nightingale-9n2c.onrender.com/csrf/:path*"
+      "destination": "/api/zoom-proxy/?path=csrf/:path*"
     },
     {
       "source": "/api/:path*",

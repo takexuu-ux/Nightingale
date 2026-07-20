@@ -22,6 +22,40 @@ export const config = {
 };
 
 export default function handler(req, res) {
+  // If running on Vercel serverless, tunnel requests to our Render proxy.
+  // This preserves browser cookies (which Vercel configuration rewrites strip) so Captcha sessions match.
+  const isVercel = process.env.VERCEL === '1';
+  if (isVercel) {
+    console.log(`[Vercel Tunnel] Forwarding request to Render: ${req.url}`);
+    const renderTarget = `https://nightingale-9n2c.onrender.com${req.url}`;
+    
+    const proxyReq = https.request(
+      renderTarget,
+      {
+        method: req.method,
+        headers: req.headers,
+      },
+      (proxyRes) => {
+        res.statusCode = proxyRes.statusCode;
+        // Forward all headers
+        for (const [key, value] of Object.entries(proxyRes.headers)) {
+          res.setHeader(key, value);
+        }
+        proxyRes.pipe(res);
+      }
+    );
+    
+    proxyReq.on('error', (err) => {
+      console.error('[Vercel Tunnel] Error:', err.message);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Forwarding error', message: err.message }));
+    });
+    
+    req.pipe(proxyReq);
+    return;
+  }
+
   // 1. Extract path, subdomain, and other query parameters
   const { path, subdomain, ...queryParams } = req.query;
   
