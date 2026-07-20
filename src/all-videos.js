@@ -262,93 +262,78 @@ async function loadRecordings() {
   renderRecordingsList(allRecordings);
 }
 
+function getLectureNumber(title) {
+  const match = title.match(/(?:Day|Lecture|Class)\s*(\d+)/i);
+  return match ? parseInt(match[1], 10) : 999;
+}
+
 function renderRecordingsList(recordings) {
   if (!classListContainer) return;
   classListContainer.innerHTML = '';
-  
-  // Group by Subject
-  const bySubject = {};
-  recordings.forEach(r => {
-    const s = r.subject || 'General Nursing';
-    if (!bySubject[s]) bySubject[s] = [];
-    bySubject[s].push(r);
-  });
-  
-  const subjectNames = Object.keys(bySubject).sort();
-  if (subjectNames.length === 0) {
+
+  if (recordings.length === 0) {
     classListContainer.innerHTML = `
-      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
-        <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No recorded lectures available.</p>
+      <div style="background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 2rem; text-align: center;">
+        <p style="color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; margin: 0;">No recorded lectures available.</p>
       </div>
     `;
+    const badge = document.getElementById('lectures-count-badge');
+    if (badge) badge.textContent = '0 Lectures';
     return;
   }
-  
-  subjectNames.forEach(subjectName => {
-    const subjectClasses = bySubject[subjectName];
-    
-    let rowsHtml = '';
-    subjectClasses.forEach((rec, idx) => {
-      const rowNum = (idx + 1).toString().padStart(2, '0');
-      const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
-      
-      rowsHtml += `
-        <div class="recording-row" data-rec-id="${rec.id}">
-          <div class="recording-row-num">${rowNum}</div>
-          <div class="recording-row-info">
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0;">${rec.title}</div>
-              <span class="badge" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: 6px; font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em;">${rec.batch}</span>
-            </div>
-            <div class="recording-row-meta" style="margin-top: 0.25rem;">
-              <span class="recording-row-instructor">${rec.instructor}</span>
-              <span>•</span>
-              <span>${rec.date}</span>
-              <span>•</span>
-              <span>${rec.duration}</span>
-            </div>
+
+  // Sort sequentially by lecture/day number
+  recordings.sort((a, b) => {
+    const numA = getLectureNumber(a.title);
+    const numB = getLectureNumber(b.title);
+    return numA - numB;
+  });
+
+  let rowsHtml = '';
+  recordings.forEach((rec, idx) => {
+    const rowNum = (idx + 1).toString().padStart(2, '0');
+    const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
+
+    rowsHtml += `
+      <div class="recording-row" data-rec-id="${rec.id}">
+        <div class="recording-row-num">${rowNum}</div>
+        <div class="recording-row-info">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0; font-size: 0.85rem; line-height: 1.3;">${rec.title}</div>
           </div>
-          <div class="recording-row-actions-group" style="display: flex; gap: 0.5rem; align-items: center;">
-            <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-              <span>Play</span>
-            </button>
-            ${rec.videoUrl ? `
-            <a href="${rec.videoUrl}" download="${rec.title}.mp4" class="recording-row-action download-btn" target="_blank" style="background: linear-gradient(135deg, #10B981, #059669); border-color: #10B981; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; gap: 0.35rem; cursor: pointer; transition: all 0.2s ease;">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              <span>Download</span>
-            </a>
-            ` : ''}
+          <div class="recording-row-meta" style="margin-top: 0.25rem; font-size: 0.72rem;">
+            <span class="recording-row-instructor">${rec.instructor}</span>
+            <span>•</span>
+            <span>${rec.duration}</span>
           </div>
         </div>
-      `;
-    });
-    
-    const subjectAccordion = document.createElement('div');
-    subjectAccordion.className = 'subject-accordion open';
-    
-    subjectAccordion.innerHTML = `
-      <div class="subject-accordion-header">
-        <div class="subject-accordion-title">
-          <div class="subject-icon">📚</div>
-          <span class="subject-name">${subjectName}</span>
-          <span class="subject-count">(${subjectClasses.length} lectures)</span>
+        <div class="recording-row-actions-group" style="display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;">
+          <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span>Play</span>
+          </button>
+          ${rec.videoUrl ? `
+          <a href="${rec.videoUrl}" download="${rec.title}.mp4" class="recording-row-action download-btn" target="_blank" style="background: linear-gradient(135deg, #10B981, #059669); border-color: #10B981; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; gap: 0.35rem; cursor: pointer; transition: all 0.2s ease;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span>Download</span>
+          </a>
+          ` : ''}
         </div>
-        <svg class="subject-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-        </svg>
-      </div>
-      <div class="subject-accordion-body">
-        ${rowsHtml}
       </div>
     `;
-    
-    classListContainer.appendChild(subjectAccordion);
   });
+
+  classListContainer.innerHTML = rowsHtml;
+
+  // Update badge count
+  const badge = document.getElementById('lectures-count-badge');
+  if (badge) {
+    badge.textContent = `${recordings.length} Lectures`;
+  }
 }
 
 function initRecordingsViewer() {
@@ -369,29 +354,30 @@ function initRecordingsViewer() {
       if (loader) loader.remove();
     });
   }
-  
+
+  // Handle compact card expand/collapse toggle
+  const widgetContainer = document.getElementById('library-widget-container');
+  const widgetHeader = document.getElementById('library-widget-header');
+  if (widgetHeader && widgetContainer) {
+    widgetHeader.addEventListener('click', () => {
+      widgetContainer.classList.toggle('expanded');
+    });
+  }
+
+  // Handle play row triggers
   if (classListContainer) {
     classListContainer.addEventListener('click', (e) => {
-      const subjectHeader = e.target.closest('.subject-accordion-header');
-      if (subjectHeader) {
-        const accordion = subjectHeader.closest('.subject-accordion');
-        if (accordion) {
-          accordion.classList.toggle('open');
-        }
-        return;
-      }
-      
       const playBtn = e.target.closest('.recording-row-action');
-      if (playBtn) {
+      if (playBtn && !playBtn.classList.contains('download-btn')) {
         e.stopPropagation();
         const recId = playBtn.getAttribute('data-rec-id');
         const rec = currentRecordings.find(r => String(r.id) === String(recId));
         if (rec) openRecordingPlayer(rec);
         return;
       }
-      
+
       const recRow = e.target.closest('.recording-row');
-      if (recRow && !e.target.closest('.recording-row-action')) {
+      if (recRow && !e.target.closest('.recording-row-actions-group')) {
         const recId = recRow.getAttribute('data-rec-id');
         const rec = currentRecordings.find(r => String(r.id) === String(recId));
         if (rec) openRecordingPlayer(rec);
