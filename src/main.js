@@ -3065,19 +3065,7 @@ function renderClasses(classes) {
       return aTime - bTime;
     });
 
-    if (upcomingOrPastClasses.length === 0) {
-      classListContainer.innerHTML = `
-        <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
-          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>
-        </div>
-      `;
-    } else {
-      upcomingOrPastClasses.forEach(c => {
-        classListContainer.appendChild(createClassCard(c, c._isLiveNow, c._isStartingSoon));
-      });
-    }
-
-    // ── Tomorrow's classes section ──
+    // ── Tomorrow's classes section — shown FIRST at top ──
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowClasses = poolForLive.filter(c => {
@@ -3093,27 +3081,59 @@ function renderClasses(classes) {
 
     const tomorrowLabel = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 
-    // Section header divider
     const tomorrowHeader = document.createElement('div');
-    tomorrowHeader.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;';
+    tomorrowHeader.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;';
     tomorrowHeader.innerHTML = `
-      <div style="height: 1px; flex: 1; background: linear-gradient(to right, rgba(255,255,255,0.08), transparent);"></div>
-      <span style="font-family: var(--font-display); font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">📅 Tomorrow — ${tomorrowLabel}</span>
-      <div style="height: 1px; flex: 1; background: linear-gradient(to left, rgba(255,255,255,0.08), transparent);"></div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.75rem; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; flex-shrink: 0;">
+        <svg width="13" height="13" fill="none" stroke="rgba(167,139,250,0.9)" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+        </svg>
+        <span style="font-family: var(--font-display); font-size: 0.7rem; color: rgba(167,139,250,0.9); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Tomorrow — ${tomorrowLabel}</span>
+      </div>
+      <div style="height: 1px; flex: 1; background: linear-gradient(to right, rgba(139,92,246,0.2), transparent);"></div>
     `;
     classListContainer.appendChild(tomorrowHeader);
 
     if (tomorrowClasses.length === 0) {
       const noTomorrow = document.createElement('div');
-      noTomorrow.style.cssText = 'grid-column: 1 / -1; background: rgba(10, 11, 16, 0.1); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 1.5rem; text-align: center;';
-      noTomorrow.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.78rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0; opacity: 0.6;">No classes scheduled for tomorrow.</p>`;
+      noTomorrow.style.cssText = 'grid-column: 1 / -1; background: rgba(139, 92, 246, 0.04); border: 1px solid rgba(139, 92, 246, 0.08); border-radius: 16px; padding: 1.2rem; text-align: center; margin-bottom: 1.5rem;';
+      noTomorrow.innerHTML = `<p style="color: rgba(167,139,250,0.5); font-size: 0.75rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes scheduled for tomorrow.</p>`;
       classListContainer.appendChild(noTomorrow);
     } else {
+      const tomorrowWrapper = document.createElement('div');
+      tomorrowWrapper.style.cssText = 'grid-column: 1 / -1; display: contents; margin-bottom: 1.5rem;';
       tomorrowClasses.forEach(c => {
         const card = createClassCard(c, false, false);
-        card.style.opacity = '0.7';
-        card.style.filter = 'saturate(0.5)';
+        card.style.opacity = '0.75';
+        card.style.filter = 'saturate(0.4) brightness(0.9)';
+        card.style.borderColor = 'rgba(139, 92, 246, 0.15)';
         classListContainer.appendChild(card);
+      });
+      classListContainer.appendChild(tomorrowWrapper);
+    }
+
+    // Divider before today's classes
+    const todayHeader = document.createElement('div');
+    todayHeader.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; margin-bottom: 0.25rem;';
+    todayHeader.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.75rem; background: rgba(255, 0, 85, 0.08); border: 1px solid rgba(255, 0, 85, 0.18); border-radius: 20px; flex-shrink: 0;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,80,120,0.9)" stroke-width="2.5">
+          <circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/>
+        </svg>
+        <span style="font-family: var(--font-display); font-size: 0.7rem; color: rgba(255,80,120,0.9); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Today</span>
+      </div>
+      <div style="height: 1px; flex: 1; background: linear-gradient(to right, rgba(255,0,85,0.15), transparent);"></div>
+    `;
+    classListContainer.appendChild(todayHeader);
+
+    if (upcomingOrPastClasses.length === 0) {
+      const noToday = document.createElement('div');
+      noToday.style.cssText = 'grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);';
+      noToday.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>`;
+      classListContainer.appendChild(noToday);
+    } else {
+      upcomingOrPastClasses.forEach(c => {
+        classListContainer.appendChild(createClassCard(c, c._isLiveNow, c._isStartingSoon));
       });
     }
 

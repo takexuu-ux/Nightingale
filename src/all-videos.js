@@ -219,6 +219,11 @@ async function loadRecordings() {
               if (vRes.ok) {
                 const vData = await vRes.json();
                 const vList = vData.data || vData.results || [];
+                // Log FULL raw API response for first video to discover all available fields
+                if (vList.length > 0) {
+                  console.log(`[C+ API] Full video object keys for subject "${subj.title}":`, Object.keys(vList[0]));
+                  console.log(`[C+ API] Full first video object:`, JSON.stringify(vList[0], null, 2));
+                }
                 return vList.map(v => {
                   const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
                   const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
