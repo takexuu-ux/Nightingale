@@ -3099,12 +3099,13 @@ function renderClasses(classes) {
 
       if (futureClasses.length === 0) {
         upcomingSidebarEl.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1rem;gap:0.5rem;">
-            <svg width="28" height="28" fill="none" stroke="rgba(0,243,208,0.2)" stroke-width="1.5" viewBox="0 0 24 24">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;gap:0.75rem;">
+            <svg width="32" height="32" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" viewBox="0 0 24 24">
               <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
             </svg>
-            <p style="color:rgba(0,243,208,0.3);font-size:0.68rem;font-family:var(--font-display);text-align:center;margin:0;text-transform:uppercase;letter-spacing:0.08em;">No upcoming classes</p>
+            <p style="color:rgba(255,255,255,0.25);font-size:0.65rem;font-family:var(--font-display);text-align:center;margin:0;text-transform:uppercase;letter-spacing:0.1em;">No upcoming classes</p>
           </div>`;
+
       } else {
         let lastDateStr = '';
         futureClasses.forEach(c => {
@@ -3119,7 +3120,7 @@ function renderClasses(classes) {
           if (dayLabel !== lastDateStr) {
             lastDateStr = dayLabel;
             const dateHeader = document.createElement('div');
-            dateHeader.style.cssText = 'padding:0.3rem 0.5rem 0.15rem; font-family:var(--font-display); font-size:0.58rem; font-weight:700; color:rgba(0,243,208,0.5); text-transform:uppercase; letter-spacing:0.1em; margin-top:0.25rem;';
+            dateHeader.style.cssText = 'padding:0.3rem 0.5rem 0.15rem; font-family:var(--font-display); font-size:0.58rem; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.1em; margin-top:0.25rem;';
             dateHeader.textContent = dayLabel;
             upcomingSidebarEl.appendChild(dateHeader);
           }
@@ -3131,14 +3132,13 @@ function renderClasses(classes) {
             'border:1px solid rgba(255,255,255,0.05)',
             'background:rgba(255,255,255,0.025)',
             'margin-bottom:0.3rem',
-            'backdrop-filter:blur(8px)',
             'transition:background 0.15s,border-color 0.15s',
             'cursor:default'
           ].join(';');
 
           item.onmouseenter = () => {
-            item.style.background = 'rgba(0,243,208,0.04)';
-            item.style.borderColor = 'rgba(0,243,208,0.14)';
+            item.style.background = 'rgba(255,255,255,0.05)';
+            item.style.borderColor = 'rgba(255,255,255,0.12)';
           };
           item.onmouseleave = () => {
             item.style.background = 'rgba(255,255,255,0.025)';
@@ -3146,13 +3146,14 @@ function renderClasses(classes) {
           };
 
           item.innerHTML = `
-            <div style="font-size:0.76rem;font-weight:600;color:rgba(255,255,255,0.88);margin-bottom:0.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${c.title || c.name || 'Class'}</div>
+            <div style="font-size:0.76rem;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:0.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${c.title || c.name || 'Class'}</div>
             <div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;">
-              <svg width="10" height="10" fill="none" stroke="rgba(0,243,208,0.45)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/></svg>
-              <span style="font-size:0.65rem;color:rgba(0,243,208,0.55);font-family:var(--font-display);font-weight:600;">${timeLabel}</span>
-              ${instructor ? `<span style="font-size:0.6rem;color:rgba(255,255,255,0.3);">·</span><span style="font-size:0.65rem;color:rgba(255,255,255,0.38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${instructor}</span>` : ''}
+              <svg width="10" height="10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/></svg>
+              <span style="font-size:0.65rem;color:rgba(255,255,255,0.45);font-family:var(--font-display);font-weight:600;">${timeLabel}</span>
+              ${instructor ? `<span style="font-size:0.6rem;color:rgba(255,255,255,0.2);">·</span><span style="font-size:0.65rem;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${instructor}</span>` : ''}
             </div>
           `;
+
           upcomingSidebarEl.appendChild(item);
         });
       }
