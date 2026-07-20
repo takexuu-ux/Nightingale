@@ -2,6 +2,13 @@
 
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://prod-api.nnlone.com';
 
+// Fetch with 10-second timeout — prevents infinite spinner
+function fetchWithTimeout(url, options = {}, ms = 10000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 const MOCK_RECORDINGS = [
   {
     id: 'rec-pharma-1',
@@ -211,7 +218,7 @@ async function loadRecordings() {
 
       for (const endpoint of BATCH_ENDPOINTS) {
         try {
-          const res = await fetch(endpoint, {
+          const res = await fetchWithTimeout(endpoint, {
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
           });
           if (!res.ok) { capturedLogs.push(`✗ ${endpoint} → HTTP ${res.status}`); continue; }
@@ -235,7 +242,7 @@ async function loadRecordings() {
           ];
           for (const sEndpoint of SUBJECT_ENDPOINTS) {
             try {
-              const sRes = await fetch(sEndpoint, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+              const sRes = await fetchWithTimeout(sEndpoint, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
               if (!sRes.ok) { capturedLogs.push(`✗ ${sEndpoint} → HTTP ${sRes.status}`); continue; }
               const sData = await sRes.json();
               const subjList = sData.subjects || sData.data || sData.results || (Array.isArray(sData) ? sData : []);
@@ -259,7 +266,7 @@ async function loadRecordings() {
           const videoPromises = subjects.map(async (subj) => {
             for (const urlFn of VIDEO_ENDPOINTS) {
               try {
-                const vRes = await fetch(urlFn(matchedBatch.id, subj.id), { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const vRes = await fetchWithTimeout(urlFn(matchedBatch.id, subj.id), { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                 if (!vRes.ok) continue;
                 const vData = await vRes.json();
                 const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);

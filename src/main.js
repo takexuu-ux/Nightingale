@@ -3078,10 +3078,12 @@ function renderClasses(classes) {
       });
     }
 
-    // ── Tomorrow sidebar: render using createClassCard() — identical to live cards ──
+    // ── Tomorrow sidebar: only show when there are classes ──
     const upcomingSidebarEl = document.getElementById('upcoming-sidebar-list');
-    if (upcomingSidebarEl) {
+    const sidebarEl = document.getElementById('schedule-sidebar');
+    if (upcomingSidebarEl && sidebarEl) {
       upcomingSidebarEl.innerHTML = '';
+      sidebarEl.style.display = 'none';
 
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -3099,26 +3101,14 @@ function renderClasses(classes) {
         parseApiDate(b.start || b.startTime || '').getTime()
       );
 
-      // Date label matching the theme
-      const tomorrowFull = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-      const labelEl = document.createElement('div');
-      labelEl.style.cssText = 'font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0 0.25rem 0.5rem;';
-      labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
-      upcomingSidebarEl.appendChild(labelEl);
-
-      if (tomorrowClasses.length === 0) {
-        // No-class card — same glass style as a class card
-        const noCard = document.createElement('div');
-        noCard.className = 'class-card';
-        noCard.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;min-height:120px;opacity:0.6;';
-        noCard.innerHTML = `
-          <svg width="28" height="28" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" viewBox="0 0 24 24">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-          <p style="color:rgba(255,255,255,0.35);font-size:0.72rem;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.08em;margin:0;">No class tomorrow</p>
-        `;
-        upcomingSidebarEl.appendChild(noCard);
-      } else {
+      if (tomorrowClasses.length > 0) {
+        // Show sidebar with date label
+        sidebarEl.style.display = 'flex';
+        const tomorrowFull = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+        const labelEl = document.createElement('div');
+        labelEl.style.cssText = 'font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0 0.25rem 0.5rem;';
+        labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
+        upcomingSidebarEl.appendChild(labelEl);
         tomorrowClasses.forEach(c => {
           // Use same createClassCard — not live, not starting soon → shows as scheduled
           const card = createClassCard(c, false, false);
