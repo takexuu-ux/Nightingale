@@ -253,23 +253,25 @@ async function loadRecordings() {
         });
       }
       
-      // Step 3: Fetch subjects to map IDs to titles
+      // Step 3: Fetch batches to extract subject mapping (which we know has the subjects)
       let subjects = [];
-      const SUBJECT_ENDPOINTS = [
-        `${API_BASE}/batch_cms/subjects/?batch_id=${batchId}`,
-        `${API_BASE}/cms/subjects/?batch_id=${batchId}`
-      ];
-      for (const sEndpoint of SUBJECT_ENDPOINTS) {
-        try {
-          const sRes = await fetchWithTimeout(sEndpoint, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
-          if (!sRes.ok) continue;
-          const sData = await sRes.json();
-          subjects = sData.subjects || sData.data || sData.results || (Array.isArray(sData) ? sData : []);
-          capturedLogs.push(`📚 Loaded ${subjects.length} subjects for mapping`);
-          break;
-        } catch(e) { capturedLogs.push(`✗ Subject endpoint failed: ${e.message}`); }
+      try {
+        const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        });
+        if (bRes.ok) {
+          const bData = await bRes.json();
+          const list = bData.data || bData.results || [];
+          const found = list.find(b => String(b.id) === String(batchId));
+          if (found && found.subjects) {
+            subjects = found.subjects;
+            capturedLogs.push(`📚 Loaded ${subjects.length} subjects from batch mapping`);
+          }
+        }
+      } catch(e) {
+        capturedLogs.push(`✗ Batch mapping fetch failed: ${e.message}`);
       }
-      
+
       // Create subject ID to title map
       const subjectMap = {};
       subjects.forEach(s => {
