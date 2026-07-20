@@ -188,11 +188,11 @@ async function loadRecordings() {
   }
 
   // ── On-screen debug overlay (visible on mobile — no DevTools needed) ──
-  const debugLog = [];
-  const _origLog = console.log.bind(console);
-  const _origWarn = console.warn.bind(console);
+  const token = localStorage.getItem('nnl_access_token');
+  const activeBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
+  const batchId = getApiBatchId(activeBatch);
+  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
 
-  // Temporarily capture logs
   const capturedLogs = [];
   const origLog = console.log;
   const origWarn = console.warn;
