@@ -3852,6 +3852,7 @@ if (tabSubjects) {
 
 if (tabAllVideos) {
   tabAllVideos.addEventListener('click', () => {
+    localStorage.setItem('nnl_active_batch', 'C+ Batch');
     window.location.href = '/all-videos.html';
   });
 }
@@ -4051,8 +4052,7 @@ function renderBatchSelector() {
     'Pearl Batch',
     'Fastrack 10.0 (Live Class)',
     'Live Classes for Brahmastra (NORCET 10.0 Mains)',
-    'Economy Batch (NORCET 10.0)',
-    'C+ Batch'
+    'Economy Batch (NORCET 10.0)'
   ]);
   cleanClasses.forEach(c => {
     const title = c.batch?.title || (c.liveClass?.batch?.title);

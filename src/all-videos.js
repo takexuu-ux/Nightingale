@@ -119,6 +119,25 @@ const MOCK_RECORDINGS = [
 let currentRecordings = [];
 const classListContainer = document.getElementById('class-list-container');
 
+function findVideoUrl(obj) {
+  if (!obj) return '';
+  if (typeof obj === 'string') {
+    if (obj.startsWith('http') && (obj.includes('.mp4') || obj.includes('.m3u8') || obj.includes('download') || obj.includes('stream') || obj.includes('video'))) {
+      return obj;
+    }
+    return '';
+  }
+  if (typeof obj === 'object') {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const result = findVideoUrl(obj[key]);
+        if (result) return result;
+      }
+    }
+  }
+  return '';
+}
+
 function getSimplifiedBatchTitle(title) {
   if (!title) return '';
   const tUpper = title.toUpperCase();
@@ -191,7 +210,7 @@ async function loadRecordings() {
           // 2. Fetch videos for all subjects in parallel
           const videoPromises = matchedBatch.subjects.map(async (subj) => {
             try {
-              const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subj.id}`, {
+              const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${matchedBatch.id}&subject_id=${subj.id}`, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json'
@@ -204,6 +223,8 @@ async function loadRecordings() {
                   const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
                   const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
                   const durStr = `${durHrs}h ${durMins}m`;
+                  console.log("Mapping video object:", v.title, "keys:", Object.keys(v));
+                  const extractedUrl = v.video_url || v.videoUrl || v.url || v.download_url || v.download_link || findVideoUrl(v) || '';
                   return {
                     id: v.id,
                     title: v.title,
@@ -213,7 +234,7 @@ async function loadRecordings() {
                     date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
                     duration: durStr,
                     video_cipher_id: v.video_cipher_id,
-                    videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || v.download_link || ''
+                    videoUrl: extractedUrl
                   };
                 });
               }
