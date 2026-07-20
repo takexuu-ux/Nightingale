@@ -278,6 +278,12 @@ async function loadRecordings() {
         subjectMap[String(s.id)] = s.title;
       });
       
+      capturedLogs.push(`📋 Total raw videos fetched: ${rawVideos.length}`);
+      if (rawVideos.length > 0) {
+        capturedLogs.push(`ℹ First video keys: ${Object.keys(rawVideos[0]).join(', ')}`);
+        capturedLogs.push(`ℹ First video raw subject: ${JSON.stringify(rawVideos[0].subject || rawVideos[0].subject_id)}`);
+      }
+
       // Step 4: Map raw videos to our schema and group them
       allRecordings = rawVideos.map(v => {
         const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
@@ -288,6 +294,8 @@ async function loadRecordings() {
         if (v.subject) {
           const vSubjId = String(v.subject.id || v.subject);
           subjTitle = subjectMap[vSubjId] || v.subject.title || v.subject.name || 'General Nursing';
+        } else if (v.subject_id) {
+          subjTitle = subjectMap[String(v.subject_id)] || 'General Nursing';
         }
         
         return {
