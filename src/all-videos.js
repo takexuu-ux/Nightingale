@@ -341,16 +341,12 @@ async function loadRecordings() {
     // Run tests
     const resultsContainer = document.getElementById('scanner-results');
     const tests = [
-      `/cms/videos/?batch=8&subject=458`,
-      `/batch_cms/videos/?batch=8&subject=458`,
       `/cms/videos/?batch_id=8&subject_id=458`,
-      `/batch_cms/videos/?batch_id=8&subject_id=458`,
-      `/cms/videos/?batch=8`,
-      `/batch_cms/videos/?batch=8`,
-      `/cms/videos/?batch_id=8`,
-      `/batch_cms/videos/?batch_id=8`,
-      `/cms/videos/`,
-      `/batch_cms/videos/`
+      `/cms/videos/?batch_id=8&subject_id=458&page_size=200`,
+      `/cms/videos/?batch_id=8&subject_id=458&limit=200`,
+      `/cms/videos/?batch_id=8&subject_id=458&page=2`,
+      `/cms/videos/?batch_id=8&subject_id=458&page=1&page_size=200`,
+      `/batch_cms/videos/?batch_id=8&subject_id=458&page_size=200`
     ];
 
     let output = '';
@@ -364,7 +360,8 @@ async function loadRecordings() {
         if (res.ok) {
           const json = await res.json();
           const items = json.data || json.results || (Array.isArray(json) ? json : []);
-          output += `<div>✅ <strong>${path}</strong> → <span style="color:#fff;">${items.length} videos found</span> (${duration}ms)</div>`;
+          const total = json.total_count || json.count || items.length;
+          output += `<div>✅ <strong>${path}</strong> → <span style="color:#fff;">${items.length} items on page (total count: ${total})</span> (${duration}ms)</div>`;
         } else {
           output += `<div style="color:#ff8080;">✗ <strong>${path}</strong> → HTTP ${res.status} (${duration}ms)</div>`;
         }
