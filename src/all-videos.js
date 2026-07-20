@@ -282,52 +282,83 @@ function renderRecordingsList(recordings) {
     return;
   }
 
-  // Sort sequentially by lecture/day number
-  recordings.sort((a, b) => {
-    const numA = getLectureNumber(a.title);
-    const numB = getLectureNumber(b.title);
-    return numA - numB;
+  // Group by Subject
+  const bySubject = {};
+  recordings.forEach(r => {
+    const s = r.subject || 'General Nursing';
+    if (!bySubject[s]) bySubject[s] = [];
+    bySubject[s].push(r);
   });
 
-  let rowsHtml = '';
-  recordings.forEach((rec, idx) => {
-    const rowNum = (idx + 1).toString().padStart(2, '0');
-    const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
+  const subjectNames = Object.keys(bySubject).sort();
+  subjectNames.forEach(subjectName => {
+    const subjectClasses = bySubject[subjectName];
 
-    rowsHtml += `
-      <div class="recording-row" data-rec-id="${rec.id}">
-        <div class="recording-row-num">${rowNum}</div>
-        <div class="recording-row-info">
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0; font-size: 0.85rem; line-height: 1.3;">${rec.title}</div>
+    // Sort sequentially by lecture/day number inside each subject
+    subjectClasses.sort((a, b) => {
+      const numA = getLectureNumber(a.title);
+      const numB = getLectureNumber(b.title);
+      return numA - numB;
+    });
+
+    let rowsHtml = '';
+    subjectClasses.forEach((rec, idx) => {
+      const rowNum = (idx + 1).toString().padStart(2, '0');
+      const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
+
+      rowsHtml += `
+        <div class="recording-row" data-rec-id="${rec.id}">
+          <div class="recording-row-num">${rowNum}</div>
+          <div class="recording-row-info">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <div class="recording-row-title" title="${rec.title}" style="margin-bottom: 0; font-size: 0.82rem; line-height: 1.3;">${rec.title}</div>
+            </div>
+            <div class="recording-row-meta" style="margin-top: 0.25rem; font-size: 0.7rem;">
+              <span class="recording-row-instructor">${rec.instructor}</span>
+              <span>•</span>
+              <span>${rec.duration}</span>
+            </div>
           </div>
-          <div class="recording-row-meta" style="margin-top: 0.25rem; font-size: 0.72rem;">
-            <span class="recording-row-instructor">${rec.instructor}</span>
-            <span>•</span>
-            <span>${rec.duration}</span>
+          <div class="recording-row-actions-group" style="display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0;">
+            <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.2rem;">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span>Play</span>
+            </button>
+            ${rec.videoUrl ? `
+            <a href="${rec.videoUrl}" download="${rec.title}.mp4" class="recording-row-action download-btn" target="_blank" style="background: linear-gradient(135deg, #10B981, #059669); border-color: #10B981; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; gap: 0.35rem; cursor: pointer; transition: all 0.2s ease;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <span>Download</span>
+            </a>
+            ` : ''}
           </div>
         </div>
-        <div class="recording-row-actions-group" style="display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;">
-          <button class="recording-row-action ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}">
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <span>Play</span>
-          </button>
-          ${rec.videoUrl ? `
-          <a href="${rec.videoUrl}" download="${rec.title}.mp4" class="recording-row-action download-btn" target="_blank" style="background: linear-gradient(135deg, #10B981, #059669); border-color: #10B981; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; gap: 0.35rem; cursor: pointer; transition: all 0.2s ease;">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-            <span>Download</span>
-          </a>
-          ` : ''}
+      `;
+    });
+
+    const subjectAccordion = document.createElement('div');
+    subjectAccordion.className = 'subject-accordion open';
+    subjectAccordion.innerHTML = `
+      <div class="subject-accordion-header" style="padding: 0.6rem 0.8rem;">
+        <div class="subject-accordion-title">
+          <div class="subject-icon">📚</div>
+          <span class="subject-name" style="font-size: 0.8rem; font-weight: 700;">${subjectName}</span>
+          <span class="subject-count" style="font-size: 0.7rem; color: var(--text-secondary);">(${subjectClasses.length})</span>
         </div>
+        <svg class="subject-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </div>
+      <div class="subject-accordion-body">
+        ${rowsHtml}
       </div>
     `;
-  });
 
-  classListContainer.innerHTML = rowsHtml;
+    classListContainer.appendChild(subjectAccordion);
+  });
 
   // Update badge count
   const badge = document.getElementById('lectures-count-badge');
@@ -364,9 +395,18 @@ function initRecordingsViewer() {
     });
   }
 
-  // Handle play row triggers
+  // Handle play row and subject header click triggers
   if (classListContainer) {
     classListContainer.addEventListener('click', (e) => {
+      const subjectHeader = e.target.closest('.subject-accordion-header');
+      if (subjectHeader) {
+        const accordion = subjectHeader.closest('.subject-accordion');
+        if (accordion) {
+          accordion.classList.toggle('open');
+        }
+        return;
+      }
+
       const playBtn = e.target.closest('.recording-row-action');
       if (playBtn && !playBtn.classList.contains('download-btn')) {
         e.stopPropagation();

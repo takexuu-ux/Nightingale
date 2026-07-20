@@ -3076,6 +3076,47 @@ function renderClasses(classes) {
         classListContainer.appendChild(createClassCard(c, c._isLiveNow, c._isStartingSoon));
       });
     }
+
+    // ── Tomorrow's classes section ──
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowClasses = poolForLive.filter(c => {
+      try {
+        const start = parseApiDate(c.start || c.startTime || '');
+        return !isNaN(start.getTime()) && start.toDateString() === tomorrow.toDateString();
+      } catch (e) { return false; }
+    }).sort((a, b) => {
+      const aT = parseApiDate(a.start || a.startTime || '').getTime();
+      const bT = parseApiDate(b.start || b.startTime || '').getTime();
+      return aT - bT;
+    });
+
+    const tomorrowLabel = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+
+    // Section header divider
+    const tomorrowHeader = document.createElement('div');
+    tomorrowHeader.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;';
+    tomorrowHeader.innerHTML = `
+      <div style="height: 1px; flex: 1; background: linear-gradient(to right, rgba(255,255,255,0.08), transparent);"></div>
+      <span style="font-family: var(--font-display); font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">📅 Tomorrow — ${tomorrowLabel}</span>
+      <div style="height: 1px; flex: 1; background: linear-gradient(to left, rgba(255,255,255,0.08), transparent);"></div>
+    `;
+    classListContainer.appendChild(tomorrowHeader);
+
+    if (tomorrowClasses.length === 0) {
+      const noTomorrow = document.createElement('div');
+      noTomorrow.style.cssText = 'grid-column: 1 / -1; background: rgba(10, 11, 16, 0.1); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 1.5rem; text-align: center;';
+      noTomorrow.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.78rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0; opacity: 0.6;">No classes scheduled for tomorrow.</p>`;
+      classListContainer.appendChild(noTomorrow);
+    } else {
+      tomorrowClasses.forEach(c => {
+        const card = createClassCard(c, false, false);
+        card.style.opacity = '0.7';
+        card.style.filter = 'saturate(0.5)';
+        classListContainer.appendChild(card);
+      });
+    }
+
     return;
   }
 
