@@ -17,12 +17,6 @@
   <!-- Outer glowing ring -->
   <circle cx="50" cy="50" r="44" fill="none" stroke="url(#gradNNL)" stroke-width="2" opacity="0.25" />
   
-  <!-- Mortarboard/Graduation Cap (Nursing Next Exams representation) -->
-  <path d="M 50 20 L 78 31 L 50 42 L 22 31 Z" fill="url(#gradNNL)" filter="url(#glow)" />
-  <path d="M 34 37 L 34 50 C 34 56, 66 56, 66 50 L 66 37" fill="none" stroke="url(#gradNNL)" stroke-width="3.5" stroke-linecap="round" />
-  <!-- Tassel -->
-  <path d="M 72 32 L 72 45 C 72 47, 74 47, 74 45" fill="none" stroke="url(#gradNNL)" stroke-width="2" />
-  
-  <!-- Heartbeat ECG line (Nursing/Medical representation) -->
-  <path d="M 18 72 L 34 72 L 39 57 L 44 85 L 50 65 L 54 77 L 58 72 L 82 72" fill="none" stroke="url(#gradNNL)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" />
+  <!-- Centered Heartbeat ECG line (Nursing/Medical representation) -->
+  <path d="M 18 50 L 34 50 L 39 35 L 44 63 L 50 43 L 54 55 L 58 50 L 82 50" fill="none" stroke="url(#gradNNL)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" />
 </svg>
