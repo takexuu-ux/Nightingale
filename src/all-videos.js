@@ -192,69 +192,107 @@ async function loadRecordings() {
     allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
   } else {
     try {
-      // 1. Fetch batches to get subjects
-      const response = await fetch(`${API_BASE}/cms/batches/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
+      // Try multiple API endpoints to find the C+ batch
+      const BATCH_ENDPOINTS = [
+        `${API_BASE}/batch_cms/batches/`,
+        `${API_BASE}/cms/batches/`,
+        `${API_BASE}/batch_cms/enrolled_batches/`,
+        `${API_BASE}/cms/enrolled_batches/`,
+      ];
 
-      if (response.ok) {
-        const data = await response.json();
-        const apiBatches = data.data || data.results || data || [];
-        const targetBatchName = getSimplifiedBatchTitle(activeBatch);
-        const matchedBatch = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
+      let matchedBatch = null;
+      const targetBatchName = getSimplifiedBatchTitle(activeBatch);
 
-        if (matchedBatch && matchedBatch.subjects && matchedBatch.subjects.length > 0) {
-          // 2. Fetch videos for all subjects in parallel
-          const videoPromises = matchedBatch.subjects.map(async (subj) => {
+      for (const endpoint of BATCH_ENDPOINTS) {
+        try {
+          const res = await fetch(endpoint, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+          });
+          if (!res.ok) continue;
+          const data = await res.json();
+          const list = data.data || data.results || (Array.isArray(data) ? data : []);
+          console.log(`[C+ API] Endpoint ${endpoint} returned ${list.length} batches:`, list.map(b => `${b.id}:${b.title}`));
+          const found = list.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === targetBatchName);
+          if (found) { matchedBatch = found; console.log('[C+ API] Matched batch:', found.id, found.title); break; }
+        } catch(e) { console.warn('[C+ API] Endpoint failed:', endpoint, e); }
+      }
+
+      if (matchedBatch) {
+        // Get subjects — may be embedded or need separate fetch
+        let subjects = matchedBatch.subjects || [];
+        if (subjects.length === 0) {
+          // Try fetching subjects separately
+          const SUBJECT_ENDPOINTS = [
+            `${API_BASE}/batch_cms/subjects/?batch_id=${matchedBatch.id}`,
+            `${API_BASE}/cms/subjects/?batch_id=${matchedBatch.id}`,
+            `${API_BASE}/batch_cms/batches/${matchedBatch.id}/`,
+            `${API_BASE}/cms/batches/${matchedBatch.id}/`,
+          ];
+          for (const sEndpoint of SUBJECT_ENDPOINTS) {
             try {
-              const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${matchedBatch.id}&subject_id=${subj.id}`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Accept': 'application/json'
-                }
+              const sRes = await fetch(sEndpoint, {
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
               });
-              if (vRes.ok) {
-                const vData = await vRes.json();
-                const vList = vData.data || vData.results || [];
-                // Log FULL raw API response for first video to discover all available fields
-                if (vList.length > 0) {
-                  console.log(`[C+ API] Full video object keys for subject "${subj.title}":`, Object.keys(vList[0]));
-                  console.log(`[C+ API] Full first video object:`, JSON.stringify(vList[0], null, 2));
-                }
-                return vList.map(v => {
-                  const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
-                  const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
-                  const durStr = `${durHrs}h ${durMins}m`;
-                  console.log("Mapping video object:", v.title, "keys:", Object.keys(v));
-                  const extractedUrl = v.video_url || v.videoUrl || v.url || v.download_url || v.download_link || findVideoUrl(v) || '';
-                  return {
-                    id: v.id,
-                    title: v.title,
-                    instructor: v.faculty?.name || 'Faculty',
-                    batch: activeBatch,
-                    subject: subj.title,
-                    date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
-                    duration: durStr,
-                    video_cipher_id: v.video_cipher_id,
-                    videoUrl: extractedUrl
-                  };
+              if (!sRes.ok) continue;
+              const sData = await sRes.json();
+              const subjList = sData.subjects || sData.data || sData.results || (Array.isArray(sData) ? sData : []);
+              console.log(`[C+ API] Subject endpoint ${sEndpoint} returned:`, subjList.map(s => `${s.id}:${s.title}`));
+              if (subjList.length > 0) { subjects = subjList; break; }
+            } catch(e) { console.warn('[C+ API] Subject endpoint failed:', sEndpoint, e); }
+          }
+        }
+
+        console.log(`[C+ API] Found ${subjects.length} subjects for batch ${matchedBatch.id}`);
+
+        if (subjects.length > 0) {
+          const VIDEO_ENDPOINTS = [
+            (bid, sid) => `${API_BASE}/batch_cms/videos/?batch_id=${bid}&subject_id=${sid}`,
+            (bid, sid) => `${API_BASE}/cms/videos/?batch_id=${bid}&subject_id=${sid}`,
+            (bid, sid) => `${API_BASE}/batch_cms/videos/?batch=${bid}&subject=${sid}`,
+          ];
+
+          const videoPromises = subjects.map(async (subj) => {
+            for (const urlFn of VIDEO_ENDPOINTS) {
+              try {
+                const vRes = await fetch(urlFn(matchedBatch.id, subj.id), {
+                  headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                 });
-              }
-            } catch (err) {
-              console.warn(`Failed to fetch videos for subject ${subj.title}:`, err);
+                if (!vRes.ok) continue;
+                const vData = await vRes.json();
+                const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);
+                if (vList.length > 0) {
+                  console.log(`[C+ API] Subject "${subj.title}" (${subj.id}): ${vList.length} videos. Keys:`, Object.keys(vList[0]));
+                  console.log(`[C+ API] First video full object:`, JSON.stringify(vList[0], null, 2));
+                  return vList.map(v => {
+                    const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
+                    const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
+                    return {
+                      id: v.id,
+                      title: v.title,
+                      instructor: v.faculty?.name || v.instructor || 'Faculty',
+                      batch: activeBatch,
+                      subject: subj.title,
+                      date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
+                      duration: `${durHrs}h ${durMins}m`,
+                      video_cipher_id: v.video_cipher_id || '',
+                      videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || findVideoUrl(v) || ''
+                    };
+                  });
+                }
+              } catch(err) { console.warn(`[C+ API] Video fetch failed for subject ${subj.title}:`, err); }
             }
             return [];
           });
 
           const results = await Promise.all(videoPromises);
           allRecordings = results.flat();
+          console.log(`[C+ API] Total recordings loaded: ${allRecordings.length}`);
         }
+      } else {
+        console.warn('[C+ API] No matching batch found across all endpoints for:', activeBatch);
       }
     } catch (e) {
-      console.warn('Unable to fetch live recordings from API:', e);
+      console.warn('[C+ API] Fatal error in loadRecordings:', e);
     }
   }
 
@@ -385,10 +423,15 @@ function renderRecordingsList(recordings) {
     classListContainer.appendChild(card);
   });
 
-  // Bind card header toggles
+  // Bind card header toggles — accordion: only one open at a time
   classListContainer.querySelectorAll('.sc-header').forEach(header => {
     header.addEventListener('click', () => {
-      header.closest('.subject-card').classList.toggle('open');
+      const clickedCard = header.closest('.subject-card');
+      const isOpen = clickedCard.classList.contains('open');
+      // Close all cards first
+      classListContainer.querySelectorAll('.subject-card').forEach(c => c.classList.remove('open'));
+      // Toggle clicked one
+      if (!isOpen) clickedCard.classList.add('open');
     });
   });
 }

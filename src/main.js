@@ -3065,76 +3065,88 @@ function renderClasses(classes) {
       return aTime - bTime;
     });
 
-    // ── Tomorrow's classes section — shown FIRST at top ──
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowClasses = poolForLive.filter(c => {
-      try {
-        const start = parseApiDate(c.start || c.startTime || '');
-        return !isNaN(start.getTime()) && start.toDateString() === tomorrow.toDateString();
-      } catch (e) { return false; }
-    }).sort((a, b) => {
-      const aT = parseApiDate(a.start || a.startTime || '').getTime();
-      const bT = parseApiDate(b.start || b.startTime || '').getTime();
-      return aT - bT;
-    });
-
-    const tomorrowLabel = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
-
-    const tomorrowHeader = document.createElement('div');
-    tomorrowHeader.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;';
-    tomorrowHeader.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.75rem; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; flex-shrink: 0;">
-        <svg width="13" height="13" fill="none" stroke="rgba(167,139,250,0.9)" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
-        </svg>
-        <span style="font-family: var(--font-display); font-size: 0.7rem; color: rgba(167,139,250,0.9); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Tomorrow — ${tomorrowLabel}</span>
-      </div>
-      <div style="height: 1px; flex: 1; background: linear-gradient(to right, rgba(139,92,246,0.2), transparent);"></div>
-    `;
-    classListContainer.appendChild(tomorrowHeader);
-
-    if (tomorrowClasses.length === 0) {
-      const noTomorrow = document.createElement('div');
-      noTomorrow.style.cssText = 'grid-column: 1 / -1; background: rgba(139, 92, 246, 0.04); border: 1px solid rgba(139, 92, 246, 0.08); border-radius: 16px; padding: 1.2rem; text-align: center; margin-bottom: 1.5rem;';
-      noTomorrow.innerHTML = `<p style="color: rgba(167,139,250,0.5); font-size: 0.75rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes scheduled for tomorrow.</p>`;
-      classListContainer.appendChild(noTomorrow);
-    } else {
-      const tomorrowWrapper = document.createElement('div');
-      tomorrowWrapper.style.cssText = 'grid-column: 1 / -1; display: contents; margin-bottom: 1.5rem;';
-      tomorrowClasses.forEach(c => {
-        const card = createClassCard(c, false, false);
-        card.style.opacity = '0.75';
-        card.style.filter = 'saturate(0.4) brightness(0.9)';
-        card.style.borderColor = 'rgba(139, 92, 246, 0.15)';
-        classListContainer.appendChild(card);
-      });
-      classListContainer.appendChild(tomorrowWrapper);
-    }
-
-    // Divider before today's classes
-    const todayHeader = document.createElement('div');
-    todayHeader.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; margin-bottom: 0.25rem;';
-    todayHeader.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.75rem; background: rgba(255, 0, 85, 0.08); border: 1px solid rgba(255, 0, 85, 0.18); border-radius: 20px; flex-shrink: 0;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,80,120,0.9)" stroke-width="2.5">
-          <circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/>
-        </svg>
-        <span style="font-family: var(--font-display); font-size: 0.7rem; color: rgba(255,80,120,0.9); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Today</span>
-      </div>
-      <div style="height: 1px; flex: 1; background: linear-gradient(to right, rgba(255,0,85,0.15), transparent);"></div>
-    `;
-    classListContainer.appendChild(todayHeader);
-
+    // ── Render today's classes in the main area (no headers, clean) ──
     if (upcomingOrPastClasses.length === 0) {
-      const noToday = document.createElement('div');
-      noToday.style.cssText = 'grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);';
-      noToday.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>`;
-      classListContainer.appendChild(noToday);
+      classListContainer.innerHTML = `
+        <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);">
+          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>
+        </div>
+      `;
     } else {
       upcomingOrPastClasses.forEach(c => {
         classListContainer.appendChild(createClassCard(c, c._isLiveNow, c._isStartingSoon));
       });
+    }
+
+    // ── Populate tomorrow sidebar ──
+    const tomorrowListEl = document.getElementById('tomorrow-list');
+    const tomorrowLabelEl = document.getElementById('tomorrow-label');
+    if (tomorrowListEl) {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowLabel = tomorrow.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+      if (tomorrowLabelEl) tomorrowLabelEl.textContent = `Tomorrow · ${tomorrowLabel}`;
+
+      const tomorrowClasses = poolForLive.filter(c => {
+        try {
+          const start = parseApiDate(c.start || c.startTime || '');
+          return !isNaN(start.getTime()) && start.toDateString() === tomorrow.toDateString();
+        } catch (e) { return false; }
+      }).sort((a, b) => parseApiDate(a.start || a.startTime || '').getTime() - parseApiDate(b.start || b.startTime || '').getTime());
+
+      tomorrowListEl.innerHTML = '';
+      if (tomorrowClasses.length === 0) {
+        tomorrowListEl.innerHTML = `<p style="color: rgba(167,139,250,0.45); font-size: 0.7rem; font-family: var(--font-display); text-align: center; padding: 0.75rem 0.5rem; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">No classes tomorrow</p>`;
+      } else {
+        tomorrowClasses.forEach(c => {
+          const startTime = (() => { try { return parseApiDate(c.start || c.startTime || '').toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }); } catch(e){ return ''; } })();
+          const item = document.createElement('div');
+          item.style.cssText = 'padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid rgba(139,92,246,0.1); background: rgba(139,92,246,0.04); margin-bottom: 0.35rem;';
+          item.innerHTML = `
+            <div style="font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.title || c.name || 'Class'}</div>
+            <div style="font-size: 0.65rem; color: rgba(167,139,250,0.6); display: flex; align-items: center; gap: 0.35rem;">
+              <span>${c.faculty?.name || c.instructor || ''}</span>
+              ${startTime ? `<span>·</span><span>${startTime}</span>` : ''}
+            </div>
+          `;
+          tomorrowListEl.appendChild(item);
+        });
+      }
+    }
+
+    // ── Populate upcoming sidebar (next 7 days after tomorrow) ──
+    const upcomingSidebarEl = document.getElementById('upcoming-sidebar-list');
+    if (upcomingSidebarEl) {
+      const dayAfterTomorrow = new Date(now);
+      dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+      dayAfterTomorrow.setHours(0, 0, 0, 0);
+
+      const soonClasses = poolForLive.filter(c => {
+        try {
+          const start = parseApiDate(c.start || c.startTime || '');
+          return !isNaN(start.getTime()) && start >= dayAfterTomorrow;
+        } catch (e) { return false; }
+      }).sort((a, b) => parseApiDate(a.start || a.startTime || '').getTime() - parseApiDate(b.start || b.startTime || '').getTime()).slice(0, 6);
+
+      upcomingSidebarEl.innerHTML = '';
+      if (soonClasses.length === 0) {
+        upcomingSidebarEl.innerHTML = `<p style="color: rgba(0,243,208,0.35); font-size: 0.7rem; font-family: var(--font-display); text-align: center; padding: 0.75rem 0.5rem; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">No upcoming classes</p>`;
+      } else {
+        soonClasses.forEach(c => {
+          const start = (() => { try { return parseApiDate(c.start || c.startTime || ''); } catch(e) { return null; } })();
+          const dateStr = start ? start.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+          const timeStr = start ? start.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : '';
+          const item = document.createElement('div');
+          item.style.cssText = 'padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); margin-bottom: 0.35rem;';
+          item.innerHTML = `
+            <div style="font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.82); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.title || c.name || 'Class'}</div>
+            <div style="font-size: 0.65rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
+              ${dateStr ? `<span>${dateStr}</span><span>·</span>` : ''}<span>${timeStr}</span>
+            </div>
+          `;
+          upcomingSidebarEl.appendChild(item);
+        });
+      }
     }
 
     return;
