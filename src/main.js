@@ -3121,10 +3121,10 @@ function renderClasses(classes) {
         // Show sidebar with date label
         sidebarEl.style.display = 'flex';
         const tomorrowFull = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-        const labelEl = document.createElement('div');
-        labelEl.style.cssText = 'font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0 0.25rem 0.5rem;grid-column:1/-1;';
-        labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
-        upcomingSidebarEl.appendChild(labelEl);
+        const labelEl = document.getElementById('tomorrow-date-label');
+        if (labelEl) {
+          labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
+        }
         tomorrowClasses.forEach(c => {
           // Use same createClassCard — not live, not starting soon → shows as scheduled
           const card = createClassCard(c, false, false);
@@ -5283,19 +5283,6 @@ async function renderSubjectLibrary(isSilent = false) {
     const browserDiv = document.createElement('div');
     browserDiv.className = 'recordings-browser';
 
-    const headerBadge = activeTab === 'notes' ? '// NOTES & PDF HANDOUTS' : activeTab === 'tests' ? '// PRACTICE & CBT TESTS' : '// SUBJECT PORTAL';
-    const headerTitle = activeTab === 'notes' ? 'CLASS NOTES <span style="-webkit-text-fill-color: #00f3d0;">PDFs</span>' : activeTab === 'tests' ? 'PRACTICE <span style="-webkit-text-fill-color: #00f3d0;">TESTS</span>' : 'SUBJECT <span style="-webkit-text-fill-color: #00f3d0;">PORTAL</span>';
-    const headerSub = activeTab === 'notes' ? 'Download & View High-Yield Nursing Class Notes PDF' : activeTab === 'tests' ? 'Attempt Interactive CBT Quizzes & Mock Practice Tests' : 'Access video lectures, notes PDFs, and CBT tests';
-
-    const libraryHeader = document.createElement('div');
-    libraryHeader.style.marginBottom = '1.5rem';
-    libraryHeader.innerHTML = `
-      <span class="cyber-hero-badge" style="display: inline-block; margin-bottom: 0.5rem;">${headerBadge}</span>
-      <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.06em; margin: 0 0 0.35rem;">${headerTitle}</h2>
-      <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">${activeBatch} &mdash; ${headerSub}</p>
-    `;
-    browserDiv.appendChild(libraryHeader);
-
     subjects.forEach((sub, idx) => {
       const subjectAccordion = document.createElement('div');
       const shouldAutoOpen = (activeTab === 'notes' || activeTab === 'tests' || idx === 0);
@@ -5317,7 +5304,7 @@ async function renderSubjectLibrary(isSilent = false) {
         <div class="subject-accordion-body" id="sub-body-${sub.id}">
           <div class="subject-materials-row">
             <!-- Videos column -->
-            <div class="material-column" id="sub-vids-${sub.id}">
+            <div class="material-column" id="sub-vids-${sub.id}" style="${activeTab === 'notes' || activeTab === 'tests' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
                 📹 Recorded Classes
               </div>
@@ -5325,7 +5312,7 @@ async function renderSubjectLibrary(isSilent = false) {
             </div>
             
             <!-- Notes column -->
-            <div class="material-column" id="sub-notes-${sub.id}">
+            <div class="material-column" id="sub-notes-${sub.id}" style="${activeTab === 'tests' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
                 📄 Class Notes
               </div>
@@ -5333,7 +5320,7 @@ async function renderSubjectLibrary(isSilent = false) {
             </div>
             
             <!-- Tests column -->
-            <div class="material-column" id="sub-tests-${sub.id}">
+            <div class="material-column" id="sub-tests-${sub.id}" style="${activeTab === 'notes' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
                 📝 Practice Tests
               </div>
