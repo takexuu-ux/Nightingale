@@ -4584,39 +4584,34 @@ function autoJoinZoomPrejoin(iframe, displayName, passcode) {
 }
 
 // --- Full-screen Preloader State Management ---
-let bgLoaded = false;
+let bgLoaded = true;
 let classesFetched = false;
+
+function hidePreloader() {
+  const preloader = document.getElementById('app-preloader');
+  if (preloader && !preloader.classList.contains('fade-out')) {
+    preloader.classList.add('fade-out');
+    setTimeout(() => {
+      if (preloader.parentNode) preloader.remove();
+    }, 600);
+  }
+}
 
 function checkPreloaderCompletion() {
   const token = localStorage.getItem('nnl_access_token');
   const needsClassesFetch = !!token;
   
-  if (bgLoaded && (!needsClassesFetch || classesFetched)) {
-    const preloader = document.getElementById('app-preloader');
-    if (preloader) {
-      preloader.classList.add('fade-out');
-      setTimeout(() => {
-        preloader.remove();
-      }, 600);
-    }
+  if (!needsClassesFetch || classesFetched) {
+    hidePreloader();
   }
 }
 
-// Pre-load background image to ensure instant visual presence
+// Absolute safety net: FORCE-REMOVE preloader after 2 seconds no matter what
+setTimeout(hidePreloader, 2000);
+
+// Pre-load background image silently
 const bgImg = new Image();
 bgImg.src = '/nightingale.jpg';
-if (bgImg.complete) {
-  bgLoaded = true;
-} else {
-  bgImg.onload = () => {
-    bgLoaded = true;
-    checkPreloaderCompletion();
-  };
-  bgImg.onerror = () => {
-    bgLoaded = true;
-    checkPreloaderCompletion();
-  };
-}
 
 // Initialize on page load
 getOrCreateDeviceId();
