@@ -4867,18 +4867,80 @@ body:has(#app-header:not(.hide)) .dashboard-container {
     max-width: 100% !important;
   }
 
+  /* ── Cyberpunk Navigation Bar & Tabs ── */
   .nav-tabs {
-    width: 100% !important;
+    display: flex !important;
+    gap: 0.6rem !important;
+    align-items: center !important;
     overflow-x: auto !important;
-    white-space: nowrap !important;
-    padding-bottom: 0.4rem !important;
+    padding: 0.25rem 0.1rem 0.5rem !important;
+    margin-top: 1rem !important;
+    width: 100% !important;
+    scrollbar-width: none !important;
     -webkit-overflow-scrolling: touch;
   }
 
+  .nav-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
   .nav-tab {
-    padding: 0.5rem 0.85rem !important;
-    font-size: 0.72rem !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background: rgba(18, 20, 28, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #a0aec0 !important;
+    padding: 0.6rem 1.15rem !important;
+    border-radius: 12px !important;
+    font-family: var(--font-display), 'Outfit', sans-serif !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+    white-space: nowrap !important;
     flex-shrink: 0 !important;
+    backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+    user-select: none !important;
+    outline: none !important;
+  }
+
+  .nav-tab svg {
+    width: 15px !important;
+    height: 15px !important;
+    flex-shrink: 0 !important;
+    stroke: currentColor !important;
+    transition: transform 0.2s ease !important;
+  }
+
+  .nav-tab:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(0, 243, 208, 0.4) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 243, 208, 0.15) !important;
+  }
+
+  .nav-tab:hover svg {
+    transform: scale(1.1) !important;
+  }
+
+  .nav-tab.active {
+    background: linear-gradient(135deg, rgba(0, 243, 208, 0.18) 0%, rgba(59, 130, 246, 0.18) 100%) !important;
+    border: 1px solid #00f3d0 !important;
+    color: #00f3d0 !important;
+    box-shadow: 0 0 20px rgba(0, 243, 208, 0.3), inset 0 0 12px rgba(0, 243, 208, 0.15) !important;
+    text-shadow: 0 0 8px rgba(0, 243, 208, 0.4) !important;
+  }
+
+  .nav-tab.active svg {
+    stroke: #00f3d0 !important;
+    filter: drop-shadow(0 0 5px rgba(0, 243, 208, 0.6)) !important;
   }
 
   /* Subject Portal Accordion Mobile Layout */

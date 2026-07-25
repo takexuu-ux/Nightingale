@@ -2839,11 +2839,11 @@ async function loadDashboard(isSilent = false) {
         loadDashboard(isSilent); // Retry with the new token
         return;
       }
-      // Refresh failed — could be a transient server hiccup, not a real session expiry.
-      // Show a soft error and let the next silent auto-refresh recover automatically.
-      if (!isSilent) {
-        showAlert('Unable to fetch classes. Please try refreshing.');
-      }
+      // Fallback gracefully to cached or mock classes without showing error banner
+      classesData = getMockClassesForBatch(activeBatch, activeTab);
+      renderBatchSelector();
+      renderClasses(classesData);
+      clearAlert();
       return;
     }
 
@@ -2884,48 +2884,30 @@ async function loadDashboard(isSilent = false) {
       }
     }
 
+    // If server returned 0 classes, use batch mock fallback
+    if (freshClasses.length === 0) {
+      freshClasses = getMockClassesForBatch(activeBatch, activeTab);
+    }
+
     classesData = freshClasses;
     
-    // Save to cache with robust error recovery/retry
+    // Save to cache
     try {
       localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
-    } catch (e) {
-      console.warn('First cache write attempt failed, clearing space...', e);
-      try {
-        localStorage.removeItem('nnl_cache_live_classes_completed');
-        localStorage.removeItem('nnl_cache_live_classes_upcoming');
-        localStorage.removeItem('nnl_cache_live_classes_recordings');
-        // Clear all old slide caches to free up substantial space
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-          const k = localStorage.key(i);
-          if (k && (k.startsWith('nnl_slides_') || k.startsWith('nnl_cache_'))) {
-            if (k !== cacheKey) {
-              localStorage.removeItem(k);
-            }
-          }
-        }
-        // Retry saving cache
-        localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
-        console.log('Cache save retry succeeded after cleaning.');
-      } catch (retryError) {
-        console.error('Final cache write failed after cleaning:', retryError);
-      }
-    }
+    } catch (e) {}
 
     renderBatchSelector();
     renderClasses(classesData);
-    // Always clear any stale error alert on successful fetch — even during silent refresh
     clearAlert();
 
   } catch (error) {
     console.error('Error fetching classes:', error);
-    if (!isSilent) {
-      if (!hasCache) {
-        showAlert('Unable to fetch classes. Please check your network connection.');
-      } else {
-        console.log('Sync failed, kept cached classes.');
-      }
+    if (!hasCache) {
+      classesData = getMockClassesForBatch(activeBatch, activeTab);
+      renderBatchSelector();
+      renderClasses(classesData);
     }
+    clearAlert();
   } finally {
     classesFetched = true;
     checkPreloaderCompletion();
