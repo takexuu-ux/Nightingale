@@ -246,13 +246,13 @@
             </div>
           </div>
 
-          <!-- Two-column layout: live classes left, tomorrow right (same card style) -->
-          <div id="live-tab-layout" style="display:flex; gap:1.25rem; align-items:flex-start; width:100%;">
+          <!-- Stacked layout: live classes top, upcoming classes tomorrow bottom -->
+          <div id="live-tab-layout" style="display:flex; flex-direction:column; gap:1.5rem; width:100%;">
             <!-- Main: today's live classes -->
-            <div id="class-list-container" class="class-grid" style="flex:1; min-width:0;"></div>
+            <div id="class-list-container" class="class-grid" style="width: 100%;"></div>
             <!-- Tomorrow: only shown when classes exist -->
-            <div id="schedule-sidebar" style="flex:0 0 360px; display:none; flex-direction:column; gap:0.75rem;">
-              <div id="upcoming-sidebar-list"></div>
+            <div id="schedule-sidebar" style="width: 100%; display:none; flex-direction:column; gap:0.75rem;">
+              <div id="upcoming-sidebar-list" class="class-grid" style="width: 100%;"></div>
             </div>
           </div>
         </section>

@@ -3122,7 +3122,7 @@ function renderClasses(classes) {
         sidebarEl.style.display = 'flex';
         const tomorrowFull = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
         const labelEl = document.createElement('div');
-        labelEl.style.cssText = 'font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0 0.25rem 0.5rem;';
+        labelEl.style.cssText = 'font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0 0.25rem 0.5rem;grid-column:1/-1;';
         labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
         upcomingSidebarEl.appendChild(labelEl);
         tomorrowClasses.forEach(c => {
@@ -3882,6 +3882,11 @@ function setActiveTabNav(tabName) {
       else el.classList.remove('active');
     }
   });
+  // Hide the tomorrow upcoming sidebar whenever we switch away from the live tab
+  const sidebarEl = document.getElementById('schedule-sidebar');
+  if (sidebarEl) {
+    sidebarEl.style.display = tabName === 'live' ? '' : 'none';
+  }
 }
 
 if (tabLive) {

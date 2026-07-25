@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "trailingSlash": true,
+  "trailingSlash": false,
   "cleanUrls": false,
   "rewrites": [
     {
@@ -51,6 +51,14 @@
     {
       "source": "/api/cms/v2/live_classes/:id/",
       "destination": "https://prod-api.nnlone.com/cms/v2/live_classes/:id/"
+    },
+    {
+      "source": "/api/cms/batches",
+      "destination": "https://prod-api.nnlone.com/cms/batches/"
+    },
+    {
+      "source": "/api/cms/batches/",
+      "destination": "https://prod-api.nnlone.com/cms/batches/"
     },
     {
       "source": "/zoom-subdomain/:subdomain/:path*",
