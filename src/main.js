@@ -56,6 +56,7 @@ const classListContainer = document.getElementById('class-list-container');
 const dashboardLoader = document.getElementById('dashboard-loader');
 const tabLive = document.getElementById('tab-live');
 const tabUpcoming = document.getElementById('tab-upcoming');
+const tabRecordings = document.getElementById('tab-recordings');
 const tabSubjects = document.getElementById('tab-subjects');
 const tabNotes = document.getElementById('tab-notes');
 const tabTests = document.getElementById('tab-tests');
@@ -2910,20 +2911,12 @@ async function loadDashboard(isSilent = false) {
     clearAlert();
   } finally {
     classesFetched = true;
-    checkPreloaderCompletion();
-
-    if (!isSilent) {
-      const elapsed = Date.now() - animStart;
-      const remainingDelay = Math.max(0, 800 - elapsed);
-      
-      setTimeout(() => {
-        if (dashboardLoader) dashboardLoader.classList.add('hide');
-        if (refetchBtn) {
-          refetchBtn.classList.remove('spinning');
-          refetchBtn.disabled = false;
-        }
-      }, remainingDelay);
+    if (dashboardLoader) dashboardLoader.classList.add('hide');
+    if (refetchBtn) {
+      refetchBtn.classList.remove('spinning');
+      refetchBtn.disabled = false;
     }
+    checkPreloaderCompletion();
   }
 }
 
