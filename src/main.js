@@ -2971,7 +2971,7 @@ function doesClassMatchBatch(c, activeBatch) {
 
 // Render the class cards
 function renderClasses(classes) {
-  if (activeTab === 'subjects') return; // Do not render classes if we are in Subject Library
+  if (activeTab === 'subjects' || activeTab === 'notes' || activeTab === 'tests') return; // Do not render classes if we are in notes/tests/subject library
 
   classListContainer.innerHTML = '';
   liveNowContainer.innerHTML = '';
@@ -5302,7 +5302,7 @@ async function renderSubjectLibrary(isSilent = false) {
           </svg>
         </div>
         <div class="subject-accordion-body" id="sub-body-${sub.id}">
-          <div class="subject-materials-row">
+          <div class="subject-materials-row" style="${activeTab === 'notes' || activeTab === 'tests' ? 'grid-template-columns: 1fr;' : ''}">
             <!-- Videos column -->
             <div class="material-column" id="sub-vids-${sub.id}" style="${activeTab === 'notes' || activeTab === 'tests' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
@@ -5364,8 +5364,19 @@ async function renderSubjectLibrary(isSilent = false) {
   }
 }
 
-// Client-side subject matching — the API ignores subject_id so we filter by keywords in titles
-function doesItemBelongToSubject(title, subjectName) {
+// Client-side subject matching — the API ignores subject_id so we filter by subject ID first, then keywords in titles
+function doesItemBelongToSubject(item, subjectId, subjectName) {
+  if (!item) return false;
+  
+  // 1. Direct ID matching (100% accurate)
+  const itemSubId = item.subject?.id || item.subject_id || item.subject;
+  if (itemSubId !== undefined && itemSubId !== null) {
+    if (String(itemSubId) === String(subjectId)) {
+      return true;
+    }
+  }
+
+  const title = item.title || item.name || '';
   const t = (title || '').toUpperCase();
   const s = (subjectName || '').toUpperCase();
 
@@ -5462,7 +5473,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
         try {
           const d = await vRes.value.json();
           const allV = d.data || d.results || (Array.isArray(d) ? d : []);
-          videos = allV.filter(v => doesItemBelongToSubject(v.title, subjectTitle));
+          videos = allV.filter(v => doesItemBelongToSubject(v, subjectId, subjectTitle));
           if (videos.length === 0) videos = allV;
         } catch (e) {}
       }
@@ -5472,7 +5483,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
         try {
           const d = await nRes.value.json();
           const allN = d.data || d.results || (Array.isArray(d) ? d : []);
-          notes = allN.filter(n => doesItemBelongToSubject(n.title, subjectTitle));
+          notes = allN.filter(n => doesItemBelongToSubject(n, subjectId, subjectTitle));
           if (notes.length === 0) notes = allN;
         } catch (e) {}
       }
@@ -5482,7 +5493,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
         try {
           const d = await tRes.value.json();
           const allT = d.data || d.results || (Array.isArray(d) ? d : []);
-          tests = allT.filter(t => doesItemBelongToSubject(t.title, subjectTitle));
+          tests = allT.filter(t => doesItemBelongToSubject(t, subjectId, subjectTitle));
           if (tests.length === 0) tests = allT;
         } catch (e) {}
       }
@@ -5564,15 +5575,15 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
         const badgeColor = category === 'HIGH-YIELD' ? '#10b981' : category === 'SLIDES' ? '#ec4899' : '#3b82f6';
 
         notesHtml += `
-          <div class="material-item">
+          <div class="material-item" style="border-left: 3px solid ${badgeColor}; padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 10px;">
             <div class="material-item-info">
-              <span class="material-item-title" title="${n.title}">${n.title}</span>
-              <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
-                <span style="font-size:0.58rem; background:rgba(255,255,255,0.06); color:${badgeColor}; border:1px solid ${badgeColor}40; padding:0.1rem 0.4rem; border-radius:4px; font-weight:800; letter-spacing:0.04em;">${category}</span>
-                <span class="material-item-meta">PDF Document</span>
+              <span class="material-item-title" style="font-size: 0.85rem; font-weight: 600;" title="${n.title}">${n.title}</span>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.35rem;">
+                <span style="font-size:0.6rem; background:rgba(255,255,255,0.06); color:${badgeColor}; border:1px solid ${badgeColor}40; padding:0.15rem 0.45rem; border-radius:4px; font-weight:800; letter-spacing:0.04em;">${category}</span>
+                <span class="material-item-meta" style="font-size: 0.7rem; color: var(--text-muted);">PDF Document</span>
               </div>
             </div>
-            <a href="${n.url}" target="_blank" class="material-item-btn" style="text-decoration: none;">View PDF</a>
+            <a href="${n.url}" target="_blank" class="material-item-btn" style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;">View PDF</a>
           </div>
         `;
       });
@@ -5595,15 +5606,15 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
         const typeColor = typeStr.includes('GRAND') ? '#ff0055' : typeStr.includes('NORCET') ? '#a855f7' : typeStr.includes('DAILY') ? '#eab308' : '#00f3d0';
 
         testsHtml += `
-          <div class="material-item">
+          <div class="material-item" style="border-left: 3px solid ${typeColor}; padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 10px;">
             <div class="material-item-info">
-              <span class="material-item-title" title="${t.title}">${t.title}</span>
-              <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
-                <span style="font-size:0.58rem; background:rgba(255,255,255,0.06); color:${typeColor}; border:1px solid ${typeColor}40; padding:0.1rem 0.4rem; border-radius:4px; font-weight:800; letter-spacing:0.04em;">${typeStr}</span>
-                <span class="material-item-meta">${t.total_question || 30} Qs • ${Math.floor((t.duration || 1800) / 60)} mins</span>
+              <span class="material-item-title" style="font-size: 0.85rem; font-weight: 600;" title="${t.title}">${t.title}</span>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.35rem;">
+                <span style="font-size:0.6rem; background:rgba(255,255,255,0.06); color:${typeColor}; border:1px solid ${typeColor}40; padding:0.15rem 0.45rem; border-radius:4px; font-weight:800; letter-spacing:0.04em;">${typeStr}</span>
+                <span class="material-item-meta" style="font-size: 0.7rem; color: var(--text-muted);">${t.total_question || 30} Qs • ${Math.floor((t.duration || 1800) / 60)} mins</span>
               </div>
             </div>
-            <button class="material-item-btn btn-test start-test-btn" data-id="${t.id}" data-title="${t.title}" data-duration="${t.duration || 1800}">Start Test</button>
+            <button class="material-item-btn btn-test start-test-btn" data-id="${t.id}" data-title="${t.title}" data-duration="${t.duration || 1800}" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;">Start Test</button>
           </div>
         `;
       });
