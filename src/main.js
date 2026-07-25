@@ -2192,7 +2192,6 @@ function ensureZoomStyleOverrides(iframeDoc) {
     console.error('Error applying style overrides inside iframe:', err);
   }
 }
-
 function cleanZoomIframeDOM(iframeDoc) {
   try {
     // 1. Hide by text content keywords
@@ -2207,7 +2206,10 @@ function cleanZoomIframeDOM(iframeDoc) {
       "failed to detect a camera",
       "please grant permission",
       "access to microphone and camera",
-      "allow zoom to use your microphone and camera"
+      "allow zoom to use your microphone and camera",
+      "joining meeting timeout",
+      "browser restriction",
+      "your network connection has timed out"
     ];
 
     const allElems = iframeDoc.querySelectorAll('div, span, p, section, h1, h2, h3, h4, button, a');
@@ -2242,6 +2244,16 @@ function cleanZoomIframeDOM(iframeDoc) {
             container.style.setProperty('width', '0', 'important');
             container.style.setProperty('overflow', 'hidden', 'important');
             console.log('Classroom Monitor: Programmatically hid warning/popup element:', el.textContent.trim().substring(0, 50));
+
+            // Auto-click "Retry" if it is a joining timeout dialog
+            if (text.includes('joining meeting timeout') || text.includes('browser restriction') || text.includes('timed out')) {
+              const retryBtn = container.querySelector('button') || 
+                               Array.from(container.querySelectorAll('button, span, div, a')).find(btn => btn.textContent.trim().toLowerCase() === 'retry');
+              if (retryBtn) {
+                console.log('Classroom Monitor: Detected Zoom joining timeout. Automatically clicking "Retry"...');
+                retryBtn.click();
+              }
+            }
           }
         }
       }
@@ -5792,6 +5804,14 @@ document.addEventListener('mousemove', (e) => {
   title.style.setProperty('--mouse-x', `${x}px`);
   title.style.setProperty('--mouse-y', `${y}px`);
 });
+
+// Ping Render proxy server to wake it up from sleep mode asynchronously on load
+(function wakeUpRenderProxy() {
+  console.log('[Render Wakeup] Pinging Render proxy to spin it up...');
+  fetch('https://nightingale-9n2c.onrender.com/', { mode: 'no-cors', cache: 'no-store' })
+    .then(() => console.log('[Render Wakeup] Ping request sent successfully.'))
+    .catch((err) => console.warn('[Render Wakeup] Ping failed:', err.message));
+})();
 
 
 

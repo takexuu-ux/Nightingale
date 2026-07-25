@@ -392,14 +392,6 @@ function renderRecordingsList(recordings) {
   if (!classListContainer) return;
   classListContainer.innerHTML = '';
 
-  // Render first raw video object for immediate debugging at the top of the page
-  if (currentRawVideos && currentRawVideos.length > 0) {
-    const debugPre = document.createElement('pre');
-    debugPre.style.cssText = 'grid-column:1/-1; background:rgba(0,0,0,0.85); color:#00f3d0; border:1px solid rgba(0,243,208,0.3); padding:1rem; border-radius:12px; font-family:monospace; font-size:0.7rem; overflow-x:auto; margin-bottom:1.5rem; max-height:250px;';
-    debugPre.textContent = 'RAW VIDEO SCHEMA DEBUG:\n' + JSON.stringify(currentRawVideos[0], null, 2);
-    classListContainer.appendChild(debugPre);
-  }
-
   if (recordings.length === 0) {
     classListContainer.innerHTML = `
       <div style="grid-column:1/-1;background:rgba(10,11,16,0.15);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:4rem;text-align:center;">
@@ -632,3 +624,11 @@ if (btnBackDashboard) {
 initBackgroundParallax();
 initRecordingsViewer();
 loadRecordings();
+
+// Ping Render proxy server to wake it up from sleep mode asynchronously on load
+(function wakeUpRenderProxy() {
+  console.log('[Render Wakeup] Pinging Render proxy to spin it up...');
+  fetch('https://nightingale-9n2c.onrender.com/', { mode: 'no-cors', cache: 'no-store' })
+    .then(() => console.log('[Render Wakeup] Ping request sent successfully.'))
+    .catch((err) => console.warn('[Render Wakeup] Ping failed:', err.message));
+})();
