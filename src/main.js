@@ -4123,7 +4123,7 @@ async function fetchAndSyncUserBatches() {
   if (!token || token === 'GUEST_DEMO_TOKEN') return;
 
   try {
-    const res = await fetch(`${API_BASE}/batch_cms/batch_list/?page_size=250`, {
+    const res = await fetch(`${API_BASE}/cms/batches/`, {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
     });
     if (res.ok) {
@@ -4738,7 +4738,7 @@ async function renderVideoLibrary(isSilent = false) {
       });
     } else {
       // Fetch the batch's subject list
-      let batchRes = await fetch(`${API_BASE}/batch_cms/batch_list/?page_size=250`, {
+      let batchRes = await fetch(`${API_BASE}/cms/batches/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
 
@@ -4746,7 +4746,7 @@ async function renderVideoLibrary(isSilent = false) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
           const newToken = localStorage.getItem('nnl_access_token');
-          batchRes = await fetch(`${API_BASE}/batch_cms/batch_list/?page_size=250`, {
+          batchRes = await fetch(`${API_BASE}/cms/batches/`, {
             headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
           });
         } else {
@@ -5221,7 +5221,7 @@ async function renderSubjectLibrary(isSilent = false) {
       subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
     } else {
       // Fetch batches to extract subjects list
-      let response = await fetch(`${API_BASE}/batch_cms/batch_list/?page_size=250`, {
+      let response = await fetch(`${API_BASE}/cms/batches/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -5233,7 +5233,7 @@ async function renderSubjectLibrary(isSilent = false) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
           const newToken = localStorage.getItem('nnl_access_token');
-          response = await fetch(`${API_BASE}/batch_cms/batch_list/?page_size=250`, {
+          response = await fetch(`${API_BASE}/cms/batches/`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${newToken}`,
