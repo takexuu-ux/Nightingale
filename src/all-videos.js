@@ -149,28 +149,24 @@ function findVideoUrl(obj) {
 function getSimplifiedBatchTitle(title) {
   if (!title) return '';
   const tUpper = title.toUpperCase();
-  // C+ subscription = Blue Sapphire batch
+  if (tUpper.includes('RED') && tUpper.includes('SAPPHIRE')) return 'Red Sapphire Batch';
   if (tUpper.includes('C+') || tUpper.includes('C PLUS')) return 'Blue Sapphire Batch';
   if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) return 'Blue Sapphire Batch';
   if (tUpper.includes('PEARL') && tUpper.includes('ENGLISH')) return 'Pearl Batch English';
   if (tUpper.includes('PEARL')) return 'Pearl Batch';
-  if (tUpper.includes('FASTRACK')) return 'Fastrack Batch';
-  if (tUpper.includes('BRAHMASTRA')) return 'Brahmastra Batch';
-  if (tUpper.includes('ECONOMY')) return 'Economy Batch';
+  if (tUpper.includes('FASTRACK') || tUpper.includes('FAST TRACK')) return 'Fastrack 10.0 (Live Class)';
   return title.trim();
 }
 
 function getApiBatchId(batchName) {
   if (!batchName) return 8;
   const name = batchName.toUpperCase();
-  // C+ subscription maps to Blue Sapphire = batch ID 8
+  if (name.includes('RED') && name.includes('SAPPHIRE')) return 8;
   if (name.includes('C+') || name.includes('C PLUS')) return 8;
   if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
   if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
   if (name.includes('PEARL')) return 8;
-  if (name.includes('FASTRACK')) return 3;
-  if (name.includes('BRAHMASTRA')) return 9;
-  if (name.includes('ECONOMY')) return 1;
+  if (name.includes('FASTRACK') || name.includes('FAST TRACK')) return 3;
   return 8;
 }
 

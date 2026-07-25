@@ -4838,3 +4838,137 @@ body:has(#app-header:not(.hide)) .dashboard-container {
   border-color: rgba(225, 29, 72, 0.5) !important;
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   MOBILE UI RESPONSIVENESS & TOUCH OPTIMIZATION (MAX-WIDTH 768PX & 480PX)
+───────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Header & Navigation Mobile Layout */
+  .header-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .header-brand {
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .header-controls {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: space-between !important;
+  }
+
+  .header-batch-dropdown {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .nav-tabs {
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding-bottom: 0.4rem !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-tab {
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.72rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Subject Portal Accordion Mobile Layout */
+  .subject-accordion-header {
+    padding: 0.85rem 1rem !important;
+  }
+
+  .subject-name {
+    font-size: 0.9rem !important;
+  }
+
+  .subject-materials-row {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  .material-column {
+    background: rgba(255, 255, 255, 0.02) !important;
+    padding: 0.85rem !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+
+  .material-item {
+    padding: 0.65rem 0.75rem !important;
+    gap: 0.6rem !important;
+  }
+
+  .material-item-title {
+    font-size: 0.8rem !important;
+  }
+
+  .material-item-btn {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.7rem !important;
+    min-height: 36px !important;
+  }
+
+  /* CBT Quiz Modal Mobile Layout */
+  .quiz-viewer-box {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .quiz-viewer-header {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .quiz-viewer-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    flex-direction: column !important;
+    padding: 1rem !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quiz-choice-card {
+    padding: 0.85rem 1rem !important;
+    font-size: 0.85rem !important;
+    min-height: 48px !important; /* Mobile touch target */
+  }
+
+  .quiz-sidebar {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .quiz-navigator-grid {
+    grid-template-columns: repeat(8, 1fr) !important;
+    gap: 0.35rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #app {
+    padding: 0.5rem !important;
+  }
+
+  .cyber-hero-title {
+    font-size: 1.35rem !important;
+  }
+
+  .quiz-navigator-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+  }
+}
+

@@ -2944,11 +2944,17 @@ async function loadDashboard(isSilent = false) {
 function getSimplifiedBatchTitle(title) {
   if (!title) return '';
   const tUpper = title.toUpperCase();
-  if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) {
+  if (tUpper.includes('RED') && tUpper.includes('SAPPHIRE')) {
+    return 'Red Sapphire Batch';
+  }
+  if (tUpper.includes('BLUE') || (tUpper.includes('SAPPHIRE') && !tUpper.includes('RED'))) {
     return 'Blue Sapphire Batch';
   }
   if (tUpper.includes('PEARL')) {
     return 'Pearl Batch';
+  }
+  if (tUpper.includes('FASTRACK') || tUpper.includes('FAST TRACK')) {
+    return 'Fastrack 10.0 (Live Class)';
   }
   if (tUpper.includes('C+') || tUpper.includes('C PLUS')) {
     return 'C+ Batch';
@@ -4119,11 +4125,10 @@ function renderBatchSelector() {
   
   // Find all unique batch titles, starting with our main defaults so they are always available
   const batchTitles = new Set([
+    'Red Sapphire Batch',
     'Blue Sapphire Batch',
     'Pearl Batch',
-    'Fastrack 10.0 (Live Class)',
-    'Live Classes for Brahmastra (NORCET 10.0 Mains)',
-    'Economy Batch (NORCET 10.0)'
+    'Fastrack 10.0 (Live Class)'
   ]);
   cleanClasses.forEach(c => {
     const title = c.batch?.title || (c.liveClass?.batch?.title);
@@ -5008,16 +5013,23 @@ setInterval(() => {
 function getApiBatchId(batchName) {
   if (!batchName) return 8;
   const name = batchName.toUpperCase();
+  if (name.includes('RED') && name.includes('SAPPHIRE')) return 8;
   if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
   if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
-  if (name.includes('PEARL')) return 8; // Default Hinglish batch is 8
-  if (name.includes('FASTRACK')) return 3;
-  if (name.includes('BRAHMASTRA')) return 9;
-  if (name.includes('ECONOMY')) return 1;
+  if (name.includes('PEARL')) return 8;
+  if (name.includes('FASTRACK') || name.includes('FAST TRACK')) return 3;
   return 8; 
 }
 
 const MOCK_SUBJECTS_DATA = {
+  'Red Sapphire Batch': [
+    { id: 466, title: 'Pharmacology' },
+    { id: 458, title: 'Anatomy & Physiology' },
+    { id: 459, title: 'Biochemistry & Nutrition' },
+    { id: 465, title: 'Mental Health Nursing' },
+    { id: 472, title: 'Community Health Nursing' },
+    { id: 494, title: 'Pediatric Nursing' }
+  ],
   'Blue Sapphire Batch': [
     { id: 466, title: 'Pharmacology' },
     { id: 458, title: 'Anatomy & Physiology' },
@@ -5461,18 +5473,31 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     });
 
     // 2. Populate notes
-    let notesHtml = '<div class="material-column-title">📄 Class Notes</div>';
+    let notesHtml = '<div class="material-column-title">📄 Class Notes & Handouts</div>';
     if (notes.length === 0) {
       notesHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No PDF notes available.</p>';
     } else {
       notes.forEach(n => {
+        let category = 'HANDWRITTEN';
+        const titleUpper = (n.title || '').toUpperCase();
+        if (titleUpper.includes('SUMMARY') || titleUpper.includes('FLOWCHART') || titleUpper.includes('HIGH YIELD') || titleUpper.includes('REVISION')) {
+          category = 'HIGH-YIELD';
+        } else if (titleUpper.includes('SLIDE') || titleUpper.includes('PRESENTATION') || titleUpper.includes('HANDOUT')) {
+          category = 'SLIDES';
+        }
+
+        const badgeColor = category === 'HIGH-YIELD' ? '#10b981' : category === 'SLIDES' ? '#ec4899' : '#3b82f6';
+
         notesHtml += `
           <div class="material-item">
             <div class="material-item-info">
               <span class="material-item-title" title="${n.title}">${n.title}</span>
-              <span class="material-item-meta">PDF Material</span>
+              <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+                <span style="font-size:0.58rem; background:rgba(255,255,255,0.06); color:${badgeColor}; border:1px solid ${badgeColor}40; padding:0.1rem 0.4rem; border-radius:4px; font-weight:800; letter-spacing:0.04em;">${category}</span>
+                <span class="material-item-meta">PDF Document</span>
+              </div>
             </div>
-            <a href="${n.url}" target="_blank" class="material-item-btn" style="text-decoration: none;">View</a>
+            <a href="${n.url}" target="_blank" class="material-item-btn" style="text-decoration: none;">View PDF</a>
           </div>
         `;
       });
@@ -5480,18 +5505,30 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     subNotes.innerHTML = notesHtml;
 
     // 3. Populate tests
-    let testsHtml = '<div class="material-column-title">📝 Practice Tests</div>';
+    let testsHtml = '<div class="material-column-title">📝 Practice & CBT Tests</div>';
     if (tests.length === 0) {
       testsHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No quizzes available.</p>';
     } else {
       tests.forEach(t => {
+        let typeStr = t.type_str || t.level_str || 'TAT';
+        const titleUpper = (t.title || '').toUpperCase();
+        if (titleUpper.includes('GRAND') || titleUpper.includes('GT')) typeStr = 'GRAND TEST';
+        else if (titleUpper.includes('NORCET') || titleUpper.includes('AIIMS')) typeStr = 'NORCET CBT';
+        else if (titleUpper.includes('DAILY') || titleUpper.includes('MINI')) typeStr = 'DAILY QUIZ';
+        else if (titleUpper.includes('TAT') || titleUpper.includes('TOPIC')) typeStr = 'TAT TEST';
+
+        const typeColor = typeStr.includes('GRAND') ? '#ff0055' : typeStr.includes('NORCET') ? '#a855f7' : typeStr.includes('DAILY') ? '#eab308' : '#00f3d0';
+
         testsHtml += `
           <div class="material-item">
             <div class="material-item-info">
               <span class="material-item-title" title="${t.title}">${t.title}</span>
-              <span class="material-item-meta">${t.total_question || 30} Qs • ${Math.floor(t.duration / 60)} mins</span>
+              <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+                <span style="font-size:0.58rem; background:rgba(255,255,255,0.06); color:${typeColor}; border:1px solid ${typeColor}40; padding:0.1rem 0.4rem; border-radius:4px; font-weight:800; letter-spacing:0.04em;">${typeStr}</span>
+                <span class="material-item-meta">${t.total_question || 30} Qs • ${Math.floor((t.duration || 1800) / 60)} mins</span>
+              </div>
             </div>
-            <button class="material-item-btn btn-test start-test-btn" data-id="${t.id}" data-title="${t.title}" data-duration="${t.duration || 1800}">Start</button>
+            <button class="material-item-btn btn-test start-test-btn" data-id="${t.id}" data-title="${t.title}" data-duration="${t.duration || 1800}">Start Test</button>
           </div>
         `;
       });
