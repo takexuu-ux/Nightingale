@@ -2840,11 +2840,9 @@ async function loadDashboard(isSilent = false) {
         loadDashboard(isSilent); // Retry with the new token
         return;
       }
-      // Fallback gracefully to cached or mock classes without showing error banner
-      classesData = getMockClassesForBatch(activeBatch, activeTab);
-      renderBatchSelector();
-      renderClasses(classesData);
-      clearAlert();
+      // Token refresh failed (e.g. logged in on another device). Log out.
+      console.warn('Session invalidated or logged in from another device. Logging out...');
+      handleLogout();
       return;
     }
 
