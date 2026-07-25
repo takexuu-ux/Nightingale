@@ -2192,6 +2192,30 @@ function ensureZoomStyleOverrides(iframeDoc) {
     console.error('Error applying style overrides inside iframe:', err);
   }
 }
+function findModalParent(el) {
+  let parent = el.parentElement;
+  for (let i = 0; i < 12 && parent; i++) {
+    const className = (parent.className || '').toString().toLowerCase();
+    const role = (parent.getAttribute('role') || '').toLowerCase();
+    if (
+      className.includes('modal') || 
+      className.includes('dialog') || 
+      className.includes('popup') || 
+      className.includes('overlay') || 
+      className.includes('message-box') || 
+      className.includes('timeout') ||
+      className.includes('notification')
+    ) {
+      return parent;
+    }
+    if (role === 'dialog' || role === 'alertdialog' || role === 'alert') {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return null;
+}
+
 function cleanZoomIframeDOM(iframeDoc) {
   try {
     // 1. Hide by text content keywords
@@ -2218,21 +2242,13 @@ function cleanZoomIframeDOM(iframeDoc) {
         const text = el.textContent.toLowerCase();
         const matches = alertTexts.some(kw => text.includes(kw));
         if (matches) {
-          // Find the topmost modal/dialog/alert container
-          const container = el.closest('div[role="alert"]') ||
+          // Find the topmost modal container robustly using parent traverser
+          const container = findModalParent(el) ||
+                            el.closest('div[role="alert"]') ||
                             el.closest('div[role="dialog"]') ||
                             el.closest('div[role="alertdialog"]') ||
                             el.closest('.zm-modal') ||
                             el.closest('.zm-dialog') ||
-                            el.closest('.zm-popover') ||
-                            el.closest('.zm-tooltip') ||
-                            el.closest('.popover') ||
-                            el.closest('.tooltip') ||
-                            el.closest('.notification') ||
-                            el.closest('.mic-camera-notice') ||
-                            el.closest('.audio-tip') ||
-                            el.closest('.join-audio-tip') ||
-                            el.closest('.join-audio-container') ||
                             el;
           
           if (container && container.style.display !== 'none') {
@@ -2244,16 +2260,6 @@ function cleanZoomIframeDOM(iframeDoc) {
             container.style.setProperty('width', '0', 'important');
             container.style.setProperty('overflow', 'hidden', 'important');
             console.log('Classroom Monitor: Programmatically hid warning/popup element:', el.textContent.trim().substring(0, 50));
-
-            // Auto-click "Retry" if it is a joining timeout dialog
-            if (text.includes('joining meeting timeout') || text.includes('browser restriction') || text.includes('timed out')) {
-              const retryBtn = container.querySelector('button') || 
-                               Array.from(container.querySelectorAll('button, span, div, a')).find(btn => btn.textContent.trim().toLowerCase() === 'retry');
-              if (retryBtn) {
-                console.log('Classroom Monitor: Detected Zoom joining timeout. Automatically clicking "Retry"...');
-                retryBtn.click();
-              }
-            }
           }
         }
       }
