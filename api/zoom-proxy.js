@@ -229,11 +229,15 @@ export default function handler(req, res) {
         var slashIdx = withoutWss.indexOf('/');
         var host = slashIdx !== -1 ? withoutWss.substring(0, slashIdx) : withoutWss;
         var path = slashIdx !== -1 ? withoutWss.substring(slashIdx) : '';
+        
+        // Use wss:// if page is HTTPS, otherwise fall back to ws://
+        var wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        
         if (host.endsWith('.zoom.us')) {
           var subdomain = host.substring(0, host.length - 8);
-          modifiedUrl = 'ws://' + PROXY_HOST + '/zoom-subdomain/' + subdomain + path;
+          modifiedUrl = wsProtocol + PROXY_HOST + '/zoom-subdomain/' + subdomain + path;
         } else if (host === 'zoom.us') {
-          modifiedUrl = 'ws://' + PROXY_HOST + '/zoom' + path;
+          modifiedUrl = wsProtocol + PROXY_HOST + '/zoom' + path;
         }
       }
     }
