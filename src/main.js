@@ -2218,7 +2218,7 @@ function findModalParent(el) {
 
 function cleanZoomIframeDOM(iframeDoc) {
   try {
-    // 1. Hide by text content keywords
+    // 1. Hide modal dialogs directly if they match warning/timeout keywords
     const alertTexts = [
       "apps that are accessing your meeting content",
       "apps that are accessing your",
@@ -2236,22 +2236,33 @@ function cleanZoomIframeDOM(iframeDoc) {
       "your network connection has timed out"
     ];
 
-    const allElems = iframeDoc.querySelectorAll('div, span, p, section, h1, h2, h3, h4, button, a');
+    // Find dialogs, modals, popovers, or classes containing modal/dialog
+    const dialogs = iframeDoc.querySelectorAll('div[role="dialog"], div[role="alertdialog"], div[role="alert"], .zm-modal, .zm-dialog, .zm-popover, .zm-message-box, div[class*="modal" i], div[class*="dialog" i]');
+    for (const diag of dialogs) {
+      if (diag.id === 'zmmtg-root' || diag.tagName === 'BODY' || diag.tagName === 'HTML') continue;
+      const diagText = diag.textContent.toLowerCase();
+      const matches = alertTexts.some(kw => diagText.includes(kw));
+      if (matches && diag.style.display !== 'none') {
+        diag.style.setProperty('display', 'none', 'important');
+        diag.style.setProperty('opacity', '0', 'important');
+        diag.style.setProperty('pointer-events', 'none', 'important');
+        diag.style.setProperty('visibility', 'hidden', 'important');
+        diag.style.setProperty('height', '0', 'important');
+        diag.style.setProperty('width', '0', 'important');
+        diag.style.setProperty('overflow', 'hidden', 'important');
+        console.log('Classroom Monitor: Programmatically hid warning dialog/container:', diagText.trim().substring(0, 50));
+      }
+    }
+
+    // Leaf fallback for standard nodes
+    const leafTexts = ["joining meeting timeout", "browser restriction", "network connection has timed out"];
+    const allElems = iframeDoc.querySelectorAll('h1, h2, h3, h4, h5, p, span');
     for (const el of allElems) {
-      if (el.children.length <= 1) {
+      if (el.children.length === 0) {
         const text = el.textContent.toLowerCase();
-        const matches = alertTexts.some(kw => text.includes(kw));
-        if (matches) {
-          // Find the topmost modal container robustly using parent traverser
-          const container = findModalParent(el) ||
-                            el.closest('div[role="alert"]') ||
-                            el.closest('div[role="dialog"]') ||
-                            el.closest('div[role="alertdialog"]') ||
-                            el.closest('.zm-modal') ||
-                            el.closest('.zm-dialog') ||
-                            el;
-          
-          if (container && container.style.display !== 'none') {
+        if (leafTexts.some(kw => text.includes(kw))) {
+          const container = findModalParent(el) || el;
+          if (container && container.style.display !== 'none' && container.id !== 'zmmtg-root') {
             container.style.setProperty('display', 'none', 'important');
             container.style.setProperty('opacity', '0', 'important');
             container.style.setProperty('pointer-events', 'none', 'important');
@@ -2259,7 +2270,7 @@ function cleanZoomIframeDOM(iframeDoc) {
             container.style.setProperty('height', '0', 'important');
             container.style.setProperty('width', '0', 'important');
             container.style.setProperty('overflow', 'hidden', 'important');
-            console.log('Classroom Monitor: Programmatically hid warning/popup element:', el.textContent.trim().substring(0, 50));
+            console.log('Classroom Monitor: Suppressed timeout label container:', el.textContent.trim().substring(0, 50));
           }
         }
       }
