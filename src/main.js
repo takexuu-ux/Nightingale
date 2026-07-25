@@ -56,8 +56,9 @@ const classListContainer = document.getElementById('class-list-container');
 const dashboardLoader = document.getElementById('dashboard-loader');
 const tabLive = document.getElementById('tab-live');
 const tabUpcoming = document.getElementById('tab-upcoming');
-const tabRecordings = document.getElementById('tab-recordings');
 const tabSubjects = document.getElementById('tab-subjects');
+const tabNotes = document.getElementById('tab-notes');
+const tabTests = document.getElementById('tab-tests');
 const tabAllVideos = document.getElementById('btn-all-videos');
 const refetchBtn = document.getElementById('refetch-btn');
 
@@ -2745,7 +2746,7 @@ async function loadDashboard(isSilent = false) {
   // Auto-sync batches & test series in background
   fetchAndSyncUserBatches();
 
-  if (activeTab === 'subjects') {
+  if (activeTab === 'subjects' || activeTab === 'notes' || activeTab === 'tests') {
     renderSubjectLibrary(isSilent);
     return;
   }
@@ -3890,46 +3891,57 @@ function handleLogout() {
 logoutBtn.addEventListener('click', handleLogout);
 
 // Tab Navigation handlers
-tabLive.addEventListener('click', () => {
-  if (activeTab === 'live') return;
-  activeTab = 'live';
-  tabLive.classList.add('active');
-  tabUpcoming.classList.remove('active');
-  if (tabRecordings) tabRecordings.classList.remove('active');
-  if (tabSubjects) tabSubjects.classList.remove('active');
-  loadDashboard();
-});
+const navTabElements = {
+  live: tabLive,
+  upcoming: tabUpcoming,
+  recordings: tabRecordings,
+  subjects: tabSubjects,
+  notes: tabNotes,
+  tests: tabTests
+};
 
-tabUpcoming.addEventListener('click', () => {
-  if (activeTab === 'upcoming') return;
-  activeTab = 'upcoming';
-  tabUpcoming.classList.add('active');
-  tabLive.classList.remove('active');
-  if (tabRecordings) tabRecordings.classList.remove('active');
-  if (tabSubjects) tabSubjects.classList.remove('active');
-  loadDashboard();
-});
+function setActiveTabNav(tabName) {
+  activeTab = tabName;
+  Object.keys(navTabElements).forEach(k => {
+    const el = navTabElements[k];
+    if (el) {
+      if (k === tabName) el.classList.add('active');
+      else el.classList.remove('active');
+    }
+  });
+}
 
-if (tabRecordings) {
-  tabRecordings.addEventListener('click', () => {
-    if (activeTab === 'recordings') return;
-    activeTab = 'recordings';
-    tabRecordings.classList.add('active');
-    tabLive.classList.remove('active');
-    tabUpcoming.classList.remove('active');
-    if (tabSubjects) tabSubjects.classList.remove('active');
+if (tabLive) {
+  tabLive.addEventListener('click', () => {
+    setActiveTabNav('live');
     loadDashboard();
   });
 }
 
 if (tabSubjects) {
   tabSubjects.addEventListener('click', () => {
-    if (activeTab === 'subjects') return;
-    activeTab = 'subjects';
-    tabSubjects.classList.add('active');
-    tabLive.classList.remove('active');
-    tabUpcoming.classList.remove('active');
-    if (tabRecordings) tabRecordings.classList.remove('active');
+    setActiveTabNav('subjects');
+    loadDashboard();
+  });
+}
+
+if (tabNotes) {
+  tabNotes.addEventListener('click', () => {
+    setActiveTabNav('notes');
+    loadDashboard();
+  });
+}
+
+if (tabTests) {
+  tabTests.addEventListener('click', () => {
+    setActiveTabNav('tests');
+    loadDashboard();
+  });
+}
+
+if (tabRecordings) {
+  tabRecordings.addEventListener('click', () => {
+    setActiveTabNav('recordings');
     loadDashboard();
   });
 }
@@ -5265,7 +5277,7 @@ async function renderSubjectLibrary(isSilent = false) {
 
       if (response.ok) {
         const result = await response.json();
-        if (activeTab !== 'subjects') return; // Guard against tab change during await
+        if (activeTab !== 'subjects' && activeTab !== 'notes' && activeTab !== 'tests') return;
         const apiBatches = result.data || result.results || [];
         const currentBatchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
         if (currentBatchData && currentBatchData.subjects) {
@@ -5297,18 +5309,23 @@ async function renderSubjectLibrary(isSilent = false) {
     const browserDiv = document.createElement('div');
     browserDiv.className = 'recordings-browser';
 
+    const headerBadge = activeTab === 'notes' ? '// NOTES & PDF HANDOUTS' : activeTab === 'tests' ? '// PRACTICE & CBT TESTS' : '// SUBJECT PORTAL';
+    const headerTitle = activeTab === 'notes' ? 'CLASS NOTES <span style="-webkit-text-fill-color: #00f3d0;">PDFs</span>' : activeTab === 'tests' ? 'PRACTICE <span style="-webkit-text-fill-color: #00f3d0;">TESTS</span>' : 'SUBJECT <span style="-webkit-text-fill-color: #00f3d0;">PORTAL</span>';
+    const headerSub = activeTab === 'notes' ? 'Download & View High-Yield Nursing Class Notes PDF' : activeTab === 'tests' ? 'Attempt Interactive CBT Quizzes & Mock Practice Tests' : 'Access video lectures, notes PDFs, and CBT tests';
+
     const libraryHeader = document.createElement('div');
     libraryHeader.style.marginBottom = '1.5rem';
     libraryHeader.innerHTML = `
-      <span class="cyber-hero-badge" style="display: inline-block; margin-bottom: 0.5rem;">// SUBJECT LIBRARY</span>
-      <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.06em; margin: 0 0 0.35rem;">SUBJECT <span style="-webkit-text-fill-color: #00f3d0;">PORTAL</span></h2>
-      <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">${activeBatch} &mdash; Access video lectures, notes PDFs, and CBT tests</p>
+      <span class="cyber-hero-badge" style="display: inline-block; margin-bottom: 0.5rem;">${headerBadge}</span>
+      <h2 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.06em; margin: 0 0 0.35rem;">${headerTitle}</h2>
+      <p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0;">${activeBatch} &mdash; ${headerSub}</p>
     `;
     browserDiv.appendChild(libraryHeader);
 
-    subjects.forEach(sub => {
+    subjects.forEach((sub, idx) => {
       const subjectAccordion = document.createElement('div');
-      subjectAccordion.className = 'subject-accordion';
+      const shouldAutoOpen = (activeTab === 'notes' || activeTab === 'tests' || idx === 0);
+      subjectAccordion.className = `subject-accordion ${shouldAutoOpen ? 'open' : ''}`;
       subjectAccordion.setAttribute('data-sub-id', sub.id);
       subjectAccordion.setAttribute('data-loaded', 'false');
 
@@ -5358,12 +5375,15 @@ async function renderSubjectLibrary(isSilent = false) {
         e.stopPropagation();
         const isOpen = subjectAccordion.classList.toggle('open');
         if (isOpen && subjectAccordion.getAttribute('data-loaded') === 'false') {
-          // Use real API batch ID (not hardcoded) so subject filter works correctly
           fetchSubjectMaterials(realBatchId, sub.id, subjectAccordion);
         }
       });
 
       browserDiv.appendChild(subjectAccordion);
+
+      if (shouldAutoOpen) {
+        fetchSubjectMaterials(realBatchId, sub.id, subjectAccordion);
+      }
     });
 
     classListContainer.appendChild(browserDiv);
