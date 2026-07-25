@@ -26,6 +26,17 @@
           <p id="preloader-status">Setting up your study space...</p>
         </div>
       </div>
+      <script>
+        // Guaranteed inline preloader auto-dismiss (1 sec max)
+        setTimeout(function() {
+          var p = document.getElementById('app-preloader');
+          if (p) {
+            p.style.opacity = '0';
+            p.style.transition = 'opacity 0.4s ease';
+            setTimeout(function() { if (p && p.parentNode) p.parentNode.removeChild(p); }, 400);
+          }
+        }, 1000);
+      </script>
     </div>
 
     <!-- Nightingale Static Background Image -->

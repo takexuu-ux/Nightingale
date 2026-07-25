@@ -4614,14 +4614,15 @@ const bgImg = new Image();
 bgImg.src = '/nightingale.jpg';
 
 // Initialize on page load
-getOrCreateDeviceId();
-checkLoginState();
-updateFavicon();
-initTweaksPanel();
-initBatchSelection();
-initBackgroundParallax();
-initRecordingsViewer();
-checkPreloaderCompletion();
+try { getOrCreateDeviceId(); } catch (e) { console.error('init error:', e); }
+try { checkLoginState(); } catch (e) { console.error('init error:', e); }
+try { updateFavicon(); } catch (e) { console.error('init error:', e); }
+try { initTweaksPanel(); } catch (e) { console.error('init error:', e); }
+try { initBatchSelection(); } catch (e) { console.error('init error:', e); }
+try { initBackgroundParallax(); } catch (e) { console.error('init error:', e); }
+try { initRecordingsViewer(); } catch (e) { console.error('init error:', e); }
+try { checkPreloaderCompletion(); } catch (e) { console.error('init error:', e); }
+setTimeout(hidePreloader, 800);
 
 
 // ─── Grouped Recorded Lectures & Interactive Parallax redone ─────────────────
