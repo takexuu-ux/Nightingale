@@ -2742,6 +2742,9 @@ async function loadDashboard(isSilent = false) {
   const token = localStorage.getItem('nnl_access_token');
   if (!token) return;
 
+  // Auto-sync batches & test series in background
+  fetchAndSyncUserBatches();
+
   if (activeTab === 'subjects') {
     renderSubjectLibrary(isSilent);
     return;
@@ -4104,11 +4107,73 @@ function initTweaksPanel() {
   }
 }
 
+// ── Dynamic Auto-Discovery for New Batches & Courses ──
+let dynamicBatchMap = {};
+try {
+  const cachedMap = localStorage.getItem('nnl_cached_batch_id_map');
+  if (cachedMap) dynamicBatchMap = JSON.parse(cachedMap);
+} catch (e) {}
+
+let userDiscoveredBatches = new Set();
+try {
+  const cachedBatches = localStorage.getItem('nnl_cached_discovered_batches');
+  if (cachedBatches) {
+    JSON.parse(cachedBatches).forEach(b => userDiscoveredBatches.add(b));
+  }
+} catch (e) {}
+
+async function fetchAndSyncUserBatches() {
+  const token = localStorage.getItem('nnl_access_token');
+  if (!token || token === 'GUEST_DEMO_TOKEN') return;
+
+  try {
+    const res = await fetch(`${API_BASE}/cms/batches/`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const batchesList = data.data || data.results || [];
+      let updated = false;
+
+      batchesList.forEach(b => {
+        if (b.title) {
+          const simplified = getSimplifiedBatchTitle(b.title);
+          if (b.id) {
+            dynamicBatchMap[simplified] = b.id;
+          }
+          if (!userDiscoveredBatches.has(simplified)) {
+            userDiscoveredBatches.add(simplified);
+            updated = true;
+          }
+        }
+      });
+
+      if (updated || Object.keys(dynamicBatchMap).length > 0) {
+        localStorage.setItem('nnl_cached_discovered_batches', JSON.stringify(Array.from(userDiscoveredBatches)));
+        localStorage.setItem('nnl_cached_batch_id_map', JSON.stringify(dynamicBatchMap));
+        renderBatchSelector();
+      }
+    }
+  } catch (e) {
+    console.warn('Auto-batch sync non-blocking error:', e);
+  }
+}
+
 function renderBatchSelector() {
   const dropdown = document.getElementById('header-batch-dropdown');
   const label = document.getElementById('current-batch-label');
   if (!dropdown) return;
-  
+
+  // Default baseline batches plus any dynamically discovered batches from API
+  const defaultBatches = [
+    'Red Sapphire Batch',
+    'Blue Sapphire Batch',
+    'Pearl Batch',
+    'Fastrack 10.0 (Live Class)'
+  ];
+
+  const batchTitles = new Set([...defaultBatches, ...userDiscoveredBatches]);
+
   // Extract clean classes from current classesData
   const cleanClasses = [];
   if (classesData && classesData.length > 0) {
@@ -4123,13 +4188,6 @@ function renderBatchSelector() {
     });
   }
   
-  // Find all unique batch titles, starting with our main defaults so they are always available
-  const batchTitles = new Set([
-    'Red Sapphire Batch',
-    'Blue Sapphire Batch',
-    'Pearl Batch',
-    'Fastrack 10.0 (Live Class)'
-  ]);
   cleanClasses.forEach(c => {
     const title = c.batch?.title || (c.liveClass?.batch?.title);
     if (title) {
@@ -4189,11 +4247,14 @@ function renderBatchSelector() {
 }
 
 function initBatchSelection() {
-  const savedBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
+  const savedBatch = localStorage.getItem('nnl_active_batch') || 'Red Sapphire Batch';
   activeBatch = savedBatch;
   
   // Render batch selector dropdown instantly on load with default or cached batches
   renderBatchSelector();
+
+  // Dynamically query API in background to discover any new batches/test series added to user account
+  fetchAndSyncUserBatches();
   
   const batchBtn = document.getElementById('header-batch-btn');
   const dropdown = document.getElementById('header-batch-dropdown');
@@ -5009,9 +5070,13 @@ setInterval(() => {
    SUBJECT LIBRARY & QUIZ PLAYER REDESIGN
 ───────────────────────────────────────────────────────────────────── */
 
-// Mappings of UI Batch names to backend Batch IDs
+// Mappings of UI Batch names to backend Batch IDs (Dynamic API map first, fallback to static defaults)
 function getApiBatchId(batchName) {
   if (!batchName) return 8;
+  const simplified = getSimplifiedBatchTitle(batchName);
+  if (dynamicBatchMap[simplified]) {
+    return dynamicBatchMap[simplified];
+  }
   const name = batchName.toUpperCase();
   if (name.includes('RED') && name.includes('SAPPHIRE')) return 8;
   if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
