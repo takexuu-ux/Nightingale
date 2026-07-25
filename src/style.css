@@ -4867,81 +4867,7 @@ body:has(#app-header:not(.hide)) .dashboard-container {
     max-width: 100% !important;
   }
 
-  /* ── Cyberpunk Navigation Bar & Tabs ── */
-  .nav-tabs {
-    display: flex !important;
-    gap: 0.6rem !important;
-    align-items: center !important;
-    overflow-x: auto !important;
-    padding: 0.25rem 0.1rem 0.5rem !important;
-    margin-top: 1rem !important;
-    width: 100% !important;
-    scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .nav-tabs::-webkit-scrollbar {
-    display: none !important;
-  }
-
-  .nav-tab {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    background: rgba(18, 20, 28, 0.75) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    color: #a0aec0 !important;
-    padding: 0.6rem 1.15rem !important;
-    border-radius: 12px !important;
-    font-family: var(--font-display), 'Outfit', sans-serif !important;
-    font-size: 0.78rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.05em !important;
-    text-transform: uppercase !important;
-    cursor: pointer !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.55rem !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    backdrop-filter: blur(16px) !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-    user-select: none !important;
-    outline: none !important;
-  }
-
-  .nav-tab svg {
-    width: 15px !important;
-    height: 15px !important;
-    flex-shrink: 0 !important;
-    stroke: currentColor !important;
-    transition: transform 0.2s ease !important;
-  }
-
-  .nav-tab:hover {
-    background: rgba(255, 255, 255, 0.09) !important;
-    border-color: rgba(0, 243, 208, 0.4) !important;
-    color: #ffffff !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 243, 208, 0.15) !important;
-  }
-
-  .nav-tab:hover svg {
-    transform: scale(1.1) !important;
-  }
-
-  .nav-tab.active {
-    background: linear-gradient(135deg, rgba(0, 243, 208, 0.18) 0%, rgba(59, 130, 246, 0.18) 100%) !important;
-    border: 1px solid #00f3d0 !important;
-    color: #00f3d0 !important;
-    box-shadow: 0 0 20px rgba(0, 243, 208, 0.3), inset 0 0 12px rgba(0, 243, 208, 0.15) !important;
-    text-shadow: 0 0 8px rgba(0, 243, 208, 0.4) !important;
-  }
-
-  .nav-tab.active svg {
-    stroke: #00f3d0 !important;
-    filter: drop-shadow(0 0 5px rgba(0, 243, 208, 0.6)) !important;
-  }
+  /* Navigation tab items are styled globally at root level */
 
   /* Subject Portal Accordion Mobile Layout */
   .subject-accordion-header {
@@ -5032,5 +4958,133 @@ body:has(#app-header:not(.hide)) .dashboard-container {
   .quiz-navigator-grid {
     grid-template-columns: repeat(6, 1fr) !important;
   }
+}
+
+/* ── Global Cyberpunk Navigation Tabs & Overrides ── */
+.nav-tabs {
+  display: flex !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  overflow-x: auto !important;
+  background: rgba(10, 11, 16, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 0.4rem !important;
+  border-radius: 14px !important;
+  margin: 1.25rem 0 !important;
+  width: max-content !important;
+  max-width: 100% !important;
+  scrollbar-width: none !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none !important;
+}
+
+.nav-tab {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  padding: 0.55rem 1rem !important;
+  border-radius: 10px !important;
+  font-family: var(--font-display), 'Outfit', sans-serif !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  user-select: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-tab svg {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  flex-shrink: 0 !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2.2 !important;
+  transition: transform 0.2s ease !important;
+  display: inline-block !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.nav-tab:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.nav-tab:hover svg {
+  transform: scale(1.08) !important;
+}
+
+/* Crimson Mode (Default Theme Accent) */
+.nav-tab.active {
+  background: rgba(255, 0, 85, 0.1) !important;
+  border: 1px solid rgba(255, 0, 85, 0.35) !important;
+  color: #ff0055 !important;
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.15), inset 0 0 8px rgba(255, 0, 85, 0.05) !important;
+  text-shadow: 0 0 5px rgba(255, 0, 85, 0.2) !important;
+}
+
+.nav-tab.active svg {
+  stroke: #ff0055 !important;
+}
+
+/* Theme Accent overrides based on body class */
+body.tweak-cyan-mode .nav-tab.active {
+  background: rgba(0, 240, 255, 0.1) !important;
+  border: 1px solid rgba(0, 240, 255, 0.35) !important;
+  color: #00f0ff !important;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 0 8px rgba(0, 240, 255, 0.05) !important;
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.2) !important;
+}
+
+body.tweak-cyan-mode .nav-tab.active svg {
+  stroke: #00f0ff !important;
+}
+
+body.tweak-amber-mode .nav-tab.active {
+  background: rgba(255, 170, 0, 0.1) !important;
+  border: 1px solid rgba(255, 170, 0, 0.35) !important;
+  color: #ffaa00 !important;
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.15), inset 0 0 8px rgba(255, 170, 0, 0.05) !important;
+  text-shadow: 0 0 5px rgba(255, 170, 0, 0.2) !important;
+}
+
+body.tweak-amber-mode .nav-tab.active svg {
+  stroke: #ffaa00 !important;
+}
+
+body.tweak-emerald-mode .nav-tab.active {
+  background: rgba(0, 255, 102, 0.1) !important;
+  border: 1px solid rgba(0, 255, 102, 0.35) !important;
+  color: #00ff66 !important;
+  box-shadow: 0 0 15px rgba(0, 255, 102, 0.15), inset 0 0 8px rgba(0, 255, 102, 0.05) !important;
+  text-shadow: 0 0 5px rgba(0, 255, 102, 0.2) !important;
+}
+
+body.tweak-emerald-mode .nav-tab.active svg {
+  stroke: #00ff66 !important;
 }
 
