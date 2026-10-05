@@ -153,26 +153,62 @@
 
             <!-- Step 2: Input OTP (Hidden by default) -->
             <div id="otp-step" class="hide">
+              <!-- Minimal OTP Sent Badge -->
+              <div class="otp-sent-minimal-bar">
+                <div class="otp-sent-info">
+                  <span class="otp-sent-dot"></span>
+                  <span class="otp-sent-label">OTP sent to</span>
+                  <span class="otp-sent-phone" id="otp-phone-display">+91 ••••• •••••</span>
+                </div>
+                <button type="button" id="otp-edit-phone-btn" class="otp-edit-phone-link" title="Change phone number">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                  <span>Edit</span>
+                </button>
+              </div>
+
               <form id="otp-form">
-                <div class="form-group">
-                  <label class="form-label" style="margin-bottom: 0.85rem; display: block;">Verification Code (OTP)</label>
-                  <div class="otp-boxes-container">
-                    <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0" autocomplete="one-time-code" />
-                    <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1" />
-                    <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2" />
-                    <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3" />
-                    <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="4" />
-                    <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="5" />
+                <div class="form-group" style="position: relative; margin-bottom: 1.25rem;">
+                  <div class="otp-morph-wrapper">
+                    <div id="otp-boxes-container" class="otp-boxes-container">
+                      <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0" autocomplete="one-time-code" style="--i:0;" />
+                      <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1" style="--i:1;" />
+                      <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="2" style="--i:2;" />
+                      <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3" style="--i:3;" />
+                      <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="4" style="--i:4;" />
+                      <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="5" style="--i:5;" />
+
+                      <!-- Animated Green Tick Overlay (Revealed upon successful verification) -->
+                      <div id="otp-success-tick" class="otp-success-tick hide">
+                        <svg class="tick-svg" viewBox="0 0 52 52">
+                          <circle class="tick-circle" cx="26" cy="26" r="22" fill="none"/>
+                          <path class="tick-check" fill="none" d="M15 27l8 8 15-16"/>
+                        </svg>
+                        <span class="tick-text">VERIFIED</span>
+                      </div>
+                    </div>
                   </div>
                   <!-- Hidden underlying input to preserve compatibility -->
                   <input type="hidden" id="otp-input" required />
                 </div>
-                <button type="submit" id="verify-otp-btn" class="btn btn-primary" style="margin-top: 1rem;">
-                  <span>Verify & Login</span>
-                </button>
-                <button type="button" id="back-to-phone-btn" class="btn btn-secondary mt-2">
-                  <span>Change Phone Number</span>
-                </button>
+
+                <!-- Compact, sleek Verify & Login button -->
+                <div class="otp-actions-center">
+                  <button type="submit" id="verify-otp-btn" class="btn-verify-compact">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    <span>Verify & Login</span>
+                  </button>
+                </div>
+
+                <div class="otp-footer-minimal">
+                  <button type="button" id="back-to-phone-btn" class="otp-back-link">
+                    <span>Use a different phone number</span>
+                  </button>
+                </div>
               </form>
             </div>
           </section>

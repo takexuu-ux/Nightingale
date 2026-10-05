@@ -3707,6 +3707,24 @@ downloadSlideBtn.addEventListener('click', () => {
 });
 
 // 6-Digit Individual OTP Input Boxes Management
+// 6-Digit Individual OTP Input Boxes Management with Running Glow & Morphing
+let otpMorphTimeout = null;
+
+function resetOtpMorphState() {
+  const container = document.getElementById('otp-boxes-container');
+  const tickEl = document.getElementById('otp-success-tick');
+  if (otpMorphTimeout) {
+    clearTimeout(otpMorphTimeout);
+    otpMorphTimeout = null;
+  }
+  if (container) {
+    container.classList.remove('running-glow', 'combined', 'verified', 'error-shake');
+  }
+  if (tickEl) {
+    tickEl.classList.add('hide');
+  }
+}
+
 function initOtpBoxes() {
   const boxes = Array.from(document.querySelectorAll('.otp-box'));
   const hiddenOtp = document.getElementById('otp-input');
@@ -3719,6 +3737,8 @@ function initOtpBoxes() {
   }
 
   boxes.forEach((box, index) => {
+    box.style.setProperty('--i', index);
+
     box.addEventListener('input', () => {
       const val = box.value.replace(/\D/g, '');
       box.value = val ? val[val.length - 1] : '';
@@ -3734,8 +3754,25 @@ function initOtpBoxes() {
 
       const fullOtp = syncOtpValue();
       if (fullOtp.length === 6) {
+        // 1. Trigger running glow animation across all 6 box borders
+        const container = document.getElementById('otp-boxes-container');
+        if (container) {
+          container.classList.remove('combined', 'verified', 'error-shake');
+          container.classList.add('running-glow');
+
+          // 2. After running glow wave completes (~450ms), combine them into one unified box!
+          if (otpMorphTimeout) clearTimeout(otpMorphTimeout);
+          otpMorphTimeout = setTimeout(() => {
+            container.classList.remove('running-glow');
+            container.classList.add('combined');
+          }, 450);
+        }
+
         const verifyBtn = document.getElementById('verify-otp-btn');
         if (verifyBtn) verifyBtn.focus();
+      } else {
+        // If user deleted a digit or has < 6 digits, separate back into 6 boxes immediately
+        resetOtpMorphState();
       }
     });
 
@@ -3746,10 +3783,12 @@ function initOtpBoxes() {
           boxes[index - 1].value = '';
           boxes[index - 1].classList.remove('filled');
           syncOtpValue();
+          resetOtpMorphState();
         } else {
           box.value = '';
           box.classList.remove('filled');
           syncOtpValue();
+          resetOtpMorphState();
         }
       } else if (e.key === 'ArrowLeft' && index > 0) {
         boxes[index - 1].focus();
@@ -3771,13 +3810,24 @@ function initOtpBoxes() {
         }
       });
 
-      syncOtpValue();
+      const fullOtp = syncOtpValue();
       const targetIdx = Math.min(digits.length, boxes.length - 1);
       boxes[targetIdx].focus();
 
       if (digits.length === 6) {
+        const container = document.getElementById('otp-boxes-container');
+        if (container) {
+          container.classList.remove('combined', 'verified', 'error-shake');
+          container.classList.add('running-glow');
+
+          if (otpMorphTimeout) clearTimeout(otpMorphTimeout);
+          otpMorphTimeout = setTimeout(() => {
+            container.classList.remove('running-glow');
+            container.classList.add('combined');
+          }, 450);
+        }
         const verifyBtn = document.getElementById('verify-otp-btn');
-        if (verifyBtn) verifyBtn.click();
+        if (verifyBtn) verifyBtn.focus();
       }
     });
 
@@ -3788,10 +3838,12 @@ function initOtpBoxes() {
 }
 
 function clearOtpBoxes() {
+  resetOtpMorphState();
   const boxes = document.querySelectorAll('.otp-box');
-  boxes.forEach(b => {
+  boxes.forEach((b, idx) => {
     b.value = '';
     b.classList.remove('filled');
+    b.style.setProperty('--i', idx);
   });
   const hiddenOtp = document.getElementById('otp-input');
   if (hiddenOtp) hiddenOtp.value = '';
@@ -3839,13 +3891,18 @@ phoneForm.addEventListener('submit', async (e) => {
     // Save token and transition UI
     flowToken = data.token || data.data?.token || '';
     if (!flowToken) {
-      // In some backends, they don't return a token but directly validate via phone
       flowToken = 'DIRECT_VALIDATION';
     }
     sessionStorage.setItem('nnl_flow_token', flowToken);
 
     localStorage.setItem('nnl_temp_phone', phone);
-    showAlert('OTP sent successfully!', 'success');
+
+    // Update minimal phone display in the OTP sent bar
+    const phoneDisplay = document.getElementById('otp-phone-display');
+    if (phoneDisplay) {
+      phoneDisplay.textContent = `+91 ${phone.slice(0, 3)}****${phone.slice(7)}`;
+    }
+
     phoneStep.classList.add('hide');
     otpStep.classList.remove('hide');
     clearOtpBoxes();
@@ -3916,8 +3973,19 @@ otpForm.addEventListener('submit', async (e) => {
     localStorage.setItem('nnl_phone', phone);
     sessionStorage.removeItem('nnl_explicit_logout');
 
-    showAlert('Logged in successfully!', 'success');
-    
+    // Show satisfying green tick inside the unified box!
+    const container = document.getElementById('otp-boxes-container');
+    const tickEl = document.getElementById('otp-success-tick');
+    if (container) {
+      container.classList.add('combined', 'verified');
+    }
+    if (tickEl) {
+      tickEl.classList.remove('hide');
+    }
+
+    // Brief delay to display the smooth green tick animation
+    await new Promise(r => setTimeout(r, 650));
+
     // Clear inputs and transition
     clearOtpBoxes();
     phoneInput.value = '';
@@ -3928,6 +3996,16 @@ otpForm.addEventListener('submit', async (e) => {
 
   } catch (error) {
     console.error('Verify OTP Error:', error);
+    const container = document.getElementById('otp-boxes-container');
+    if (container) {
+      container.classList.add('error-shake');
+      setTimeout(() => {
+        container.classList.remove('error-shake', 'combined');
+        clearOtpBoxes();
+        const firstBox = document.querySelector('.otp-box');
+        if (firstBox) firstBox.focus();
+      }, 550);
+    }
     showAlert(error.message || 'OTP verification failed. Please try again.');
   } finally {
     verifyBtn.disabled = false;
@@ -3935,14 +4013,29 @@ otpForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Back button handler
-document.getElementById('back-to-phone-btn').addEventListener('click', () => {
-  clearAlert();
-  clearOtpBoxes();
-  otpStep.classList.add('hide');
-  phoneStep.classList.remove('hide');
-  phoneInput.focus();
-});
+// Edit phone button handler (minimal bar link)
+const editPhoneBtn = document.getElementById('otp-edit-phone-btn');
+if (editPhoneBtn) {
+  editPhoneBtn.addEventListener('click', () => {
+    clearAlert();
+    clearOtpBoxes();
+    otpStep.classList.add('hide');
+    phoneStep.classList.remove('hide');
+    phoneInput.focus();
+  });
+}
+
+// Back button handler (footer link)
+const backToPhoneBtn = document.getElementById('back-to-phone-btn');
+if (backToPhoneBtn) {
+  backToPhoneBtn.addEventListener('click', () => {
+    clearAlert();
+    clearOtpBoxes();
+    otpStep.classList.add('hide');
+    phoneStep.classList.remove('hide');
+    phoneInput.focus();
+  });
+}
 
 
 // Silent token refresh — call /api/auth/token/refresh/ with the stored refresh token.
