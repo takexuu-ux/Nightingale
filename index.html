@@ -153,24 +153,22 @@
 
             <!-- Step 2: Input OTP (Hidden by default) -->
             <div id="otp-step" class="hide">
-              <!-- Minimal OTP Sent Badge -->
-              <div class="otp-sent-minimal-bar">
-                <div class="otp-sent-info">
-                  <span class="otp-sent-dot"></span>
-                  <span class="otp-sent-label">OTP sent to</span>
-                  <span class="otp-sent-phone" id="otp-phone-display">+91 ••••• •••••</span>
-                </div>
-                <button type="button" id="otp-edit-phone-btn" class="otp-edit-phone-link" title="Change phone number">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                  </svg>
-                  <span>Edit</span>
-                </button>
+              <!-- Normal State Header -->
+              <div id="otp-header-normal" class="otp-header-area">
+                <h3 class="otp-step-title">Enter Verification Code</h3>
+                <p class="otp-step-subtitle" id="otp-sent-subtext">Enter the 6-digit code sent to your mobile number.</p>
+              </div>
+
+              <!-- Verified State Header (Screenshot 5) -->
+              <div id="otp-header-verified" class="otp-header-area hide">
+                <h3 class="otp-step-title" style="color: #ffffff; font-size: 1.45rem;">Verified successfully</h3>
+                <p class="otp-step-subtitle" style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">Your phone number has been verified.</p>
               </div>
 
               <form id="otp-form">
-                <div class="form-group" style="position: relative; margin-bottom: 1.25rem;">
-                  <div class="otp-morph-wrapper">
+                <div class="form-group" style="position: relative; margin: 1.5rem 0 1.25rem;">
+                  <div class="otp-stage-container">
+                    <!-- The 6 OTP Boxes with running laser border glow -->
                     <div id="otp-boxes-container" class="otp-boxes-container">
                       <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="0" autocomplete="one-time-code" style="--i:0;" />
                       <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="1" style="--i:1;" />
@@ -178,15 +176,13 @@
                       <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="3" style="--i:3;" />
                       <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="4" style="--i:4;" />
                       <input type="text" class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" data-idx="5" style="--i:5;" />
+                    </div>
 
-                      <!-- Animated Green Tick Overlay (Revealed upon successful verification) -->
-                      <div id="otp-success-tick" class="otp-success-tick hide">
-                        <svg class="tick-svg" viewBox="0 0 52 52">
-                          <circle class="tick-circle" cx="26" cy="26" r="22" fill="none"/>
-                          <path class="tick-check" fill="none" d="M15 27l8 8 15-16"/>
-                        </svg>
-                        <span class="tick-text">VERIFIED</span>
-                      </div>
+                    <!-- Single Merged Box with Green Tick (Screenshot 5) -->
+                    <div id="otp-single-box" class="otp-single-box hide">
+                      <svg class="single-box-tick-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
                     </div>
                   </div>
                   <!-- Hidden underlying input to preserve compatibility -->
@@ -194,20 +190,18 @@
                 </div>
 
                 <!-- Compact, sleek Verify & Login button -->
-                <div class="otp-actions-center">
+                <div id="otp-actions-container" class="otp-actions-center">
                   <button type="submit" id="verify-otp-btn" class="btn-verify-compact">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                      <path d="M9 12l2 2 4-4"/>
-                    </svg>
                     <span>Verify & Login</span>
                   </button>
                 </div>
 
-                <div class="otp-footer-minimal">
-                  <button type="button" id="back-to-phone-btn" class="otp-back-link">
-                    <span>Use a different phone number</span>
-                  </button>
+                <!-- Resend & Change Phone row matching screenshots -->
+                <div class="otp-resend-row">
+                  <span>Didn't receive the code?</span>
+                  <button type="button" id="resend-otp-btn" class="resend-link-btn">Resend</button>
+                  <span class="resend-sep">•</span>
+                  <button type="button" id="back-to-phone-btn" class="resend-link-btn text-muted">Change number</button>
                 </div>
               </form>
             </div>

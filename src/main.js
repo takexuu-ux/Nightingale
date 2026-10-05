@@ -3708,20 +3708,33 @@ downloadSlideBtn.addEventListener('click', () => {
 
 // 6-Digit Individual OTP Input Boxes Management
 // 6-Digit Individual OTP Input Boxes Management with Running Glow & Morphing
-let otpMorphTimeout = null;
+let otpGlowTimeout = null;
 
 function resetOtpMorphState() {
   const container = document.getElementById('otp-boxes-container');
-  const tickEl = document.getElementById('otp-success-tick');
-  if (otpMorphTimeout) {
-    clearTimeout(otpMorphTimeout);
-    otpMorphTimeout = null;
+  const singleBox = document.getElementById('otp-single-box');
+  const headerNormal = document.getElementById('otp-header-normal');
+  const headerVerified = document.getElementById('otp-header-verified');
+  const actionsContainer = document.getElementById('otp-actions-container');
+
+  if (otpGlowTimeout) {
+    clearTimeout(otpGlowTimeout);
+    otpGlowTimeout = null;
   }
   if (container) {
-    container.classList.remove('running-glow', 'combined', 'verified', 'error-shake');
+    container.classList.remove('running-glow', 'error-shake', 'hide');
   }
-  if (tickEl) {
-    tickEl.classList.add('hide');
+  if (singleBox) {
+    singleBox.classList.add('hide');
+  }
+  if (headerNormal) {
+    headerNormal.classList.remove('hide');
+  }
+  if (headerVerified) {
+    headerVerified.classList.add('hide');
+  }
+  if (actionsContainer) {
+    actionsContainer.classList.remove('hide');
   }
 }
 
@@ -3754,25 +3767,19 @@ function initOtpBoxes() {
 
       const fullOtp = syncOtpValue();
       if (fullOtp.length === 6) {
-        // 1. Trigger running glow animation across all 6 box borders
+        // Trigger running laser glow sweep across all 6 box borders
         const container = document.getElementById('otp-boxes-container');
         if (container) {
-          container.classList.remove('combined', 'verified', 'error-shake');
+          container.classList.remove('running-glow', 'error-shake');
+          void container.offsetWidth; // force re-flow
           container.classList.add('running-glow');
-
-          // 2. After running glow wave completes (~450ms), combine them into one unified box!
-          if (otpMorphTimeout) clearTimeout(otpMorphTimeout);
-          otpMorphTimeout = setTimeout(() => {
-            container.classList.remove('running-glow');
-            container.classList.add('combined');
-          }, 450);
         }
 
         const verifyBtn = document.getElementById('verify-otp-btn');
         if (verifyBtn) verifyBtn.focus();
       } else {
-        // If user deleted a digit or has < 6 digits, separate back into 6 boxes immediately
-        resetOtpMorphState();
+        const container = document.getElementById('otp-boxes-container');
+        if (container) container.classList.remove('running-glow');
       }
     });
 
@@ -3783,13 +3790,13 @@ function initOtpBoxes() {
           boxes[index - 1].value = '';
           boxes[index - 1].classList.remove('filled');
           syncOtpValue();
-          resetOtpMorphState();
         } else {
           box.value = '';
           box.classList.remove('filled');
           syncOtpValue();
-          resetOtpMorphState();
         }
+        const container = document.getElementById('otp-boxes-container');
+        if (container) container.classList.remove('running-glow');
       } else if (e.key === 'ArrowLeft' && index > 0) {
         boxes[index - 1].focus();
       } else if (e.key === 'ArrowRight' && index < boxes.length - 1) {
@@ -3817,14 +3824,9 @@ function initOtpBoxes() {
       if (digits.length === 6) {
         const container = document.getElementById('otp-boxes-container');
         if (container) {
-          container.classList.remove('combined', 'verified', 'error-shake');
+          container.classList.remove('running-glow', 'error-shake');
+          void container.offsetWidth;
           container.classList.add('running-glow');
-
-          if (otpMorphTimeout) clearTimeout(otpMorphTimeout);
-          otpMorphTimeout = setTimeout(() => {
-            container.classList.remove('running-glow');
-            container.classList.add('combined');
-          }, 450);
         }
         const verifyBtn = document.getElementById('verify-otp-btn');
         if (verifyBtn) verifyBtn.focus();
@@ -3897,12 +3899,6 @@ phoneForm.addEventListener('submit', async (e) => {
 
     localStorage.setItem('nnl_temp_phone', phone);
 
-    // Update minimal phone display in the OTP sent bar
-    const phoneDisplay = document.getElementById('otp-phone-display');
-    if (phoneDisplay) {
-      phoneDisplay.textContent = `+91 ${phone.slice(0, 3)}****${phone.slice(7)}`;
-    }
-
     phoneStep.classList.add('hide');
     otpStep.classList.remove('hide');
     clearOtpBoxes();
@@ -3973,18 +3969,21 @@ otpForm.addEventListener('submit', async (e) => {
     localStorage.setItem('nnl_phone', phone);
     sessionStorage.removeItem('nnl_explicit_logout');
 
-    // Show satisfying green tick inside the unified box!
+    // Screenshot 5 Match: Collapse the 6 boxes into ONE SINGLE CENTERED BOX with emerald green border and checkmark!
     const container = document.getElementById('otp-boxes-container');
-    const tickEl = document.getElementById('otp-success-tick');
-    if (container) {
-      container.classList.add('combined', 'verified');
-    }
-    if (tickEl) {
-      tickEl.classList.remove('hide');
-    }
+    const singleBox = document.getElementById('otp-single-box');
+    const headerNormal = document.getElementById('otp-header-normal');
+    const headerVerified = document.getElementById('otp-header-verified');
+    const actionsContainer = document.getElementById('otp-actions-container');
 
-    // Brief delay to display the smooth green tick animation
-    await new Promise(r => setTimeout(r, 650));
+    if (container) container.classList.add('hide');
+    if (actionsContainer) actionsContainer.classList.add('hide');
+    if (headerNormal) headerNormal.classList.add('hide');
+    if (headerVerified) headerVerified.classList.remove('hide');
+    if (singleBox) singleBox.classList.remove('hide');
+
+    // Hold verified success state for 700ms so user experiences the crisp green tick animation
+    await new Promise(r => setTimeout(r, 700));
 
     // Clear inputs and transition
     clearOtpBoxes();
@@ -4000,7 +3999,7 @@ otpForm.addEventListener('submit', async (e) => {
     if (container) {
       container.classList.add('error-shake');
       setTimeout(() => {
-        container.classList.remove('error-shake', 'combined');
+        container.classList.remove('error-shake');
         clearOtpBoxes();
         const firstBox = document.querySelector('.otp-box');
         if (firstBox) firstBox.focus();
@@ -4013,19 +4012,46 @@ otpForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Edit phone button handler (minimal bar link)
-const editPhoneBtn = document.getElementById('otp-edit-phone-btn');
-if (editPhoneBtn) {
-  editPhoneBtn.addEventListener('click', () => {
+// Resend OTP button handler
+const resendOtpBtn = document.getElementById('resend-otp-btn');
+if (resendOtpBtn) {
+  resendOtpBtn.addEventListener('click', async () => {
+    const phone = localStorage.getItem('nnl_temp_phone') || phoneInput.value.trim();
+    if (!phone) {
+      showAlert('No phone number found to resend OTP.');
+      return;
+    }
     clearAlert();
-    clearOtpBoxes();
-    otpStep.classList.add('hide');
-    phoneStep.classList.remove('hide');
-    phoneInput.focus();
+    const originalText = resendOtpBtn.textContent;
+    resendOtpBtn.textContent = 'Sending...';
+    resendOtpBtn.disabled = true;
+
+    try {
+      const response = await fetch(`${API_BASE}/auth/v2/login/otp/send/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ isdCode: 91, mobile: phone, send_on: 1 })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(extractErrorMessage(data, 'Could not resend OTP.'));
+      }
+      flowToken = data.token || data.data?.token || '';
+      if (flowToken) sessionStorage.setItem('nnl_flow_token', flowToken);
+      showAlert('OTP resent successfully!', 'success');
+      clearOtpBoxes();
+      const firstBox = document.querySelector('.otp-box');
+      if (firstBox) firstBox.focus();
+    } catch (err) {
+      showAlert(err.message || 'Failed to resend OTP.');
+    } finally {
+      resendOtpBtn.textContent = originalText;
+      resendOtpBtn.disabled = false;
+    }
   });
 }
 
-// Back button handler (footer link)
+// Back to phone / Change number handler
 const backToPhoneBtn = document.getElementById('back-to-phone-btn');
 if (backToPhoneBtn) {
   backToPhoneBtn.addEventListener('click', () => {
