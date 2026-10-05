@@ -7,16 +7,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node dependencies & build artifacts
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment & credentials
+.env
+.env.*
+!.env.example
+
+# Scratch and internal dumps
+scratch/
+
+# Mobile packages & binaries
+*.apk
+*.aab
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj

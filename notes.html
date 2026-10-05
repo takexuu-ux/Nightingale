@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Nightingale Study Notes & PDFs — Minimal, high-speed medical academic repository." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>Nightingale — Notes &amp; PDFs</title>
+  </head>
+  <body>
+    <!-- Battlefield Background -->
+    <div id="nightingale-bg-container" class="nightingale-bg-container">
+      <div class="bg-drift-wrapper">
+        <img src="/nightingale.png?v=1790910745157" class="nightingale-bg-image" alt="" fetchpriority="high" decoding="async" draggable="false" oncontextmenu="return false;">
+      </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header id="app-header" class="app-header">
+      <div id="header-logo" class="header-logo" style="cursor: pointer;" onclick="window.location.href='/'">
+        <span class="logo-text">NIGHTINGALE</span>
+      </div>
+
+      <!-- Primary Top Navigation Tabs -->
+      <nav class="header-nav-tabs">
+        <div class="nav-tabs" style="margin: 0 !important;">
+          <button id="tab-live" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+            </svg>
+            <span>LIVE CLASSES</span>
+          </button>
+          
+          <button id="tab-notes" class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>NOTES &amp; PDFs</span>
+          </button>
+          
+          <button id="tab-tests" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span>PRACTICE TESTS</span>
+          </button>
+
+        </div>
+
+        <!-- Separate Standalone Refresh Button -->
+        <button id="notes-refetch-btn" class="nav-tab-refresh-btn" title="Refresh Notes Library">
+          <svg class="refresh-gyro-icon" viewBox="0 0 24 24" fill="none">
+            <circle class="gyro-core" cx="12" cy="12" r="1.3" fill="currentColor" />
+            <path class="gyro-arc-1" d="M12 4a8 8 0 0 1 8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+            <path class="gyro-arc-2" d="M12 20a8 8 0 0 1-8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions (Batch Selector) -->
+      <div class="header-right-actions">
+        <div class="batch-dropdown-container">
+          <button id="header-batch-btn" class="nav-btn">
+            <span id="current-batch-label">Red Sapphire (Hinglish)</span>
+            <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-left: 5px; display: inline-block; vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+          </button>
+          <div id="header-batch-dropdown" class="header-batch-dropdown hide">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Academic Notes Application -->
+    <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
+      <div class="notes-page-container">
+
+        <!-- Hero Header -->
+        <section class="notes-hero-header">
+          <div>
+            <div class="notes-hero-badge">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+              <span>ACADEMIC REPOSITORY</span>
+            </div>
+            <h1 class="notes-hero-title">Study Notes &amp; PDFs</h1>
+            <p class="notes-hero-subtitle">High-yield faculty handouts, day-wise class notes, clinical summaries, and revision guides.</p>
+          </div>
+
+          <div class="notes-hero-stats">
+            <div class="notes-stat-pill">
+              <strong id="stat-subjects-count">—</strong>
+              <span>Subjects</span>
+            </div>
+            <div class="notes-stat-pill">
+              <strong id="stat-notes-count">—</strong>
+              <span>PDFs Ready</span>
+            </div>
+            <div class="notes-stat-pill accent-pill">
+              <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Fast Controls Bar: Real-time Search + Quick Category Filters -->
+        <section class="notes-controls-bar">
+          <div class="notes-search-wrapper">
+            <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <input 
+              type="text" 
+              id="notes-search-input" 
+              class="notes-search-input" 
+              placeholder="Search notes, subjects, or topics (e.g. Pharmacology, ECG, Cardiac)..." 
+              autocomplete="off" 
+            />
+            <button id="notes-search-clear" class="notes-search-clear" title="Clear Search">✕</button>
+          </div>
+
+          <div class="notes-filter-chips">
+            <button class="filter-chip active" data-filter="all">All Documents</button>
+            <button class="filter-chip" data-filter="daywise">Day-Wise</button>
+            <button class="filter-chip" data-filter="highyield">High-Yield</button>
+            <button class="filter-chip" data-filter="slides">Slides</button>
+          </div>
+        </section>
+
+        <!-- VIEW 1: All Subjects Catalog Grid -->
+        <section id="notes-catalog-view" class="notes-catalog-view">
+          <div id="subjects-grid" class="notes-subject-grid">
+            <div class="cp-loading" style="grid-column: 1 / -1; padding: 5rem 2rem; text-align: center;">
+              <div class="spinner"></div>
+              <p style="color: var(--text-secondary); margin-top: 1rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Loading Academic Repository...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: Dedicated Subject Drill-down View (Hidden by default) -->
+        <section id="notes-subject-view" class="notes-subject-view hide">
+          <div class="notes-back-nav">
+            <button id="btn-back-subjects" class="btn-notes-back">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+              <span>Back to All Subjects</span>
+            </button>
+            <span id="subject-top-batch-label" style="font-size:0.75rem;font-family:var(--font-display);color:var(--accent-red);letter-spacing:0.05em;text-transform:uppercase;"></span>
+          </div>
+
+          <div class="notes-detail-header-card">
+            <div class="notes-detail-title-group">
+              <div style="font-family: var(--font-display); font-size: 0.65rem; color: var(--accent-red); letter-spacing: 0.15em; font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem;">// SUBJECT STUDY MATERIAL</div>
+              <h2 id="subject-detail-title">Subject Title</h2>
+              <div class="notes-detail-meta">
+                <span id="subject-detail-count" class="notes-detail-pill pill-count">0 PDFs</span>
+                <span id="subject-detail-batch" class="notes-detail-pill">Red Sapphire Batch (Hinglish)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document List Container -->
+          <div id="notes-doc-list" class="notes-doc-list">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- In-App Minimal PDF Reader Modal -->
+    <div id="pdf-modal" class="pdf-modal-overlay hide">
+      <div class="pdf-modal-container">
+        <div class="pdf-modal-header">
+          <div class="pdf-modal-title" id="pdf-modal-title">Document Preview</div>
+          <div class="pdf-modal-actions">
+            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              <span>Open in New Tab</span>
+            </a>
+            <button id="pdf-modal-close-btn" class="btn-note-view" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #fff;">
+              <span>Close (ESC)</span>
+            </button>
+          </div>
+        </div>
+        <div class="pdf-modal-body">
+          <iframe id="pdf-modal-iframe" class="pdf-iframe" src="" title="PDF Viewer"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Settings Widget at Bottom Right -->
+    <div class="cyber-tweaks-widget">
+      <div class="tweaks-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 0.45rem; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-red);">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0Z"/></svg>
+          <span>PORTAL SETTINGS</span>
+        </span>
+        <div class="tweaks-pulse"></div>
+      </div>
+      <div class="tweaks-body" style="padding: 0.85rem; display: flex; flex-direction: column; gap: 0.85rem;">
+        <div class="tweak-item" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="font-size: 0.68rem; margin: 0;">ACCENT THEME</label>
+          <div class="color-options" style="margin: 0;">
+            <span class="color-dot color-pink active" data-color="pink" title="Crimson Red"></span>
+            <span class="color-dot color-cyan" data-color="cyan" title="Neon Cyan"></span>
+            <span class="color-dot color-amber" data-color="amber" title="Amber Glow"></span>
+            <span class="color-dot color-emerald" data-color="emerald" title="Emerald Light"></span>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: rgba(255, 255, 255, 0.08); width: 100%;"></div>
+
+        <!-- Dedicated Logout Button at Bottom Right Settings -->
+        <button id="logout-btn" class="settings-logout-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12H9m9 0l-3-3m3 3l-3 3"/></svg>
+          <span>LOGOUT</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating toggle button for Settings at bottom right -->
+    <button id="tweak-panel-toggle-btn" class="tweak-panel-toggle-btn" title="Settings & Logout">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+    </button>
+
+    <!-- Script Entrypoint -->
+    <script type="module" src="/src/notes.js"></script>
+  </body>
+</html>

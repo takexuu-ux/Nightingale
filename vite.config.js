@@ -23,16 +23,13 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './index.html',
-        allVideos: './all-videos.html'
+        allVideos: './all-videos.html',
+        notes: './notes.html'
       }
     }
   },
   server: {
     port: 5173,
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'credentialless',
-    },
     proxy: {
       '/api': {
         target: 'https://prod-api.nnlone.com',

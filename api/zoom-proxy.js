@@ -26,8 +26,9 @@ export default function handler(req, res) {
   // This preserves browser cookies (which Vercel configuration rewrites strip) so Captcha sessions match.
   const isVercel = process.env.VERCEL === '1';
   if (isVercel) {
-    console.log(`[Vercel Tunnel] Forwarding request to Render: ${req.url}`);
-    const renderTarget = `https://nightingale-9n2c.onrender.com${req.url}`;
+    const renderProxyBase = (process.env.RENDER_PROXY_URL || 'https://nightingale-9n2c.onrender.com').replace(/\/+$/, '');
+    console.log(`[Vercel Tunnel] Forwarding request to Render proxy: ${req.url}`);
+    const renderTarget = `${renderProxyBase}${req.url}`;
     
     const headers = { ...req.headers };
     delete headers['host']; // Let Node generate the correct host header for Render's SSL cert

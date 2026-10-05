@@ -1,131 +1,51 @@
 // Nightingale Recorded Lectures Library Logic
+// Architected for production-grade reliability, strict hierarchy matching, dedicated Subject Pages, and VdoCipher playback
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : 'https://prod-api.nnlone.com';
+const API_BASE = '/api';
 
-// Fetch with 10-second timeout — prevents infinite spinner
-function fetchWithTimeout(url, options = {}, ms = 10000) {
+// Allowed Sapphire Batches (Strictly Hinglish Only)
+const ALLOWED_SAPPHIRE_BATCHES = [
+  'Red Sapphire Batch (Hinglish)',
+  'Blue Sapphire Batch (Hinglish)'
+];
+
+// Fetch with timeout helper — prevents stalled network requests
+function fetchWithTimeout(url, options = {}, ms = 12000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
-const MOCK_RECORDINGS = [
-  {
-    id: 'rec-pharma-1',
-    title: 'Pharmacology Day 1: Anti-Hypertensive Drugs & Cardiac Assessment',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Pharmacology',
-    date: '2026-06-05',
-    duration: '2h 15m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-  },
-  {
-    id: 'rec-pharma-2',
-    title: 'Pharmacology Day 2: Diuretics & Renin-Angiotensin System',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Pharmacology',
-    date: '2026-06-06',
-    duration: '1h 50m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
-  },
-  {
-    id: 'rec-cardio-1',
-    title: 'Cardiology Day 1: ECG Interpretation Fundamentals',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Cardiology',
-    date: '2026-06-04',
-    duration: '2h 30m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
-  },
-  {
-    id: 'rec-anatomy-1',
-    title: 'Anatomy Day 1: Cardiovascular System Structure & Chambers',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Anatomy & Physiology',
-    date: '2026-06-01',
-    duration: '2h 10m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4'
-  },
-  {
-    id: 'rec-anatomy-2',
-    title: 'Anatomy Day 2: Nervous System & Cranial Nerve Pathways',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Anatomy & Physiology',
-    date: '2026-06-02',
-    duration: '1h 55m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
-  },
-  // C+ Batch Mock Recorded Lectures
-  {
-    id: 'rec-cplus-medsurg-1',
-    title: 'Medical-Surgical Day 1: Fluid & Electrolyte Balance & IV Therapy',
-    instructor: 'Prof. Priyanka Bansal',
-    batch: 'C+ Batch',
-    subject: 'Medical-Surgical Nursing',
-    date: '2026-07-01',
-    duration: '2h 45m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-  },
-  {
-    id: 'rec-cplus-medsurg-2',
-    title: 'Medical-Surgical Day 2: Acid-Base Balance & ABG Interpretation',
-    instructor: 'Prof. Priyanka Bansal',
-    batch: 'C+ Batch',
-    subject: 'Medical-Surgical Nursing',
-    date: '2026-07-02',
-    duration: '2h 20m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
-  },
-  {
-    id: 'rec-cplus-obg-1',
-    title: 'OBG Day 1: Antenatal Assessment & Fetal Circulation',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'C+ Batch',
-    subject: 'Obstetrics & Gynecology',
-    date: '2026-07-03',
-    duration: '2h 10m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-  },
-  {
-    id: 'rec-cplus-obg-2',
-    title: 'OBG Day 2: Stages of Labor & Obstetric Emergencies',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'C+ Batch',
-    subject: 'Obstetrics & Gynecology',
-    date: '2026-07-04',
-    duration: '2h 35m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
-  },
-  {
-    id: 'rec-cplus-peds-1',
-    title: 'Pediatric Day 1: Growth & Development Milestones',
-    instructor: 'Prof. Priyanka Bansal',
-    batch: 'C+ Batch',
-    subject: 'Pediatric Nursing',
-    date: '2026-07-05',
-    duration: '1h 45m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
-  },
-  {
-    id: 'rec-cplus-pharma-1',
-    title: 'Pharmacology Day 1: Antimicrobials & Drug Calculations',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'C+ Batch',
-    subject: 'Pharmacology',
-    date: '2026-07-06',
-    duration: '2h 15m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-  }
-];
+let activeBatch = localStorage.getItem('nnl_active_batch');
+if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
+  activeBatch = 'Red Sapphire Batch (Hinglish)';
+  localStorage.setItem('nnl_active_batch', activeBatch);
+}
 
 let currentRecordings = [];
-let currentRawVideos = [];
+let cachedSubjectResults = [];
+let currentlyOpenSubject = null;
+
 const classListContainer = document.getElementById('class-list-container');
+const subjectsCatalogView = document.getElementById('subjects-catalog-view');
+const subjectDetailView = document.getElementById('subject-detail-view');
+const subjectLecturesContainer = document.getElementById('subject-lectures-container');
+
+function getPlanIdForBatch(batchName) {
+  const name = (batchName || activeBatch || '').toUpperCase();
+  if (name.includes('RED')) {
+    return 77; // Plan MLB Pro Red Sapphire Batch(Hinglish)
+  }
+  return 40; // Plan MLB Pro Blue Sapphire Batch (Hinglish)
+}
+
+function getBatchIdForBatch(batchName) {
+  const name = (batchName || activeBatch || '').toUpperCase();
+  if (name.includes('RED')) {
+    return 103; // Red Sapphire Batch (Hing)
+  }
+  return 8; // Pearl Batch (Hinglish) & Blue Sapphire (NORCET 11.0)
+}
 
 function findVideoUrl(obj) {
   if (!obj) return '';
@@ -146,212 +66,8 @@ function findVideoUrl(obj) {
   return '';
 }
 
-function getSimplifiedBatchTitle(title) {
-  if (!title) return '';
-  const tUpper = title.toUpperCase();
-  if (tUpper.includes('RED') && tUpper.includes('SAPPHIRE')) return 'Red Sapphire Batch';
-  if (tUpper.includes('C+') || tUpper.includes('C PLUS')) return 'Blue Sapphire Batch';
-  if (tUpper.includes('SAPPHIRE') || tUpper.includes('BLUE')) return 'Blue Sapphire Batch';
-  if (tUpper.includes('PEARL') && tUpper.includes('ENGLISH')) return 'Pearl Batch English';
-  if (tUpper.includes('PEARL')) return 'Pearl Batch';
-  if (tUpper.includes('FASTRACK') || tUpper.includes('FAST TRACK')) return 'Fastrack 10.0 (Live Class)';
-  return title.trim();
-}
-
-function getApiBatchId(batchName) {
-  if (!batchName) return 8;
-  const name = batchName.toUpperCase();
-  if (name.includes('RED') && name.includes('SAPPHIRE')) return 8;
-  if (name.includes('C+') || name.includes('C PLUS')) return 8;
-  if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
-  if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
-  if (name.includes('PEARL')) return 8;
-  if (name.includes('FASTRACK') || name.includes('FAST TRACK')) return 3;
-  return 8;
-}
-
-function initBackgroundParallax() {
-  // Handled by smooth hardware-accelerated CSS keyframe animation
-}
-
-async function loadRecordings() {
-  if (classListContainer) {
-    classListContainer.innerHTML = `
-      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
-        <div class="spinner"></div>
-        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">Loading Recorded Lectures...</p>
-      </div>
-    `;
-  }
-
-  // ── On-screen debug overlay (visible on mobile — no DevTools needed) ──
-  const token = localStorage.getItem('nnl_access_token');
-  const activeBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
-  const batchId = getApiBatchId(activeBatch);
-  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
-
-  const capturedLogs = [];
-  const origLog = console.log;
-  const origWarn = console.warn;
-  console.log = (...args) => { capturedLogs.push('✓ ' + args.join(' ')); origLog(...args); };
-  console.warn = (...args) => { capturedLogs.push('⚠ ' + args.join(' ')); origWarn(...args); };
-
-  let allRecordings = [];
-
-  if (isGuest) {
-    allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
-    capturedLogs.push('ℹ Guest mode — showing mock data');
-  } else {
-    try {
-      capturedLogs.push(`🚀 Starting subject-based query for batch ID: ${batchId}`);
-      
-      // Step 1: Fetch subjects to map IDs to titles and iterate
-      let subjects = [];
-      try {
-        const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        });
-        if (bRes.ok) {
-          const bData = await bRes.json();
-          const list = bData.data || bData.results || [];
-          const found = list.find(b => String(b.id) === String(batchId));
-          if (found && found.subjects) {
-            subjects = found.subjects;
-            capturedLogs.push(`📚 Loaded ${subjects.length} subjects from batch mapping`);
-          }
-        }
-      } catch(e) {
-        capturedLogs.push(`✗ Batch mapping fetch failed: ${e.message}`);
-      }
-
-      if (subjects.length > 0) {
-        const limit = 250;
-        const videoPromises = subjects.map(async (subj) => {
-          // Query directly using correct batch_id and subject_id parameters with page_size=250 override
-          const url = `${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subj.id}&page_size=${limit}`;
-          try {
-            const vRes = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
-            if (!vRes.ok) return [];
-            const vData = await vRes.json();
-            const vList = vData.data || vData.results || (Array.isArray(vData) ? vData : []);
-            if (vList.length > 0 && currentRawVideos.length === 0) {
-              currentRawVideos = vList;
-            }
-            
-            // Client-side safety filter: verify subject ID matches to be absolutely certain
-            const filteredList = vList.filter(v => {
-              if (!v.subject) return true;
-              const vSubjId = v.subject.id || v.subject;
-              return String(vSubjId) === String(subj.id);
-            });
-
-            capturedLogs.push(`🎬 Subject "${subj.title}": ${filteredList.length} videos`);
-            return filteredList.map(v => {
-              const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
-              const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
-              return {
-                id: v.id,
-                title: v.title,
-                instructor: v.faculty?.name || v.instructor || 'Faculty',
-                batch: activeBatch,
-                subject: subj.title,
-                date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
-                duration: `${durHrs}h ${durMins}m`,
-                video_cipher_id: v.video_cipher_id || '',
-                videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || findVideoUrl(v) || ''
-              };
-            });
-          } catch(err) {
-            capturedLogs.push(`✗ Video fetch for "${subj.title}": ${err.message}`);
-            return [];
-          }
-        });
-
-        const results = await Promise.all(videoPromises);
-        allRecordings = results.flat();
-        capturedLogs.push(`✅ TOTAL LECTURES MAPPED: ${allRecordings.length}`);
-      }
-    } catch (e) {
-      capturedLogs.push(`💥 Fatal error: ${e.message}`);
-    }
-  }
-
-  // Restore console
-  console.log = origLog;
-  console.warn = origWarn;
-
-  // Show floating debug button (always visible)
-  const existingBtn = document.getElementById('api-debug-btn');
-  if (existingBtn) existingBtn.remove();
-  const debugBtn = document.createElement('button');
-  debugBtn.id = 'api-debug-btn';
-  debugBtn.textContent = `🔍 API Debug (${allRecordings.length} lectures)`;
-  debugBtn.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:rgba(0,0,0,0.8);color:#00f3d0;border:1px solid rgba(0,243,208,0.4);border-radius:10px;padding:0.5rem 1rem;font-size:0.75rem;font-family:monospace;cursor:pointer;backdrop-filter:blur(8px);';
-  debugBtn.onclick = async () => {
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.95);overflow-y:auto;padding:1.5rem;font-family:monospace;font-size:0.72rem;color:#eee;';
-    overlay.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-        <strong style="color:#00f3d0;font-size:0.9rem;">C+ API Debug Log & Endpoint Scanner</strong>
-        <button onclick="this.closest('div[style]').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;padding:0.4rem 0.8rem;border-radius:8px;cursor:pointer;font-size:0.8rem;">✕ Close</button>
-      </div>
-      <div style="margin-bottom:1rem;padding:0.85rem;background:rgba(0,243,208,0.05);border:1px solid rgba(0,243,208,0.2);border-radius:8px;">
-        <strong style="color:#00f3d0;display:block;margin-bottom:0.5rem;">🔍 Running Endpoint Scan...</strong>
-        <div id="scanner-results" style="line-height:1.6;color:#85ffd6;">Testing video endpoints...</div>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:1rem;line-height:1.8;">
-        ${capturedLogs.map(l => `<div style="border-bottom:1px solid rgba(255,255,255,0.04);padding:0.15rem 0;">${l.replace(/</g,'&lt;')}</div>`).join('')}
-      </div>`;
-    document.body.appendChild(overlay);
-
-    // Run tests
-    const resultsContainer = document.getElementById('scanner-results');
-    const tests = [
-      `/cms/videos/?batch_id=8&subject_id=458`,
-      `/cms/videos/?batch_id=8&subject_id=458&page_size=200`,
-      `/cms/videos/?batch_id=8&subject_id=458&limit=200`,
-      `/cms/videos/?batch_id=8&subject_id=458&page=2`,
-      `/cms/videos/?batch_id=8&subject_id=458&page=1&page_size=200`,
-      `/batch_cms/videos/?batch_id=8&subject_id=458&page_size=200`
-    ];
-
-    let output = '';
-    for (const path of tests) {
-      try {
-        const start = Date.now();
-        const res = await fetchWithTimeout(`${API_BASE}${path}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        });
-        const duration = Date.now() - start;
-        if (res.ok) {
-          const json = await res.json();
-          const items = json.data || json.results || (Array.isArray(json) ? json : []);
-          const total = json.total_count || json.count || items.length;
-          output += `<div>✅ <strong>${path}</strong> → <span style="color:#fff;">${items.length} items on page (total count: ${total})</span> (${duration}ms)</div>`;
-        } else {
-          output += `<div style="color:#ff8080;">✗ <strong>${path}</strong> → HTTP ${res.status} (${duration}ms)</div>`;
-        }
-      } catch (e) {
-        output += `<div style="color:#ff8080;">✗ <strong>${path}</strong> → Error: ${e.message}</div>`;
-      }
-      resultsContainer.innerHTML = output;
-    }
-  };
-  document.body.appendChild(debugBtn);
-
-
-  // Fallback to mock if nothing loaded
-  if (allRecordings.length === 0) {
-    allRecordings = MOCK_RECORDINGS.filter(r => getSimplifiedBatchTitle(r.batch) === getSimplifiedBatchTitle(activeBatch));
-    capturedLogs.push(`ℹ Fell back to ${allRecordings.length} mock lectures`);
-  }
-
-  currentRecordings = allRecordings;
-  renderRecordingsList(allRecordings);
-}
-
 function getLectureNumber(title) {
-  const match = title.match(/(?:Day|Lecture|Class)\s*(\d+)/i);
+  const match = title.match(/(?:Day|Lecture|Class|Part)\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 999;
 }
 
@@ -377,110 +93,414 @@ const SUBJECT_SVG = {
 const DEFAULT_SVG = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>';
 
 function getSubjectSVG(name) {
-  const lower = name.toLowerCase();
+  const lower = (name || '').toLowerCase();
   for (const [key, path] of Object.entries(SUBJECT_SVG)) {
     if (lower.includes(key)) return path;
   }
   return DEFAULT_SVG;
 }
 
-function renderRecordingsList(recordings) {
+function initBatchDropdown() {
+  const batchBtn = document.getElementById('header-batch-btn');
+  const dropdown = document.getElementById('header-batch-dropdown');
+  const label = document.getElementById('current-batch-label');
+  const pageTitle = document.getElementById('page-batch-title');
+
+  if (label) label.textContent = activeBatch;
+  if (pageTitle) pageTitle.textContent = `${activeBatch} Lectures`;
+
+  if (dropdown) {
+    dropdown.innerHTML = ALLOWED_SAPPHIRE_BATCHES.map(b => {
+      const isActive = b === activeBatch;
+      return `<button class="dropdown-item ${isActive ? 'active' : ''}" data-batch="${b}">${b}</button>`;
+    }).join('');
+
+    dropdown.querySelectorAll('.dropdown-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const selected = btn.getAttribute('data-batch');
+        if (selected && selected !== activeBatch) {
+          activeBatch = selected;
+          localStorage.setItem('nnl_active_batch', activeBatch);
+          if (label) label.textContent = activeBatch;
+          if (pageTitle) pageTitle.textContent = `${activeBatch} Lectures`;
+          dropdown.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('active'));
+          btn.classList.add('active');
+          dropdown.classList.add('hide');
+
+          // Return to catalog view and re-load
+          closeSubjectPage();
+          loadRecordings();
+        } else {
+          dropdown.classList.add('hide');
+        }
+      });
+    });
+  }
+
+  if (batchBtn && dropdown) {
+    batchBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('hide');
+    });
+
+    document.addEventListener('click', () => {
+      dropdown.classList.add('hide');
+    });
+  }
+}
+
+async function loadRecordings() {
+  if (classListContainer) {
+    classListContainer.innerHTML = `
+      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
+        <div class="spinner"></div>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">Loading ${activeBatch} Lectures...</p>
+      </div>
+    `;
+  }
+
+  const token = localStorage.getItem('nnl_access_token');
+  if (!token) {
+    if (classListContainer) {
+      classListContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+          <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">Login Required</h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Please log in with your registered NNL ONE mobile number to access your recorded lectures.</p>
+          <a href="/" style="display: inline-block; padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; text-decoration: none; border-radius: 12px; letter-spacing: 0.05em;">Go to Login</a>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
+
+  try {
+    // 1. Resolve active plan ID strictly from active batch
+    const planId = getPlanIdForBatch(activeBatch);
+    const batchId = getBatchIdForBatch(activeBatch);
+
+    console.log(`[Content Engine] Fetching lectures for ${activeBatch} (Plan: ${planId}, Batch: ${batchId})...`);
+
+    // 2. Fetch real subjects for the plan
+    let subjects = [];
+    let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, { headers });
+    if (!subRes.ok) {
+      subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, { headers });
+    }
+    if (subRes.ok) {
+      const sData = await subRes.json();
+      subjects = sData.data || sData.results || [];
+    }
+
+    // Fallback to batch subjects if plan subjects empty
+    if (subjects.length === 0 && batchId) {
+      const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/${batchId}/`, { headers });
+      if (bRes.ok) {
+        const bData = await bRes.json();
+        const bSubjects = bData.subjects || bData.data?.subjects || [];
+        if (bSubjects.length > 0) {
+          subjects = bSubjects;
+        }
+      }
+    }
+
+    if (subjects.length === 0) {
+      classListContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); text-transform: uppercase;">No subjects found for ${activeBatch}.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // 3. Concurrently fetch topics and subtopic videos for each subject
+    const subjectContentPromises = subjects.map(async (subj) => {
+      const subjectVideos = [];
+      try {
+        const topRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/topic/?subject=${subj.id}&page_size=50`, { headers });
+        if (topRes.ok) {
+          const topData = await topRes.json();
+          const topics = topData.data || topData.results || [];
+
+          const subtopicPromises = topics.map(async (top) => {
+            try {
+              const stRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=50`, { headers });
+              if (stRes.ok) {
+                const stData = await stRes.json();
+                const subtopics = stData.data || stData.results || [];
+                subtopics.forEach(st => {
+                  const vid = st.videos || st.video;
+                  if (vid && typeof vid === 'object') {
+                    const durHrs = vid.duration ? Math.floor(vid.duration / 3600) : 0;
+                    const durMins = vid.duration ? Math.floor((vid.duration % 3600) / 60) : 0;
+                    const durStr = durHrs > 0 ? `${durHrs}h ${durMins}m` : `${durMins}m`;
+
+                    subjectVideos.push({
+                      id: vid.id,
+                      title: vid.title || st.title || 'Lecture Video',
+                      instructor: vid.faculty?.name || 'Faculty',
+                      subject: subj.title,
+                      topic: top.title,
+                      duration: durStr,
+                      video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
+                      videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
+                      thumbnails: vid.thumbnails || null,
+                      date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : ''
+                    });
+                  }
+                });
+              }
+            } catch (err) {
+              console.warn(`[Content Engine] Error fetching subtopics for topic ${top.id}:`, err);
+            }
+          });
+
+          await Promise.all(subtopicPromises);
+        }
+      } catch (err) {
+        console.warn(`[Content Engine] Error fetching topics for subject ${subj.id}:`, err);
+      }
+
+      // Sort videos naturally by Day / Lecture number
+      subjectVideos.sort((a, b) => getLectureNumber(a.title) - getLectureNumber(b.title));
+
+      return {
+        subject: subj,
+        videos: subjectVideos
+      };
+    });
+
+    const subjectResults = await Promise.all(subjectContentPromises);
+
+    cachedSubjectResults = subjectResults;
+
+    const populatedRecordings = [];
+    subjectResults.forEach(sr => {
+      populatedRecordings.push(...sr.videos);
+    });
+
+    currentRecordings = populatedRecordings;
+
+    // Render clean subject catalog (Cards that open dedicated subject pages on click!)
+    renderSubjectCatalog(subjectResults);
+
+    // If there is an active hash (e.g. #subject=Anatomy), open that page directly
+    handleHashNavigation();
+
+  } catch (err) {
+    console.error('[Content Engine] Fatal error loading lectures:', err);
+    if (classListContainer) {
+      classListContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 68, 68, 0.2); border-radius: 20px;">
+          <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: #f87171; margin-bottom: 0.5rem;">Failed to Load Lectures</h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">${err.message}</p>
+          <button onclick="window.location.reload()" style="padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: none; border-radius: 12px; cursor: pointer;">Retry</button>
+        </div>
+      `;
+    }
+  }
+}
+
+// ── VIEW 1: Render Subject Catalog Grid ──
+// Strictly renders clean, clickable tiles. Clicking opens the dedicated page without expanding in place!
+function renderSubjectCatalog(subjectResults) {
   if (!classListContainer) return;
   classListContainer.innerHTML = '';
 
-  if (recordings.length === 0) {
+  const totalLectures = currentRecordings.length;
+  const activeSubjects = subjectResults.filter(sr => sr.videos.length > 0);
+
+  // Update header stats
+  const statSubjectsEl = document.getElementById('stat-subjects');
+  const statLecturesEl = document.getElementById('stat-lectures');
+  const statsEl = document.getElementById('cp-stats');
+  if (statSubjectsEl) statSubjectsEl.textContent = activeSubjects.length;
+  if (statLecturesEl) statLecturesEl.textContent = totalLectures;
+  if (statsEl) statsEl.style.display = 'flex';
+
+  if (activeSubjects.length === 0) {
     classListContainer.innerHTML = `
-      <div style="grid-column:1/-1;background:rgba(10,11,16,0.15);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:4rem;text-align:center;">
-        <p style="color:var(--text-secondary);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;margin:0;font-family:var(--font-display);">No recorded lectures available for your subscription.</p>
+      <div style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 4rem; text-align: center;">
+        <p style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; font-family: var(--font-display);">No recorded lectures available for ${activeBatch}.</p>
       </div>
     `;
     return;
   }
 
-  // Group by subject
-  const bySubject = {};
-  recordings.forEach(r => {
-    const s = r.subject || 'General Nursing';
-    if (!bySubject[s]) bySubject[s] = [];
-    bySubject[s].push(r);
-  });
+  activeSubjects.forEach(sr => {
+    const subj = sr.subject;
+    const subjName = subj.title || 'Subject';
+    const count = sr.videos.length;
 
-  const subjectNames = Object.keys(bySubject).sort();
-
-  // Update stats
-  const statSubjectsEl = document.getElementById('stat-subjects');
-  const statLecturesEl = document.getElementById('stat-lectures');
-  const statsEl = document.getElementById('cp-stats');
-  if (statSubjectsEl) statSubjectsEl.textContent = subjectNames.length;
-  if (statLecturesEl) statLecturesEl.textContent = recordings.length;
-  if (statsEl) statsEl.style.display = 'flex';
-
-  subjectNames.forEach(subjectName => {
-    const subjectClasses = bySubject[subjectName];
-    subjectClasses.sort((a, b) => getLectureNumber(a.title) - getLectureNumber(b.title));
-
-    let lecturesHtml = '';
-    subjectClasses.forEach((rec, idx) => {
-      const rowNum = (idx + 1).toString().padStart(2, '0');
-      const hasUrl = !!rec.videoUrl || !!rec.video_cipher_id;
-      lecturesHtml += `
-        <div class="lec-row" data-rec-id="${rec.id}">
-          <span class="lec-num">${rowNum}</span>
-          <div class="lec-info">
-            <div class="lec-title" title="${rec.title}">${rec.title}</div>
-            <div class="lec-meta">
-              <span>${rec.instructor}</span>
-              <span>·</span>
-              <span>${rec.duration}</span>
-            </div>
-          </div>
-          <button class="lec-play ${hasUrl ? '' : 'unavailable'}" data-rec-id="${rec.id}" title="Play">
-            <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </button>
-        </div>
-      `;
-    });
-
-    const card = document.createElement('div');
-    card.className = 'subject-card';
-    card.innerHTML = `
-      <div class="sc-header">
-        <div class="sc-icon">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-            ${getSubjectSVG(subjectName)}
+    const tile = document.createElement('div');
+    tile.className = 'subject-tile';
+    tile.setAttribute('data-subj-id', subj.id);
+    tile.innerHTML = `
+      <div class="st-top">
+        <div class="st-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+            ${getSubjectSVG(subjName)}
           </svg>
         </div>
-        <div class="sc-meta">
-          <div class="sc-name">${subjectName}</div>
-          <div class="sc-count">${subjectClasses.length} lecture${subjectClasses.length !== 1 ? 's' : ''}</div>
+        <div class="st-meta">
+          <div class="st-title" title="${subjName}">${subjName}</div>
+          <div class="st-count">${count} Recorded Lecture${count !== 1 ? 's' : ''}</div>
         </div>
-        <svg class="sc-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-        </svg>
       </div>
-      <div class="lec-list">
-        <div class="lec-list-inner">${lecturesHtml}</div>
+      <div class="st-footer">
+        <span style="color: var(--text-secondary); font-size: 0.7rem;">High-Yield Series</span>
+        <div class="st-footer-action">
+          <span>Open Subject</span>
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </div>
       </div>
     `;
 
-    classListContainer.appendChild(card);
-  });
-
-  // Bind card header toggles — accordion: only one open at a time
-  classListContainer.querySelectorAll('.sc-header').forEach(header => {
-    header.addEventListener('click', () => {
-      const clickedCard = header.closest('.subject-card');
-      const isOpen = clickedCard.classList.contains('open');
-      // Close all cards first
-      classListContainer.querySelectorAll('.subject-card').forEach(c => c.classList.remove('open'));
-      // Toggle clicked one
-      if (!isOpen) clickedCard.classList.add('open');
+    // Clicking tile immediately opens the dedicated Subject Detail Page (NO accordion expansion!)
+    tile.addEventListener('click', () => {
+      openSubjectPage(sr);
     });
+
+    classListContainer.appendChild(tile);
   });
 }
 
+// ── VIEW 2: Dedicated Subject Detail Page View ──
+function openSubjectPage(subjectData) {
+  if (!subjectData) return;
+  currentlyOpenSubject = subjectData;
+
+  const subj = subjectData.subject;
+  const videos = subjectData.videos;
+
+  if (subjectsCatalogView) subjectsCatalogView.classList.add('hide');
+  if (subjectDetailView) subjectDetailView.classList.remove('hide');
+
+  const titleEl = document.getElementById('subject-detail-title');
+  const countEl = document.getElementById('subject-detail-count');
+  const batchEl = document.getElementById('subject-detail-batch');
+  const topBatchEl = document.getElementById('sd-top-batch-label');
+
+  if (titleEl) titleEl.textContent = subj.title;
+  if (countEl) countEl.textContent = `${videos.length} Lectures`;
+  if (batchEl) batchEl.textContent = activeBatch;
+  if (topBatchEl) topBatchEl.textContent = activeBatch;
+
+  // Set URL hash for browser history / back button navigation
+  window.location.hash = `#subject=${encodeURIComponent(subj.title)}`;
+
+  // Render lectures in this subject
+  renderSubjectLecturesList(videos);
+
+  // Setup search input inside subject
+  const searchInput = document.getElementById('subject-lecture-search');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.oninput = () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) {
+        renderSubjectLecturesList(videos);
+      } else {
+        const filtered = videos.filter(v => 
+          (v.title || '').toLowerCase().includes(q) || 
+          (v.topic || '').toLowerCase().includes(q) ||
+          (v.instructor || '').toLowerCase().includes(q)
+        );
+        renderSubjectLecturesList(filtered);
+      }
+    };
+  }
+
+  // Scroll to top smoothly
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderSubjectLecturesList(lectures) {
+  if (!subjectLecturesContainer) return;
+  subjectLecturesContainer.innerHTML = '';
+
+  if (lectures.length === 0) {
+    subjectLecturesContainer.innerHTML = `
+      <div style="background: rgba(10, 13, 24, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 3rem; text-align: center;">
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display);">No lectures matching your search in this subject.</p>
+      </div>
+    `;
+    return;
+  }
+
+  lectures.forEach((rec, idx) => {
+    const rowNum = (idx + 1).toString().padStart(2, '0');
+    const thumb = rec.thumbnails && rec.thumbnails.length > 0 ? (rec.thumbnails[0]?.url || '') : '';
+
+    const card = document.createElement('div');
+    card.className = 'sd-lecture-card';
+    card.setAttribute('data-rec-id', rec.id);
+
+    card.innerHTML = `
+      <span class="sd-lecture-num">${rowNum}</span>
+      ${thumb ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">` : `
+        <div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#00f3d0;">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      `}
+      <div class="sd-lecture-details">
+        <div class="sd-lecture-title" title="${rec.title}">${rec.title}</div>
+        <div class="sd-lecture-meta">
+          <span style="color: #00f3d0; font-weight: 600;">${rec.instructor}</span>
+          ${rec.topic ? `<span>•</span><span>${rec.topic}</span>` : ''}
+          ${rec.duration ? `<span>•</span><span>${rec.duration}</span>` : ''}
+          ${rec.date ? `<span>•</span><span>${rec.date}</span>` : ''}
+        </div>
+      </div>
+      <button class="sd-lecture-btn" data-rec-id="${rec.id}">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span>Play Lecture</span>
+      </button>
+    `;
+
+    card.addEventListener('click', (e) => {
+      openRecordingPlayer(rec);
+    });
+
+    subjectLecturesContainer.appendChild(card);
+  });
+}
+
+function closeSubjectPage() {
+  currentlyOpenSubject = null;
+  if (subjectDetailView) subjectDetailView.classList.add('hide');
+  if (subjectsCatalogView) subjectsCatalogView.classList.remove('hide');
+  if (window.location.hash.startsWith('#subject=')) {
+    history.pushState('', document.title, window.location.pathname + window.location.search);
+  }
+}
+
+function handleHashNavigation() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#subject=')) {
+    const rawTitle = decodeURIComponent(hash.replace('#subject=', ''));
+    const matched = cachedSubjectResults.find(sr => sr.subject.title.toLowerCase() === rawTitle.toLowerCase());
+    if (matched) {
+      openSubjectPage(matched);
+      return;
+    }
+  }
+  closeSubjectPage();
+}
+
+window.addEventListener('hashchange', handleHashNavigation);
+
+// Back to subjects button click listener
+const btnBackToSubjects = document.getElementById('btn-back-to-subjects');
+if (btnBackToSubjects) {
+  btnBackToSubjects.addEventListener('click', () => {
+    closeSubjectPage();
+  });
+}
+
+// ── VdoCipher Video Player Engine ──
 function initRecordingsViewer() {
   const closeViewerBtn = document.getElementById('close-recording-viewer');
   if (closeViewerBtn) {
@@ -488,30 +508,15 @@ function initRecordingsViewer() {
       const viewer = document.getElementById('recording-viewer');
       const videoEl = document.getElementById('recording-video');
       if (viewer) viewer.classList.add('hide');
-      if (videoEl) { videoEl.pause(); videoEl.src = ''; videoEl.classList.remove('hide'); }
+      if (videoEl) { 
+        videoEl.pause(); 
+        videoEl.src = ''; 
+        videoEl.classList.add('hide'); 
+      }
       const oldIframe = document.getElementById('recording-cipher-iframe');
       if (oldIframe) oldIframe.remove();
       const loader = document.getElementById('recording-cipher-loader');
       if (loader) loader.remove();
-    });
-  }
-
-  if (classListContainer) {
-    classListContainer.addEventListener('click', (e) => {
-      const playBtn = e.target.closest('.lec-play');
-      if (playBtn) {
-        e.stopPropagation();
-        const recId = playBtn.getAttribute('data-rec-id');
-        const rec = currentRecordings.find(r => String(r.id) === String(recId));
-        if (rec) openRecordingPlayer(rec);
-        return;
-      }
-      const row = e.target.closest('.lec-row');
-      if (row && !e.target.closest('.lec-play')) {
-        const recId = row.getAttribute('data-rec-id');
-        const rec = currentRecordings.find(r => String(r.id) === String(recId));
-        if (rec) openRecordingPlayer(rec);
-      }
     });
   }
 }
@@ -522,89 +527,113 @@ function openRecordingPlayer(recording) {
   const instructorEl = document.getElementById('recording-viewer-instructor');
   const videoEl = document.getElementById('recording-video');
   const noUrlEl = document.getElementById('recording-no-url');
+  const retryBtn = document.getElementById('recording-retry-btn');
+  const errDesc = document.getElementById('recording-error-desc');
   
   if (!viewer) return;
   
-  if (titleEl) titleEl.textContent = recording.title;
+  if (titleEl) titleEl.textContent = recording.title || 'Recorded Lecture';
   if (instructorEl) instructorEl.textContent = `Instructor: ${recording.instructor || 'Faculty'}`;
   
   viewer.classList.remove('hide');
 
-  // Clean up any existing VdoCipher iframe/loader
+  // Clean up any existing player
   const oldIframe = document.getElementById('recording-cipher-iframe');
   if (oldIframe) oldIframe.remove();
   const oldLoader = document.getElementById('recording-cipher-loader');
   if (oldLoader) oldLoader.remove();
-  if (videoEl) videoEl.classList.remove('hide');
+  if (videoEl) {
+    videoEl.pause();
+    videoEl.src = '';
+    videoEl.classList.add('hide');
+  }
   if (noUrlEl) noUrlEl.classList.add('hide');
   
-  if (recording.video_cipher_id) {
-    if (videoEl) {
-      videoEl.pause();
-      videoEl.src = '';
-      videoEl.classList.add('hide');
-    }
+  // Show spinner
+  const bodyEl = document.querySelector('.recording-viewer-body');
+  const loader = document.createElement('div');
+  loader.id = 'recording-cipher-loader';
+  loader.className = 'full-loader';
+  loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.75rem; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: #00f3d0;">Securing DRM Stream via VdoCipher...</p>';
+  bodyEl.appendChild(loader);
 
-    // Append loading spinner
-    const bodyEl = document.querySelector('.recording-viewer-body');
-    const loader = document.createElement('div');
-    loader.id = 'recording-cipher-loader';
-    loader.className = 'full-loader';
-    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing stream via VdoCipher...</p>';
-    bodyEl.appendChild(loader);
+  const token = localStorage.getItem('nnl_access_token');
+  const authHeaders = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
 
-    const token = localStorage.getItem('nnl_access_token');
-    const tryGetOtp = (url) => {
-      return fetch(url, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-      }).then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      });
-    };
-
-    tryGetOtp(`${API_BASE}/batch_cms/videos/${recording.id}/generate_videocipher_otp/`)
-    .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recording.id}/generate_videocipher_otp/`))
-    .then(data => {
-      if (loader) loader.remove();
-      if (data && data.otp && data.playbackInfo) {
-        const iframe = document.createElement('iframe');
-        iframe.id = 'recording-cipher-iframe';
-        iframe.src = `https://player.vdocipher.com/v2/?otp=${data.otp}&playbackInfo=${data.playbackInfo}`;
-        iframe.style.border = 'none';
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.borderRadius = '12px';
-        iframe.setAttribute('allow', 'encrypted-media');
-        iframe.setAttribute('allowfullscreen', 'true');
-        bodyEl.appendChild(iframe);
-      } else {
-        if (noUrlEl) noUrlEl.classList.remove('hide');
-      }
-    })
-    .catch(err => {
-      console.error('VdoCipher OTP generation failed:', err);
-      if (loader) loader.remove();
-      if (noUrlEl) noUrlEl.classList.remove('hide');
+  const tryGetOtp = (url) => {
+    return fetch(url, { method: 'GET', headers: authHeaders }).then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
     });
+  };
 
-  } else if (recording.videoUrl) {
-    if (videoEl) {
-      videoEl.src = recording.videoUrl;
-      videoEl.classList.remove('hide');
-      videoEl.load();
-      videoEl.play().catch(err => {
-        console.log('Video autoplay failed:', err);
+  const recId = recording.id;
+
+  const launchPlayback = () => {
+    tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_otp/`)
+      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_otp/`))
+      .catch(() => tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_offline/`))
+      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_offline/`))
+      .catch(() => tryGetOtp(`${API_BASE}/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`))
+      .catch(() => tryGetOtp(`${API_BASE}/cms/question_bank/${recId}/generate_videocipher_otp/`))
+      .then(data => {
+        if (loader) loader.remove();
+        if (data && data.otp && data.playbackInfo) {
+          const iframe = document.createElement('iframe');
+          iframe.id = 'recording-cipher-iframe';
+          iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;
+          iframe.style.border = 'none';
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          iframe.style.borderRadius = '12px';
+          iframe.setAttribute('allow', 'encrypted-media *; autoplay *; fullscreen *; picture-in-picture *');
+          iframe.setAttribute('allowfullscreen', 'true');
+          iframe.setAttribute('webkitallowfullscreen', 'true');
+          iframe.setAttribute('mozallowfullscreen', 'true');
+          iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+          bodyEl.appendChild(iframe);
+        } else {
+          fallbackToDirectVideo(recording);
+        }
+      })
+      .catch(err => {
+        console.warn('[Player Engine] VdoCipher OTP cascade failed, checking direct URL:', err);
+        if (loader) loader.remove();
+        fallbackToDirectVideo(recording);
       });
-    }
+  };
+
+  if (retryBtn) {
+    retryBtn.onclick = () => {
+      if (noUrlEl) noUrlEl.classList.add('hide');
+      bodyEl.appendChild(loader);
+      launchPlayback();
+    };
+  }
+
+  launchPlayback();
+}
+
+function fallbackToDirectVideo(recording) {
+  const videoEl = document.getElementById('recording-video');
+  const noUrlEl = document.getElementById('recording-no-url');
+  const errDesc = document.getElementById('recording-error-desc');
+
+  if (recording.videoUrl && videoEl) {
+    videoEl.src = recording.videoUrl;
+    videoEl.classList.remove('hide');
+    videoEl.load();
+    videoEl.play().catch(err => console.log('Autoplay deferred:', err));
     if (noUrlEl) noUrlEl.classList.add('hide');
   } else {
     if (videoEl) {
       videoEl.src = '';
       videoEl.classList.add('hide');
     }
-    if (noUrlEl) noUrlEl.classList.remove('hide');
+    if (noUrlEl) {
+      if (errDesc) errDesc.textContent = 'Session preparation complete. Click Retry to reload video stream.';
+      noUrlEl.classList.remove('hide');
+    }
   }
 }
 
@@ -617,14 +646,12 @@ if (btnBackDashboard) {
 }
 
 // Initialize page elements
-initBackgroundParallax();
+initBatchDropdown();
 initRecordingsViewer();
 loadRecordings();
 
-// Ping Render proxy server to wake it up from sleep mode asynchronously on load
+// Ping Render proxy server asynchronously on load
 (function wakeUpRenderProxy() {
-  console.log('[Render Wakeup] Pinging Render proxy to spin it up...');
   fetch('https://nightingale-9n2c.onrender.com/', { mode: 'no-cors', cache: 'no-store' })
-    .then(() => console.log('[Render Wakeup] Ping request sent successfully.'))
-    .catch((err) => console.warn('[Render Wakeup] Ping failed:', err.message));
+    .catch(() => {});
 })();

@@ -100,12 +100,16 @@ const rewindPrevBtn = document.getElementById('rewind-prev-btn');
 const rewindNextBtn = document.getElementById('rewind-next-btn');
 const headerRewindPrevBtn = document.getElementById('header-rewind-prev-btn');
 const headerRewindNextBtn = document.getElementById('header-rewind-next-btn');
+const headerFullscreenBtn = document.getElementById('header-fullscreen-btn');
 const bottomFullscreenBtn = document.getElementById('bottom-fullscreen-btn');
 const clearTimelineBtn = document.getElementById('clear-timeline-btn');
 
 // State Variables
-let flowToken = ''; // Returned by send OTP, needed for validate OTP
-let activeTab = 'live'; // 'live', 'upcoming', or 'recordings'
+let flowToken = sessionStorage.getItem('nnl_flow_token') || ''; // Returned by send OTP, needed for validate OTP
+// Read initial tab from URL query if present (e.g. /?tab=tests)
+const initialUrlParams = new URLSearchParams(window.location.search);
+const requestedTab = initialUrlParams.get('tab');
+let activeTab = (requestedTab === 'tests' || requestedTab === 'subjects' || requestedTab === 'recordings') ? requestedTab : 'live';
 let classesData = [];
 let zoomClient = null;
 let zoomSdkLoaded = false;
@@ -149,15 +153,16 @@ function showCustomAlert(message, title = 'SYSTEM MESSAGE') {
     
     overlay.classList.remove('hide');
     
-    const okBtn = document.getElementById('dialog-btn-ok');
-    if (okBtn) okBtn.focus();
-    
-    const handleClose = () => {
+    const cleanup = () => {
       overlay.classList.add('hide');
       resolve();
     };
     
-    okBtn.addEventListener('click', handleClose);
+    const okBtn = document.getElementById('dialog-btn-ok');
+    if (okBtn) {
+      okBtn.focus();
+      okBtn.addEventListener('click', cleanup);
+    }
   });
 }
 
@@ -196,15 +201,19 @@ function showCustomConfirm(message, title = 'CONFIRM ACTION', isDangerous = fals
     
     const cancelBtn = document.getElementById('dialog-btn-cancel');
     const confirmBtn = document.getElementById('dialog-btn-confirm');
-    if (cancelBtn) cancelBtn.focus();
     
     const cleanup = (value) => {
       overlay.classList.add('hide');
       resolve(value);
     };
     
-    cancelBtn.addEventListener('click', () => cleanup(false));
-    confirmBtn.addEventListener('click', () => cleanup(true));
+    if (cancelBtn) {
+      cancelBtn.focus();
+      cancelBtn.addEventListener('click', () => cleanup(false));
+    }
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => cleanup(true));
+    }
   });
 }
 
@@ -334,6 +343,10 @@ function showAlert(message, type = 'error') {
     displayMessage = 'An unexpected error occurred. Please try again.';
   }
 
+  const iconSvg = type === 'success'
+    ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+    : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>`;
+
   const targetAlertContainer = classroomDashboard.classList.contains('hide') 
     ? authAlertContainer 
     : dashboardAlertContainer;
@@ -341,6 +354,7 @@ function showAlert(message, type = 'error') {
   if (targetAlertContainer) {
     targetAlertContainer.innerHTML = `
       <div class="alert alert-${type}">
+        ${iconSvg}
         <span>${displayMessage}</span>
       </div>
     `;
@@ -363,7 +377,17 @@ function clearAlert() {
 
 // Check if user is already logged in
 function checkLoginState() {
-  const token = localStorage.getItem('nnl_access_token');
+  let token = localStorage.getItem('nnl_access_token');
+
+  // Purge any legacy guest token
+  if (token === 'GUEST_DEMO_TOKEN') {
+    localStorage.removeItem('nnl_access_token');
+    if (localStorage.getItem('nnl_phone') === 'Guest User') {
+      localStorage.removeItem('nnl_phone');
+    }
+    token = null;
+  }
+
   const savedPhone = localStorage.getItem('nnl_phone');
   const cyberHero = document.getElementById('cyber-hero');
   const toggleBtn = document.getElementById('tweak-panel-toggle-btn');
@@ -385,15 +409,18 @@ function checkLoginState() {
     if (toggleBtn) toggleBtn.classList.remove('hide');
 
     // Update profile info
-    let displayName = token === 'GUEST_DEMO_TOKEN' ? 'Guest Student' : (savedPhone ? savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2') : 'Student');
-    userPhone.textContent = displayName;
-    userAvatar.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    `;
+    let displayName = savedPhone ? savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2') : 'Student';
+    if (userPhone) userPhone.textContent = displayName;
+    if (userAvatar) {
+      userAvatar.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      `;
+    }
 
+    setActiveTabNav(activeTab);
     loadDashboard();
   } else {
     // Show login screen
@@ -456,12 +483,9 @@ function extractSdkKey(jwtToken) {
   return '';
 }
 
-// Start timeline capture loop (every 10 seconds)
+// Start timeline capture loop (disabled as rewind mode is removed)
 function startTimelineCaptureLoop() {
   stopTimelineCaptureLoop();
-  captureIntervalId = setInterval(() => {
-    captureClassroomSlide();
-  }, 10000);
 }
 
 // Stop timeline capture loop
@@ -1290,29 +1314,42 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     let passcode = '';
     let meetingToken = '';
 
-    if (token === 'GUEST_DEMO_TOKEN' || String(classId).startsWith('mock-')) {
-      meetingId = '98765432101';
-      passcode = '123456';
-    } else {
-      const response = await fetch(`${API_BASE}/cms/v2/live_classes/${classId}/`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Could not fetch meeting credentials. Class may not have started yet.');
-      }
-
-      const resJson = await response.json();
-      const classDetail = resJson.data || resJson;
-
-      meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
-      passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
-      meetingToken = classDetail.token || '';
+    if (!token) {
+      throw new Error('Please log in with your registered account to join live classes.');
     }
+
+    let response = await fetch(`${API_BASE}/cms/v2/live_classes/${classId}/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        const newToken = localStorage.getItem('nnl_access_token');
+        response = await fetch(`${API_BASE}/cms/v2/live_classes/${classId}/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Accept': 'application/json'
+          }
+        });
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error('Could not fetch meeting credentials. Class may not have started yet.');
+    }
+
+    const resJson = await response.json();
+    const classDetail = resJson.data || resJson;
+
+    meetingId = classDetail.zoom_meet_id || classDetail.zoomMeetId || classDetail.meeting_id || '';
+    passcode = classDetail.passcode || classDetail.password || classDetail.zoom_passcode || classDetail.pwd || '';
+    meetingToken = classDetail.token || '';
 
     if (!meetingId) {
       throw new Error('No active Zoom credentials found for this class.');
@@ -1410,8 +1447,9 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       'Kunal', 'Abhishek', 'Priya', 'Deepak', 'Sanjay', 'Manish', 'Alok'
     ];
     const userName = localStorage.getItem('nnl_user_name') || '';
-    let cleanName = userName;
-    if (cleanName.toLowerCase() === 'student' || cleanName.toLowerCase() === 'general student' || cleanName.toLowerCase() === 'rajit' || !cleanName) {
+    let cleanName = (userName || '').trim();
+    const placeholderNames = ['student', 'general student', 'guest', 'guest student', 'user'];
+    if (!cleanName || placeholderNames.includes(cleanName.toLowerCase())) {
       let persistedRandName = localStorage.getItem('nnl_persisted_rand_name');
       if (!persistedRandName) {
         persistedRandName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
@@ -1454,6 +1492,7 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
 
     // Start automated pre-fill helper
     startZoomIframeAutomation();
+    startTimelineCaptureLoop();
 
     // Load old snapshots from IndexedDB storage
     currentTimelineSlides = await loadSlidesFromDb(meetingId);
@@ -2734,8 +2773,11 @@ function recreateClassroomIframe() {
 // Bind load listener to initial iframe
 classroomIframe.addEventListener('load', onIframeLoad);
 
+// Request deduplication lock
+let activeDashboardFetchPromise = null;
+
 // Fetch and render classes
-async function loadDashboard(isSilent = false) {
+async function loadDashboard(isSilent = false, isManualRefresh = false) {
   const animStart = Date.now();
   if (!isSilent) {
     clearAlert();
@@ -2747,47 +2789,48 @@ async function loadDashboard(isSilent = false) {
   // Auto-sync batches & test series in background
   fetchAndSyncUserBatches();
 
-  if (activeTab === 'subjects' || activeTab === 'notes' || activeTab === 'tests') {
+  if (activeTab === 'subjects' || activeTab === 'notes') {
     renderSubjectLibrary(isSilent);
+    if (refetchBtn) {
+      setTimeout(() => {
+        refetchBtn.classList.remove('spinning');
+        refetchBtn.disabled = false;
+      }, 400);
+    }
+    return;
+  }
+
+  if (activeTab === 'tests') {
+    renderPracticeTestsHub(isSilent);
+    if (refetchBtn) {
+      setTimeout(() => {
+        refetchBtn.classList.remove('spinning');
+        refetchBtn.disabled = false;
+      }, 400);
+    }
     return;
   }
 
   if (activeTab === 'recordings') {
     renderVideoLibrary(isSilent);
-    return;
-  }
-
-  if (token === 'GUEST_DEMO_TOKEN') {
-    if (!isSilent && refetchBtn) {
-      refetchBtn.classList.add('spinning');
-      refetchBtn.disabled = true;
-      if (dashboardLoader) {
-        dashboardLoader.classList.remove('hide');
-      }
+    if (refetchBtn) {
+      setTimeout(() => {
+        refetchBtn.classList.remove('spinning');
+        refetchBtn.disabled = false;
+      }, 400);
     }
-
-    setTimeout(() => {
-      classesData = [];
-      renderBatchSelector();
-      renderClasses(classesData);
-      if (!isSilent) {
-        if (dashboardLoader) dashboardLoader.classList.add('hide');
-        if (refetchBtn) {
-          refetchBtn.classList.remove('spinning');
-          refetchBtn.disabled = false;
-        }
-      }
-      classesFetched = true;
-      checkPreloaderCompletion();
-    }, 600);
     return;
   }
 
-  // 1. Try to load from local storage cache instantly (Stale-While-Revalidate)
+  // 1. Try to load from local storage cache instantly (Stale-While-Revalidate with global fallback)
   const cacheKey = `nnl_cache_live_classes_${activeTab}`;
-  const cachedDataStr = localStorage.getItem(cacheKey);
+  let cachedDataStr = localStorage.getItem(cacheKey);
+  if (!cachedDataStr && activeTab === 'live') {
+    cachedDataStr = localStorage.getItem('nnl_fallback_classes') || localStorage.getItem('nnl_cache_live_classes_live') || localStorage.getItem('nnl_cache_live_classes_upcoming');
+  }
+
   let hasCache = false;
-  if (!isSilent && cachedDataStr) {
+  if (cachedDataStr) {
     try {
       const cachedData = JSON.parse(cachedDataStr);
       if (Array.isArray(cachedData) && cachedData.length > 0) {
@@ -2795,8 +2838,8 @@ async function loadDashboard(isSilent = false) {
         renderBatchSelector();
         renderClasses(classesData);
         hasCache = true;
-        // Hide loader since we have content already
-        dashboardLoader.classList.add('hide');
+        // Content already rendered in 0ms! Hide loader immediately!
+        if (dashboardLoader) dashboardLoader.classList.add('hide');
         classesFetched = true;
         checkPreloaderCompletion();
       }
@@ -2805,169 +2848,174 @@ async function loadDashboard(isSilent = false) {
     }
   }
 
-  // If no cache, clear container and show loader
-  if (!isSilent && !hasCache) {
+  // Only show fetching animation if we truly have NO cached classes at all
+  if (!isSilent && !hasCache && dashboardLoader) {
     classListContainer.innerHTML = '';
     dashboardLoader.classList.remove('hide');
   }
 
-  if (!isSilent && refetchBtn) {
+  if (isManualRefresh && refetchBtn) {
     refetchBtn.classList.add('spinning');
     refetchBtn.disabled = true;
   }
 
-  try {
-    let url = `${API_BASE}/cms/v2/live_classes/`;
-    if (activeTab === 'recordings') {
-      url = `${API_BASE}/cms/v2/live_classes_recordings/`;
-    }
-    // Note: do NOT filter by ?status=live server-side; client-side time-based logic handles
-    // classifying which classes are live, upcoming, or past.
+  // Prevent duplicate concurrent in-flight fetches
+  if (activeDashboardFetchPromise && !isManualRefresh) {
+    try {
+      await activeDashboardFetchPromise;
+    } catch (e) {}
+    return;
+  }
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+  activeDashboardFetchPromise = (async () => {
+    try {
+      let url = `${API_BASE}/cms/v2/live_classes/`;
+      if (activeTab === 'recordings') {
+        url = `${API_BASE}/cms/v2/live_classes_recordings/`;
       }
-    });
 
-    if (response.status === 401 || response.status === 403) {
-      // Try to silently refresh the token before giving up
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        loadDashboard(isSilent); // Retry with the new token
-        return;
-      }
-      // Token refresh failed (e.g. logged in on another device). Log out.
-      console.warn('Session invalidated or logged in from another device. Logging out...');
-      handleLogout();
-      return;
-    }
-
-    let rawData;
-    if (!response.ok) {
-      // Try fallback endpoint
-      const fallbackUrl = activeTab === 'recordings' 
-        ? `${API_BASE}/cms/v2/live_classes_recordings/` 
-        : `${API_BASE}/cms/v2/live_classes/`;
-      
-      const fbResponse = await fetch(fallbackUrl, {
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         }
       });
 
-      if (!fbResponse.ok) {
-        throw new Error('Failed to load classes from server.');
+      if (response.status === 401 || response.status === 403) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          loadDashboard(isSilent);
+          return;
+        }
+        clearAlert();
+        handleLogout();
+        return;
       }
 
-      rawData = await fbResponse.json();
-    } else {
-      rawData = await response.json();
-    }
+      let rawData;
+      if (!response.ok) {
+        const fallbackUrl = activeTab === 'recordings' 
+          ? `${API_BASE}/cms/v2/live_classes_recordings/` 
+          : `${API_BASE}/cms/v2/live_classes/`;
+        
+        const fbResponse = await fetch(fallbackUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
 
-    let freshClasses = [];
-    if (rawData) {
-      if (Array.isArray(rawData)) {
-        freshClasses = rawData;
-      } else if (rawData.data && Array.isArray(rawData.data)) {
-        freshClasses = rawData.data;
-      } else if (rawData.classes && Array.isArray(rawData.classes)) {
-        freshClasses = rawData.classes;
-      } else if (rawData.results && Array.isArray(rawData.results)) {
-        freshClasses = rawData.results;
+        if (!fbResponse.ok) {
+          throw new Error('Failed to load classes from server.');
+        }
+
+        rawData = await fbResponse.json();
+      } else {
+        rawData = await response.json();
       }
-    }
 
-    // If server returned 0 classes, use batch mock fallback
-    if (freshClasses.length === 0) {
-      freshClasses = getMockClassesForBatch(activeBatch, activeTab);
-    }
+      let freshClasses = [];
+      if (rawData) {
+        if (Array.isArray(rawData)) {
+          freshClasses = rawData;
+        } else if (rawData.data && Array.isArray(rawData.data)) {
+          freshClasses = rawData.data;
+        } else if (rawData.classes && Array.isArray(rawData.classes)) {
+          freshClasses = rawData.classes;
+        } else if (rawData.results && Array.isArray(rawData.results)) {
+          freshClasses = rawData.results;
+        }
+      }
 
-    classesData = freshClasses;
-    
-    // Save to cache
-    try {
-      localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
-    } catch (e) {}
+      classesData = freshClasses;
+      
+      // Save to persistent cache so future logins load in 0ms!
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(freshClasses));
+        localStorage.setItem('nnl_fallback_classes', JSON.stringify(freshClasses));
+      } catch (e) {}
 
-    renderBatchSelector();
-    renderClasses(classesData);
-    clearAlert();
+      if (activeTab === 'subjects' || activeTab === 'notes' || activeTab === 'tests') {
+        return;
+      }
 
-  } catch (error) {
-    console.error('Error fetching classes:', error);
-    if (!hasCache) {
-      classesData = getMockClassesForBatch(activeBatch, activeTab);
       renderBatchSelector();
       renderClasses(classesData);
+      clearAlert();
+
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+      if (!hasCache && activeTab !== 'subjects' && activeTab !== 'notes' && activeTab !== 'tests') {
+        classesData = [];
+        renderBatchSelector();
+        renderClasses(classesData);
+      }
+      clearAlert();
+    } finally {
+      classesFetched = true;
+      if (dashboardLoader) dashboardLoader.classList.add('hide');
+      if (refetchBtn) {
+        refetchBtn.classList.remove('spinning');
+        refetchBtn.disabled = false;
+      }
+      checkPreloaderCompletion();
+      activeDashboardFetchPromise = null;
     }
-    clearAlert();
-  } finally {
-    classesFetched = true;
-    if (dashboardLoader) dashboardLoader.classList.add('hide');
-    if (refetchBtn) {
-      refetchBtn.classList.remove('spinning');
-      refetchBtn.disabled = false;
-    }
-    checkPreloaderCompletion();
-  }
+  })();
+
+  await activeDashboardFetchPromise;
 }
 
 function getSimplifiedBatchTitle(title) {
-  if (!title) return '';
+  if (!title) return 'Red Sapphire (Hinglish)';
   const tUpper = title.toUpperCase();
-  // EXPLICIT FILTER: Remove Economy and Brahmastra batches completely
-  if (tUpper.includes('ECONOMY') || tUpper.includes('BRAHMASTRA')) {
-    return '';
+  if (tUpper.includes('ENGLISH') || tUpper.includes('(ENG)')) {
+    return 'Red Sapphire (English)';
   }
-  if (tUpper.includes('RED') && tUpper.includes('SAPPHIRE')) {
-    return 'Red Sapphire Batch';
-  }
-  if (tUpper.includes('BLUE') || (tUpper.includes('SAPPHIRE') && !tUpper.includes('RED'))) {
-    return 'Blue Sapphire Batch';
-  }
-  if (tUpper.includes('PEARL')) {
-    return 'Pearl Batch';
-  }
-  if (tUpper.includes('FASTRACK') || tUpper.includes('FAST TRACK')) {
-    return 'Fastrack 10.0 (Live Class)';
-  }
-  if (tUpper.includes('C+') || tUpper.includes('C PLUS')) {
-    return 'C+ Batch';
-  }
-  return title.trim();
+  return 'Red Sapphire (Hinglish)';
 }
 
 function doesClassMatchBatch(c, activeBatch) {
-  const rawBatchTitle = c.batch?.title || (c.liveClass?.batch?.title);
-  if (!rawBatchTitle) {
-    const t = ((c.title || c.topic || '').toString()).toUpperCase();
-    const ab = activeBatch.toUpperCase();
-    if (ab.includes('SAPPHIRE') || ab.includes('BLUE')) {
-      return t.includes('SAPPHIRE') || t.includes('BLUE') || t.includes('PHARMACOLOGY') || t.includes('CARDIAC');
-    } else if (ab.includes('PEARL')) {
-      return t.includes('PEARL') || t.includes('COMMUNITY') || t.includes('HEALTH');
-    } else if (ab.includes('NORCET')) {
-      return t.includes('NORCET') || t.includes('AIIMS');
-    } else if (ab.includes('NCLEX')) {
-      return t.includes('NCLEX');
-    } else if (ab.includes('PSC') || ab.includes('CHO')) {
-      return t.includes('PSC') || t.includes('CHO');
-    } else if (ab.includes('MSC')) {
-      return t.includes('MSC');
-    }
-    return true;
+  const isEnglishTarget = (activeBatch || '').toUpperCase().includes('ENGLISH');
+  const rawBatchTitle = (c.batch?.title || c.liveClass?.batch?.title || '').toUpperCase();
+  const classTitle = ((c.title || c.topic || '').toString()).toUpperCase();
+  const subjectTitle = (c.subject?.title || c.subject_name || c.subject || '').toString().toUpperCase();
+  const batchId = c.batch?.id || c.liveClass?.batch?.id;
+  const subjectId = c.subject?.id || c.liveClass?.subject?.id;
+
+  // STRICTLY EXCLUDE MAINS CARDS (e.g. Brahmastra for Mains, Live Class for Mains)
+  if (
+    rawBatchTitle.includes('MAINS') ||
+    classTitle.includes('MAINS') ||
+    subjectTitle.includes('MAINS') ||
+    batchId === 102 ||
+    subjectId === 729
+  ) {
+    return false;
   }
 
-  const classBatchTitle = getSimplifiedBatchTitle(rawBatchTitle);
-  const targetBatch = getSimplifiedBatchTitle(activeBatch);
-  return classBatchTitle === targetBatch;
+  const lang = (c.language || c.lang || '').toUpperCase();
+
+  // 1. Explicit language field if present
+  if (lang) {
+    if (isEnglishTarget) return lang.includes('ENG');
+    return lang.includes('HING') || lang.includes('HIN');
+  }
+
+  // 2. Batch title check
+  if (rawBatchTitle) {
+    const isClassEnglish = rawBatchTitle.includes('ENGLISH') || rawBatchTitle.includes('(ENG)') || classTitle.includes('ENGLISH') || classTitle.includes('(ENG)');
+    return isEnglishTarget ? isClassEnglish : !isClassEnglish;
+  }
+
+  // 3. Fallback title keywords check
+  const isClassEnglish = classTitle.includes('ENGLISH') || classTitle.includes('(ENG)');
+  return isEnglishTarget ? isClassEnglish : !isClassEnglish;
 }
+
 
 // Render the class cards
 function renderClasses(classes) {
@@ -2998,22 +3046,11 @@ function renderClasses(classes) {
     });
   }
 
-  const isGuest = localStorage.getItem('nnl_access_token') === 'GUEST_DEMO_TOKEN';
-
   // ── Live tab: filter by activeBatch (so we only show classes for the student's selected batch)
   let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
 
-  // Only fall back to mock if the filtered pool is empty and we are guest
-  if (poolForLive.length === 0 && isGuest) {
-    poolForLive = getMockClassesForBatch(activeBatch, 'live');
-  }
-
-  // ── Upcoming tab: keep batch filter as before
+  // ── Upcoming tab: filter by activeBatch
   let batchFiltered = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
-  // Mock fallback only for non-live tabs in Guest mode
-  if (activeTab !== 'live' && batchFiltered.length === 0 && isGuest) {
-    batchFiltered = getMockClassesForBatch(activeBatch, activeTab);
-  }
 
   // Tab badge: check ALL API classes (not just the batch-filtered ones) for live status
   const hasLiveClass = poolForLive.some(c => {
@@ -3033,11 +3070,14 @@ function renderClasses(classes) {
   });
 
   if (tabLive) {
-    if (hasLiveClass) {
-      tabLive.innerHTML = 'Live Now <span class="tab-live-pulse-dot"></span>';
-    } else {
-      tabLive.innerHTML = 'Live Now';
-    }
+    const pulseDot = hasLiveClass ? ' <span class="tab-live-pulse-dot"></span>' : '';
+    tabLive.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="2"></circle>
+        <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+      </svg>
+      <span>LIVE CLASSES</span>${pulseDot}
+    `;
   }
 
   const upcomingOrPastClasses = [];
@@ -3405,7 +3445,9 @@ if (toggleParticipantsBtn) {
     switchSidebarTab('participants');
   });
 }
-manualCaptureBtn.addEventListener('click', captureClassroomSlide);
+if (manualCaptureBtn) {
+  manualCaptureBtn.addEventListener('click', captureClassroomSlide);
+}
 
 // Copy buttons inside Zoom Join Card
 document.querySelectorAll('#zoom-join-card .btn-copy-info').forEach(btn => {
@@ -3519,19 +3561,23 @@ if (toggleSidebarBtn) {
 }
 // No separate close-sidebar-btn anymore — pull-tab handles both open and close
 
-// Fullscreen (now in bottom bar)
+// Fullscreen toggle handler
+function toggleClassroomFullscreen() {
+  const viewport = document.getElementById('player-viewport');
+  if (!viewport) return;
+  if (!document.fullscreenElement) {
+    viewport.requestFullscreen().catch(err =>
+      console.error('Fullscreen error:', err.message)
+    );
+  } else {
+    document.exitFullscreen();
+  }
+}
+if (headerFullscreenBtn) {
+  headerFullscreenBtn.addEventListener('click', toggleClassroomFullscreen);
+}
 if (bottomFullscreenBtn) {
-  bottomFullscreenBtn.addEventListener('click', () => {
-    const viewport = document.getElementById('player-viewport');
-    if (!viewport) return;
-    if (!document.fullscreenElement) {
-      viewport.requestFullscreen().catch(err =>
-        console.error('Fullscreen error:', err.message)
-      );
-    } else {
-      document.exitFullscreen();
-    }
-  });
+  bottomFullscreenBtn.addEventListener('click', toggleClassroomFullscreen);
 }
 
 // Automatically trigger Big Screen Mode when entering browser fullscreen to hide participants
@@ -3660,6 +3706,100 @@ downloadSlideBtn.addEventListener('click', () => {
   document.body.removeChild(a);
 });
 
+// 6-Digit Individual OTP Input Boxes Management
+function initOtpBoxes() {
+  const boxes = Array.from(document.querySelectorAll('.otp-box'));
+  const hiddenOtp = document.getElementById('otp-input');
+  if (!boxes.length) return;
+
+  function syncOtpValue() {
+    const val = boxes.map(b => b.value).join('');
+    if (hiddenOtp) hiddenOtp.value = val;
+    return val;
+  }
+
+  boxes.forEach((box, index) => {
+    box.addEventListener('input', () => {
+      const val = box.value.replace(/\D/g, '');
+      box.value = val ? val[val.length - 1] : '';
+
+      if (box.value) {
+        box.classList.add('filled');
+        if (index < boxes.length - 1) {
+          boxes[index + 1].focus();
+        }
+      } else {
+        box.classList.remove('filled');
+      }
+
+      const fullOtp = syncOtpValue();
+      if (fullOtp.length === 6) {
+        const verifyBtn = document.getElementById('verify-otp-btn');
+        if (verifyBtn) verifyBtn.focus();
+      }
+    });
+
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace') {
+        if (!box.value && index > 0) {
+          boxes[index - 1].focus();
+          boxes[index - 1].value = '';
+          boxes[index - 1].classList.remove('filled');
+          syncOtpValue();
+        } else {
+          box.value = '';
+          box.classList.remove('filled');
+          syncOtpValue();
+        }
+      } else if (e.key === 'ArrowLeft' && index > 0) {
+        boxes[index - 1].focus();
+      } else if (e.key === 'ArrowRight' && index < boxes.length - 1) {
+        boxes[index + 1].focus();
+      }
+    });
+
+    box.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData).getData('text') || '';
+      const digits = pasteData.replace(/\D/g, '').slice(0, 6);
+      if (!digits) return;
+
+      digits.split('').forEach((d, i) => {
+        if (boxes[i]) {
+          boxes[i].value = d;
+          boxes[i].classList.add('filled');
+        }
+      });
+
+      syncOtpValue();
+      const targetIdx = Math.min(digits.length, boxes.length - 1);
+      boxes[targetIdx].focus();
+
+      if (digits.length === 6) {
+        const verifyBtn = document.getElementById('verify-otp-btn');
+        if (verifyBtn) verifyBtn.click();
+      }
+    });
+
+    box.addEventListener('focus', () => {
+      box.select();
+    });
+  });
+}
+
+function clearOtpBoxes() {
+  const boxes = document.querySelectorAll('.otp-box');
+  boxes.forEach(b => {
+    b.value = '';
+    b.classList.remove('filled');
+  });
+  const hiddenOtp = document.getElementById('otp-input');
+  if (hiddenOtp) hiddenOtp.value = '';
+}
+
+// Initialize OTP boxes immediately
+initOtpBoxes();
+
 // Handle Login request (Send OTP)
 phoneForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3702,12 +3842,15 @@ phoneForm.addEventListener('submit', async (e) => {
       // In some backends, they don't return a token but directly validate via phone
       flowToken = 'DIRECT_VALIDATION';
     }
+    sessionStorage.setItem('nnl_flow_token', flowToken);
 
     localStorage.setItem('nnl_temp_phone', phone);
     showAlert('OTP sent successfully!', 'success');
     phoneStep.classList.add('hide');
     otpStep.classList.remove('hide');
-    otpInput.focus();
+    clearOtpBoxes();
+    const firstOtpBox = document.querySelector('.otp-box');
+    if (firstOtpBox) firstOtpBox.focus();
 
   } catch (error) {
     console.error('Send OTP Error:', error);
@@ -3748,7 +3891,7 @@ otpForm.addEventListener('submit', async (e) => {
         device_id: deviceId,
         device_name: "PC Browser",
         force_login: true,
-        token: flowToken
+        token: flowToken || sessionStorage.getItem('nnl_flow_token') || ''
       })
     });
 
@@ -3771,11 +3914,12 @@ otpForm.addEventListener('submit', async (e) => {
     localStorage.setItem('nnl_access_token', token);
     if (refreshToken) localStorage.setItem('nnl_refresh_token', refreshToken);
     localStorage.setItem('nnl_phone', phone);
+    sessionStorage.removeItem('nnl_explicit_logout');
 
     showAlert('Logged in successfully!', 'success');
     
     // Clear inputs and transition
-    otpInput.value = '';
+    clearOtpBoxes();
     phoneInput.value = '';
     otpStep.classList.add('hide');
     phoneStep.classList.remove('hide');
@@ -3794,29 +3938,12 @@ otpForm.addEventListener('submit', async (e) => {
 // Back button handler
 document.getElementById('back-to-phone-btn').addEventListener('click', () => {
   clearAlert();
+  clearOtpBoxes();
   otpStep.classList.add('hide');
   phoneStep.classList.remove('hide');
   phoneInput.focus();
 });
 
-// Guest login handler
-const guestLoginBtn = document.getElementById('guest-login-btn');
-if (guestLoginBtn) {
-  guestLoginBtn.addEventListener('click', () => {
-    clearAlert();
-    localStorage.setItem('nnl_access_token', 'GUEST_DEMO_TOKEN');
-    localStorage.setItem('nnl_phone', 'Guest User');
-    showAlert('Logged in as Guest!', 'success');
-    
-    // Reset/clear login screen inputs
-    if (phoneInput) phoneInput.value = '';
-    if (otpInput) otpInput.value = '';
-    otpStep.classList.add('hide');
-    phoneStep.classList.remove('hide');
-
-    checkLoginState();
-  });
-}
 
 // Silent token refresh — call /api/auth/token/refresh/ with the stored refresh token.
 // Returns true if a new access token was successfully obtained and stored.
@@ -3849,14 +3976,19 @@ async function refreshAccessToken() {
 
 // Logout handler
 function handleLogout() {
+  sessionStorage.setItem('nnl_explicit_logout', 'true');
   localStorage.removeItem('nnl_access_token');
   localStorage.removeItem('nnl_refresh_token');
-  localStorage.removeItem('nnl_cache_live_classes_live');
-  localStorage.removeItem('nnl_cache_live_classes_upcoming');
-  localStorage.removeItem('nnl_cache_live_classes_recordings');
+  // Preserving schedule cache so re-logging in renders the timetable in 0ms without waiting!
   // Keep nnl_phone to make re-login easier, unless it was a Guest session!
   if (localStorage.getItem('nnl_phone') === 'Guest User') {
     localStorage.removeItem('nnl_phone');
+  }
+  clearAlert();
+  const dAlert = document.getElementById('dashboard-alert-container');
+  if (dAlert) {
+    dAlert.innerHTML = '';
+    dAlert.classList.add('hide');
   }
   checkLoginState();
 }
@@ -3867,7 +3999,6 @@ logoutBtn.addEventListener('click', handleLogout);
 const navTabElements = {
   live: tabLive,
   upcoming: tabUpcoming,
-  recordings: tabRecordings,
   subjects: tabSubjects,
   notes: tabNotes,
   tests: tabTests
@@ -3882,6 +4013,10 @@ function setActiveTabNav(tabName) {
       else el.classList.remove('active');
     }
   });
+  // Hide live classes section when away from the live tab
+  if (liveNowSection && tabName !== 'live') {
+    liveNowSection.classList.add('hide');
+  }
   // Hide the tomorrow upcoming sidebar whenever we switch away from the live tab
   const sidebarEl = document.getElementById('schedule-sidebar');
   if (sidebarEl) {
@@ -3904,9 +4039,9 @@ if (tabSubjects) {
 }
 
 if (tabNotes) {
-  tabNotes.addEventListener('click', () => {
-    setActiveTabNav('notes');
-    loadDashboard();
+  tabNotes.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = '/notes.html';
   });
 }
 
@@ -3917,23 +4052,19 @@ if (tabTests) {
   });
 }
 
-if (tabRecordings) {
-  tabRecordings.addEventListener('click', () => {
-    setActiveTabNav('recordings');
-    loadDashboard();
-  });
-}
-
-if (tabAllVideos) {
-  tabAllVideos.addEventListener('click', () => {
-    localStorage.setItem('nnl_active_batch', 'C+ Batch');
-    window.location.href = '/all-videos.html';
-  });
-}
-
-// Refetch button handler
+// Refetch button handler (spins ONLY the button, no screen-blocking animation)
 if (refetchBtn) {
-  refetchBtn.addEventListener('click', () => loadDashboard(false));
+  refetchBtn.addEventListener('click', () => {
+    refetchBtn.classList.add('spinning');
+    refetchBtn.disabled = true;
+    const minSpinPromise = new Promise(resolve => setTimeout(resolve, 600));
+    loadDashboard(true, true).finally(() => {
+      minSpinPromise.finally(() => {
+        refetchBtn.classList.remove('spinning');
+        refetchBtn.disabled = false;
+      });
+    });
+  });
 }
 
 // Header logo click handler (act as Home/Refresh button)
@@ -3952,7 +4083,15 @@ if (headerLogo) {
 
 // ─── Nightingale Redesign Scripts ───────────────────────────────────────
 
-let activeBatch = localStorage.getItem('nnl_active_batch') || 'Blue Sapphire Batch';
+let activeBatch = localStorage.getItem('nnl_active_batch');
+if (!activeBatch || (activeBatch !== 'Red Sapphire (Hinglish)' && activeBatch !== 'Red Sapphire (English)')) {
+  if (activeBatch && activeBatch.toUpperCase().includes('ENGLISH')) {
+    activeBatch = 'Red Sapphire (English)';
+  } else {
+    activeBatch = 'Red Sapphire (Hinglish)';
+  }
+  localStorage.setItem('nnl_active_batch', activeBatch);
+}
 
 function updateFavicon() {
   try {
@@ -4101,61 +4240,20 @@ function initTweaksPanel() {
   }
 }
 
-// ── Dynamic Auto-Discovery for New Batches & Courses ──
-let dynamicBatchMap = {};
-try {
-  const cachedMap = localStorage.getItem('nnl_cached_batch_id_map');
-  if (cachedMap) dynamicBatchMap = JSON.parse(cachedMap);
-} catch (e) {}
-
-let userDiscoveredBatches = new Set();
-try {
-  const cachedBatches = localStorage.getItem('nnl_cached_discovered_batches');
-  if (cachedBatches) {
-    JSON.parse(cachedBatches).forEach(b => {
-      const u = b.toUpperCase();
-      if (!u.includes('ECONOMY') && !u.includes('BRAHMASTRA')) {
-        userDiscoveredBatches.add(b);
-      }
-    });
-  }
-} catch (e) {}
+// ── Explicit Sapphire Batches (Red Sapphire English & Hinglish) ──
+const ALLOWED_SAPPHIRE_BATCHES = [
+  'Red Sapphire (Hinglish)',
+  'Red Sapphire (English)'
+];
 
 async function fetchAndSyncUserBatches() {
-  const token = localStorage.getItem('nnl_access_token');
-  if (!token || token === 'GUEST_DEMO_TOKEN') return;
+  renderBatchSelector();
+}
 
-  try {
-    const res = await fetch(`${API_BASE}/cms/batches/`, {
-      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const batchesList = data.data || data.results || [];
-      let updated = false;
-
-      batchesList.forEach(b => {
-        if (b.title) {
-          const simplified = getSimplifiedBatchTitle(b.title);
-          if (simplified && b.id) {
-            dynamicBatchMap[simplified] = b.id;
-          }
-          if (simplified && !userDiscoveredBatches.has(simplified)) {
-            userDiscoveredBatches.add(simplified);
-            updated = true;
-          }
-        }
-      });
-
-      if (updated || Object.keys(dynamicBatchMap).length > 0) {
-        localStorage.setItem('nnl_cached_discovered_batches', JSON.stringify(Array.from(userDiscoveredBatches)));
-        localStorage.setItem('nnl_cached_batch_id_map', JSON.stringify(dynamicBatchMap));
-        renderBatchSelector();
-      }
-    }
-  } catch (e) {
-    console.warn('Auto-batch sync non-blocking error:', e);
-  }
+function getCleanBatchName(batch) {
+  if (!batch) return 'Red Sapphire (Hinglish)';
+  if (batch.toUpperCase().includes('ENGLISH')) return 'Red Sapphire (English)';
+  return 'Red Sapphire (Hinglish)';
 }
 
 function renderBatchSelector() {
@@ -4163,58 +4261,21 @@ function renderBatchSelector() {
   const label = document.getElementById('current-batch-label');
   if (!dropdown) return;
 
-  // Default baseline batches plus any dynamically discovered batches from API
-  const defaultBatches = [
-    'Red Sapphire Batch',
-    'Blue Sapphire Batch',
-    'Pearl Batch',
-    'Fastrack 10.0 (Live Class)'
-  ];
+  const batches = ALLOWED_SAPPHIRE_BATCHES;
 
-  const batchTitles = new Set();
-  defaultBatches.forEach(b => batchTitles.add(b));
-  userDiscoveredBatches.forEach(b => {
-    const u = b.toUpperCase();
-    if (!u.includes('ECONOMY') && !u.includes('BRAHMASTRA')) {
-      batchTitles.add(b);
+  // Ensure activeBatch is valid
+  if (!batches.includes(activeBatch)) {
+    if (activeBatch && activeBatch.toUpperCase().includes('ENGLISH')) {
+      activeBatch = 'Red Sapphire (English)';
+    } else {
+      activeBatch = 'Red Sapphire (Hinglish)';
     }
-  });
-
-  // Extract clean classes from current classesData
-  const cleanClasses = [];
-  if (classesData && classesData.length > 0) {
-    classesData.forEach(item => {
-      if (item.classes && Array.isArray(item.classes)) {
-        cleanClasses.push(...item.classes);
-      } else if (item.liveClass) {
-        cleanClasses.push(item.liveClass);
-      } else {
-        cleanClasses.push(item);
-      }
-    });
-  }
-  
-  cleanClasses.forEach(c => {
-    const title = c.batch?.title || (c.liveClass?.batch?.title);
-    if (title) {
-      const simplified = getSimplifiedBatchTitle(title);
-      if (simplified && !simplified.toUpperCase().includes('ECONOMY') && !simplified.toUpperCase().includes('BRAHMASTRA')) {
-        batchTitles.add(simplified);
-      }
-    }
-  });
-  
-  const batches = Array.from(batchTitles);
-  
-  // Ensure activeBatch is set, defaulting to Blue Sapphire Batch if empty or invalid
-  if (!activeBatch || !batches.includes(activeBatch)) {
-    activeBatch = 'Blue Sapphire Batch';
     localStorage.setItem('nnl_active_batch', activeBatch);
   }
   
   // Update the label in the header button
   if (label) {
-    label.textContent = activeBatch;
+    label.textContent = getCleanBatchName(activeBatch);
   }
   
   // Build dropdown items
@@ -4222,7 +4283,7 @@ function renderBatchSelector() {
     const isActive = batch === activeBatch;
     return `
       <button class="dropdown-item ${isActive ? 'active' : ''}" data-batch="${batch}">
-        ${batch}
+        ${getCleanBatchName(batch)}
       </button>
     `;
   }).join('');
@@ -4236,7 +4297,7 @@ function renderBatchSelector() {
       localStorage.setItem('nnl_active_batch', activeBatch);
       
       // Update label
-      if (label) label.textContent = activeBatch;
+      if (label) label.textContent = getCleanBatchName(activeBatch);
       
       // Update active classes inside dropdown
       dropdown.querySelectorAll('.dropdown-item').forEach(btn => btn.classList.remove('active'));
@@ -4246,8 +4307,10 @@ function renderBatchSelector() {
       dropdown.classList.add('hide');
       
       // Rerender depending on active tab
-      if (activeTab === 'subjects') {
+      if (activeTab === 'subjects' || activeTab === 'tests' || activeTab === 'notes') {
         renderSubjectLibrary();
+      } else if (activeTab === 'recordings') {
+        renderRecordings();
       } else {
         renderClasses(classesData);
       }
@@ -4257,17 +4320,18 @@ function renderBatchSelector() {
 
 function initBatchSelection() {
   let savedBatch = localStorage.getItem('nnl_active_batch');
-  if (!savedBatch || savedBatch.toUpperCase().includes('ECONOMY') || savedBatch.toUpperCase().includes('BRAHMASTRA')) {
-    savedBatch = 'Red Sapphire Batch';
+  if (!savedBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(savedBatch)) {
+    if (savedBatch && savedBatch.toUpperCase().includes('ENGLISH')) {
+      savedBatch = 'Red Sapphire (English)';
+    } else {
+      savedBatch = 'Red Sapphire (Hinglish)';
+    }
     localStorage.setItem('nnl_active_batch', savedBatch);
   }
   activeBatch = savedBatch;
   
-  // Render batch selector dropdown instantly on load with default or cached batches
+  // Render batch selector dropdown instantly on load
   renderBatchSelector();
-
-  // Dynamically query API in background to discover any new batches/test series added to user account
-  fetchAndSyncUserBatches();
   
   const batchBtn = document.getElementById('header-batch-btn');
   const dropdown = document.getElementById('header-batch-dropdown');
@@ -4284,282 +4348,10 @@ function initBatchSelection() {
   }
 }
 
-function getMockClassesForBatch(batch, tab) {
-  const now = new Date();
-  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  
-  const isSapphire = batch.toUpperCase().includes('SAPPHIRE') || batch.toUpperCase().includes('BLUE');
-  
-  // Anchored fixed times for the current day to simulate a real daily schedule
-  const t9am = new Date(now); t9am.setHours(9, 0, 0, 0);
-  const t12pm = new Date(now); t12pm.setHours(12, 0, 0, 0);
-  
-  const t1pm = new Date(now); t1pm.setHours(13, 0, 0, 0);
-  const t4pm = new Date(now); t4pm.setHours(16, 0, 0, 0);
-  
-  const t4_30pm = new Date(now); t4_30pm.setHours(16, 30, 0, 0);
-  const t7_30pm = new Date(now); t7_30pm.setHours(19, 30, 0, 0);
-  
-  if (tab === 'live') {
-    if (isSapphire) {
-      return [
-        {
-          id: 'mock-sapphire-live-1',
-          title: 'Pharmacology Day 1 (Part 1): Anti-Hypertensive Drugs & Cardiac Assessment',
-          faculty: { name: 'Dr. Suresh Sharma' },
-          start: t9am.toISOString(),
-          end: t12pm.toISOString(),
-          zoom_meet_id: '82930283021',
-          passcode: '908123',
-          batch: { title: 'Blue Sapphire Batch' }
-        },
-        {
-          id: 'mock-sapphire-live-2',
-          title: 'Pharmacology Day 1 (Part 2): Anti-Hypertensive Drugs & Cardiac Assessment',
-          faculty: { name: 'Dr. Suresh Sharma' },
-          start: t1pm.toISOString(),
-          end: t4pm.toISOString(),
-          zoom_meet_id: '82930283022',
-          passcode: '908124',
-          batch: { title: 'Blue Sapphire Batch' }
-        },
-        {
-          id: 'mock-sapphire-live-3',
-          title: 'Pharmacology Day 1 (Part 3): Anti-Hypertensive Drugs & Cardiac Assessment',
-          faculty: { name: 'Dr. Suresh Sharma' },
-          start: t4_30pm.toISOString(),
-          end: t7_30pm.toISOString(),
-          zoom_meet_id: '82930283023',
-          passcode: '908125',
-          batch: { title: 'Blue Sapphire Batch' }
-        }
-      ];
-    } else {
-      return [
-        {
-          id: 'mock-pearl-live-1',
-          title: 'Community Health Nursing Day 6 (Part 1): Maternal & Child Health Indicators',
-          faculty: { name: 'Mukhminder Singh' },
-          start: t9am.toISOString(),
-          end: t12pm.toISOString(),
-          zoom_meet_id: '81293028302',
-          passcode: '123456',
-          batch: { title: 'Pearl Batch' }
-        },
-        {
-          id: 'mock-pearl-live-2',
-          title: 'Community Health Nursing Day 6 (Part 2): Maternal & Child Health Indicators',
-          faculty: { name: 'Mukhminder Singh' },
-          start: t1pm.toISOString(),
-          end: t4pm.toISOString(),
-          zoom_meet_id: '81293028303',
-          passcode: '123456',
-          batch: { title: 'Pearl Batch' }
-        },
-        {
-          id: 'mock-pearl-live-3',
-          title: 'Community Health Nursing Day 6 (Part 3): Maternal & Child Health Indicators',
-          faculty: { name: 'Mukhminder Singh' },
-          start: t4_30pm.toISOString(),
-          end: t7_30pm.toISOString(),
-          zoom_meet_id: '81293028304',
-          passcode: '123456',
-          batch: { title: 'Pearl Batch' }
-        }
-      ];
-    }
-  } else if (tab === 'upcoming') {
-    if (isSapphire) {
-      return [
-        {
-          id: 'mock-sapphire-up-1',
-          title: 'Cardiovascular Nursing: ECG Interpretation & Heart Block Management',
-          faculty: { name: 'Dr. Suresh Sharma' },
-          start: tomorrow.toISOString(),
-          end: new Date(tomorrow.getTime() + 2 * 60 * 60 * 1000).toISOString(),
-          zoom_meet_id: '82930283022',
-          passcode: '908124',
-          batch: { title: 'Blue Sapphire Batch' }
-        }
-      ];
-    } else {
-      return [
-        {
-          id: 'mock-pearl-up-1',
-          title: 'Pediatric Care: Immunization Schedule & Neonatal Reflexes',
-          faculty: { name: 'Mukhminder Singh' },
-          start: tomorrow.toISOString(),
-          end: new Date(tomorrow.getTime() + 2 * 60 * 60 * 1000).toISOString(),
-          zoom_meet_id: '83920192039',
-          passcode: '778900',
-          batch: { title: 'Pearl Batch' }
-        }
-      ];
-    }
-  } else {
-    if (isSapphire) {
-      return [
-        {
-          id: 'mock-sapphire-rec-1',
-          title: 'Endocrine Pharmacology: Insulin Therapy & Oral Hypoglycemic Agents',
-          faculty: { name: 'Dr. Suresh Sharma' },
-          start: yesterday.toISOString(),
-          zoom_meet_id: '82930283023',
-          passcode: '908125',
-          batch: { title: 'Blue Sapphire Batch' }
-        }
-      ];
-    } else {
-      return [
-        {
-          id: 'mock-pearl-rec-1',
-          title: 'Epidemiology: Prevention levels & Communicable Disease Control',
-          faculty: { name: 'Mukhminder Singh' },
-          start: yesterday.toISOString(),
-          zoom_meet_id: '83920192040',
-          passcode: '778901',
-          batch: { title: 'Pearl Batch' }
-        }
-      ];
-    }
-  }
-}
 
 
-// ─── Auto-bypass Zoom Pre-join Name Screen ──────────────────────────────────
-// Polls the iframe DOM every 400ms (up to 30s) looking for the name input
-// and Join button, then auto-fills the name and clicks Join.
-function autoJoinZoomPrejoin(iframe, displayName, passcode) {
-  let attempts = 0;
-  const maxAttempts = 120; // 48 seconds
 
-  function tryFill() {
-    attempts++;
-    if (attempts > maxAttempts) return; // give up
 
-    let iframeDoc = null;
-    try {
-      iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    } catch (e) {
-      // cross-origin not yet resolved — keep polling
-      setTimeout(tryFill, 400);
-      return;
-    }
-
-    if (!iframeDoc || iframeDoc.readyState === 'loading') {
-      setTimeout(tryFill, 400);
-      return;
-    }
-
-    // 1. Check for Name Input and Join Button
-    const nameInput =
-      iframeDoc.querySelector('input#inputname') ||
-      iframeDoc.querySelector('input[placeholder*="name" i]') ||
-      iframeDoc.querySelector('input[id*="name" i]') ||
-      iframeDoc.querySelector('input[autocomplete="name"]') ||
-      iframeDoc.querySelector('.preview-meeting-info input[type="text"]') ||
-      iframeDoc.querySelector('input[type="text"]');
-
-    const joinBtn =
-      iframeDoc.querySelector('button#joinBtn') ||
-      iframeDoc.querySelector('button[class*="join" i]') ||
-      iframeDoc.querySelector('button[id*="join" i]') ||
-      Array.from(iframeDoc.querySelectorAll('button')).find(b =>
-        /^(join|join meeting)$/i.test(b.textContent.trim())
-      );
-
-    // 2. Check for Passcode Input and Submit/Join Button
-    const passcodeInput =
-      iframeDoc.querySelector('input#inputpasscode') ||
-      iframeDoc.querySelector('input[id*="passcode" i]') ||
-      iframeDoc.querySelector('input[placeholder*="passcode" i]') ||
-      iframeDoc.querySelector('input[placeholder*="code" i]') ||
-      iframeDoc.querySelector('input[type="password"]');
-
-    const submitBtn =
-      iframeDoc.querySelector('button#joinBtn') ||
-      iframeDoc.querySelector('button[type="submit"]') ||
-      iframeDoc.querySelector('button.btn-primary') ||
-      Array.from(iframeDoc.querySelectorAll('button')).find(b =>
-        /^(join|ok|submit|confirm|verify)$/i.test(b.textContent.trim())
-      );
-
-    let filledSomething = false;
-
-    // Handle Name Input
-    if (nameInput && nameInput.value !== displayName) {
-      const nativeInputSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLInputElement.prototype, 'value'
-      )?.set;
-
-      if (nativeInputSetter) {
-        nativeInputSetter.call(nameInput, displayName);
-      } else {
-        nameInput.value = displayName;
-      }
-      nameInput.dispatchEvent(new Event('input', { bubbles: true }));
-      nameInput.dispatchEvent(new Event('change', { bubbles: true }));
-      filledSomething = true;
-      console.log('[AutoJoin] Filled Name:', displayName);
-    }
-
-    // Handle Passcode Input (if passcode is provided)
-    if (passcodeInput && passcode && passcodeInput.value !== passcode) {
-      const nativeInputSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLInputElement.prototype, 'value'
-      )?.set;
-
-      if (nativeInputSetter) {
-        nativeInputSetter.call(passcodeInput, passcode);
-      } else {
-        passcodeInput.value = passcode;
-      }
-      passcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
-      passcodeInput.dispatchEvent(new Event('change', { bubbles: true }));
-      filledSomething = true;
-      console.log('[AutoJoin] Filled Passcode:', passcode);
-    }
-
-    // If we filled something, wait a small delay for React/Vue state to update, then click
-    if (filledSomething) {
-      setTimeout(() => {
-        if (passcodeInput && submitBtn && !submitBtn.disabled) {
-          submitBtn.click();
-          console.log('[AutoJoin] Clicked Submit/Join for passcode screen');
-        } else if (nameInput && joinBtn && !joinBtn.disabled) {
-          joinBtn.click();
-          console.log('[AutoJoin] Clicked Join for name screen');
-        }
-        // Always continue polling to handle subsequent screens (e.g. name screen followed by passcode screen)
-        setTimeout(tryFill, 500);
-      }, 300);
-    } else {
-      // If we see the buttons and they are enabled, click them anyway just in case the value was already filled
-      if (passcodeInput && submitBtn && !submitBtn.disabled && passcodeInput.value === passcode) {
-        submitBtn.click();
-        console.log('[AutoJoin] Clicked submitBtn (passcode already matched)');
-        setTimeout(tryFill, 500);
-      } else if (nameInput && joinBtn && !joinBtn.disabled && nameInput.value === displayName) {
-        joinBtn.click();
-        console.log('[AutoJoin] Clicked joinBtn (name already matched)');
-        setTimeout(tryFill, 500);
-      } else {
-        // Nothing to fill or click yet — poll again
-        setTimeout(tryFill, 400);
-      }
-    }
-  }
-
-  // Start polling once iframe fires its first load event
-  iframe.addEventListener('load', () => {
-    attempts = 0; // reset on each navigation inside the iframe
-    setTimeout(tryFill, 600);
-  }, { passive: true });
-
-  // Also start immediately in case the load event already fired
-  setTimeout(tryFill, 800);
-}
 
 // --- Full-screen Preloader State Management ---
 let bgLoaded = true;
@@ -4605,69 +4397,6 @@ setTimeout(hidePreloader, 800);
 
 // ─── Grouped Recorded Lectures & Interactive Parallax redone ─────────────────
 
-const MOCK_RECORDINGS = [
-  {
-    id: 'rec-sapphire-1',
-    title: 'Pharmacology Day 1: Anti-Hypertensive Drugs & Cardiac Assessment',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Pharmacology',
-    date: '2026-06-05',
-    duration: '2h 15m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-  },
-  {
-    id: 'rec-sapphire-2',
-    title: 'Pharmacology Day 2: Diuretics & Renin-Angiotensin System',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Pharmacology',
-    date: '2026-06-06',
-    duration: '1h 50m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4'
-  },
-  {
-    id: 'rec-sapphire-3',
-    title: 'Cardiology Day 1: ECG Interpretation Fundamentals',
-    instructor: 'Dr. Suresh Sharma',
-    batch: 'Blue Sapphire Batch',
-    subject: 'Cardiology',
-    date: '2026-06-04',
-    duration: '2h 30m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4'
-  },
-  {
-    id: 'rec-pearl-1',
-    title: 'Community Health Nursing: Maternal & Child Health Indicators',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Community Health Nursing',
-    date: '2026-06-05',
-    duration: '1h 45m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4'
-  },
-  {
-    id: 'rec-pearl-2',
-    title: 'Community Health Nursing: Immunization Schedules & Cold Chain',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Community Health Nursing',
-    date: '2026-06-06',
-    duration: '2h 05m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4'
-  },
-  {
-    id: 'rec-pearl-3',
-    title: 'Pediatric Care: Neonatal Reflexes & Growth Assessment',
-    instructor: 'Mukhminder Singh',
-    batch: 'Pearl Batch',
-    subject: 'Pediatrics',
-    date: '2026-06-03',
-    duration: '1h 30m',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4'
-  }
-];
-
 let currentRecordings = [];
 
 function getSubjectFromTitle(title) {
@@ -4692,20 +4421,21 @@ async function renderVideoLibrary(isSilent = false) {
   classListContainer.innerHTML = '';
   classListContainer.style.display = 'block';
 
-  if (!isSilent && dashboardLoader) {
-    dashboardLoader.classList.remove('hide');
-  }
-  if (!isSilent && refetchBtn) {
-    refetchBtn.classList.add('spinning');
-    refetchBtn.disabled = true;
+  const token = localStorage.getItem('nnl_access_token');
+  if (!token) {
+    classListContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+        <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">Login Required</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Please log in with your registered NNL ONE mobile number to access your recorded lectures.</p>
+        <button onclick="handleLogout()" style="display: inline-block; padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: none; border-radius: 12px; letter-spacing: 0.05em; cursor: pointer;">Go to Login</button>
+      </div>
+    `;
+    return;
   }
 
-  const token = localStorage.getItem('nnl_access_token');
-  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
   const simplifiedBatch = getSimplifiedBatchTitle(activeBatch);
   const batchId = getApiBatchId(activeBatch); // fallback hardcoded ID
   let realBatchId = batchId; // will be overwritten with real API batch ID
-
 
   // Show loading state
   classListContainer.innerHTML = `
@@ -4719,92 +4449,107 @@ async function renderVideoLibrary(isSilent = false) {
     let subjects = [];
     let allRecordingsBySubject = {};
 
-    if (isGuest) {
-      // Use mock data for guests
-      subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
-      const mockMaterials = MOCK_SUBJECT_MATERIALS;
-      subjects.forEach(sub => {
-        const mock = mockMaterials[sub.id] || mockMaterials[466];
-        if (mock && mock.videos && mock.videos.length > 0) {
-          allRecordingsBySubject[sub.title] = mock.videos.map(v => ({
-            id: v.id,
-            title: v.title,
-            instructor: v.faculty?.name || 'Faculty',
-            batch: activeBatch,
-            subject: sub.title,
-            date: '',
-            duration: v.duration ? `${Math.floor(v.duration / 3600)}h ${Math.floor((v.duration % 3600) / 60)}m` : '2h 0m',
-            videoUrl: v.videoUrl || '',
-            video_cipher_id: v.video_cipher_id || null
-          }));
-        }
+    // 1. Resolve user's active plan ID based on active batch
+    let planId = getApiPlanId(activeBatch);
+    try {
+      const planRes = await fetch(`${API_BASE}/payment/my_plans/`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
-    } else {
-      // Fetch the batch's subject list
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        const pList = planData.data || planData.results || [];
+        const matchingPlan = pList.find(p => p.plan?.id === planId);
+        if (matchingPlan) {
+          planId = matchingPlan.plan.id;
+        }
+      }
+    } catch (e) {
+      console.warn('[Plan Resolver] Error resolving active plan:', e);
+    }
+
+    // 2. Fetch real subjects for the plan
+    let subRes = await fetch(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+    if (!subRes.ok) {
+      subRes = await fetch(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+    }
+    if (subRes.ok) {
+      const sData = await subRes.json();
+      subjects = sData.data || sData.results || [];
+    }
+
+    // Fallback to batch subjects if plan subjects empty
+    if (subjects.length === 0) {
       let batchRes = await fetch(`${API_BASE}/cms/batches/`, {
         headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
       });
-
-      if (batchRes.status === 401) {
-        const refreshed = await refreshAccessToken();
-        if (refreshed) {
-          const newToken = localStorage.getItem('nnl_access_token');
-          batchRes = await fetch(`${API_BASE}/cms/batches/`, {
-            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
-          });
-        } else {
-          handleLogout();
-          return;
-        }
-      }
-
       if (batchRes.ok) {
         const result = await batchRes.json();
-        const apiBatches = result.data || result.results || [];
-        const batchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
+        const apiBatches = result.data || result.results || (Array.isArray(result) ? result : []);
+        const batchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch) || apiBatches[0];
         if (batchData && batchData.subjects) {
           subjects = batchData.subjects;
-          // Use the REAL batch ID from API - hardcoded batchId causes all subjects to return same videos
           realBatchId = batchData.id;
         }
       }
+    }
 
-      if (subjects.length === 0) {
-        subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
-      }
+    // 3. Concurrently fetch topics and subtopic videos for each subject
+    const currentToken = localStorage.getItem('nnl_access_token');
+    const authH = { 'Authorization': `Bearer ${currentToken}`, 'Accept': 'application/json' };
 
-      // Fetch videos for all subjects in parallel
-      const currentToken = localStorage.getItem('nnl_access_token');
-      const videoFetches = subjects.map(async sub => {
-        try {
-          const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${realBatchId}&subject_id=${sub.id}`, {
-            headers: { 'Authorization': `Bearer ${currentToken}`, 'Accept': 'application/json' }
-          });
-          if (vRes.ok) {
-            const vData = await vRes.json();
-            const videos = vData.data || vData.results || [];
-            if (videos.length > 0) {
-              allRecordingsBySubject[sub.title] = videos.map(v => ({
-                id: v.id,
-                title: v.title,
-                instructor: v.faculty?.name || v.faculty?.fullName || 'Faculty',
-                batch: activeBatch,
-                subject: sub.title,
-                date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
-                duration: v.duration ? `${Math.floor(v.duration / 3600)}h ${Math.floor((v.duration % 3600) / 60)}m` : '',
-                videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || v.download_link || '',
-                video_cipher_id: v.video_cipher_id || null,
-                thumbnails: v.thumbnails || null
-              }));
+    const videoFetches = subjects.map(async sub => {
+      try {
+        const topRes = await fetch(`${API_BASE}/cms/fe/videos/topic/?subject=${sub.id}&page_size=50`, { headers: authH });
+        if (topRes.ok) {
+          const topData = await topRes.json();
+          const topics = topData.data || topData.results || [];
+          const subVideos = [];
+
+          for (const top of topics) {
+            try {
+              const stRes = await fetch(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=50`, { headers: authH });
+              if (stRes.ok) {
+                const stData = await stRes.json();
+                const subtopics = stData.data || stData.results || [];
+                subtopics.forEach(st => {
+                  const v = st.videos || st.video;
+                  if (v && typeof v === 'object') {
+                    const durHrs = v.duration ? Math.floor(v.duration / 3600) : 0;
+                    const durMins = v.duration ? Math.floor((v.duration % 3600) / 60) : 0;
+                    subVideos.push({
+                      id: v.id,
+                      title: v.title || st.title || 'Lecture Video',
+                      instructor: v.faculty?.name || v.instructor || 'Faculty',
+                      batch: activeBatch,
+                      subject: sub.title,
+                      date: v.schedule_start_time ? v.schedule_start_time.split('T')[0] : '',
+                      duration: durHrs > 0 ? `${durHrs}h ${durMins}m` : `${durMins}m`,
+                      videoUrl: v.video_url || v.videoUrl || v.url || v.download_url || '',
+                      video_cipher_id: v.video_cipher_id || v.vdo_cipher_id || v.vdoCipherId || v.cipher_id || '',
+                      thumbnails: v.thumbnails || null
+                    });
+                  }
+                });
+              }
+            } catch (err) {
+              console.warn(`Error fetching subtopics for topic ${top.id}:`, err);
             }
           }
-        } catch (err) {
-          console.warn(`Failed to fetch videos for subject ${sub.title}:`, err);
-        }
-      });
 
-      await Promise.all(videoFetches);
-    }
+          if (subVideos.length > 0) {
+            allRecordingsBySubject[sub.title] = subVideos;
+          }
+        }
+      } catch (err) {
+        console.warn(`Failed to fetch videos for subject ${sub.title}:`, err);
+      }
+    });
+
+    await Promise.all(videoFetches);
 
     // Build flat list for currentRecordings (so openRecordingPlayer works)
     currentRecordings = [];
@@ -4844,7 +4589,7 @@ async function renderVideoLibrary(isSilent = false) {
       let rowsHtml = '';
       subjectVids.forEach((rec, idx) => {
         const rowNum = (idx + 1).toString().padStart(2, '0');
-        const isPlayable = !!(rec.video_cipher_id || rec.videoUrl);
+        const isPlayable = !!(rec.id || rec.video_cipher_id || rec.videoUrl);
         const thumb = rec.thumbnails ? (rec.thumbnails[0]?.url || '') : '';
         rowsHtml += `
           <div class="recording-row" data-rec-id="${rec.id}">
@@ -4864,7 +4609,7 @@ async function renderVideoLibrary(isSilent = false) {
               <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;">
                 <path d="M8 5v14l11-7z"/>
               </svg>
-              <span>${isPlayable ? 'Play' : 'App Only'}</span>
+              <span>Play</span>
             </button>
           </div>
         `;
@@ -4987,7 +4732,7 @@ function openRecordingPlayer(recording) {
   
   if (!viewer) return;
   
-  if (titleEl) titleEl.textContent = recording.title;
+  if (titleEl) titleEl.textContent = recording.title || 'Recorded Lecture';
   const facultyName = recording.faculty ? (recording.faculty.name || recording.faculty) : (recording.instructor || 'Faculty');
   if (instructorEl) instructorEl.textContent = `Instructor: ${facultyName}`;
   
@@ -5001,7 +4746,10 @@ function openRecordingPlayer(recording) {
   if (videoEl) videoEl.classList.remove('hide');
   if (noUrlEl) noUrlEl.classList.add('hide');
 
-  if (recording.video_cipher_id) {
+  const cipherId = recording.video_cipher_id || recording.vdo_cipher_id || recording.vdoCipherId || recording.cipher_id;
+  const recId = recording.id;
+
+  if (cipherId || recId) {
     if (videoEl) {
       videoEl.pause();
       videoEl.src = '';
@@ -5013,50 +4761,73 @@ function openRecordingPlayer(recording) {
     const loader = document.createElement('div');
     loader.id = 'recording-cipher-loader';
     loader.className = 'full-loader';
-    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing stream via VdoCipher...</p>';
+    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing DRM stream via VdoCipher...</p>';
     bodyEl.appendChild(loader);
     
     const token = localStorage.getItem('nnl_access_token');
-    fetch(`${API_BASE}/batch_cms/videos/${recording.id}/generate_videocipher_otp/`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (loader) loader.remove();
-      if (data && data.otp && data.playbackInfo) {
-        const iframe = document.createElement('iframe');
-        iframe.id = 'recording-cipher-iframe';
-        iframe.src = `https://player.vdocipher.com/v2/?otp=${data.otp}&playbackInfo=${data.playbackInfo}`;
-        iframe.style.border = 'none';
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.borderRadius = '12px';
-        iframe.setAttribute('allow', 'encrypted-media');
-        iframe.setAttribute('allowfullscreen', 'true');
-        bodyEl.appendChild(iframe);
-      } else {
-        if (noUrlEl) noUrlEl.classList.remove('hide');
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      if (loader) loader.remove();
-      if (noUrlEl) noUrlEl.classList.remove('hide');
-    });
-    
-  } else if (recording.videoUrl) {
-    if (videoEl) {
-      videoEl.src = recording.videoUrl;
-      videoEl.classList.remove('hide');
-      videoEl.load();
-      videoEl.play().catch(err => {
-        console.log('Video autoplay failed:', err);
+    const authHeaders = {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    };
+
+    const tryGetOtp = (url) => {
+      return fetch(url, { method: 'GET', headers: authHeaders }).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
       });
-    }
+    };
+
+    // Cascading OTP generator: Try Batch first, then CMS, then Offline, then Live Recordings, then Question Bank
+    tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_otp/`)
+      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_otp/`))
+      .catch(() => tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_offline/`))
+      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_offline/`))
+      .catch(() => tryGetOtp(`${API_BASE}/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`))
+      .catch(() => tryGetOtp(`${API_BASE}/cms/question_bank/${recId}/generate_videocipher_otp/`))
+      .then(data => {
+        if (loader) loader.remove();
+        if (data && data.otp && data.playbackInfo) {
+          const iframe = document.createElement('iframe');
+          iframe.id = 'recording-cipher-iframe';
+          iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;
+          iframe.style.border = 'none';
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          iframe.style.borderRadius = '12px';
+          iframe.setAttribute('allow', 'encrypted-media *; autoplay *; fullscreen *; picture-in-picture *');
+          iframe.setAttribute('allowfullscreen', 'true');
+          iframe.setAttribute('webkitallowfullscreen', 'true');
+          iframe.setAttribute('mozallowfullscreen', 'true');
+          iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+          bodyEl.appendChild(iframe);
+        } else {
+          fallbackDirectPlayback(recording);
+        }
+      })
+      .catch(err => {
+        console.warn('[VdoCipher] OTP cascade failed, checking direct URL:', err);
+        if (loader) loader.remove();
+        fallbackDirectPlayback(recording);
+      });
+    
+  } else {
+    fallbackDirectPlayback(recording);
+  }
+}
+
+function fallbackDirectPlayback(recording) {
+  const videoEl = document.getElementById('recording-video');
+  const noUrlEl = document.getElementById('recording-no-url');
+  const directUrl = recording.videoUrl || recording.video_url || recording.url || recording.download_url;
+
+  if (directUrl && videoEl) {
+    videoEl.src = directUrl;
+    videoEl.classList.remove('hide');
+    videoEl.load();
+    videoEl.play().catch(err => {
+      console.log('Video autoplay deferred:', err);
+    });
+    if (noUrlEl) noUrlEl.classList.add('hide');
   } else {
     if (videoEl) {
       videoEl.src = '';
@@ -5079,151 +4850,79 @@ setInterval(() => {
    SUBJECT LIBRARY & QUIZ PLAYER REDESIGN
 ───────────────────────────────────────────────────────────────────── */
 
-// Mappings of UI Batch names to backend Batch IDs (Dynamic API map first, fallback to static defaults)
+// Mappings of UI Batch names to backend Batch IDs (English vs Hinglish)
 function getApiBatchId(batchName) {
-  if (!batchName) return 8;
-  const simplified = getSimplifiedBatchTitle(batchName);
-  if (dynamicBatchMap[simplified]) {
-    return dynamicBatchMap[simplified];
-  }
-  const name = batchName.toUpperCase();
-  if (name.includes('RED') && name.includes('SAPPHIRE')) return 8;
-  if (name.includes('SAPPHIRE') || name.includes('BLUE')) return 8;
-  if (name.includes('PEARL') && name.includes('ENGLISH')) return 7;
-  if (name.includes('PEARL')) return 8;
-  if (name.includes('FASTRACK') || name.includes('FAST TRACK')) return 3;
-  return 8; 
+  const name = (batchName || activeBatch || '').toUpperCase();
+  if (name.includes('ENGLISH')) return 104; // Red Sapphire Batch (English)
+  return 103; // Red Sapphire Batch (Hinglish)
 }
 
-const MOCK_SUBJECTS_DATA = {
-  'Red Sapphire Batch': [
-    { id: 466, title: 'Pharmacology' },
-    { id: 458, title: 'Anatomy & Physiology' },
-    { id: 459, title: 'Biochemistry & Nutrition' },
-    { id: 465, title: 'Mental Health Nursing' },
-    { id: 472, title: 'Community Health Nursing' },
-    { id: 494, title: 'Pediatric Nursing' }
-  ],
-  'Blue Sapphire Batch': [
-    { id: 466, title: 'Pharmacology' },
-    { id: 458, title: 'Anatomy & Physiology' },
-    { id: 459, title: 'Biochemistry & Nutrition' },
-    { id: 465, title: 'Mental Health Nursing' },
-    { id: 472, title: 'Community Health Nursing' }
-  ],
-  'Pearl Batch': [
-    { id: 491, title: 'Community Health Nursing' },
-    { id: 494, title: 'Pediatrics' },
-    { id: 495, title: 'Pharmacology' },
-    { id: 497, title: 'Mental Health Nursing' }
-  ]
-};
-
-const MOCK_SUBJECT_MATERIALS = {
-  466: {
-    videos: [
-      { id: 'mock-vid-1', title: 'Pharmacology Day 1: Anti-Hypertensive Drugs & Cardiac Assessment', duration: 8100, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4' },
-      { id: 'mock-vid-2', title: 'Pharmacology Day 2: Diuretics & Renin-Angiotensin System', duration: 6600, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4' }
-    ],
-    notes: [
-      { id: 'mock-note-1', title: 'Anti-Hypertensive Class Notes Complete PDF', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-      { id: 'mock-note-2', title: 'Renin-Angiotensin System Flowcharts Notes', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
-    ],
-    tests: [
-      { id: 9901, title: 'Pharmacology TAT 1 MCQ Practice (NORCET)', total_question: 2, duration: 600, level_str: 'Medium' }
-    ]
-  },
-  458: {
-    videos: [
-      { id: 'mock-vid-3', title: 'Anatomy Day 1: Cardiovascular System Structure & Chambers', duration: 7800, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4' },
-      { id: 'mock-vid-4', title: 'Anatomy Day 2: Nervous System & Cranial Nerve Pathways', duration: 6900, faculty: { name: 'Dr. Suresh Sharma' }, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4' }
-    ],
-    notes: [
-      { id: 'mock-note-3', title: 'Cardiovascular System Anatomy Handouts', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-      { id: 'mock-note-4', title: 'Nervous System Synapses and Pathways Notes', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
-    ],
-    tests: [
-      { id: 9903, title: 'Cardiovascular Anatomy Practice Test', total_question: 2, duration: 600, level_str: 'Medium' }
-    ]
-  }
-};
-
-const MOCK_QUIZ_QUESTIONS = {
-  9901: [
-    {
-      id: 1,
-      type_str: 'MCQ',
-      level_str: 'Medium',
-      title: 'Which of the following is considered a first-line agent for primary hypertension in a patient with diabetes mellitus?',
-      choices: [
-        { id: 101, title: 'Beta-blockers', is_correct: false },
-        { id: 102, title: 'ACE Inhibitors (Lisinopril)', is_correct: true, correct_explanation: 'ACE inhibitors like Lisinopril are renoprotective and preferred first-line agents in hypertensive patients with diabetes.' },
-        { id: 103, title: 'Calcium Channel Blockers (Diltiazem)', is_correct: false },
-        { id: 104, title: 'Loop Diuretics (Furosemide)', is_correct: false }
-      ]
-    },
-    {
-      id: 2,
-      type_str: 'MCQ',
-      level_str: 'Easy',
-      title: 'What is the primary mechanism of action of nitroglycerin in relieving angina pectoris?',
-      choices: [
-        { id: 201, title: 'Vascular smooth muscle relaxation leading to venodilation and decreased preload', is_correct: true, correct_explanation: 'Nitroglycerin primarily causes venodilation, which decreases venous return (preload) and reduces myocardial oxygen demand.' },
-        { id: 202, title: 'Direct negative inotropic effect on myocardium', is_correct: false },
-        { id: 203, title: 'Inhibition of angiotensin converting enzyme', is_correct: false },
-        { id: 204, title: 'Blocking beta-adrenergic receptors', is_correct: false }
-      ]
-    }
-  ],
-  9903: [
-    {
-      id: 1,
-      type_str: 'MCQ',
-      level_str: 'Easy',
-      title: 'Which chamber of the heart has the thickest muscular wall?',
-      choices: [
-        { id: 301, title: 'Right Atrium', is_correct: false },
-        { id: 302, title: 'Left Atrium', is_correct: false },
-        { id: 303, title: 'Right Ventricle', is_correct: false },
-        { id: 304, title: 'Left Ventricle', is_correct: true, correct_explanation: 'The left ventricle has the thickest myocardium because it must generate enough pressure to pump blood to the entire systemic circulation.' }
-      ]
-    },
-    {
-      id: 2,
-      type_str: 'MCQ',
-      level_str: 'Medium',
-      title: 'What is the correct pathway of heart conduction?',
-      choices: [
-        { id: 401, title: 'SA Node -> AV Node -> Bundle of His -> Purkinje Fibers', is_correct: true, correct_explanation: 'The conduction impulse originates in SA node, propagates through AV node and Bundle of His, then spreads via Purkinje fibers.' },
-        { id: 402, title: 'AV Node -> SA Node -> Purkinje Fibers -> Bundle of His', is_correct: false },
-        { id: 403, title: 'SA Node -> Bundle of His -> AV Node -> Purkinje Fibers', is_correct: false },
-        { id: 404, title: 'Purkinje Fibers -> SA Node -> AV Node -> Bundle of His', is_correct: false }
-      ]
-    }
-  ]
-};
+// Mappings of UI Batch names to backend Plan IDs (English vs Hinglish)
+function getApiPlanId(batchName) {
+  const name = (batchName || activeBatch || '').toUpperCase();
+  if (name.includes('ENGLISH')) return 78; // Plan MLB Pro Red Sapphire Batch (English)
+  return 77; // Plan MLB Pro Red Sapphire Batch (Hinglish)
+}
 
 async function renderSubjectLibrary(isSilent = false) {
   if (!classListContainer) return;
   classListContainer.innerHTML = '';
   classListContainer.style.display = 'block';
-
-  if (!isSilent && dashboardLoader) {
-    dashboardLoader.classList.remove('hide');
-  }
+  if (liveNowSection) liveNowSection.classList.add('hide');
 
   const token = localStorage.getItem('nnl_access_token');
-  const isGuest = token === 'GUEST_DEMO_TOKEN';
+  if (!token) {
+    classListContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+        <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">Login Required</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Please log in with your registered NNL ONE mobile number to access subjects, notes, and tests.</p>
+        <button onclick="handleLogout()" style="display: inline-block; padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: none; border-radius: 12px; letter-spacing: 0.05em; cursor: pointer;">Go to Login</button>
+      </div>
+    `;
+    return;
+  }
+
   const simplifiedBatch = getSimplifiedBatchTitle(activeBatch);
-  const batchId = getApiBatchId(activeBatch); // fallback hardcoded ID
-  let realBatchId = batchId; // will be overwritten with real API batch ID
+  const batchId = getApiBatchId(activeBatch);
+  let realBatchId = batchId;
 
   try {
     let subjects = [];
-    if (isGuest) {
-      subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
-    } else {
-      // Fetch batches to extract subjects list
+
+    // 1. Resolve user's active plan ID based on active batch
+    let planId = getApiPlanId(activeBatch);
+    try {
+      const planRes = await fetch(`${API_BASE}/payment/my_plans/`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        const pList = planData.data || planData.results || [];
+        const matchingPlan = pList.find(p => p.plan?.id === planId);
+        if (matchingPlan) {
+          planId = matchingPlan.plan.id;
+        }
+      }
+    } catch (e) {
+      console.warn('[Plan Resolver] Error resolving active plan in subjects:', e);
+    }
+
+    // 2. Fetch real subjects for the plan
+    let subRes = await fetch(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+    if (!subRes.ok) {
+      subRes = await fetch(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+    }
+    if (subRes.ok) {
+      const sData = await subRes.json();
+      subjects = sData.data || sData.results || [];
+    }
+
+    // 3. Fallback to batch subjects if plan subjects empty
+    if (subjects.length === 0) {
       let response = await fetch(`${API_BASE}/cms/batches/`, {
         method: 'GET',
         headers: {
@@ -5243,29 +4942,18 @@ async function renderSubjectLibrary(isSilent = false) {
               'Accept': 'application/json'
             }
           });
-        } else {
-          handleLogout();
-          return;
         }
       }
 
       if (response.ok) {
         const result = await response.json();
         if (activeTab !== 'subjects' && activeTab !== 'notes' && activeTab !== 'tests') return;
-        const apiBatches = result.data || result.results || [];
-        const currentBatchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch);
+        const apiBatches = result.data || result.results || (Array.isArray(result) ? result : []);
+        const currentBatchData = apiBatches.find(b => b.id === batchId || getSimplifiedBatchTitle(b.title) === simplifiedBatch) || apiBatches[0];
         if (currentBatchData && currentBatchData.subjects) {
           subjects = currentBatchData.subjects;
-          // Use the REAL batch ID from the API, not the hardcoded one
           realBatchId = currentBatchData.id;
         }
-      } else {
-        throw new Error(`Failed to fetch batches (HTTP ${response.status})`);
-      }
-      
-      if (subjects.length === 0) {
-        // Fallback if empty
-        subjects = MOCK_SUBJECTS_DATA[simplifiedBatch] || MOCK_SUBJECTS_DATA['Blue Sapphire Batch'];
       }
     }
 
@@ -5433,85 +5121,160 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
   const subjectTitle = accordionEl.querySelector('.subject-name')?.textContent || '';
 
   const token = localStorage.getItem('nnl_access_token');
-  const isGuest = !token || token === 'GUEST_DEMO_TOKEN';
+  if (!token) return;
 
   try {
     let videos = [];
     let notes = [];
     let tests = [];
 
-    const mockFallback = MOCK_SUBJECT_MATERIALS[subjectId] || MOCK_SUBJECT_MATERIALS[466] || {
-      videos: [{ id: 'm-v1', title: `${subjectTitle} Lecture 1`, duration: 7200, faculty: { name: 'Faculty' } }],
-      notes: [{ id: 'm-n1', title: `${subjectTitle} Complete Class Notes PDF`, url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }],
-      tests: [{ id: 9901, title: `${subjectTitle} TAT Practice Test 1`, total_question: 15, duration: 1800, level_str: 'Medium' }]
-    };
+    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
 
-    if (isGuest) {
-      videos = mockFallback.videos || [];
-      notes = mockFallback.notes || [];
-      tests = mockFallback.tests || [];
-    } else {
-      // Parallel concurrent fetching with Promise.allSettled
-      const [vRes, nRes, tRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        }),
-        fetch(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        }).catch(() => fetch(`${API_BASE}/batch_cms/notes/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        })),
-        fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        }).catch(() => fetch(`${API_BASE}/batch_cms/tests/?batch_id=${batchId}&subject_id=${subjectId}`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        }))
-      ]);
+    // 1. Fetch real hierarchical videos for this subject
+    try {
+      const topRes = await fetch(`${API_BASE}/cms/fe/videos/topic/?subject=${subjectId}&page_size=50`, { headers });
+      if (topRes.ok) {
+        const topData = await topRes.json();
+        const topics = topData.data || topData.results || [];
+        for (const top of topics) {
+          try {
+            const stRes = await fetch(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=50`, { headers });
+            if (stRes.ok) {
+              const stData = await stRes.json();
+              const subtopics = stData.data || stData.results || [];
+              subtopics.forEach(st => {
+                const v = st.videos || st.video;
+                if (v && typeof v === 'object') {
+                  videos.push(v);
+                }
+              });
+            }
+          } catch (e) {}
+        }
+      }
+    } catch (err) {
+      console.warn(`[Subject Materials] Error fetching plan videos for subject ${subjectId}:`, err);
+    }
 
-      // Parse Videos safely
-      if (vRes.status === 'fulfilled' && vRes.value.ok) {
-        try {
-          const d = await vRes.value.json();
-          const allV = d.data || d.results || (Array.isArray(d) ? d : []);
+    // Fallback to batch videos ONLY if plan videos empty, and STRICTLY filter without dumping all
+    if (videos.length === 0 && batchId) {
+      try {
+        const vRes = await fetch(`${API_BASE}/batch_cms/videos/?batch_id=${batchId}&subject_id=${subjectId}&page_size=200`, { headers });
+        if (vRes.ok) {
+          const d = await vRes.json();
+          const allV = d.data || d.results || [];
           videos = allV.filter(v => doesItemBelongToSubject(v, subjectId, subjectTitle));
-          if (videos.length === 0) videos = allV;
-        } catch (e) {}
-      }
+        }
+      } catch (e) {}
+    }
 
-      // Parse Notes safely
-      if (nRes.status === 'fulfilled' && nRes.value.ok) {
-        try {
-          const d = await nRes.value.json();
-          const allN = d.data || d.results || (Array.isArray(d) ? d : []);
-          notes = allN.filter(n => doesItemBelongToSubject(n, subjectId, subjectTitle));
-          if (notes.length === 0) notes = allN;
-        } catch (e) {}
+    // 2. Fetch real day-wise handwritten notes & digital notes for this subject
+    try {
+      const htRes = await fetch(`${API_BASE}/cms/fe/handwritten_notes/topic/?subject=${subjectId}&page_size=50`, { headers });
+      if (htRes.ok) {
+        const htData = await htRes.json();
+        const htopics = htData.data || htData.results || [];
+        for (const top of htopics) {
+          try {
+            const hstRes = await fetch(`${API_BASE}/cms/fe/handwritten_notes/subtopic/?topic=${top.id}&page_size=50`, { headers });
+            if (hstRes.ok) {
+              const hstData = await hstRes.json();
+              const hsubtopics = hstData.data || hstData.results || [];
+              hsubtopics.forEach(st => {
+                const n = st.handwritten_notes || st.notes || st.handwritten_note;
+                if (n && typeof n === 'object') {
+                  notes.push({
+                    id: n.id,
+                    title: n.title || st.title || 'Day-wise Class Notes',
+                    url: n.url || n.file || n.pdf_url || '',
+                    category: 'HANDWRITTEN'
+                  });
+                }
+              });
+            }
+          } catch (e) {}
+        }
       }
+    } catch (err) {
+      console.warn(`[Subject Materials] Error fetching handwritten notes for subject ${subjectId}:`, err);
+    }
 
-      // Parse Tests safely
-      if (tRes.status === 'fulfilled' && tRes.value.ok) {
-        try {
-          const d = await tRes.value.json();
-          const allT = d.data || d.results || (Array.isArray(d) ? d : []);
+    // Also fetch digital notes for this subject
+    try {
+      const ntRes = await fetch(`${API_BASE}/cms/fe/notes/topic/?subject=${subjectId}&page_size=50`, { headers });
+      if (ntRes.ok) {
+        const ntData = await ntRes.json();
+        const ntopics = ntData.data || ntData.results || [];
+        for (const top of ntopics) {
+          try {
+            const nstRes = await fetch(`${API_BASE}/cms/fe/notes/subtopic/?topic=${top.id}&page_size=50`, { headers });
+            if (nstRes.ok) {
+              const nstData = await nstRes.json();
+              const nsubtopics = nstData.data || nstData.results || [];
+              nsubtopics.forEach(st => {
+                const n = st.notes || st.note;
+                if (n && typeof n === 'object') {
+                  notes.push({
+                    id: n.id,
+                    title: n.title || st.title || 'Class Handout',
+                    url: n.url || n.file || n.pdf_url || '',
+                    category: 'HIGH-YIELD'
+                  });
+                }
+              });
+            }
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+
+    // Fallback to batch notes ONLY if notes empty, and strictly filter
+    if (notes.length === 0 && batchId) {
+      try {
+        const nRes = await fetch(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, { headers });
+        if (nRes.ok) {
+          const d = await nRes.json();
+          const allN = d.data || d.results || [];
+          const filtered = allN.filter(n => doesItemBelongToSubject(n, subjectId, subjectTitle));
+          filtered.forEach(n => {
+            notes.push({
+              id: n.id,
+              title: n.title || 'Class Note',
+              url: n.url || n.file || n.pdf_url || '',
+              category: 'HANDWRITTEN'
+            });
+          });
+        }
+      } catch (e) {}
+    }
+
+    // 3. Fetch practice questions / tests for this subject
+    try {
+      const qRes = await fetch(`${API_BASE}/cms/fe/question_bank/topic/?subject=${subjectId}&page_size=50`, { headers });
+      if (qRes.ok) {
+        const qData = await qRes.json();
+        const qList = qData.data || qData.results || [];
+        qList.forEach(q => {
+          tests.push({
+            id: q.id,
+            title: q.title || 'Practice QBank',
+            total_question: q.questions_count || q.total_question || 30,
+            duration: q.duration || 1800,
+            type_str: 'QBANK'
+          });
+        });
+      }
+    } catch (e) {}
+
+    if (tests.length === 0 && batchId) {
+      try {
+        const tRes = await fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&subject_id=${subjectId}`, { headers });
+        if (tRes.ok) {
+          const d = await tRes.json();
+          const allT = d.data || d.results || [];
           tests = allT.filter(t => doesItemBelongToSubject(t, subjectId, subjectTitle));
-          if (tests.length === 0) tests = allT;
-        } catch (e) {}
-      }
-
-      // Fallbacks if notes or tests returned empty from backend API
-      if (notes.length === 0) {
-        notes = mockFallback.notes || [
-          { id: `fn-${subjectId}-1`, title: `${subjectTitle} Classroom Handouts & Notes PDF`, url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-          { id: `fn-${subjectId}-2`, title: `${subjectTitle} High-Yield Revision Sheet`, url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
-        ];
-      }
-
-      if (tests.length === 0) {
-        tests = mockFallback.tests || [
-          { id: 9901, title: `${subjectTitle} TAT Practice Test 1`, total_question: 20, duration: 1800, level_str: 'Medium' },
-          { id: 9903, title: `${subjectTitle} Special CBT Practice Quiz`, total_question: 15, duration: 1200, level_str: 'Hard' }
-        ];
-      }
+        }
+      } catch (e) {}
     }
 
     accordionEl.setAttribute('data-loaded', 'true');
@@ -5522,7 +5285,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     // 1. Populate videos
     let vidsHtml = '<div class="material-column-title">📹 Recorded Classes</div>';
     if (videos.length === 0) {
-      vidsHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No recorded lectures available.</p>';
+      vidsHtml += '<p style="color: var(--text-muted); font-size: 0.75rem; padding: 1rem 0; margin: 0; text-align: center;">No recorded lectures available for this subject.</p>';
     } else {
       videos.forEach(v => {
         const durHrs = v.duration ? Math.floor(v.duration / 3600) : 2;
@@ -5548,10 +5311,6 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
         e.stopPropagation();
         const vidId = btn.getAttribute('data-id');
         let selectedVid = videos.find(v => String(v.id) === String(vidId));
-        if (!selectedVid) {
-          // Check mock fallback
-          selectedVid = videos[0];
-        }
         if (selectedVid) {
           openRecordingPlayer(selectedVid);
         }
@@ -5561,18 +5320,21 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     // 2. Populate notes
     let notesHtml = '<div class="material-column-title">📄 Class Notes & Handouts</div>';
     if (notes.length === 0) {
-      notesHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No PDF notes available.</p>';
+      notesHtml += '<p style="color: var(--text-muted); font-size: 0.75rem; padding: 1rem 0; margin: 0; text-align: center;">No PDF notes available for this subject.</p>';
     } else {
       notes.forEach(n => {
-        let category = 'HANDWRITTEN';
+        let category = n.category || 'HANDWRITTEN';
         const titleUpper = (n.title || '').toUpperCase();
-        if (titleUpper.includes('SUMMARY') || titleUpper.includes('FLOWCHART') || titleUpper.includes('HIGH YIELD') || titleUpper.includes('REVISION')) {
+        if (titleUpper.includes('DAY')) {
+          category = 'DAY-WISE';
+        } else if (titleUpper.includes('SUMMARY') || titleUpper.includes('FLOWCHART') || titleUpper.includes('HIGH YIELD') || titleUpper.includes('REVISION')) {
           category = 'HIGH-YIELD';
         } else if (titleUpper.includes('SLIDE') || titleUpper.includes('PRESENTATION') || titleUpper.includes('HANDOUT')) {
           category = 'SLIDES';
         }
 
-        const badgeColor = category === 'HIGH-YIELD' ? '#10b981' : category === 'SLIDES' ? '#ec4899' : '#3b82f6';
+        const badgeColor = category === 'DAY-WISE' ? '#00f3d0' : category === 'HIGH-YIELD' ? '#10b981' : category === 'SLIDES' ? '#ec4899' : '#3b82f6';
+        const noteUrl = n.url || n.file || n.pdf_url || n.document_url || n.pdf || n.link || n.attachment || '';
 
         notesHtml += `
           <div class="material-item" style="border-left: 3px solid ${badgeColor}; padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 10px;">
@@ -5583,7 +5345,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
                 <span class="material-item-meta" style="font-size: 0.7rem; color: var(--text-muted);">PDF Document</span>
               </div>
             </div>
-            <a href="${n.url}" target="_blank" class="material-item-btn" style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;">View PDF</a>
+            ${noteUrl ? `<a href="${noteUrl}" target="_blank" class="material-item-btn" style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;">View PDF</a>` : `<button class="material-item-btn" disabled style="opacity: 0.5; padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px;">PDF Unavailable</button>`}
           </div>
         `;
       });
@@ -5640,71 +5402,525 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
   }
 }
 
-// CBT QUIZ VIEWER ENGINE
-let quizTimerInterval = null;
+// ─────────────────────────────────────────────────────────────────────────────
+// PRACTICE TESTS HUB (DAILY TATs, BENCHMARK CTATs, & ARCHIVE CARDS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Helper to categorize batch tests by subject
+function getSubjectGroupForTest(test) {
+  const tUpper = (test.title || '').toUpperCase();
+  if (tUpper.includes('A&P') || tUpper.includes('ANATOMY') || tUpper.includes('PHYSIO')) {
+    return { id: 'ap', name: 'Anatomy & Physiology', icon: '🫀' };
+  }
+  if (tUpper.includes('B&N') || tUpper.includes('BIOCHEM') || tUpper.includes('NUTRITION')) {
+    return { id: 'bn', name: 'Biochemistry & Nutrition', icon: '🥗' };
+  }
+  if (tUpper.includes('NRS') || tUpper.includes('RESEARCH') || tUpper.includes('STATISTIC')) {
+    return { id: 'nrs', name: 'Nursing Research & Statistics', icon: '📊' };
+  }
+  if (tUpper.includes('AHN') || tUpper.includes('MEDICINE') || tUpper.includes('SURGERY') || tUpper.includes('ADULT HEALTH') || tUpper.includes('MSN')) {
+    return { id: 'ahn', name: 'Adult Health Nursing (Med-Surg)', icon: '🩺' };
+  }
+  if (tUpper.includes('PEDIATRIC') || tUpper.includes('CHILD') || tUpper.includes('PEDIA')) {
+    return { id: 'ped', name: 'Child Health Nursing (Pediatrics)', icon: '👶' };
+  }
+  if (tUpper.includes('PHARMA')) {
+    return { id: 'pharma', name: 'Pharmacology', icon: '💊' };
+  }
+  if (tUpper.includes('FON') || tUpper.includes('FOUNDATION')) {
+    return { id: 'fon', name: 'Nursing Foundation (FON)', icon: '🏥' };
+  }
+  if (tUpper.includes('CHN') || tUpper.includes('COMMUNITY')) {
+    return { id: 'chn', name: 'Community Health Nursing (CHN)', icon: '🏘️' };
+  }
+  if (tUpper.includes('MHN') || tUpper.includes('PSYCHIATR') || tUpper.includes('MENTAL')) {
+    return { id: 'mhn', name: 'Mental Health Nursing (MHN)', icon: '🧠' };
+  }
+  if (tUpper.includes('OBG') || tUpper.includes('MIDWIFERY') || tUpper.includes('OBSTETRIC')) {
+    return { id: 'obg', name: 'Midwifery & Obstetrical Nursing (OBG)', icon: '🤰' };
+  }
+  if (tUpper.includes('MICROBIO')) {
+    return { id: 'micro', name: 'Microbiology', icon: '🔬' };
+  }
+  if (tUpper.includes('CSAT') || tUpper.includes('CPAT') || tUpper.includes('GRAND') || tUpper.includes('BENCHMARK')) {
+    return { id: 'benchmark', name: 'Cumulative Subject Benchmarks (CSAT / CPAT)', icon: '🏆' };
+  }
+  return { id: 'other', name: 'Clinical & Nursing Practice', icon: '📝' };
+}
+
+// Helper to categorize live class into a subject
+function getSubjectGroupForClass(classItem) {
+  const title = ((classItem.title || classItem.topic || '') + ' ' + (classItem.subject?.title || classItem.subject_name || '')).toUpperCase();
+  if (title.includes('ANATOMY') || title.includes('PHYSIO') || title.includes('A&P')) {
+    return { id: 'ap', name: 'Anatomy & Physiology', icon: '🫀' };
+  }
+  if (title.includes('BIOCHEM') || title.includes('NUTRITION') || title.includes('B&N')) {
+    return { id: 'bn', name: 'Biochemistry & Nutrition', icon: '🥗' };
+  }
+  if (title.includes('RESEARCH') || title.includes('STATISTIC') || title.includes('NRS')) {
+    return { id: 'nrs', name: 'Nursing Research & Statistics', icon: '📊' };
+  }
+  if (title.includes('MEDICINE') || title.includes('SURGERY') || title.includes('AHN') || title.includes('ADULT')) {
+    return { id: 'ahn', name: 'Adult Health Nursing (Med-Surg)', icon: '🩺' };
+  }
+  if (title.includes('PEDIATRIC') || title.includes('CHILD') || title.includes('PEDIA')) {
+    return { id: 'ped', name: 'Child Health Nursing (Pediatrics)', icon: '👶' };
+  }
+  if (title.includes('PHARMA')) {
+    return { id: 'pharma', name: 'Pharmacology', icon: '💊' };
+  }
+  if (title.includes('FOUNDATION') || title.includes('FON')) {
+    return { id: 'fon', name: 'Nursing Foundation (FON)', icon: '🏥' };
+  }
+  if (title.includes('COMMUNITY') || title.includes('CHN')) {
+    return { id: 'chn', name: 'Community Health Nursing (CHN)', icon: '🏘️' };
+  }
+  if (title.includes('PSYCHIATR') || title.includes('MENTAL') || title.includes('MHN')) {
+    return { id: 'mhn', name: 'Mental Health Nursing (MHN)', icon: '🧠' };
+  }
+  if (title.includes('OBG') || title.includes('MIDWIFERY') || title.includes('OBSTETRIC')) {
+    return { id: 'obg', name: 'Midwifery & Obstetrical Nursing (OBG)', icon: '🤰' };
+  }
+  return { id: 'other', name: 'Clinical Lecture', icon: '🎓' };
+}
+
+// Helper to extract day number from title (e.g. Day 1, TAT 1, Part 1)
+function extractDayNumber(str) {
+  if (!str) return 1;
+  const match = str.match(/Day\s*(\d+)/i) || str.match(/TAT\s*(\d+)/i) || str.match(/Part\s*(\d+)/i);
+  return match ? parseInt(match[1], 10) : 1;
+}
+
+// Render the Practice Tests Hub
+async function renderPracticeTestsHub(isSilent = false) {
+  if (!classListContainer) return;
+  classListContainer.innerHTML = '';
+  classListContainer.style.display = 'block';
+  if (liveNowSection) liveNowSection.classList.add('hide');
+
+  const token = localStorage.getItem('nnl_access_token');
+  if (!token) {
+    classListContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+        <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">Login Required</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Please log in with your registered NNL ONE mobile number to access topic assessment tests (TAT) and cumulative benchmarks (CTAT).</p>
+        <button onclick="handleLogout()" style="display: inline-block; padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: none; border-radius: 12px; letter-spacing: 0.05em; cursor: pointer;">Go to Login</button>
+      </div>
+    `;
+    return;
+  }
+
+  // Show preloader skeleton
+  classListContainer.innerHTML = `
+    <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
+      <div class="spinner"></div>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.85rem; letter-spacing: 0.03em;">Synchronizing Topic Assessments (TAT) & CTAT Benchmarks...</p>
+    </div>
+  `;
+
+  const batchId = getApiBatchId(activeBatch);
+
+  try {
+    // 1. Fetch batch tests
+    let allTests = [];
+    const cacheKey = `nnl_tests_batch_${batchId}`;
+    const cachedStr = sessionStorage.getItem(cacheKey);
+
+    if (cachedStr) {
+      try {
+        allTests = JSON.parse(cachedStr);
+      } catch (e) {}
+    }
+
+    if (allTests.length === 0) {
+      const response = await fetch(`${API_BASE}/batch_cms/test/?batch_id=${batchId}&page_size=150`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        const d = await response.json();
+        allTests = d.data || d.results || (Array.isArray(d) ? d : []);
+        sessionStorage.setItem(cacheKey, JSON.stringify(allTests));
+      }
+    }
+
+    // 2. Identify the active/latest class from classesData
+    const cleanClasses = [];
+    if (classesData && classesData.length > 0) {
+      classesData.forEach(item => {
+        if (item.classes && Array.isArray(item.classes)) cleanClasses.push(...item.classes);
+        else if (item.liveClass) cleanClasses.push(item.liveClass);
+        else cleanClasses.push(item);
+      });
+    }
+
+    const batchClasses = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
+    const now = new Date();
+
+    // Sort classes chronologically (most recent first)
+    const sortedClasses = [...batchClasses].sort((a, b) => {
+      const tA = parseApiDate(a.start || a.startTime || '1970-01-01').getTime();
+      const tB = parseApiDate(b.start || b.startTime || '1970-01-01').getTime();
+      return tB - tA;
+    });
+
+    const activeClass = sortedClasses.find(c => {
+      const d = parseApiDate(c.start || c.startTime || '');
+      return d.toDateString() === now.toDateString();
+    }) || sortedClasses[0];
+
+    // 3. Find matching TAT for today's/active class
+    let matchingTat = null;
+    let activeClassSubjectGroup = null;
+    let activeClassDay = 1;
+
+    if (activeClass) {
+      activeClassSubjectGroup = getSubjectGroupForClass(activeClass);
+      activeClassDay = extractDayNumber(activeClass.title || activeClass.topic || '');
+      
+      // Look for a test in allTests matching this subject & day
+      matchingTat = allTests.find(t => {
+        const tUpper = (t.title || '').toUpperCase();
+        const isTat = tUpper.includes('TAT');
+        if (!isTat) return false;
+        const testSubGroup = getSubjectGroupForTest(t);
+        const testDay = extractDayNumber(t.title || '');
+        return testSubGroup.id === activeClassSubjectGroup.id && testDay === activeClassDay;
+      });
+
+      // Fallback: match by subject group if exact day is slightly off
+      if (!matchingTat) {
+        matchingTat = allTests.find(t => {
+          const tUpper = (t.title || '').toUpperCase();
+          return tUpper.includes('TAT') && getSubjectGroupForTest(t).id === activeClassSubjectGroup.id;
+        });
+      }
+    }
+
+    // Fallback if no matching active class: pick the first available TAT in the batch
+    if (!matchingTat) {
+      matchingTat = allTests.find(t => (t.title || '').toUpperCase().includes('TAT')) || allTests[0];
+    }
+
+    // 4. Group all tests into Subjects
+    const subjectMap = {};
+    allTests.forEach(test => {
+      const group = getSubjectGroupForTest(test);
+      if (!subjectMap[group.id]) {
+        subjectMap[group.id] = {
+          id: group.id,
+          name: group.name,
+          icon: group.icon,
+          tats: [],
+          ctats: []
+        };
+      }
+
+      const tUpper = (test.title || '').toUpperCase();
+      const isCtat = tUpper.includes('CSAT') || tUpper.includes('CTAT') || tUpper.includes('BENCHMARK') || test.total_question >= 80;
+      if (isCtat) {
+        subjectMap[group.id].ctats.push(test);
+      } else {
+        subjectMap[group.id].tats.push(test);
+      }
+    });
+
+    // Sort TATs in each subject by Day number ascending
+    Object.values(subjectMap).forEach(sub => {
+      sub.tats.sort((a, b) => extractDayNumber(a.title) - extractDayNumber(b.title));
+      sub.ctats.sort((a, b) => extractDayNumber(a.title) - extractDayNumber(b.title));
+    });
+
+    // 5. Build HTML
+    let hubHtml = `<div class="practice-tests-container">`;
+
+    // ─── 5A. FEATURED DAILY TAT SPOTLIGHT CARD ───
+    if (matchingTat) {
+      const isMatchingClassToday = activeClass ? parseApiDate(activeClass.start || activeClass.startTime || '').toDateString() === now.toDateString() : false;
+      const classTitleStr = activeClass ? (activeClass.title || activeClass.topic || 'Class Lecture') : 'Anatomy & Physiology Day 1';
+      const timeStr = activeClass ? formatClassTime(activeClass.start || activeClass.startTime, '') : 'Scheduled Class';
+
+      hubHtml += `
+        <div class="tat-spotlight-card">
+          <div class="tat-spotlight-header">
+            <div class="tat-spotlight-title-area">
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span class="cyber-hero-badge">// DAILY TOPIC ASSESSMENT (TAT)</span>
+                <span style="font-size: 0.68rem; background: rgba(0, 243, 208, 0.12); color: #00f3d0; border: 1px solid rgba(0, 243, 208, 0.3); padding: 0.2rem 0.55rem; border-radius: 99px; font-weight: 800; letter-spacing: 0.04em;">
+                  ${isMatchingClassToday ? '⚡ ACTIVE TODAY\'S TAT' : 'LATEST ASSIGNED TAT'}
+                </span>
+              </div>
+              <h2 class="tat-spotlight-title">${matchingTat.title}</h2>
+              <div class="tat-linked-lecture-pill">
+                <span>🎓 Linked Lecture:</span>
+                <strong>${classTitleStr}</strong>
+                <span style="opacity: 0.6;">• ${timeStr}</span>
+              </div>
+            </div>
+            <div>
+              <span style="font-size: 0.72rem; color: var(--text-muted); background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 0.3rem 0.7rem; border-radius: 8px;">
+                Topic Coverage: Day ${extractDayNumber(matchingTat.title)} High-Yield
+              </span>
+            </div>
+          </div>
+
+          <div class="tat-spotlight-meta-grid">
+            <div class="tat-meta-stat">
+              <span class="tat-meta-stat-label">Questions</span>
+              <span class="tat-meta-stat-val" style="color: #00f3d0;">${matchingTat.total_question || 30} MCQs</span>
+            </div>
+            <div class="tat-meta-stat" style="border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 1.5rem;">
+              <span class="tat-meta-stat-label">Duration</span>
+              <span class="tat-meta-stat-val">${Math.floor((matchingTat.duration || 1800) / 60)} Mins</span>
+            </div>
+            <div class="tat-meta-stat" style="border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 1.5rem;">
+              <span class="tat-meta-stat-label">Target Standard</span>
+              <span class="tat-meta-stat-val" style="color: #facc15;">NORCET 11.0 CBT</span>
+            </div>
+            <div class="tat-meta-stat" style="border-left: 1px solid rgba(255, 255, 255, 0.08); padding-left: 1.5rem;">
+              <span class="tat-meta-stat-label">Rationales</span>
+              <span class="tat-meta-stat-val" style="color: #38bdf8;">Detailed Explanations Included</span>
+            </div>
+          </div>
+
+          <div class="tat-spotlight-actions">
+            <button class="btn-spotlight-practice start-quiz-hub-btn" data-id="${matchingTat.id}" data-title="${matchingTat.title}" data-duration="${matchingTat.duration || 1800}" data-mode="practice">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Practice Mode (Instant Answers & Explanations)</span>
+            </button>
+            <button class="btn-spotlight-exam start-quiz-hub-btn" data-id="${matchingTat.id}" data-title="${matchingTat.title}" data-duration="${matchingTat.duration || 1800}" data-mode="exam">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+              <span>Exam Mode (Timed Simulation)</span>
+            </button>
+          </div>
+        </div>
+      `;
+    } else if (activeClass) {
+      // User requested fallback when today's class has no TAT uploaded yet:
+      hubHtml += `
+        <div class="tat-spotlight-card" style="border-color: rgba(234, 179, 8, 0.35);">
+          <div class="tat-spotlight-header">
+            <div class="tat-spotlight-title-area">
+              <span class="cyber-hero-badge" style="color: #facc15; border-color: rgba(234, 179, 8, 0.3); background: rgba(234, 179, 8, 0.1);">// DAILY TOPIC ASSESSMENT (TAT)</span>
+              <h2 class="tat-spotlight-title">Today's Class: ${activeClass.title || 'Live Lecture'}</h2>
+              <div class="tat-linked-lecture-pill">
+                <span>Status:</span>
+                <strong style="color: #facc15;">Unlocks Tomorrow at 09:00 AM</strong>
+              </div>
+            </div>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin: 0.5rem 0 1rem;">
+            As per the academic schedule, daily TAT assessments unlock the morning after each class completion. Attend today's live lecture or review previous subject TATs and comprehensive CTAT benchmarks below.
+          </p>
+        </div>
+      `;
+    }
+
+    // ─── 5B. SUBJECT-WISE ARCHIVE CARDS ───
+    hubHtml += `
+      <div>
+        <div class="subject-archive-header">
+          <div>
+            <h3 class="subject-archive-title">Subject Assessment Archives</h3>
+            <div class="subject-archive-subtitle">All past daily TAT tests and cumulative CTAT subject benchmarks organized by topic</div>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">${allTests.length} Total Assessments Available</span>
+        </div>
+
+        <div class="subject-test-grid">
+    `;
+
+    // Render cards for each subject group that has tests
+    const groups = Object.values(subjectMap);
+    if (groups.length === 0) {
+      hubHtml += `
+        <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; background: rgba(255, 255, 255, 0.02); border-radius: 16px;">
+          <p style="color: var(--text-muted); font-size: 0.85rem;">No assessments currently listed for this batch.</p>
+        </div>
+      `;
+    } else {
+      groups.forEach(sub => {
+        const totalTests = sub.tats.length + sub.ctats.length;
+        if (totalTests === 0) return;
+
+        hubHtml += `
+          <div class="subject-test-card">
+            <div class="subject-test-card-top">
+              <div>
+                <h4 class="subject-test-card-title">${sub.icon} ${sub.name}</h4>
+                <div class="subject-test-badge-row">
+                  ${sub.tats.length > 0 ? `<span class="subject-test-pill tat">${sub.tats.length} Daily TATs</span>` : ''}
+                  ${sub.ctats.length > 0 ? `<span class="subject-test-pill ctat">${sub.ctats.length} Benchmark CTAT</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="subject-tests-list">
+        `;
+
+        // 1. Render TATs first
+        sub.tats.forEach(test => {
+          const dayNum = extractDayNumber(test.title);
+          hubHtml += `
+            <div class="tat-test-row">
+              <div class="tat-test-row-info">
+                <span class="tat-test-row-title" title="${test.title}">TAT Day ${dayNum}: ${test.title}</span>
+                <span class="tat-test-row-meta">${test.total_question || 30} Qs • ${Math.floor((test.duration || 1800) / 60)} mins</span>
+              </div>
+              <div class="tat-test-row-actions">
+                <button class="btn-test-action practice start-quiz-hub-btn" data-id="${test.id}" data-title="${test.title}" data-duration="${test.duration || 1800}" data-mode="practice" title="Instant Answers & Explanations">Practice</button>
+                <button class="btn-test-action exam start-quiz-hub-btn" data-id="${test.id}" data-title="${test.title}" data-duration="${test.duration || 1800}" data-mode="exam" title="Timed Exam Simulation">Exam</button>
+              </div>
+            </div>
+          `;
+        });
+
+        // 2. Render CTATs (Benchmark tests) next with special styling
+        sub.ctats.forEach(test => {
+          hubHtml += `
+            <div class="tat-test-row ctat-row">
+              <div class="tat-test-row-info">
+                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                  <span style="font-size: 0.6rem; background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 800;">BENCHMARK CTAT</span>
+                </div>
+                <span class="tat-test-row-title" style="color: #fff; font-weight: 700; margin-top: 0.15rem;" title="${test.title}">${test.title}</span>
+                <span class="tat-test-row-meta" style="color: #c084fc;">${test.total_question || 100} Qs • Full Subject Exam</span>
+              </div>
+              <div class="tat-test-row-actions">
+                <button class="btn-test-action practice start-quiz-hub-btn" data-id="${test.id}" data-title="${test.title}" data-duration="${test.duration || 6000}" data-mode="practice">Practice</button>
+                <button class="btn-test-action exam start-quiz-hub-btn" data-id="${test.id}" data-title="${test.title}" data-duration="${test.duration || 6000}" data-mode="exam">Exam</button>
+              </div>
+            </div>
+          `;
+        });
+
+        hubHtml += `
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    hubHtml += `
+        </div>
+      </div>
+    </div>`;
+
+    classListContainer.innerHTML = hubHtml;
+
+    // Bind click handlers to all Start Test buttons in the hub
+    classListContainer.querySelectorAll('.start-quiz-hub-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const testId = btn.getAttribute('data-id');
+        const testTitle = btn.getAttribute('data-title');
+        const duration = parseInt(btn.getAttribute('data-duration'), 10) || 1800;
+        const mode = btn.getAttribute('data-mode') || 'practice';
+        loadQuiz(testId, testTitle, duration, mode);
+      });
+    });
+
+  } catch (error) {
+    console.error('Error rendering practice tests hub:', error);
+    classListContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px;">
+        <p style="color: #f87171; font-size: 0.9rem;">Failed to load practice tests: ${error.message}</p>
+        <button onclick="renderPracticeTestsHub()" style="margin-top: 1rem; padding: 0.5rem 1.25rem; background: #00f3d0; color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Retry</button>
+      </div>
+    `;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CBT & PRACTICE QUIZ VIEWER ENGINE (WITH DUAL MODES & INSTANT EXPLANATIONS)
+// ─────────────────────────────────────────────────────────────────────────────
+
+let currentQuizMode = 'practice'; // 'practice' | 'exam' | 'review'
 let quizQuestions = [];
 let quizAnswers = {}; // map index -> selected choice id
 let currentQuestionIndex = 0;
 let quizTimeRemaining = 0;
+let quizTimerInterval = null;
 let currentTestId = null;
+let currentTestTitle = '';
+let currentTestDuration = 1800;
 
-async function loadQuiz(testId, testTitle, duration) {
+async function loadQuiz(testId, testTitle, duration, initialMode = 'practice') {
   const viewer = document.getElementById('quiz-viewer');
   const titleEl = document.getElementById('quiz-title');
   const metaEl = document.getElementById('quiz-meta');
+  const badgeTypeEl = document.getElementById('quiz-badge-type');
+  const modeLabelEl = document.getElementById('quiz-mode-label');
+  const modeIconEl = document.getElementById('quiz-mode-icon');
+  const modeToggleBtn = document.getElementById('quiz-mode-toggle-btn');
   const loader = document.getElementById('dashboard-loader');
   
   if (!viewer) return;
   
   currentTestId = testId;
+  currentTestTitle = testTitle;
+  currentTestDuration = duration;
+  currentQuizMode = initialMode;
   quizAnswers = {};
   currentQuestionIndex = 0;
   
   if (titleEl) titleEl.textContent = testTitle;
   
+  // Set badge type
+  if (badgeTypeEl) {
+    const tUpper = (testTitle || '').toUpperCase();
+    if (tUpper.includes('TAT')) {
+      badgeTypeEl.textContent = '// DAILY TOPIC ASSESSMENT (TAT)';
+    } else if (tUpper.includes('CSAT') || tUpper.includes('CTAT')) {
+      badgeTypeEl.textContent = '// CUMULATIVE SUBJECT ASSESSMENT (CTAT)';
+    } else {
+      badgeTypeEl.textContent = '// CBT PRACTICE ASSESSMENT';
+    }
+  }
+
+  // Update mode toggle styling
+  updateQuizModePill();
+  
   const token = localStorage.getItem('nnl_access_token');
-  const isGuest = token === 'GUEST_DEMO_TOKEN' || String(testId).startsWith('99');
+  if (!token) {
+    if (loader) loader.classList.add('hide');
+    showCustomAlert('Please log in with your registered account to attempt assessments.', 'AUTH REQUIRED');
+    return;
+  }
   
   if (loader) loader.classList.remove('hide');
   
   try {
-    if (isGuest) {
-      quizQuestions = MOCK_QUIZ_QUESTIONS[testId] || MOCK_QUIZ_QUESTIONS[9901];
-    } else {
-      // Fetch live quiz questions
-      let response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-      });
-      
-      if (response.status === 401 || response.status === 403) {
-        const refreshed = await refreshAccessToken();
-        if (refreshed) {
-          const newToken = localStorage.getItem('nnl_access_token');
-          response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
-            headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
-          });
-        } else {
-          handleLogout();
-          return;
-        }
+    let response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+    
+    if (response.status === 401 || response.status === 403) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        const newToken = localStorage.getItem('nnl_access_token');
+        response = await fetch(`${API_BASE}/batch_cms/test/${testId}/questions/`, {
+          headers: { 'Authorization': `Bearer ${newToken}`, 'Accept': 'application/json' }
+        });
       }
+    }
 
-      if (response.ok) {
-        const d = await response.json();
-        quizQuestions = d.data || d.results || [];
-      } else {
-        quizQuestions = MOCK_QUIZ_QUESTIONS[9901];
-      }
+    if (response.ok) {
+      const d = await response.json();
+      quizQuestions = d.data || d.results || (Array.isArray(d) ? d : []);
+    } else {
+      quizQuestions = [];
     }
     
     if (loader) loader.classList.add('hide');
     
     if (!quizQuestions || quizQuestions.length === 0) {
-      showCustomAlert('No questions available in this test.', 'ERROR');
+      showCustomAlert('No questions available in this test from the server.', 'NOTICE');
       return;
     }
     
-    if (metaEl) metaEl.textContent = `Total Questions: ${quizQuestions.length} • Duration: ${Math.floor(duration / 60)} mins`;
+    if (metaEl) {
+      metaEl.textContent = `Total Questions: ${quizQuestions.length} • Standard Duration: ${Math.floor(duration / 60)} mins`;
+    }
     
     viewer.classList.remove('hide');
     document.getElementById('quiz-question-view').classList.remove('hide');
@@ -5717,19 +5933,29 @@ async function loadQuiz(testId, testTitle, duration) {
     renderQuestion();
     updateQuizNavigator();
     
-    // Start countdown timer
+    // Timer handling based on mode
     if (quizTimerInterval) clearInterval(quizTimerInterval);
-    quizTimeRemaining = duration;
-    updateTimerDisplay();
     
-    quizTimerInterval = setInterval(() => {
-      quizTimeRemaining--;
+    if (currentQuizMode === 'exam') {
+      quizTimeRemaining = duration;
       updateTimerDisplay();
-      if (quizTimeRemaining <= 0) {
-        clearInterval(quizTimerInterval);
-        submitQuiz();
+      quizTimerInterval = setInterval(() => {
+        quizTimeRemaining--;
+        updateTimerDisplay();
+        if (quizTimeRemaining <= 0) {
+          clearInterval(quizTimerInterval);
+          submitQuiz();
+        }
+      }, 1000);
+    } else {
+      // In practice mode, untimed
+      const timerEl = document.getElementById('quiz-timer');
+      if (timerEl) {
+        timerEl.textContent = '⚡ PRACTICE';
+        timerEl.style.color = '#00f3d0';
+        timerEl.style.borderColor = 'rgba(0, 243, 208, 0.35)';
       }
-    }, 1000);
+    }
     
   } catch (err) {
     console.error('Quiz initialization failed:', err);
@@ -5738,9 +5964,37 @@ async function loadQuiz(testId, testTitle, duration) {
   }
 }
 
+function updateQuizModePill() {
+  const modeLabelEl = document.getElementById('quiz-mode-label');
+  const modeIconEl = document.getElementById('quiz-mode-icon');
+  const modeToggleBtn = document.getElementById('quiz-mode-toggle-btn');
+  if (!modeToggleBtn) return;
+
+  modeToggleBtn.classList.remove('exam-mode', 'review-mode');
+
+  if (currentQuizMode === 'exam') {
+    modeToggleBtn.classList.add('exam-mode');
+    if (modeLabelEl) modeLabelEl.textContent = 'Exam Mode';
+    if (modeIconEl) modeIconEl.textContent = '⏱️';
+  } else if (currentQuizMode === 'review') {
+    modeToggleBtn.classList.add('review-mode');
+    if (modeLabelEl) modeLabelEl.textContent = 'Review Mode';
+    if (modeIconEl) modeIconEl.textContent = '📖';
+  } else {
+    if (modeLabelEl) modeLabelEl.textContent = 'Practice Mode';
+    if (modeIconEl) modeIconEl.textContent = '⚡';
+  }
+}
+
 function updateTimerDisplay() {
   const el = document.getElementById('quiz-timer');
   if (!el) return;
+  if (currentQuizMode !== 'exam') {
+    el.textContent = currentQuizMode === 'review' ? '📖 REVIEW' : '⚡ PRACTICE';
+    el.style.color = '#00f3d0';
+    el.style.borderColor = 'rgba(0,243,208,0.35)';
+    return;
+  }
   const m = Math.floor(quizTimeRemaining / 60).toString().padStart(2, '0');
   const s = (quizTimeRemaining % 60).toString().padStart(2, '0');
   el.textContent = `${m}:${s}`;
@@ -5757,81 +6011,172 @@ function renderQuestion() {
   const q = quizQuestions[currentQuestionIndex];
   if (!q) return;
   
-  document.getElementById('question-number-badge').textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
-  document.getElementById('question-level-badge').textContent = q.level_str || 'Medium';
-  document.getElementById('question-text').innerHTML = q.title;
-  
-  const optionsList = document.getElementById('quiz-options-list');
-  optionsList.innerHTML = '';
-  
+  const numBadge = document.getElementById('question-number-badge');
+  const lvlBadge = document.getElementById('question-level-badge');
+  const textEl = document.getElementById('question-text');
+  const explainBtn = document.getElementById('quiz-explain-btn');
   const explanationEl = document.getElementById('question-explanation');
+  const explanationTextEl = document.getElementById('explanation-text');
+  const optionsList = document.getElementById('quiz-options-list');
+
+  if (numBadge) numBadge.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+  if (lvlBadge) lvlBadge.textContent = q.level_str || q.level || 'NORCET Level';
+  if (textEl) textEl.innerHTML = q.title || q.question || q.question_text || 'Question content';
+  
+  optionsList.innerHTML = '';
   explanationEl.classList.add('hide');
+  if (explainBtn) explainBtn.classList.remove('active');
 
   const selectedChoiceId = quizAnswers[currentQuestionIndex];
+  const hasAnswered = selectedChoiceId !== undefined;
+  const isPracticeOrReview = currentQuizMode === 'practice' || currentQuizMode === 'review';
+
   const markers = ['A', 'B', 'C', 'D', 'E', 'F'];
-  
-  q.choices.forEach((c, idx) => {
+  const choices = q.choices || q.options || [];
+  const correctChoice = choices.find(c => c.is_correct || c.isCorrect);
+
+  choices.forEach((c, idx) => {
     const isSelected = selectedChoiceId === c.id;
+    const isCorrect = c.is_correct || c.isCorrect;
     const optionBtn = document.createElement('button');
-    optionBtn.className = `quiz-option-btn ${isSelected ? 'selected' : ''}`;
+
+    let btnClass = 'quiz-option-btn';
+    let statusTagHtml = '';
+    let percentHtml = '';
+
+    if (isPracticeOrReview && hasAnswered) {
+      if (isSelected && isCorrect) {
+        btnClass += ' correct selected';
+        statusTagHtml = '<span class="quiz-option-status-tag correct">✓ Correct</span>';
+      } else if (isSelected && !isCorrect) {
+        btnClass += ' incorrect selected';
+        statusTagHtml = '<span class="quiz-option-status-tag incorrect">✗ Your Answer</span>';
+      } else if (!isSelected && isCorrect) {
+        btnClass += ' correct';
+        statusTagHtml = '<span class="quiz-option-status-tag correct">✓ Correct Answer</span>';
+      }
+
+      // Show selection percentage if available from API
+      if (c.selection_percentage !== undefined && c.selection_percentage !== null) {
+        const pctNum = parseFloat(c.selection_percentage) || 0;
+        percentHtml = `<span class="option-percent-pill">${pctNum.toFixed(1)}% chose</span>`;
+      }
+    } else {
+      if (isSelected) {
+        btnClass += ' selected';
+      }
+    }
+
+    optionBtn.className = btnClass;
+    const choiceText = c.title || c.text || c.choice_text || c.name || `Option ${markers[idx] || (idx+1)}`;
+    
     optionBtn.innerHTML = `
       <span class="option-marker">${markers[idx] || (idx+1)}</span>
-      <span class="option-title-text">${c.title}</span>
+      <span class="option-title-text" style="flex: 1;">${choiceText}</span>
+      ${statusTagHtml}
+      ${percentHtml}
     `;
     
     optionBtn.addEventListener('click', () => {
-      // Do not allow selecting if results or answer shown
-      if (!explanationEl.classList.contains('hide')) return;
-      
+      // In review mode, options are read-only
+      if (currentQuizMode === 'review') return;
+
       quizAnswers[currentQuestionIndex] = c.id;
       
-      // Update styling instantly
-      optionsList.querySelectorAll('.quiz-option-btn').forEach(btn => btn.classList.remove('selected'));
-      optionBtn.classList.add('selected');
-      
-      updateQuizNavigator();
+      if (currentQuizMode === 'practice') {
+        // Practice mode: re-render question immediately to show green/red + explanation
+        renderQuestion();
+        updateQuizNavigator();
+      } else {
+        // Exam mode: simply mark selection
+        optionsList.querySelectorAll('.quiz-option-btn').forEach(btn => btn.classList.remove('selected'));
+        optionBtn.classList.add('selected');
+        updateQuizNavigator();
+      }
     });
     
     optionsList.appendChild(optionBtn);
   });
+
+  // In practice or review mode, if answered, auto-reveal the rich clinical rationale
+  if (isPracticeOrReview && hasAnswered) {
+    let explanationHtml = '';
+    const chosenChoice = choices.find(c => c.id === selectedChoiceId);
+    
+    if (chosenChoice && (chosenChoice.correct_explanation || chosenChoice.explanation)) {
+      explanationHtml = chosenChoice.correct_explanation || chosenChoice.explanation;
+    }
+    if (!explanationHtml && correctChoice && (correctChoice.correct_explanation || correctChoice.explanation)) {
+      explanationHtml = correctChoice.correct_explanation || correctChoice.explanation;
+    }
+    if (!explanationHtml && (q.correct_explanation || q.explanation)) {
+      explanationHtml = q.correct_explanation || q.explanation;
+    }
+
+    if (explanationHtml) {
+      explanationTextEl.innerHTML = explanationHtml;
+      explanationEl.classList.remove('hide');
+      if (explainBtn) explainBtn.classList.add('active');
+    }
+  }
 }
 
-function showAnswer() {
-  const q = quizQuestions[currentQuestionIndex];
-  if (!q) return;
-  
-  const optionsList = document.getElementById('quiz-options-list');
+// Toggle Clinical Explanation
+function toggleExplanation() {
   const explanationEl = document.getElementById('question-explanation');
+  const explainBtn = document.getElementById('quiz-explain-btn');
   const explanationTextEl = document.getElementById('explanation-text');
-  
-  let explanationHtml = '';
-  
-  q.choices.forEach((c, idx) => {
-    const btn = optionsList.children[idx];
-    if (!btn) return;
-    
-    if (c.is_correct) {
-      btn.classList.add('correct');
-      if (c.correct_explanation) {
-        explanationHtml = c.correct_explanation;
+  if (!explanationEl) return;
+
+  if (currentQuizMode === 'exam') {
+    showCustomConfirm(
+      'You are currently in Exam Mode. Clinical explanations and answers are revealed in Review Mode after submission, or you can switch to Practice Mode right now.',
+      'EXAM MODE ACTIVE',
+      'Switch to Practice Mode',
+      'Stay in Exam'
+    ).then(switchToPractice => {
+      if (switchToPractice) {
+        toggleQuizMode();
       }
-    } else if (quizAnswers[currentQuestionIndex] === c.id) {
-      btn.classList.add('incorrect');
-    }
-  });
-
-  if (!explanationHtml) {
-    // Check incorrect options correct explanations
-    const correctOpt = q.choices.find(c => c.is_correct);
-    if (correctOpt && correctOpt.correct_explanation) {
-      explanationHtml = correctOpt.correct_explanation;
-    }
+    });
+    return;
   }
 
-  if (explanationHtml) {
-    explanationTextEl.innerHTML = explanationHtml;
+  const isHidden = explanationEl.classList.contains('hide');
+  if (isHidden) {
+    const q = quizQuestions[currentQuestionIndex];
+    if (q) {
+      const choices = q.choices || q.options || [];
+      const correctChoice = choices.find(c => c.is_correct || c.isCorrect);
+      let explHtml = correctChoice?.correct_explanation || correctChoice?.explanation || q.correct_explanation || q.explanation;
+      if (!explHtml) {
+        explHtml = '<p>No specific clinical rationale recorded for this question by faculty.</p>';
+      }
+      explanationTextEl.innerHTML = explHtml;
+    }
     explanationEl.classList.remove('hide');
+    if (explainBtn) explainBtn.classList.add('active');
+  } else {
+    explanationEl.classList.add('hide');
+    if (explainBtn) explainBtn.classList.remove('active');
   }
+}
+
+// Toggle between Practice Mode and Exam Mode
+function toggleQuizMode() {
+  if (currentQuizMode === 'review') {
+    // Return to practice mode
+    currentQuizMode = 'practice';
+  } else if (currentQuizMode === 'practice') {
+    currentQuizMode = 'exam';
+  } else {
+    currentQuizMode = 'practice';
+  }
+
+  updateQuizModePill();
+  updateTimerDisplay();
+  renderQuestion();
+  updateQuizNavigator();
 }
 
 function updateQuizNavigator() {
@@ -5839,16 +6184,33 @@ function updateQuizNavigator() {
   if (!grid) return;
   grid.innerHTML = '';
   
-  quizQuestions.forEach((_, idx) => {
+  quizQuestions.forEach((q, idx) => {
     const btn = document.createElement('button');
-    const isAnswered = quizAnswers[idx] !== undefined;
-    btn.className = `quiz-nav-item ${idx === currentQuestionIndex ? 'active' : ''} ${isAnswered ? 'answered' : ''}`;
+    const isCurrent = idx === currentQuestionIndex;
+    const answeredChoiceId = quizAnswers[idx];
+    const isAnswered = answeredChoiceId !== undefined;
+    
+    let stateClass = '';
+    if (isCurrent) stateClass += ' active';
+    
+    if (isAnswered) {
+      if (currentQuizMode === 'practice' || currentQuizMode === 'review') {
+        const correctChoice = (q.choices || q.options || []).find(c => c.is_correct || c.isCorrect);
+        if (correctChoice && answeredChoiceId === correctChoice.id) {
+          stateClass += ' correct';
+        } else {
+          stateClass += ' incorrect';
+        }
+      } else {
+        stateClass += ' answered';
+      }
+    }
+    
+    btn.className = `quiz-nav-item ${stateClass}`;
     btn.textContent = idx + 1;
     
     btn.addEventListener('click', () => {
-      // Do not allow jumping around if in result view
       if (document.getElementById('quiz-question-view').classList.contains('hide')) return;
-      
       currentQuestionIndex = idx;
       renderQuestion();
       updateQuizNavigator();
@@ -5864,7 +6226,7 @@ function submitQuiz() {
   let correctCount = 0;
   quizQuestions.forEach((q, idx) => {
     const ans = quizAnswers[idx];
-    const correctChoice = q.choices.find(c => c.is_correct);
+    const correctChoice = (q.choices || q.options || []).find(c => c.is_correct || c.isCorrect);
     if (correctChoice && ans === correctChoice.id) {
       correctCount++;
     }
@@ -5872,15 +6234,19 @@ function submitQuiz() {
   
   const pct = Math.round((correctCount / quizQuestions.length) * 100);
   
-  document.getElementById('result-percentage').textContent = `${pct}%`;
-  document.getElementById('result-ratio').textContent = `${correctCount} / ${quizQuestions.length} Correct`;
+  const pctEl = document.getElementById('result-percentage');
+  const ratioEl = document.getElementById('result-ratio');
+  const feedbackEl = document.getElementById('result-feedback');
+
+  if (pctEl) pctEl.textContent = `${pct}%`;
+  if (ratioEl) ratioEl.textContent = `${correctCount} / ${quizQuestions.length} Correct`;
   
-  let feedback = 'Practice more to master these topics!';
-  if (pct >= 85) feedback = 'Sensational! You are fully prepared for the NORCET board.';
-  else if (pct >= 70) feedback = 'Excellent job! Review your weak topics to target a higher rank.';
-  else if (pct >= 50) feedback = 'Good effort! Go through the class notes and videos to clarify concepts.';
+  let feedback = 'Practice more to master these clinical concepts!';
+  if (pct >= 85) feedback = 'Sensational mastery! You demonstrated top-tier readiness for the NORCET board.';
+  else if (pct >= 70) feedback = 'Excellent performance! Review your incorrect questions to target a single-digit rank.';
+  else if (pct >= 50) feedback = 'Solid attempt! Revisit the recorded lecture and class notes to clarify rationales.';
   
-  document.getElementById('result-feedback').textContent = feedback;
+  if (feedbackEl) feedbackEl.textContent = feedback;
   
   document.getElementById('quiz-question-view').classList.add('hide');
   document.getElementById('quiz-result-view').classList.remove('hide');
@@ -5893,44 +6259,98 @@ function submitQuiz() {
 
 function closeQuiz() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
-  document.getElementById('quiz-viewer').classList.add('hide');
+  const viewer = document.getElementById('quiz-viewer');
+  if (viewer) viewer.classList.add('hide');
 }
 
 // Bind Quiz Control actions
-document.getElementById('quiz-prev-btn').addEventListener('click', () => {
-  if (currentQuestionIndex > 0) {
-    currentQuestionIndex--;
+const qPrevBtn = document.getElementById('quiz-prev-btn');
+if (qPrevBtn) {
+  qPrevBtn.addEventListener('click', () => {
+    if (currentQuestionIndex > 0) {
+      currentQuestionIndex--;
+      renderQuestion();
+      updateQuizNavigator();
+    }
+  });
+}
+
+const qNextBtn = document.getElementById('quiz-next-btn');
+if (qNextBtn) {
+  qNextBtn.addEventListener('click', () => {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+      currentQuestionIndex++;
+      renderQuestion();
+      updateQuizNavigator();
+    }
+  });
+}
+
+const qExplainPill = document.getElementById('quiz-explain-btn');
+if (qExplainPill) {
+  qExplainPill.addEventListener('click', toggleExplanation);
+}
+
+const qShowAnsBtn = document.getElementById('quiz-show-ans-btn');
+if (qShowAnsBtn) {
+  qShowAnsBtn.addEventListener('click', toggleExplanation);
+}
+
+const qModeToggleBtn = document.getElementById('quiz-mode-toggle-btn');
+if (qModeToggleBtn) {
+  qModeToggleBtn.addEventListener('click', toggleQuizMode);
+}
+
+const qSubmitBtn = document.getElementById('quiz-submit-btn');
+if (qSubmitBtn) {
+  qSubmitBtn.addEventListener('click', () => {
+    const unansweredCount = quizQuestions.length - Object.keys(quizAnswers).length;
+    if (unansweredCount > 0) {
+      showCustomConfirm(`You have ${unansweredCount} unanswered questions. Are you sure you want to submit?`, 'CONFIRM SUBMISSION')
+      .then(approved => {
+        if (approved) submitQuiz();
+      });
+    } else {
+      submitQuiz();
+    }
+  });
+}
+
+const qTopCloseBtn = document.getElementById('quiz-top-close-btn');
+if (qTopCloseBtn) {
+  qTopCloseBtn.addEventListener('click', closeQuiz);
+}
+
+const qCloseBtn = document.getElementById('quiz-close-btn');
+if (qCloseBtn) {
+  qCloseBtn.addEventListener('click', closeQuiz);
+}
+
+const qRestartBtn = document.getElementById('quiz-restart-btn');
+if (qRestartBtn) {
+  qRestartBtn.addEventListener('click', () => {
+    loadQuiz(currentTestId, currentTestTitle, currentTestDuration, currentQuizMode);
+  });
+}
+
+const qReviewBtn = document.getElementById('quiz-review-btn');
+if (qReviewBtn) {
+  qReviewBtn.addEventListener('click', () => {
+    currentQuizMode = 'review';
+    currentQuestionIndex = 0;
+    updateQuizModePill();
+    updateTimerDisplay();
+
+    document.getElementById('quiz-result-view').classList.add('hide');
+    document.getElementById('quiz-question-view').classList.remove('hide');
+    document.getElementById('quiz-prev-btn').classList.remove('hide');
+    document.getElementById('quiz-next-btn').classList.remove('hide');
+    document.getElementById('quiz-show-ans-btn').classList.remove('hide');
+
     renderQuestion();
     updateQuizNavigator();
-  }
-});
-
-document.getElementById('quiz-next-btn').addEventListener('click', () => {
-  if (currentQuestionIndex < quizQuestions.length - 1) {
-    currentQuestionIndex++;
-    renderQuestion();
-    updateQuizNavigator();
-  }
-});
-
-document.getElementById('quiz-show-ans-btn').addEventListener('click', showAnswer);
-document.getElementById('quiz-submit-btn').addEventListener('click', () => {
-  const unansweredCount = quizQuestions.length - Object.keys(quizAnswers).length;
-  if (unansweredCount > 0) {
-    showCustomConfirm(`You have ${unansweredCount} unanswered questions. Are you sure you want to submit?`, 'CONFIRM SUBMISSION')
-    .then(approved => {
-      if (approved) submitQuiz();
-    });
-  } else {
-    submitQuiz();
-  }
-});
-
-document.getElementById('quiz-close-btn').addEventListener('click', closeQuiz);
-document.getElementById('quiz-restart-btn').addEventListener('click', () => {
-  const duration = quizQuestions.length * 60; // 1 min per question
-  loadQuiz(currentTestId, document.getElementById('quiz-title').textContent, duration);
-});
+  });
+}
 
 // Interactive brand title spotlight mouse tracker
 document.addEventListener('mousemove', (e) => {
@@ -5941,8 +6361,13 @@ document.addEventListener('mousemove', (e) => {
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   
-  title.style.setProperty('--mouse-x', `${x}px`);
-  title.style.setProperty('--mouse-y', `${y}px`);
+  if (x >= -80 && x <= rect.width + 80 && y >= -80 && y <= rect.height + 80) {
+    title.style.setProperty('--mouse-x', `${x}px`);
+    title.style.setProperty('--mouse-y', `${y}px`);
+  } else {
+    title.style.setProperty('--mouse-x', `-500px`);
+    title.style.setProperty('--mouse-y', `-500px`);
+  }
 });
 
 // Ping Render proxy server to wake it up from sleep mode asynchronously on load
