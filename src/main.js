@@ -3749,6 +3749,22 @@ function initOtpBoxes() {
     return val;
   }
 
+  function handleCompleteOtp(fullOtp) {
+    if (fullOtp.length !== 6) return;
+    const container = document.getElementById('otp-boxes-container');
+    if (container) {
+      container.classList.remove('running-glow', 'error-shake');
+      void container.offsetWidth; // re-flow
+      container.classList.add('running-glow');
+    }
+
+    // After border laser glow animation runs, smoothly submit form to morph and login
+    if (otpGlowTimeout) clearTimeout(otpGlowTimeout);
+    otpGlowTimeout = setTimeout(() => {
+      otpForm.dispatchEvent(new Event('submit', { cancelable: true }));
+    }, 550);
+  }
+
   boxes.forEach((box, index) => {
     box.style.setProperty('--i', index);
 
@@ -3767,17 +3783,12 @@ function initOtpBoxes() {
 
       const fullOtp = syncOtpValue();
       if (fullOtp.length === 6) {
-        // Trigger running laser glow sweep across all 6 box borders
-        const container = document.getElementById('otp-boxes-container');
-        if (container) {
-          container.classList.remove('running-glow', 'error-shake');
-          void container.offsetWidth; // force re-flow
-          container.classList.add('running-glow');
-        }
-
-        const verifyBtn = document.getElementById('verify-otp-btn');
-        if (verifyBtn) verifyBtn.focus();
+        handleCompleteOtp(fullOtp);
       } else {
+        if (otpGlowTimeout) {
+          clearTimeout(otpGlowTimeout);
+          otpGlowTimeout = null;
+        }
         const container = document.getElementById('otp-boxes-container');
         if (container) container.classList.remove('running-glow');
       }
@@ -3794,6 +3805,10 @@ function initOtpBoxes() {
           box.value = '';
           box.classList.remove('filled');
           syncOtpValue();
+        }
+        if (otpGlowTimeout) {
+          clearTimeout(otpGlowTimeout);
+          otpGlowTimeout = null;
         }
         const container = document.getElementById('otp-boxes-container');
         if (container) container.classList.remove('running-glow');
@@ -3822,14 +3837,7 @@ function initOtpBoxes() {
       boxes[targetIdx].focus();
 
       if (digits.length === 6) {
-        const container = document.getElementById('otp-boxes-container');
-        if (container) {
-          container.classList.remove('running-glow', 'error-shake');
-          void container.offsetWidth;
-          container.classList.add('running-glow');
-        }
-        const verifyBtn = document.getElementById('verify-otp-btn');
-        if (verifyBtn) verifyBtn.focus();
+        handleCompleteOtp(fullOtp);
       }
     });
 
@@ -3930,7 +3938,7 @@ otpForm.addEventListener('submit', async (e) => {
   const verifyBtn = document.getElementById('verify-otp-btn');
   const originalBtnText = verifyBtn.innerHTML;
   verifyBtn.disabled = true;
-  verifyBtn.innerHTML = '<div class="spinner"></div> Verifying...';
+  verifyBtn.innerHTML = '<div class="spinner"></div> Logging in...';
 
   try {
     const response = await fetch(`${API_BASE}/auth/login/otp/validate/`, {
@@ -3969,21 +3977,25 @@ otpForm.addEventListener('submit', async (e) => {
     localStorage.setItem('nnl_phone', phone);
     sessionStorage.removeItem('nnl_explicit_logout');
 
-    // Screenshot 5 Match: Collapse the 6 boxes into ONE SINGLE CENTERED BOX with emerald green border and checkmark!
+    // Smooth animation: Fade out 6 boxes into 1 green button with checkmark
     const container = document.getElementById('otp-boxes-container');
     const singleBox = document.getElementById('otp-single-box');
     const headerNormal = document.getElementById('otp-header-normal');
     const headerVerified = document.getElementById('otp-header-verified');
     const actionsContainer = document.getElementById('otp-actions-container');
 
-    if (container) container.classList.add('hide');
+    if (container) container.classList.add('morphing-out');
     if (actionsContainer) actionsContainer.classList.add('hide');
+
+    await new Promise(r => setTimeout(r, 200));
+
+    if (container) container.classList.add('hide');
     if (headerNormal) headerNormal.classList.add('hide');
     if (headerVerified) headerVerified.classList.remove('hide');
     if (singleBox) singleBox.classList.remove('hide');
 
-    // Hold verified success state for 700ms so user experiences the crisp green tick animation
-    await new Promise(r => setTimeout(r, 700));
+    // Display green tick button for 600ms, then directly login
+    await new Promise(r => setTimeout(r, 600));
 
     // Clear inputs and transition
     clearOtpBoxes();
@@ -3997,6 +4009,7 @@ otpForm.addEventListener('submit', async (e) => {
     console.error('Verify OTP Error:', error);
     const container = document.getElementById('otp-boxes-container');
     if (container) {
+      container.classList.remove('morphing-out');
       container.classList.add('error-shake');
       setTimeout(() => {
         container.classList.remove('error-shake');
