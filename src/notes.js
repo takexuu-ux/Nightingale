@@ -37,7 +37,6 @@ let searchQuery = '';
 // Open Access / Reading Mode subjects (available immediately without login)
 const OPEN_ACCESS_SUBJECTS = [
   ONCOLOGY_SUBJECT,
-  { id: 'sub-ahn', title: 'Adult Health Nursing (Medical-Surgical Medicine)', shortTitle: 'Adult Health Nursing', category: 'Medical-Surgical', isCuratedOncology: false },
   { id: 'sub-pharma', title: 'Pharmacology & Clinical Therapeutics', shortTitle: 'Pharmacology', category: 'Basic Sciences' },
   { id: 'sub-ap', title: 'Anatomy & Physiology', shortTitle: 'Anatomy & Physiology', category: 'Basic Sciences' },
   { id: 'sub-fon', title: 'Nursing Foundation (FON)', shortTitle: 'Nursing Foundation', category: 'Clinical Procedures' },
@@ -277,7 +276,6 @@ async function loadNotesRepository(forceReload = false) {
     console.log('[Notes] Reading Mode active — full open access to study library enabled.');
     allSubjects = [...OPEN_ACCESS_SUBJECTS];
     subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-    subjectNotesMap.set('sub-ahn', [...ONCOLOGY_MASTER_NOTES]);
     renderSubjectCards();
     updateTotalStats();
     return;
@@ -303,7 +301,6 @@ async function loadNotesRepository(forceReload = false) {
       console.warn('[Notes] Token invalid or expired — serving Open Access library');
       allSubjects = [...OPEN_ACCESS_SUBJECTS];
       subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-      subjectNotesMap.set('sub-ahn', [...ONCOLOGY_MASTER_NOTES]);
       renderSubjectCards();
       updateTotalStats();
       return;
@@ -313,7 +310,6 @@ async function loadNotesRepository(forceReload = false) {
       if (subRes.status === 401 || subRes.status === 403) {
         allSubjects = [...OPEN_ACCESS_SUBJECTS];
         subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-        subjectNotesMap.set('sub-ahn', [...ONCOLOGY_MASTER_NOTES]);
         renderSubjectCards();
         updateTotalStats();
         return;
@@ -591,15 +587,12 @@ function renderSubjectCards() {
 
   const query = searchQuery.trim().toLowerCase();
   const filtered = allSubjects.filter(sub => {
-    // If filter chip is Oncology, only show Oncology and Adult Health / Medicine subjects
+    // If filter chip is Oncology, only show Oncology
     if (currentFilterType === 'oncology') {
       const sTitle = (sub.title || '').toLowerCase();
       const isMatch = sub.isCuratedOncology || 
                       sTitle.includes('onco') || 
-                      sTitle.includes('cancer') || 
-                      sTitle.includes('adult health') || 
-                      sTitle.includes('medicine') || 
-                      sTitle.includes('marwa');
+                      sTitle.includes('cancer');
       if (!isMatch) return false;
     }
 
@@ -641,7 +634,7 @@ function renderSubjectCards() {
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${sub.title}</h3>
             <div class="subject-card-badge" style="${isCurated ? 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;' : ''}">
-              <span>${isCurated ? 'Dr. Deepak Marwah • 10 Master Modules' : 'Class Notes &amp; Handouts'}</span>
+              <span>${isCurated ? 'Dr. Deepak Marwah' : (sub.category || 'Class Notes &amp; Handouts')}</span>
             </div>
           </div>
         </div>
@@ -780,8 +773,17 @@ function renderSubjectNotesList() {
     else if (n.category === 'DAY-WISE') tagClass = 'tag-daywise';
     else if (n.category === 'SLIDES') tagClass = 'tag-slides';
 
-    const isDataUri = (n.url || '').startsWith('data:');
-    const safeDownloadName = (n.downloadName || `${n.title}.html`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+    // Clean title from redundant brackets or repeated teacher name
+    const rawTitle = n.title || 'Class Note';
+    const cleanTitle = rawTitle
+      .replace(/\[.*?\]/g, '')
+      .replace(/\(Dr\.?\s*Deepak\s*Marwah\)/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const safeDownloadName = (n.downloadName || `${cleanTitle}.pdf`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+    const pageMeta = n.pages || 'Official PDF';
+    const sizeMeta = n.size || 'Multi-Page';
 
     return `
       <div class="note-doc-card">
@@ -792,21 +794,20 @@ function renderSubjectNotesList() {
             </svg>
           </div>
           <div class="note-doc-details">
-            <div class="note-doc-title" title="${n.title}">${n.title}</div>
+            <div class="note-doc-title" title="${cleanTitle}">${cleanTitle}</div>
             <div class="note-doc-badges">
-              <span class="category-tag ${tagClass}">${n.category}</span>
-              <span style="font-size: 0.7rem; color: var(--text-muted);">${isDataUri ? 'Interactive Medical Study Document' : 'PDF Document'}</span>
+              <span class="category-tag ${tagClass}">${n.category || 'HANDWRITTEN'}</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">${pageMeta} • ${sizeMeta}</span>
             </div>
-            ${n.summary ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.4;">${n.summary}</div>` : ''}
           </div>
         </div>
 
         <div class="note-doc-actions">
-          <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(n.title)}" data-url="${encodeURIComponent(n.url)}" data-filename="${encodeURIComponent(safeDownloadName)}">
+          <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(cleanTitle)}" data-url="${encodeURIComponent(n.url)}" data-filename="${encodeURIComponent(safeDownloadName)}">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><circle cx="12" cy="12" r="3"/></svg>
             <span>View PDF</span>
           </button>
-          <a href="${n.url}" ${isDataUri ? `download="${safeDownloadName}"` : 'target="_blank" rel="noopener noreferrer"'} class="btn-note-download" title="Open or Download Note">
+          <a href="${n.url}" target="_blank" rel="noopener noreferrer" download="${safeDownloadName}" class="btn-note-download" title="Open or Download Official PDF">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
             <span>Download</span>
           </a>
@@ -833,16 +834,13 @@ function openPdfModal(title, url, downloadName = '') {
   if (pdfModalTitle) pdfModalTitle.textContent = title;
   if (pdfModalDownloadBtn) {
     pdfModalDownloadBtn.href = url;
-    if (url.startsWith('data:')) {
-      const fileName = downloadName || `${title.replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
-      pdfModalDownloadBtn.setAttribute('download', fileName);
-      const span = pdfModalDownloadBtn.querySelector('span');
-      if (span) span.textContent = 'Download Note';
-    } else {
-      pdfModalDownloadBtn.removeAttribute('download');
-      const span = pdfModalDownloadBtn.querySelector('span');
-      if (span) span.textContent = 'Open in New Tab';
+    pdfModalDownloadBtn.setAttribute('target', '_blank');
+    pdfModalDownloadBtn.setAttribute('rel', 'noopener noreferrer');
+    if (downloadName) {
+      pdfModalDownloadBtn.setAttribute('download', downloadName);
     }
+    const span = pdfModalDownloadBtn.querySelector('span');
+    if (span) span.textContent = 'Open Full PDF';
   }
 
   if (pdfModalIframe) {

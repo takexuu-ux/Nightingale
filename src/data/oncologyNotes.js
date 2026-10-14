@@ -4,12 +4,12 @@
 
 export const ONCOLOGY_SUBJECT = {
   id: 'oncology-marwah',
-  title: 'Adult Health Nursing — Oncology (Dr. Deepak Marwah)',
-  shortTitle: 'Oncology (Dr. Deepak Marwah)',
-  category: 'Medical-Surgical Medicine',
+  title: 'Oncology (Dr. Deepak Marwah)',
+  shortTitle: 'Oncology',
+  category: 'Dr. Deepak Marwah',
   faculty: 'Dr. Deepak Marwah',
   isCuratedOncology: true,
-  description: 'Complete high-yield Medical-Surgical Oncology curriculum by Dr. Deepak Marwah covering cancer biology, staging, chemotherapy, extravasation protocols, emergencies, radiation, hematology, surgical oncology, and palliative pain management.'
+  description: 'Official clinical notes and handwritten lecture materials by Dr. Deepak Marwah.'
 };
 
 function buildHtmlTemplate({ title, day, subtitle, badge, sections, tables, protocols, mnemonics, clinicalPearls, questions }) {
@@ -1477,106 +1477,61 @@ const module10Html = buildHtmlTemplate({
   ]
 });
 
-// Master Oncology Dataset (10 Complete Modules with In-App Data URIs)
+// Official Real Notes from NNL ONE CloudFront Storage (Multi-Page PDFs)
 export const ONCOLOGY_MASTER_NOTES = [
   {
-    id: 'onco-marwah-day1',
-    title: 'Oncology Day 1 — Tumor Biology, Carcinogenesis Principles & TNM Staging [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    id: 'onco-real-day1',
+    title: 'Day 1 — Clinical Blackboard Notes (Part 1)',
     category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day1_Handwritten_Notes_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module1Html),
-    summary: 'Direct classroom blackboard notes: Hallmarks of cancer, proto-oncogenes vs tumor suppressors, chemical/viral carcinogens, and AJCC 8th edition TNM staging criteria.'
+    downloadName: 'Day1_Class_Notes_Part1.pdf',
+    url: 'https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/3ced84f9-66bc-47f1-b012-4d4041d8104e.pdf',
+    size: '15.7 MB',
+    pages: 'Multi-Page'
   },
   {
-    id: 'onco-marwah-day2',
-    title: 'Oncology Day 2 — Diagnostic Oncology & Complete Tumor Marker Guide (Dr. Deepak Marwah)',
+    id: 'onco-real-day2',
+    title: 'Day 2 — Clinical Blackboard Notes (Part 2)',
+    category: 'HANDWRITTEN',
+    subject: ONCOLOGY_SUBJECT.title,
+    faculty: 'Dr. Deepak Marwah',
+    downloadName: 'Day2_Class_Notes_Part2.pdf',
+    url: 'https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/3809dc94-9b3d-4eec-a7ac-3449d42d74de.pdf',
+    size: '15.7 MB',
+    pages: 'Multi-Page'
+  },
+  {
+    id: 'onco-real-day3',
+    title: 'Day 3 — Clinical Pharmacology & Chemotherapeutic Class Notes',
+    category: 'HANDWRITTEN',
+    subject: ONCOLOGY_SUBJECT.title,
+    faculty: 'Dr. Deepak Marwah',
+    downloadName: 'Day3_Clinical_Pharmacology_Chemo_Notes.pdf',
+    url: 'https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/dff71e8e-5b9e-4ed7-bd96-7dd3038e0771.pdf',
+    size: '7.5 MB',
+    pages: '81 Pages'
+  },
+  {
+    id: 'onco-real-day4',
+    title: 'Day 4 — Fastrack Clinical Medicine & Handouts',
+    category: 'HANDWRITTEN',
+    subject: ONCOLOGY_SUBJECT.title,
+    faculty: 'Dr. Deepak Marwah',
+    downloadName: 'Day4_Fastrack_Clinical_Medicine.pdf',
+    url: 'https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/430c0428-9d12-4c09-bb68-fba57a8710d7.pdf',
+    size: '12.8 MB',
+    pages: '126 Pages'
+  },
+  {
+    id: 'onco-real-day5',
+    title: 'Day 5 — Master Curriculum & Official Subject Catalog',
     category: 'HIGH-YIELD',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day2_Tumor_Markers_Guide_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module2Html),
-    summary: 'Exhaustive clinical reference on CEA, CA-125, CA 19-9, PSA free-to-total ratio, AFP, Calcitonin, and Beta-hCG.'
-  },
-  {
-    id: 'onco-marwah-day3',
-    title: 'Oncology Day 3 — Cancer Chemotherapy Pharmacology, Classifications & Cytotoxic Safety [✍️ Handwritten Note] (Dr. Deepak Marwah)',
-    category: 'HANDWRITTEN',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day3_Chemotherapy_Handwritten_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module3Html),
-    summary: 'Direct classroom lecture notes: Cell cycle kinetics, alkylating agents, antimetabolites, anthracyclines, taxanes, signature toxicities, and cytotoxic handling safety.'
-  },
-  {
-    id: 'onco-marwah-day4',
-    title: 'Oncology Day 4 — Chemotherapy Extravasation Protocol & Antidote Management [✍️ Handwritten Note] (Dr. Deepak Marwah)',
-    category: 'HANDWRITTEN',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day4_Extravasation_Handwritten_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module4Html),
-    summary: 'Classroom emergency algorithm: Vesicants vs irritants, 6-step emergency extravasation protocol, cold vs warm compression rules, Dexrazoxane, and Hyaluronidase infiltration.'
-  },
-  {
-    id: 'onco-marwah-day5',
-    title: 'Oncology Day 5 — High-Yield Oncological Emergencies (Dr. Deepak Marwah)',
-    category: 'HIGH-YIELD',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day5_Oncological_Emergencies_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module5Html),
-    summary: 'Tumor Lysis Syndrome (Cairo-Bishop criteria & Rasburicase), Superior Vena Cava Syndrome, Spinal Cord Compression, and Hypercalcemia of malignancy.'
-  },
-  {
-    id: 'onco-marwah-day6',
-    title: 'Oncology Day 6 — Radiation Oncology, Brachytherapy & Radiation Safety Protocols [✍️ Handwritten Note] (Dr. Deepak Marwah)',
-    category: 'HANDWRITTEN',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day6_Radiation_Handwritten_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module6Html),
-    summary: 'Classroom whiteboard notes: External beam skin care, sealed vs unsealed brachytherapy, tandem and ovoids nursing, dislodged source protocol, and ALARA radiation rules.'
-  },
-  {
-    id: 'onco-marwah-day7',
-    title: 'Oncology Day 7 — Hematological Malignancies & Plasma Cell Disorders [✍️ Handwritten Note] (Dr. Deepak Marwah)',
-    category: 'HANDWRITTEN',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day7_Hematology_Handwritten_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module7Html),
-    summary: 'Classroom clinical notes: Acute and chronic leukemias (ALL, AML, CML, CLL), Hodgkin vs Non-Hodgkin Lymphoma, and Multiple Myeloma CRAB criteria.'
-  },
-  {
-    id: 'onco-marwah-day8',
-    title: 'Oncology Day 8 — System-Specific Surgical Oncology & Nursing Handouts [✍️ Handwritten Note] (Dr. Deepak Marwah)',
-    category: 'HANDWRITTEN',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day8_Surgical_Handwritten_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module8Html),
-    summary: 'Classroom surgical handouts: Breast cancer MRM and lifelong lymphedema prevention, lung cancer paraneoplastic syndromes, and colorectal stoma care.'
-  },
-  {
-    id: 'onco-marwah-day9',
-    title: 'Oncology Day 9 — Oncology Palliative Care & Cancer Pain Management (Dr. Deepak Marwah)',
-    category: 'HIGH-YIELD',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day9_Palliative_Pain_Analgesic_Ladder_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module9Html),
-    summary: 'WHO 3-step analgesic ladder, around-the-clock dosing, breakthrough pain management, opioid bowel regimens, and Naloxone titration.'
-  },
-  {
-    id: 'onco-marwah-day10',
-    title: 'Oncology Day 10 — Dr. Deepak Marwah Master Pearls, Mnemonics & NORCET Golden Points',
-    category: 'SLIDES',
-    subject: ONCOLOGY_SUBJECT.title,
-    faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day10_Master_Pearls_Mnemonics_Dr_Deepak_Marwah.html',
-    url: makeDataUri(module10Html),
-    summary: 'Grand rapid revision tables, high-yield mnemonics, clinical warning signs, and NORCET clinical case vignettes.'
+    downloadName: 'Master_Batch_Syllabus_Catalog.pdf',
+    url: 'https://d22wftpsnydqiu.cloudfront.net/Pearl__Blue_Sapphire_Batch_TOC.pdf',
+    size: 'Official PDF',
+    pages: 'Complete TOC'
   }
 ];
