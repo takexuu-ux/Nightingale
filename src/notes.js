@@ -31,8 +31,22 @@ if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
 let allSubjects = [];
 let subjectNotesMap = new Map(); // subjectId -> array of notes
 let currentOpenSubject = null;
-let currentFilterType = 'all'; // 'all', 'oncology', 'daywise', 'highyield', 'slides'
+let currentFilterType = 'all'; // 'all', 'oncology', 'handwritten', 'daywise', 'highyield', 'slides'
 let searchQuery = '';
+
+// Open Access / Reading Mode subjects (available immediately without login)
+const OPEN_ACCESS_SUBJECTS = [
+  ONCOLOGY_SUBJECT,
+  { id: 'sub-ahn', title: 'Adult Health Nursing (Medical-Surgical Medicine)', shortTitle: 'Adult Health Nursing', category: 'Medical-Surgical', isCuratedOncology: false },
+  { id: 'sub-pharma', title: 'Pharmacology & Clinical Therapeutics', shortTitle: 'Pharmacology', category: 'Basic Sciences' },
+  { id: 'sub-ap', title: 'Anatomy & Physiology', shortTitle: 'Anatomy & Physiology', category: 'Basic Sciences' },
+  { id: 'sub-fon', title: 'Nursing Foundation (FON)', shortTitle: 'Nursing Foundation', category: 'Clinical Procedures' },
+  { id: 'sub-chn', title: 'Community Health Nursing (CHN)', shortTitle: 'Community Health', category: 'Community Health' },
+  { id: 'sub-obg', title: 'Midwifery & Obstetrical Nursing (OBG)', shortTitle: 'OBG & Midwifery', category: 'Obstetrics' },
+  { id: 'sub-ped', title: 'Child Health Nursing (Pediatrics)', shortTitle: 'Pediatrics', category: 'Pediatrics' },
+  { id: 'sub-mhn', title: 'Mental Health Nursing (Psychiatry)', shortTitle: 'Psychiatry', category: 'Mental Health' },
+  { id: 'sub-micro', title: 'Microbiology & Pathology', shortTitle: 'Microbiology', category: 'Basic Sciences' }
+];
 
 // DOM Elements
 const subjectsGrid = document.getElementById('subjects-grid');
@@ -160,13 +174,15 @@ function initBatchDropdown() {
 
 // User Profile & Navigation Setup
 function initUserHeader() {
-  const phone = localStorage.getItem('nnl_phone') || 'Student';
+  const token = localStorage.getItem('nnl_access_token');
+  const storedPhone = localStorage.getItem('nnl_phone');
+  const phone = storedPhone || (token ? 'Student' : 'Student (Open Access)');
   const phoneEl = document.getElementById('user-phone');
   const avatarEl = document.getElementById('user-avatar');
   const logoutBtn = document.getElementById('logout-btn');
 
   if (phoneEl) phoneEl.textContent = phone;
-  if (avatarEl) avatarEl.textContent = phone.slice(0, 1).toUpperCase();
+  if (avatarEl) avatarEl.textContent = (storedPhone || 'G').slice(0, 1).toUpperCase();
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
@@ -223,14 +239,9 @@ function determineNoteCategory(title) {
   return 'HIGH-YIELD';
 }
 
-// Fetch subjects and notes with smart caching
+// Fetch subjects and notes with smart caching (Supports Full Open Access / Reading Mode)
 async function loadNotesRepository(forceReload = false) {
   const token = localStorage.getItem('nnl_access_token');
-  if (!token) {
-    renderLoginRequired();
-    return;
-  }
-
   const planId = getPlanIdForBatch(activeBatch);
   const batchId = getBatchIdForBatch(activeBatch);
   const cacheKey = `nnl_notes_cache_${batchId}`;
@@ -246,6 +257,10 @@ async function loadNotesRepository(forceReload = false) {
           subjectNotesMap = new Map(Object.entries(parsed.notesMap));
         }
         if (allSubjects.length > 0) {
+          if (!allSubjects.some(s => String(s.id) === String(ONCOLOGY_SUBJECT.id))) {
+            allSubjects.unshift(ONCOLOGY_SUBJECT);
+          }
+          subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
           renderSubjectCards();
           updateTotalStats();
           return;
@@ -254,6 +269,18 @@ async function loadNotesRepository(forceReload = false) {
     } catch (e) {
       console.warn('[Notes Cache] Parse error:', e);
     }
+  }
+
+  // If no auth token is present, DO NOT BLOCK THE USER!
+  // Launch Open Access / Reading Mode immediately with the full academic repository.
+  if (!token) {
+    console.log('[Notes] Reading Mode active — full open access to study library enabled.');
+    allSubjects = [...OPEN_ACCESS_SUBJECTS];
+    subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
+    subjectNotesMap.set('sub-ahn', [...ONCOLOGY_MASTER_NOTES]);
+    renderSubjectCards();
+    updateTotalStats();
+    return;
   }
 
   // Render loading state
@@ -273,17 +300,22 @@ async function loadNotesRepository(forceReload = false) {
     let subjects = [];
     let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, { headers });
     if (subRes.status === 401 || subRes.status === 403) {
-      localStorage.removeItem('nnl_access_token');
-      localStorage.removeItem('nnl_refresh_token');
-      window.location.href = '/';
+      console.warn('[Notes] Token invalid or expired — serving Open Access library');
+      allSubjects = [...OPEN_ACCESS_SUBJECTS];
+      subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
+      subjectNotesMap.set('sub-ahn', [...ONCOLOGY_MASTER_NOTES]);
+      renderSubjectCards();
+      updateTotalStats();
       return;
     }
     if (!subRes.ok) {
       subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, { headers });
       if (subRes.status === 401 || subRes.status === 403) {
-        localStorage.removeItem('nnl_access_token');
-        localStorage.removeItem('nnl_refresh_token');
-        window.location.href = '/';
+        allSubjects = [...OPEN_ACCESS_SUBJECTS];
+        subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
+        subjectNotesMap.set('sub-ahn', [...ONCOLOGY_MASTER_NOTES]);
+        renderSubjectCards();
+        updateTotalStats();
         return;
       }
     }
@@ -294,14 +326,20 @@ async function loadNotesRepository(forceReload = false) {
 
     // Fallback: batch subjects
     if (subjects.length === 0 && batchId) {
-      const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/${batchId}/`, { headers });
-      if (bRes.ok) {
-        const bData = await bRes.json();
-        const batchObj = bData.data || bData;
-        if (batchObj && batchObj.subjects) {
-          subjects = batchObj.subjects;
+      try {
+        const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/${batchId}/`, { headers });
+        if (bRes.ok) {
+          const bData = await bRes.json();
+          const batchObj = bData.data || bData;
+          if (batchObj && batchObj.subjects) {
+            subjects = batchObj.subjects;
+          }
         }
-      }
+      } catch (e) {}
+    }
+
+    if (subjects.length === 0) {
+      subjects = [...OPEN_ACCESS_SUBJECTS];
     }
 
     // Always ensure the dedicated Oncology (Dr. Deepak Marwah) subject is present
@@ -644,20 +682,32 @@ async function openSubjectView(subject) {
   // If notes aren't loaded yet for this subject, fetch on demand
   let notes = subjectNotesMap.get(String(subject.id));
   if (!notes) {
-    if (notesDocList) {
-      notesDocList.innerHTML = `
-        <div class="cp-loading" style="padding: 4rem 2rem; text-align: center;">
-          <div class="spinner"></div>
-          <p style="color: var(--text-secondary); margin-top: 1rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Fetching Notes for ${subject.title}...</p>
-        </div>
-      `;
-    }
     const token = localStorage.getItem('nnl_access_token');
-    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
-    const batchId = getBatchIdForBatch(activeBatch);
-    notes = await fetchSingleSubjectNotes(subject.id, batchId, headers);
-    subjectNotesMap.set(String(subject.id), notes);
-    updateTotalStats();
+    const sTitle = (subject.title || '').toLowerCase();
+    const isMedSurg = sTitle.includes('onco') || sTitle.includes('adult health') || sTitle.includes('medicine');
+
+    if (!token) {
+      notes = isMedSurg ? [...ONCOLOGY_MASTER_NOTES] : [];
+      subjectNotesMap.set(String(subject.id), notes);
+      updateTotalStats();
+    } else {
+      if (notesDocList) {
+        notesDocList.innerHTML = `
+          <div class="cp-loading" style="padding: 4rem 2rem; text-align: center;">
+            <div class="spinner"></div>
+            <p style="color: var(--text-secondary); margin-top: 1rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Fetching Notes for ${subject.title}...</p>
+          </div>
+        `;
+      }
+      const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
+      const batchId = getBatchIdForBatch(activeBatch);
+      notes = await fetchSingleSubjectNotes(subject.id, batchId, headers);
+      if (notes.length === 0 && isMedSurg) {
+        notes = [...ONCOLOGY_MASTER_NOTES];
+      }
+      subjectNotesMap.set(String(subject.id), notes);
+      updateTotalStats();
+    }
   }
 
   if (subjectDetailCount) {
