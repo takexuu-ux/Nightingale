@@ -1,6 +1,8 @@
 // Nightingale Study Notes & PDFs Logic
 // Architected for high-performance rendering, zero-latency caching, minimal design, and seamless in-app reading.
 
+import { ONCOLOGY_SUBJECT, ONCOLOGY_MASTER_NOTES } from './data/oncologyNotes.js';
+
 const API_BASE = '/api';
 
 const ALLOWED_SAPPHIRE_BATCHES = [
@@ -29,7 +31,7 @@ if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
 let allSubjects = [];
 let subjectNotesMap = new Map(); // subjectId -> array of notes
 let currentOpenSubject = null;
-let currentFilterType = 'all'; // 'all', 'daywise', 'highyield', 'slides'
+let currentFilterType = 'all'; // 'all', 'oncology', 'daywise', 'highyield', 'slides'
 let searchQuery = '';
 
 // DOM Elements
@@ -71,6 +73,7 @@ function getBatchIdForBatch(batchName) {
 
 // Medical Subject SVG Icon Library
 const SUBJECT_SVG = {
+  oncology: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>',
   anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714"/>',
   physiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>',
   pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>',
@@ -81,7 +84,8 @@ const SUBJECT_SVG = {
   community: '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>',
   psychiatry: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>',
   obg: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/>',
-  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>'
+  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>',
+  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>'
 };
 
 const DEFAULT_SVG = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>';
@@ -297,7 +301,25 @@ async function loadNotesRepository(forceReload = false) {
       }
     }
 
+    // Always ensure the dedicated Oncology (Dr. Deepak Marwah) subject is present
+    const hasOnco = subjects.some(s => String(s.id) === String(ONCOLOGY_SUBJECT.id) || (s.title && s.title.toLowerCase().includes('oncology')));
+    if (!hasOnco) {
+      subjects.unshift(ONCOLOGY_SUBJECT);
+    }
+
     allSubjects = subjects;
+    subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
+
+    // Also enrich any Adult Health Nursing / Medicine subject with the oncology master notes
+    subjects.forEach(s => {
+      const sTitle = (s.title || '').toLowerCase();
+      if ((sTitle.includes('adult health') || sTitle.includes('medicine') || sTitle.includes('med-surg') || sTitle.includes('ahn')) && String(s.id) !== String(ONCOLOGY_SUBJECT.id)) {
+        const curNotes = subjectNotesMap.get(String(s.id)) || [];
+        const merged = [...ONCOLOGY_MASTER_NOTES, ...curNotes.filter(n => !String(n.id).startsWith('onco-marwah'))];
+        subjectNotesMap.set(String(s.id), merged);
+      }
+    });
+
     renderSubjectCards();
     updateTotalStats();
 
@@ -330,7 +352,20 @@ async function loadNotesRepository(forceReload = false) {
 
 // Fetch notes for a single subject
 async function fetchSingleSubjectNotes(subjectId, batchId, headers) {
+  // If requesting dedicated Oncology subject, return the exhaustive master library
+  if (String(subjectId) === String(ONCOLOGY_SUBJECT.id)) {
+    return [...ONCOLOGY_MASTER_NOTES];
+  }
+
   let notes = [];
+
+  // If this subject is Adult Health Nursing or Medicine, seed with Dr. Deepak Marwah's oncology notes
+  const currentSub = allSubjects.find(s => String(s.id) === String(subjectId));
+  const sTitle = (currentSub?.title || '').toLowerCase();
+  const isMedSurg = sTitle.includes('adult health') || sTitle.includes('medicine') || sTitle.includes('med-surg') || sTitle.includes('ahn');
+  if (isMedSurg) {
+    notes.push(...ONCOLOGY_MASTER_NOTES);
+  }
 
   // 1. Handwritten Notes
   try {
@@ -418,6 +453,50 @@ async function fetchSingleSubjectNotes(subjectId, batchId, headers) {
     } catch (e) {}
   }
 
+  // 4. Video Subtopics Notes & Handouts Scanner (Extracts attached PDFs from all videos, including Marwah sir's classes)
+  try {
+    const vtRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/topic/?subject=${subjectId}&page_size=50`, { headers });
+    if (vtRes.ok) {
+      const vtData = await vtRes.json();
+      const vTopics = vtData.data || vtData.results || [];
+      for (const top of vTopics) {
+        try {
+          const vstRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=50`, { headers });
+          if (vstRes.ok) {
+            const vstData = await vstRes.json();
+            const vSubtopics = vstData.data || vstData.results || [];
+            vSubtopics.forEach(st => {
+              const noteCandidates = [
+                st.handwritten_notes, st.handwritten_note, st.notes, st.note, st.attachment, st.pdf,
+                st.video?.handwritten_notes, st.video?.notes, st.video?.attachment, st.video?.pdf_url, st.video?.pdf
+              ];
+              noteCandidates.forEach(nc => {
+                if (nc && typeof nc === 'object') {
+                  const url = nc.url || nc.file || nc.pdf_url || nc.download_url || '';
+                  if (url) {
+                    notes.push({
+                      id: nc.id || Math.random(),
+                      title: nc.title || st.title || `${top.title} Class Notes`,
+                      url: url,
+                      category: determineNoteCategory(nc.title || st.title)
+                    });
+                  }
+                } else if (typeof nc === 'string' && nc.startsWith('http')) {
+                  notes.push({
+                    id: Math.random(),
+                    title: st.title || `${top.title} Class Notes`,
+                    url: nc,
+                    category: determineNoteCategory(st.title)
+                  });
+                }
+              });
+            });
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+
   // Deduplicate by URL or title
   const seen = new Set();
   const deduped = [];
@@ -471,11 +550,26 @@ function renderSubjectCards() {
 
   const query = searchQuery.trim().toLowerCase();
   const filtered = allSubjects.filter(sub => {
+    // If filter chip is Oncology, only show Oncology and Adult Health / Medicine subjects
+    if (currentFilterType === 'oncology') {
+      const sTitle = (sub.title || '').toLowerCase();
+      const isMatch = sub.isCuratedOncology || 
+                      sTitle.includes('onco') || 
+                      sTitle.includes('cancer') || 
+                      sTitle.includes('adult health') || 
+                      sTitle.includes('medicine') || 
+                      sTitle.includes('marwa');
+      if (!isMatch) return false;
+    }
+
     if (!query) return true;
-    const titleMatch = (sub.title || '').toLowerCase().includes(query);
+    const titleMatch = (sub.title || '').toLowerCase().includes(query) || (sub.faculty || '').toLowerCase().includes(query);
     // Also match against cached notes within this subject
     const notes = subjectNotesMap.get(String(sub.id)) || [];
-    const notesMatch = notes.some(n => n.title.toLowerCase().includes(query));
+    const notesMatch = notes.some(n => 
+      (n.title || '').toLowerCase().includes(query) || 
+      (n.summary || '').toLowerCase().includes(query)
+    );
     return titleMatch || notesMatch;
   });
 
@@ -483,7 +577,7 @@ function renderSubjectCards() {
     subjectsGrid.innerHTML = `
       <div class="notes-empty-state" style="grid-column: 1 / -1;">
         <h3 class="notes-empty-title">No Subjects Found</h3>
-        <p class="notes-empty-desc">No study materials matched "${searchQuery}". Try searching another keyword.</p>
+        <p class="notes-empty-desc">No study materials matched "${searchQuery || currentFilterType}". Try selecting another category or keyword.</p>
       </div>
     `;
     return;
@@ -493,19 +587,20 @@ function renderSubjectCards() {
     const svgIcon = getSubjectIconSVG(sub.title);
     const notes = subjectNotesMap.get(String(sub.id)) || [];
     const countStr = subjectNotesMap.has(String(sub.id)) ? `${notes.length} PDFs Ready` : 'Checking PDFs...';
+    const isCurated = sub.isCuratedOncology;
 
     return `
-      <div class="subject-card" data-sub-id="${sub.id}">
+      <div class="subject-card ${isCurated ? 'curated-highlight' : ''}" data-sub-id="${sub.id}" style="${isCurated ? 'border-color: rgba(255, 45, 85, 0.45); background: linear-gradient(135deg, rgba(255, 45, 85, 0.08) 0%, rgba(18, 21, 34, 0.75) 100%);' : ''}">
         <div class="subject-card-top">
-          <div class="subject-card-icon">
+          <div class="subject-card-icon" style="${isCurated ? 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;' : ''}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               ${svgIcon}
             </svg>
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${sub.title}</h3>
-            <div class="subject-card-badge">
-              <span>Class Notes &amp; Handouts</span>
+            <div class="subject-card-badge" style="${isCurated ? 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;' : ''}">
+              <span>${isCurated ? 'Dr. Deepak Marwah • 10 Master Modules' : 'Class Notes &amp; Handouts'}</span>
             </div>
           </div>
         </div>
@@ -590,9 +685,27 @@ function renderSubjectNotesList() {
     if (currentFilterType === 'daywise' && n.category !== 'DAY-WISE') return false;
     if (currentFilterType === 'highyield' && n.category !== 'HIGH-YIELD') return false;
     if (currentFilterType === 'slides' && n.category !== 'SLIDES') return false;
+    if (currentFilterType === 'oncology') {
+      const tLower = (n.title || '').toLowerCase();
+      const sLower = (n.summary || '').toLowerCase();
+      const subLower = (n.subject || '').toLowerCase();
+      const isOnco = tLower.includes('onco') || 
+                     tLower.includes('cancer') || 
+                     tLower.includes('tumor') || 
+                     tLower.includes('marwa') || 
+                     tLower.includes('chemo') || 
+                     tLower.includes('radiation') || 
+                     tLower.includes('extravasation') || 
+                     tLower.includes('leukemia') || 
+                     tLower.includes('myeloma') || 
+                     tLower.includes('emergenc') || 
+                     sLower.includes('onco') || 
+                     subLower.includes('onco');
+      if (!isOnco) return false;
+    }
 
     // Search query check
-    if (query && !n.title.toLowerCase().includes(query)) return false;
+    if (query && !n.title.toLowerCase().includes(query) && !(n.summary || '').toLowerCase().includes(query)) return false;
 
     return true;
   });
@@ -612,6 +725,9 @@ function renderSubjectNotesList() {
     if (n.category === 'DAY-WISE') tagClass = 'tag-daywise';
     else if (n.category === 'SLIDES') tagClass = 'tag-slides';
 
+    const isDataUri = (n.url || '').startsWith('data:');
+    const safeDownloadName = (n.downloadName || `${n.title}.html`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+
     return `
       <div class="note-doc-card">
         <div class="note-doc-info">
@@ -624,17 +740,18 @@ function renderSubjectNotesList() {
             <div class="note-doc-title" title="${n.title}">${n.title}</div>
             <div class="note-doc-badges">
               <span class="category-tag ${tagClass}">${n.category}</span>
-              <span style="font-size: 0.7rem; color: var(--text-muted);">PDF Document</span>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">${isDataUri ? 'Interactive Medical Study Document' : 'PDF Document'}</span>
             </div>
+            ${n.summary ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.4;">${n.summary}</div>` : ''}
           </div>
         </div>
 
         <div class="note-doc-actions">
-          <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(n.title)}" data-url="${encodeURIComponent(n.url)}">
+          <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(n.title)}" data-url="${encodeURIComponent(n.url)}" data-filename="${encodeURIComponent(safeDownloadName)}">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><circle cx="12" cy="12" r="3"/></svg>
             <span>View PDF</span>
           </button>
-          <a href="${n.url}" target="_blank" rel="noopener noreferrer" class="btn-note-download" title="Open or Download in New Tab">
+          <a href="${n.url}" ${isDataUri ? `download="${safeDownloadName}"` : 'target="_blank" rel="noopener noreferrer"'} class="btn-note-download" title="Open or Download Note">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
             <span>Download</span>
           </a>
@@ -649,19 +766,31 @@ function renderSubjectNotesList() {
       e.stopPropagation();
       const title = decodeURIComponent(btn.getAttribute('data-title'));
       const url = decodeURIComponent(btn.getAttribute('data-url'));
-      openPdfModal(title, url);
+      const filename = decodeURIComponent(btn.getAttribute('data-filename') || '');
+      openPdfModal(title, url, filename);
     });
   });
 }
 
 // In-App Minimal PDF Reader Modal
-function openPdfModal(title, url) {
+function openPdfModal(title, url, downloadName = '') {
   if (!pdfModal) return;
   if (pdfModalTitle) pdfModalTitle.textContent = title;
-  if (pdfModalDownloadBtn) pdfModalDownloadBtn.href = url;
+  if (pdfModalDownloadBtn) {
+    pdfModalDownloadBtn.href = url;
+    if (url.startsWith('data:')) {
+      const fileName = downloadName || `${title.replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
+      pdfModalDownloadBtn.setAttribute('download', fileName);
+      const span = pdfModalDownloadBtn.querySelector('span');
+      if (span) span.textContent = 'Download Note';
+    } else {
+      pdfModalDownloadBtn.removeAttribute('download');
+      const span = pdfModalDownloadBtn.querySelector('span');
+      if (span) span.textContent = 'Open in New Tab';
+    }
+  }
 
   if (pdfModalIframe) {
-    // If external cross-origin headers restrict direct iframe embedding, Google docs viewer is a clean fallback
     pdfModalIframe.src = url;
   }
 
@@ -725,7 +854,7 @@ function initEventListeners() {
     });
   }
 
-  // Filter Chips (All, Day-wise, High-yield, Slides)
+  // Filter Chips (All, Oncology, Day-wise, High-yield, Slides)
   filterChips.forEach(chip => {
     chip.addEventListener('click', () => {
       filterChips.forEach(c => c.classList.remove('active'));
@@ -733,6 +862,8 @@ function initEventListeners() {
       currentFilterType = chip.getAttribute('data-filter') || 'all';
       if (currentOpenSubject) {
         renderSubjectNotesList();
+      } else {
+        renderSubjectCards();
       }
     });
   });

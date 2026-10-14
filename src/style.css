@@ -6532,6 +6532,24 @@ header.app-header.hide {
   box-shadow: 0 0 14px rgba(255, 30, 56, 0.18);
 }
 
+.filter-chip[data-filter="oncology"].active {
+  background: rgba(255, 30, 56, 0.22);
+  border-color: #ff2d55;
+  color: #ffffff;
+  box-shadow: 0 0 18px rgba(255, 45, 85, 0.35);
+}
+
+.subject-card.curated-highlight {
+  box-shadow: 0 4px 24px rgba(255, 45, 85, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.subject-card.curated-highlight:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(255, 45, 85, 0.22);
+  border-color: rgba(255, 45, 85, 0.6) !important;
+}
+
 /* ── VIEW 1: SUBJECT CARDS GRID ── */
 .notes-subject-grid {
   display: grid;
