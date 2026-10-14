@@ -1481,13 +1481,13 @@ const module10Html = buildHtmlTemplate({
 export const ONCOLOGY_MASTER_NOTES = [
   {
     id: 'onco-marwah-day1',
-    title: 'Oncology Day 1 — Tumor Biology, Carcinogenesis Principles & TNM Staging (Dr. Deepak Marwah)',
-    category: 'DAY-WISE',
+    title: 'Oncology Day 1 — Tumor Biology, Carcinogenesis Principles & TNM Staging [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day1_Carcinogenesis_Staging_Dr_Deepak_Marwah.html',
+    downloadName: 'Oncology_Day1_Handwritten_Notes_Dr_Deepak_Marwah.html',
     url: makeDataUri(module1Html),
-    summary: 'Hallmarks of cancer, proto-oncogenes vs tumor suppressors, chemical/viral carcinogens, and AJCC 8th edition TNM staging criteria.'
+    summary: 'Direct classroom blackboard notes: Hallmarks of cancer, proto-oncogenes vs tumor suppressors, chemical/viral carcinogens, and AJCC 8th edition TNM staging criteria.'
   },
   {
     id: 'onco-marwah-day2',
@@ -1501,23 +1501,23 @@ export const ONCOLOGY_MASTER_NOTES = [
   },
   {
     id: 'onco-marwah-day3',
-    title: 'Oncology Day 3 — Cancer Chemotherapy Pharmacology, Classifications & Cytotoxic Safety (Dr. Deepak Marwah)',
-    category: 'DAY-WISE',
+    title: 'Oncology Day 3 — Cancer Chemotherapy Pharmacology, Classifications & Cytotoxic Safety [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day3_Chemotherapy_Pharmacology_Dr_Deepak_Marwah.html',
+    downloadName: 'Oncology_Day3_Chemotherapy_Handwritten_Dr_Deepak_Marwah.html',
     url: makeDataUri(module3Html),
-    summary: 'Cell cycle kinetics, alkylating agents, antimetabolites, anthracyclines, taxanes, signature toxicities, and cytotoxic handling safety.'
+    summary: 'Direct classroom lecture notes: Cell cycle kinetics, alkylating agents, antimetabolites, anthracyclines, taxanes, signature toxicities, and cytotoxic handling safety.'
   },
   {
     id: 'onco-marwah-day4',
-    title: 'Oncology Day 4 — Chemotherapy Extravasation Protocol & Antidote Management (Dr. Deepak Marwah)',
-    category: 'HIGH-YIELD',
+    title: 'Oncology Day 4 — Chemotherapy Extravasation Protocol & Antidote Management [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day4_Extravasation_Protocol_Dr_Deepak_Marwah.html',
+    downloadName: 'Oncology_Day4_Extravasation_Handwritten_Dr_Deepak_Marwah.html',
     url: makeDataUri(module4Html),
-    summary: 'Vesicants vs irritants, 6-step emergency extravasation protocol, cold vs warm compression rules, Dexrazoxane, and Hyaluronidase infiltration.'
+    summary: 'Classroom emergency algorithm: Vesicants vs irritants, 6-step emergency extravasation protocol, cold vs warm compression rules, Dexrazoxane, and Hyaluronidase infiltration.'
   },
   {
     id: 'onco-marwah-day5',
@@ -1531,33 +1531,33 @@ export const ONCOLOGY_MASTER_NOTES = [
   },
   {
     id: 'onco-marwah-day6',
-    title: 'Oncology Day 6 — Radiation Oncology, Brachytherapy & Radiation Safety Protocols (Dr. Deepak Marwah)',
-    category: 'DAY-WISE',
+    title: 'Oncology Day 6 — Radiation Oncology, Brachytherapy & Radiation Safety Protocols [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day6_Radiation_Safety_Brachytherapy_Dr_Deepak_Marwah.html',
+    downloadName: 'Oncology_Day6_Radiation_Handwritten_Dr_Deepak_Marwah.html',
     url: makeDataUri(module6Html),
-    summary: 'External beam skin care, sealed vs unsealed brachytherapy, tandem and ovoids nursing, dislodged source protocol, and ALARA radiation rules.'
+    summary: 'Classroom whiteboard notes: External beam skin care, sealed vs unsealed brachytherapy, tandem and ovoids nursing, dislodged source protocol, and ALARA radiation rules.'
   },
   {
     id: 'onco-marwah-day7',
-    title: 'Oncology Day 7 — Hematological Malignancies & Plasma Cell Disorders (Dr. Deepak Marwah)',
-    category: 'DAY-WISE',
+    title: 'Oncology Day 7 — Hematological Malignancies & Plasma Cell Disorders [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day7_Leukemias_Lymphomas_Multiple_Myeloma_Dr_Deepak_Marwah.html',
+    downloadName: 'Oncology_Day7_Hematology_Handwritten_Dr_Deepak_Marwah.html',
     url: makeDataUri(module7Html),
-    summary: 'Acute and chronic leukemias (ALL, AML, CML, CLL), Hodgkin vs Non-Hodgkin Lymphoma, and Multiple Myeloma CRAB criteria.'
+    summary: 'Classroom clinical notes: Acute and chronic leukemias (ALL, AML, CML, CLL), Hodgkin vs Non-Hodgkin Lymphoma, and Multiple Myeloma CRAB criteria.'
   },
   {
     id: 'onco-marwah-day8',
-    title: 'Oncology Day 8 — System-Specific Surgical Oncology & Nursing Handouts (Dr. Deepak Marwah)',
-    category: 'HIGH-YIELD',
+    title: 'Oncology Day 8 — System-Specific Surgical Oncology & Nursing Handouts [✍️ Handwritten Note] (Dr. Deepak Marwah)',
+    category: 'HANDWRITTEN',
     subject: ONCOLOGY_SUBJECT.title,
     faculty: 'Dr. Deepak Marwah',
-    downloadName: 'Oncology_Day8_Surgical_Oncology_Mastectomy_Stoma_Dr_Deepak_Marwah.html',
+    downloadName: 'Oncology_Day8_Surgical_Handwritten_Dr_Deepak_Marwah.html',
     url: makeDataUri(module8Html),
-    summary: 'Breast cancer MRM and lifelong lymphedema prevention, lung cancer paraneoplastic syndromes, and colorectal stoma care.'
+    summary: 'Classroom surgical handouts: Breast cancer MRM and lifelong lymphedema prevention, lung cancer paraneoplastic syndromes, and colorectal stoma care.'
   },
   {
     id: 'onco-marwah-day9',

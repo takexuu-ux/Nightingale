@@ -208,6 +208,9 @@ function initUserHeader() {
 // Categorize note from title
 function determineNoteCategory(title) {
   const upper = (title || '').toUpperCase();
+  if (upper.includes('HANDWRITTEN') || upper.includes('HAND WRITTEN') || upper.includes('CLASS NOTE')) {
+    return 'HANDWRITTEN';
+  }
   if (upper.includes('DAY') || upper.includes('LEC') || upper.includes('CLASS')) {
     return 'DAY-WISE';
   }
@@ -682,7 +685,8 @@ function renderSubjectNotesList() {
   // Filter by category chip and search query
   const filtered = notes.filter(n => {
     // Filter chip check
-    if (currentFilterType === 'daywise' && n.category !== 'DAY-WISE') return false;
+    if (currentFilterType === 'handwritten' && n.category !== 'HANDWRITTEN' && !(n.title || '').toLowerCase().includes('handwritten')) return false;
+    if (currentFilterType === 'daywise' && n.category !== 'DAY-WISE' && n.category !== 'HANDWRITTEN') return false;
     if (currentFilterType === 'highyield' && n.category !== 'HIGH-YIELD') return false;
     if (currentFilterType === 'slides' && n.category !== 'SLIDES') return false;
     if (currentFilterType === 'oncology') {
@@ -722,7 +726,8 @@ function renderSubjectNotesList() {
 
   notesDocList.innerHTML = filtered.map(n => {
     let tagClass = 'tag-highyield';
-    if (n.category === 'DAY-WISE') tagClass = 'tag-daywise';
+    if (n.category === 'HANDWRITTEN') tagClass = 'tag-handwritten';
+    else if (n.category === 'DAY-WISE') tagClass = 'tag-daywise';
     else if (n.category === 'SLIDES') tagClass = 'tag-slides';
 
     const isDataUri = (n.url || '').startsWith('data:');
