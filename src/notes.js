@@ -238,12 +238,51 @@ function determineNoteCategory(title) {
   return 'HIGH-YIELD';
 }
 
+// Normalize and consolidate subjects list so there is NEVER a duplicate Adult Health Nursing / Oncology card.
+// Guarantees a single unified card titled "Oncology (Dr. Deepak Marwah)".
+function normalizeSubjectsList(rawSubjects) {
+  const list = Array.isArray(rawSubjects) ? [...rawSubjects] : [];
+  let primaryOncoFound = false;
+  const filtered = [];
+
+  for (const s of list) {
+    if (!s || !s.title) continue;
+    const titleLower = s.title.toLowerCase();
+    const isOncoOrAhn = String(s.id) === String(ONCOLOGY_SUBJECT.id) ||
+      titleLower.includes('oncology') ||
+      titleLower.includes('adult health') ||
+      titleLower.includes('med-surg') ||
+      titleLower.includes('ahn');
+
+    if (isOncoOrAhn) {
+      if (!primaryOncoFound) {
+        primaryOncoFound = true;
+        filtered.push({
+          ...ONCOLOGY_SUBJECT,
+          // Preserve real API subject ID if present
+          apiSubjectId: s.id !== ONCOLOGY_SUBJECT.id ? s.id : undefined
+        });
+      }
+      // Silently discard any duplicate Adult Health Nursing / Oncology cards
+    } else {
+      filtered.push(s);
+    }
+  }
+
+  // Ensure the single unified Oncology card is always present at the very beginning
+  if (!primaryOncoFound) {
+    filtered.unshift({ ...ONCOLOGY_SUBJECT });
+  }
+
+  return filtered;
+}
+
 // Fetch subjects and notes with smart caching (Supports Full Open Access / Reading Mode)
 async function loadNotesRepository(forceReload = false) {
   const token = localStorage.getItem('nnl_access_token');
   const planId = getPlanIdForBatch(activeBatch);
   const batchId = getBatchIdForBatch(activeBatch);
-  const cacheKey = `nnl_notes_cache_${batchId}`;
+  const cacheKey = `nnl_notes_cache_v4_${batchId}`;
 
   // Check sessionStorage cache first for instant display
   if (!forceReload) {
@@ -251,14 +290,11 @@ async function loadNotesRepository(forceReload = false) {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
         const parsed = JSON.parse(cached);
-        allSubjects = parsed.subjects || [];
+        allSubjects = normalizeSubjectsList(parsed.subjects || []);
         if (parsed.notesMap) {
           subjectNotesMap = new Map(Object.entries(parsed.notesMap));
         }
         if (allSubjects.length > 0) {
-          if (!allSubjects.some(s => String(s.id) === String(ONCOLOGY_SUBJECT.id))) {
-            allSubjects.unshift(ONCOLOGY_SUBJECT);
-          }
           subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
           renderSubjectCards();
           updateTotalStats();
@@ -274,7 +310,7 @@ async function loadNotesRepository(forceReload = false) {
   // Launch Open Access / Reading Mode immediately with the full academic repository.
   if (!token) {
     console.log('[Notes] Reading Mode active — full open access to study library enabled.');
-    allSubjects = [...OPEN_ACCESS_SUBJECTS];
+    allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
     subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
     renderSubjectCards();
     updateTotalStats();
@@ -299,7 +335,7 @@ async function loadNotesRepository(forceReload = false) {
     let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, { headers });
     if (subRes.status === 401 || subRes.status === 403) {
       console.warn('[Notes] Token invalid or expired — serving Open Access library');
-      allSubjects = [...OPEN_ACCESS_SUBJECTS];
+      allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
       subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
       renderSubjectCards();
       updateTotalStats();
@@ -308,7 +344,7 @@ async function loadNotesRepository(forceReload = false) {
     if (!subRes.ok) {
       subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, { headers });
       if (subRes.status === 401 || subRes.status === 403) {
-        allSubjects = [...OPEN_ACCESS_SUBJECTS];
+        allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
         subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
         renderSubjectCards();
         updateTotalStats();
@@ -338,30 +374,15 @@ async function loadNotesRepository(forceReload = false) {
       subjects = [...OPEN_ACCESS_SUBJECTS];
     }
 
-    // Always ensure the dedicated Oncology (Dr. Deepak Marwah) subject is present
-    const hasOnco = subjects.some(s => String(s.id) === String(ONCOLOGY_SUBJECT.id) || (s.title && s.title.toLowerCase().includes('oncology')));
-    if (!hasOnco) {
-      subjects.unshift(ONCOLOGY_SUBJECT);
-    }
-
-    allSubjects = subjects;
+    // Consolidate into a single Oncology card with Dr. Deepak Marwah (no duplicate AHN cards)
+    allSubjects = normalizeSubjectsList(subjects);
     subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-
-    // Also enrich any Adult Health Nursing / Medicine subject with the oncology master notes
-    subjects.forEach(s => {
-      const sTitle = (s.title || '').toLowerCase();
-      if ((sTitle.includes('adult health') || sTitle.includes('medicine') || sTitle.includes('med-surg') || sTitle.includes('ahn')) && String(s.id) !== String(ONCOLOGY_SUBJECT.id)) {
-        const curNotes = subjectNotesMap.get(String(s.id)) || [];
-        const merged = [...ONCOLOGY_MASTER_NOTES, ...curNotes.filter(n => !String(n.id).startsWith('onco-marwah'))];
-        subjectNotesMap.set(String(s.id), merged);
-      }
-    });
 
     renderSubjectCards();
     updateTotalStats();
 
     // 2. Fetch notes for all subjects in parallel chunks to keep UI silky smooth
-    await fetchNotesForSubjects(subjects, batchId, headers);
+    await fetchNotesForSubjects(allSubjects, batchId, headers);
 
     // Save into cache
     try {
@@ -389,19 +410,18 @@ async function loadNotesRepository(forceReload = false) {
 
 // Fetch notes for a single subject
 async function fetchSingleSubjectNotes(subjectId, batchId, headers) {
-  // If requesting dedicated Oncology subject, return the exhaustive master library
-  if (String(subjectId) === String(ONCOLOGY_SUBJECT.id)) {
-    return [...ONCOLOGY_MASTER_NOTES];
-  }
+  const currentSub = allSubjects.find(s => String(s.id) === String(subjectId));
+  const isDedicatedOnco = String(subjectId) === String(ONCOLOGY_SUBJECT.id);
 
   let notes = [];
-
-  // If this subject is Adult Health Nursing or Medicine, seed with Dr. Deepak Marwah's oncology notes
-  const currentSub = allSubjects.find(s => String(s.id) === String(subjectId));
-  const sTitle = (currentSub?.title || '').toLowerCase();
-  const isMedSurg = sTitle.includes('adult health') || sTitle.includes('medicine') || sTitle.includes('med-surg') || sTitle.includes('ahn');
-  if (isMedSurg) {
+  if (isDedicatedOnco) {
     notes.push(...ONCOLOGY_MASTER_NOTES);
+  }
+
+  // If this is dedicated oncology without a backend API subject ID, return the master notes directly
+  const querySubjectId = isDedicatedOnco ? (currentSub?.apiSubjectId) : subjectId;
+  if (!querySubjectId || querySubjectId === ONCOLOGY_SUBJECT.id) {
+    return notes;
   }
 
   // 1. Handwritten Notes
@@ -773,11 +793,12 @@ function renderSubjectNotesList() {
     else if (n.category === 'DAY-WISE') tagClass = 'tag-daywise';
     else if (n.category === 'SLIDES') tagClass = 'tag-slides';
 
-    // Clean title from redundant brackets or repeated teacher name
+    // Clean title from redundant brackets, repeated teacher name, or redundant subject prefixes
     const rawTitle = n.title || 'Class Note';
     const cleanTitle = rawTitle
       .replace(/\[.*?\]/g, '')
       .replace(/\(Dr\.?\s*Deepak\s*Marwah\)/gi, '')
+      .replace(/^Oncology\s*[-–—:]\s*/i, '')
       .replace(/\s+/g, ' ')
       .trim();
 
