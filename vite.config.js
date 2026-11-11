@@ -18,7 +18,7 @@ function decompress(buffer, contentEncoding) {
   return buffer;
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       input: {
@@ -66,6 +66,25 @@ export default defineConfig({
     }
   },
   plugins: [
+    {
+      name: 'apk-scratch-ui-isolator',
+      transformIndexHtml: {
+        order: 'pre',
+        handler(html) {
+          if (mode !== 'hinglish-apk') return html;
+          const out = html
+            .replace(/<link[^>]*href=["']\/src\/style\.css["'][^>]*>\s*/gi, '')
+            .replace(/<link[^>]*fonts\.google[^>]*>\s*/gi, '')
+            .replace(/<link[^>]*fonts\.gstatic[^>]*>\s*/gi, '')
+            .replace(/<style[\s\S]*?<\/style>\s*/gi, '')
+            .replace(/<div id=["']nightingale-bg-container["'][\s\S]*?<\/div>\s*/gi, '');
+          return out.replace(
+            '</head>',
+            '  <script type="module" src="/src/apk/apk-shell.js"></script>\n  </head>'
+          );
+        }
+      }
+    },
     {
       name: 'zoom-proxy-middleware',
       configureServer(server) {
@@ -811,4 +830,4 @@ export default defineConfig({
       }
     }
   ]
-});
+}));
