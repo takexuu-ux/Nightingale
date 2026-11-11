@@ -117,6 +117,7 @@ html, body {
   padding: 0;
   width: 100%;
   max-width: 100%;
+  min-height: 100%;
   overflow-x: clip;
   background: var(--bg-canvas);
   color: var(--text-primary);
@@ -125,6 +126,28 @@ html, body {
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.28s var(--fluid-ease), color 0.22s var(--fluid-ease);
+}
+
+/* Subtle Atmospheric Gradient Mesh (Light Alabaster-Lavender / Dark Plum-Aurora) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(62% 54% at 10% 6%, rgba(141, 116, 229, 0.18), transparent 68%),
+    radial-gradient(56% 50% at 92% 94%, rgba(91, 62, 168, 0.13), transparent 70%),
+    radial-gradient(40% 36% at 78% 14%, rgba(196, 181, 253, 0.18), transparent 68%),
+    linear-gradient(155deg, #FDFCFF 0%, #F6F1FF 52%, #FAF8FF 100%);
+}
+
+[data-theme="dark"] body::before {
+  background:
+    radial-gradient(60% 52% at 12% 8%, rgba(141, 116, 229, 0.22), transparent 68%),
+    radial-gradient(56% 48% at 88% 92%, rgba(91, 62, 168, 0.18), transparent 72%),
+    radial-gradient(36% 32% at 82% 16%, rgba(167, 139, 250, 0.11), transparent 66%),
+    linear-gradient(160deg, #0E0A16 0%, #150F23 55%, #100C18 100%);
 }
 
 .hide {
@@ -139,7 +162,8 @@ html, body {
 .brand-name,
 .apk-hidden-clutter,
 .auth-footer-meta,
-.cyber-tweaks-widget {
+.cyber-tweaks-widget,
+.right-column-spacer {
   display: none !important;
 }
 
@@ -213,12 +237,7 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.3s ease;
-}
-
-.app-preloader.fade-out {
-  opacity: 0;
-  pointer-events: none;
+  transition: opacity 0.32s ease;
 }
 
 .preloader-content {
@@ -228,52 +247,63 @@ button, input, select, textarea {
   gap: 12px;
 }
 
-.preloader-logo-box {
+.preloader-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.preloader-logo .heartbeat-svg {
+  display: none;
+}
+
+.apk-logo-badge {
   width: 54px;
   height: 54px;
-  border-radius: 16px;
-  background: var(--accent-grad);
-  display: flex;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #4E329A 0%, #6F4FC4 55%, #957AE9 100%);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  box-shadow: 0 10px 28px rgba(91, 62, 168, 0.25);
+  box-shadow: 0 12px 28px rgba(91, 62, 168, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
 }
 
-.preloader-logo-svg {
-  width: 28px;
-  height: 28px;
-  stroke: #fff;
+.apk-logo-badge svg {
+  width: 30px;
+  height: 30px;
+  display: block;
 }
 
-.preloader-title {
-  margin: 0;
-  font-size: 1.25rem;
+.preloader-logo .logo-text,
+.apk-brand-gradient-text {
+  font-family: var(--font-sans);
   font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #3D2282 0%, #6846C4 52%, #987CE9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.preloader-status {
+[data-theme="dark"] .preloader-logo .logo-text,
+[data-theme="dark"] .apk-brand-gradient-text {
+  background: linear-gradient(135deg, #FFFFFF 0%, #DFD5FF 55%, #AD8DE4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.preloader-logo .logo-text {
+  font-size: 1.45rem;
+}
+
+.preloader-status-container p {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--text-secondary);
-}
-
-.preloader-progress-bar {
-  width: 120px;
-  height: 4px;
-  border-radius: 99px;
-  background: var(--bg-subtle);
-  overflow: hidden;
-}
-
-.preloader-progress-fill {
-  width: 48%;
-  height: 100%;
-  border-radius: 99px;
-  background: var(--accent-grad);
-  animation: apkShimmer 1.1s infinite linear;
 }
 
 /* ── Minimal Navigation Chrome (Left Rail on Tablet / Bottom Dock on Mobile) ── */
@@ -296,35 +326,48 @@ button, input, select, textarea {
   gap: 12px;
 }
 
-.header-brand {
+.header-logo {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: var(--accent-grad);
+  background: linear-gradient(145deg, #4E329A 0%, #6F4FC4 55%, #957AE9 100%);
   color: #fff;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(91, 62, 168, 0.24);
+  box-shadow: 0 8px 18px rgba(91, 62, 168, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-.header-brand svg,
-.brand-icon {
-  width: 22px;
-  height: 22px;
-  stroke: #fff;
+.header-logo .logo-text {
+  display: none;
 }
 
-.header-nav {
+.header-logo svg {
+  width: 24px;
+  height: 24px;
+}
+
+.header-nav-tabs {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.nav-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   width: 100%;
   flex: 1;
-  justify-content: center;
 }
 
 .nav-tab {
@@ -376,6 +419,7 @@ button, input, select, textarea {
   display: none !important;
 }
 
+.nav-tab-refresh-btn,
 .nav-btn,
 .apk-icon-btn {
   width: 42px;
@@ -393,12 +437,14 @@ button, input, select, textarea {
   position: relative;
 }
 
+.nav-tab-refresh-btn:hover,
 .nav-btn:hover,
 .apk-icon-btn:hover {
   border-color: var(--border-strong);
   color: var(--accent);
 }
 
+.nav-tab-refresh-btn.spinning svg,
 .nav-btn.spinning svg {
   animation: apkSpin 0.8s linear infinite;
 }
@@ -525,116 +571,314 @@ main#app {
   cursor: pointer;
 }
 
-/* ── Minimal Auth / Login Screen ── */
-.auth-container {
-  min-height: calc(100vh - 56px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+/* ── Auth Layout & Tablet Split Login Screen ── */
+body.apk-is-auth .app-header,
+body:has(#app-header.hide) .app-header {
+  display: none !important;
 }
 
-.auth-card {
+body.apk-is-auth main#app,
+body:has(#app-header.hide) main#app {
+  padding: 20px 24px 28px !important;
+  min-height: 100vh;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+body.apk-is-auth main#app > .container,
+body:has(#app-header.hide) main#app > .container {
   width: 100%;
-  max-width: 400px;
-  padding: 28px 24px;
-  border-radius: 26px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.apk-auth-topbar {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+body:not(.apk-is-auth) .apk-auth-topbar,
+body:not(.apk-is-auth) #apk-auth-showcase,
+body:not(.apk-is-auth) .auth-hero-wrapper {
+  display: none !important;
+}
+
+.apk-auth-batch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: var(--bg-glass-strong);
+  border: 1px solid var(--border-strong);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  box-shadow: var(--shadow-card);
+}
+
+.apk-auth-batch-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+}
+
+.auth-hero-wrapper {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 28px;
+  align-items: center;
+  width: 100%;
+}
+
+.apk-auth-showcase {
+  padding: 36px 34px;
+  border-radius: 30px;
+  background: linear-gradient(145deg, rgba(91, 62, 168, 0.09) 0%, rgba(141, 116, 229, 0.04) 55%, rgba(255, 255, 255, 0.65) 100%);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  animation: apkFadeSlide 0.36s var(--fluid-ease) both;
+}
+
+[data-theme="dark"] .apk-auth-showcase {
+  background: linear-gradient(145deg, rgba(141, 116, 229, 0.16) 0%, rgba(91, 62, 168, 0.08) 60%, rgba(25, 20, 38, 0.85) 100%);
+}
+
+.apk-showcase-title {
+  margin: 0;
+  font-size: clamp(2.15rem, 3.6vw, 2.9rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.apk-showcase-sub {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.apk-showcase-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.apk-showcase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-hairline);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.apk-showcase-pill svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+}
+
+#auth-screen,
+.auth-container {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  padding: 32px 28px;
+  border-radius: 30px;
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-float);
   animation: apkFadeSlide 0.4s var(--fluid-ease) both;
 }
 
-.auth-header {
-  text-align: center;
-  margin-bottom: 22px;
+#auth-screen .brand-header {
+  text-align: left !important;
+  margin: 0 0 22px !important;
 }
 
-.auth-title {
-  margin: 0 0 4px;
-  font-size: 1.55rem;
+#auth-screen .brand-title {
+  margin: 0 0 4px !important;
+  font-size: 1.45rem !important;
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+  letter-spacing: -0.025em;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+#auth-screen .brand-subtitle {
+  margin: 0 !important;
+  font-size: 0.86rem !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+  line-height: 1.4 !important;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 54px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--bg-subtle);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 0 4px var(--bg-tint);
+}
+
+.input-prefix {
+  width: 58px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
   font-weight: 800;
+  color: var(--accent);
+  background: var(--bg-tint);
+  border-right: 1px solid var(--border-hairline);
+}
+
+.input-field,
+#phone-input,
+#otp-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0 16px;
   color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.otp-header-area {
+  margin-bottom: 14px;
+}
+
+.otp-step-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary) !important;
   letter-spacing: -0.02em;
 }
 
-.auth-subtitle {
-  margin: 0;
+.otp-step-subtitle {
+  margin: 4px 0 0;
   font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.input-group label {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-
-.phone-input-wrapper {
-  display: flex;
-  align-items: center;
-  height: 46px;
-  border-radius: 14px;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-subtle);
-  padding: 0 14px;
-  gap: 8px;
-}
-
-.country-prefix {
-  font-weight: 700;
-  color: var(--accent);
-  font-size: 14px;
-}
-
-.phone-input-wrapper input,
-#otp-input {
-  width: 100%;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--text-secondary) !important;
 }
 
 .otp-boxes-container {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
 }
 
+.otp-box,
 .otp-digit-box {
   width: 100%;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid var(--border-strong);
+  min-width: 0;
+  height: 52px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-strong);
   background: var(--bg-subtle);
   color: var(--text-primary);
   text-align: center;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
+.otp-box:focus,
 .otp-digit-box:focus {
   border-color: var(--accent);
   background: var(--bg-elevated);
-  box-shadow: 0 0 0 3px var(--bg-tint);
+  box-shadow: 0 0 0 4px var(--bg-tint);
+}
+
+.otp-single-box {
+  width: 64px;
+  height: 54px;
+  margin: 0 auto;
+  border-radius: 16px;
+  background: var(--success-bg);
+  color: var(--success-ink);
+  border: 1px solid var(--success-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.single-box-tick-svg {
+  width: 26px;
+  height: 26px;
 }
 
 .btn {
-  height: 44px;
+  height: 46px;
   padding: 0 18px;
-  border-radius: 14px;
+  border-radius: 15px;
   border: 1px solid transparent;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -644,10 +888,27 @@ main#app {
   white-space: nowrap;
 }
 
-.btn-primary {
+.btn-primary,
+.btn-verify-compact {
   background: var(--accent-grad);
   color: #FFFFFF;
-  box-shadow: 0 6px 18px rgba(91, 62, 168, 0.25);
+  box-shadow: 0 10px 24px rgba(91, 62, 168, 0.26);
+}
+
+#send-otp-btn,
+#verify-otp-btn,
+.btn-verify-compact {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .btn-ghost {
@@ -656,28 +917,40 @@ main#app {
   border-color: var(--border-hairline);
 }
 
+.otp-resend-row,
 .otp-actions-row {
+  margin-top: 14px;
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
 }
 
+.resend-link-btn,
 .btn-link {
   background: transparent;
   border: none;
   color: var(--accent);
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
-  padding: 6px 4px;
+  padding: 4px 6px;
+}
+
+.resend-link-btn.text-muted {
+  color: var(--text-secondary);
+  font-weight: 700;
 }
 
 .alert {
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
   font-size: 12.5px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .alert-error { background: var(--danger-bg); color: var(--danger-ink); border: 1px solid var(--danger-border); }
 .alert-success { background: var(--success-bg); color: var(--success-ink); border: 1px solid var(--success-border); }
@@ -1130,9 +1403,13 @@ main#app {
 }
 
 :root:not([data-theme="dark"]) #app .btn-primary,
+:root:not([data-theme="dark"]) #app .btn-verify-compact,
+:root:not([data-theme="dark"]) #app #send-otp-btn,
+:root:not([data-theme="dark"]) #app #verify-otp-btn,
 :root:not([data-theme="dark"]) #app .sd-lecture-btn,
 :root:not([data-theme="dark"]) #app .btn-note-view,
-:root:not([data-theme="dark"]) #app .section-mode-tab.active {
+:root:not([data-theme="dark"]) #app .section-mode-tab.active,
+:root:not([data-theme="dark"]) #app .apk-pill-opt.active {
   color: #FFFFFF !important;
 }
 
@@ -1420,8 +1697,47 @@ main#app {
   bottom: 84px !important;
 }
 
-/* ── Mobile Responsive Overrides (< 768px): Floating Bottom Dock ── */
+/* ── Mobile Responsive Overrides (< 768px): Floating Bottom Dock & Stacked Auth ── */
 @media (max-width: 767px) {
+  body.apk-is-auth main#app,
+  body:has(#app-header.hide) main#app {
+    padding: 16px 14px 24px !important;
+    justify-content: flex-start;
+  }
+
+  .apk-auth-topbar {
+    margin-bottom: 12px;
+  }
+
+  .auth-hero-wrapper {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin: 0 auto;
+    gap: 14px;
+  }
+
+  .apk-auth-showcase {
+    padding: 20px 18px;
+    border-radius: 22px;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .apk-showcase-title {
+    font-size: 2rem;
+  }
+
+  .apk-showcase-pills {
+    justify-content: center;
+  }
+
+  #auth-screen,
+  .auth-container {
+    padding: 24px 20px;
+    border-radius: 24px;
+  }
+
   .app-header {
     left: 12px;
     right: 12px;
@@ -1438,11 +1754,17 @@ main#app {
     gap: 4px;
   }
 
-  .header-brand {
+  .header-logo {
     display: none !important;
   }
 
-  .header-nav {
+  .header-nav-tabs {
+    flex-direction: row;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .nav-tabs {
     flex-direction: row;
     justify-content: space-around;
     gap: 2px;
@@ -1469,6 +1791,7 @@ main#app {
     border-left: 1px solid var(--border-hairline);
   }
 
+  .nav-tab-refresh-btn,
   .nav-btn,
   .apk-icon-btn {
     width: 38px;

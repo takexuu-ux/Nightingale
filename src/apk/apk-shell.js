@@ -30,6 +30,8 @@ export function applyApkTheme(theme) {
 // Apply immediately before paint
 applyApkTheme(getApkTheme());
 
+const NIGHTINGALE_MARK_SVG = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="11.5" r="3.2" fill="#E9DFFF"/></svg>';
+
 const NAV_ICONS = {
   live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>',
   videos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
@@ -273,13 +275,98 @@ function normalizeHeaderAndChrome() {
     dash.insertBefore(bar, dash.firstChild);
   }
 
-  // Minimal login screen header
-  const authTitle = document.querySelector('.auth-title');
-  if (authTitle) {
-    authTitle.innerHTML = '<span class="apk-editorial-serif">Red</span> Sapphire';
+  // Minimal Preloader Logo Badge + Brand Wordmark
+  const preloaderLogo = document.querySelector('.preloader-logo');
+  if (preloaderLogo && !preloaderLogo.querySelector('.apk-logo-badge')) {
+    const badge = document.createElement('div');
+    badge.className = 'apk-logo-badge';
+    badge.innerHTML = NIGHTINGALE_MARK_SVG;
+    preloaderLogo.insertBefore(badge, preloaderLogo.firstChild);
+    const txt = preloaderLogo.querySelector('.logo-text');
+    if (txt) txt.textContent = 'Nightingale';
   }
-  const authSub = document.querySelector('.auth-subtitle');
-  if (authSub) authSub.textContent = 'Hinglish Study Room';
+
+  // Minimal Header Rail Logo Badge (.header-logo exists across all 4 HTML pages)
+  const headerLogo = document.querySelector('.header-logo');
+  if (headerLogo) {
+    headerLogo.innerHTML = NIGHTINGALE_MARK_SVG;
+    headerLogo.setAttribute('aria-label', 'Nightingale');
+  }
+
+  // Sync auth body flag + tablet showcase + Light/Dark switch on Auth screen
+  const syncAuthMode = () => {
+    const authEl = document.getElementById('auth-screen');
+    const isAuth = Boolean(authEl && !authEl.classList.contains('hide'));
+    document.body.classList.toggle('apk-is-auth', isAuth);
+  };
+  syncAuthMode();
+
+  const authEl = document.getElementById('auth-screen');
+  if (authEl) {
+    new MutationObserver(syncAuthMode).observe(authEl, { attributes: true, attributeFilter: ['class'] });
+
+    // Top bar above Login (Batch badge + Light/Dark toggle)
+    const appMain = document.getElementById('app');
+    if (appMain && !document.getElementById('apk-auth-topbar')) {
+      const curTheme = getApkTheme();
+      const topbar = document.createElement('div');
+      topbar.id = 'apk-auth-topbar';
+      topbar.className = 'apk-auth-topbar';
+      topbar.innerHTML = `
+        <span class="apk-auth-batch-pill"><span class="apk-auth-batch-dot"></span>Red Sapphire · Hinglish</span>
+        <div class="apk-pill-switch">
+          <button type="button" class="apk-pill-opt apk-theme-opt ${curTheme === 'light' ? 'active' : ''}" data-theme-opt="light">Light</button>
+          <button type="button" class="apk-pill-opt apk-theme-opt ${curTheme === 'dark' ? 'active' : ''}" data-theme-opt="dark">Dark</button>
+        </div>
+      `;
+      topbar.querySelectorAll('.apk-theme-opt').forEach((btn) => {
+        btn.addEventListener('click', () => applyApkTheme(btn.getAttribute('data-theme-opt')));
+      });
+      appMain.insertBefore(topbar, appMain.firstChild);
+    }
+
+    // Tablet Split Brand Showcase next to Login Card
+    const wrapper = authEl.closest('.auth-hero-wrapper');
+    if (wrapper && !document.getElementById('apk-auth-showcase')) {
+      const showcase = document.createElement('div');
+      showcase.id = 'apk-auth-showcase';
+      showcase.className = 'apk-auth-showcase';
+      showcase.innerHTML = `
+        <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
+        <h1 class="apk-showcase-title apk-brand-gradient-text">Nightingale</h1>
+        <p class="apk-showcase-sub"><span class="apk-editorial-serif">Study</span> Room</p>
+        <div class="apk-showcase-pills">
+          <span class="apk-showcase-pill">${NAV_ICONS.live}Live</span>
+          <span class="apk-showcase-pill">${NAV_ICONS.videos}Lectures</span>
+          <span class="apk-showcase-pill">${NAV_ICONS.notes}Notes</span>
+        </div>
+      `;
+      wrapper.insertBefore(showcase, authEl);
+    }
+
+    // Turn #auth-screen header into crisp step prompt instead of raw NIGHTINGALE + blue quote
+    const brandTitle = authEl.querySelector('.brand-title');
+    if (brandTitle) {
+      brandTitle.textContent = 'Sign in';
+      brandTitle.removeAttribute('data-text');
+    }
+    const brandSub = authEl.querySelector('.brand-subtitle');
+    if (brandSub) {
+      brandSub.textContent = 'Enter your registered 10-digit number';
+    }
+    const phoneLabel = authEl.querySelector('label[for="phone-input"]');
+    if (phoneLabel) {
+      phoneLabel.textContent = 'Mobile Number';
+    }
+    const phoneInput = document.getElementById('phone-input');
+    if (phoneInput) {
+      phoneInput.placeholder = '10-digit number';
+    }
+    const sendOtpSpan = document.querySelector('#send-otp-btn span');
+    if (sendOtpSpan) {
+      sendOtpSpan.textContent = 'Get OTP';
+    }
+  }
 }
 
 function initApkShell() {
