@@ -297,7 +297,7 @@ function normalizeHeaderAndChrome() {
   if (authEl) {
     new MutationObserver(syncAuthMode).observe(authEl, { attributes: true, attributeFilter: ['class'] });
 
-    // Bare Hero Header [Logo] Nightingale outside container on top
+    // Bare Hero Header [Logo] Nightingale + Live/Lectures/Notes pills on top
     const wrapper = authEl.closest('.auth-hero-wrapper');
     if (wrapper && !document.getElementById('apk-auth-showcase')) {
       const showcase = document.createElement('div');
@@ -308,8 +308,18 @@ function normalizeHeaderAndChrome() {
           <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
           <h1 class="apk-showcase-title apk-brand-gradient-text">Nightingale</h1>
         </div>
+        <div class="apk-showcase-pills">
+          <span class="apk-showcase-pill">Live</span>
+          <span class="apk-showcase-pill">Lectures</span>
+          <span class="apk-showcase-pill">Notes</span>
+        </div>
       `;
       wrapper.insertBefore(showcase, authEl);
+    }
+
+    const subtitleEl = authEl.querySelector('.brand-subtitle');
+    if (subtitleEl) {
+      subtitleEl.textContent = 'Enter your registered mobile number';
     }
 
     const phoneInput = document.getElementById('phone-input');

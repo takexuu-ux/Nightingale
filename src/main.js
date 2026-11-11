@@ -3741,6 +3741,7 @@ downloadSlideBtn.addEventListener('click', () => {
 // 6-Digit Individual OTP Input Boxes Management
 // 6-Digit Individual OTP Input Boxes Management with Running Glow & Morphing
 let otpGlowTimeout = null;
+let otpGlowStartedAt = 0;
 
 function resetOtpMorphState() {
   const container = document.getElementById('otp-boxes-container');
@@ -3749,6 +3750,7 @@ function resetOtpMorphState() {
   const headerVerified = document.getElementById('otp-header-verified');
   const actionsContainer = document.getElementById('otp-actions-container');
 
+  otpGlowStartedAt = 0;
   if (otpGlowTimeout) {
     clearTimeout(otpGlowTimeout);
     otpGlowTimeout = null;
@@ -3783,18 +3785,20 @@ function initOtpBoxes() {
 
   function handleCompleteOtp(fullOtp) {
     if (fullOtp.length !== 6) return;
+    const isApkShell = document.body.classList.contains('apk-shell-active');
     const container = document.getElementById('otp-boxes-container');
     if (container) {
       container.classList.remove('running-glow', 'error-shake');
       void container.offsetWidth; // re-flow
       container.classList.add('running-glow');
+      otpGlowStartedAt = Date.now();
     }
 
-    // After border laser glow animation runs, smoothly submit form to morph and login
+    // After border laser glow animation starts, submit form (APK keeps laser visible ~2s total before morph)
     if (otpGlowTimeout) clearTimeout(otpGlowTimeout);
     otpGlowTimeout = setTimeout(() => {
       otpForm.dispatchEvent(new Event('submit', { cancelable: true }));
-    }, 550);
+    }, isApkShell ? 320 : 550);
   }
 
   boxes.forEach((box, index) => {
@@ -3972,6 +3976,14 @@ otpForm.addEventListener('submit', async (e) => {
   verifyBtn.disabled = true;
   verifyBtn.innerHTML = '<div class="spinner"></div> Logging in...';
 
+  const isApkShell = document.body.classList.contains('apk-shell-active');
+  const otpContainer = document.getElementById('otp-boxes-container');
+  if (isApkShell && otpContainer && !otpContainer.classList.contains('running-glow')) {
+    otpContainer.classList.remove('error-shake');
+    otpContainer.classList.add('running-glow');
+    otpGlowStartedAt = Date.now();
+  }
+
   const ua = navigator.userAgent || '';
   const isAndroidEnv = /Android/i.test(ua) || Boolean(window.__NNL_ANDROID_APK__);
   const isTabletScreen = isAndroidEnv && (!/Mobile/i.test(ua) || Math.min(window.screen?.width || 0, window.screen?.height || 0) >= 600);
@@ -4015,14 +4027,24 @@ otpForm.addEventListener('submit', async (e) => {
     sessionStorage.removeItem('nnl_explicit_logout');
     persistApkSession();
 
-    // Smooth animation: Fade out 6 boxes into 1 green button with checkmark
+    // Smooth animation: Hold APK revolving laser for ~2s total before merging into 1 green tick box
+    if (isApkShell && otpGlowStartedAt > 0) {
+      const elapsed = Date.now() - otpGlowStartedAt;
+      if (elapsed < 2000) {
+        await new Promise(r => setTimeout(r, 2000 - elapsed));
+      }
+    }
+
     const container = document.getElementById('otp-boxes-container');
     const singleBox = document.getElementById('otp-single-box');
     const headerNormal = document.getElementById('otp-header-normal');
     const headerVerified = document.getElementById('otp-header-verified');
     const actionsContainer = document.getElementById('otp-actions-container');
 
-    if (container) container.classList.add('morphing-out');
+    if (container) {
+      container.classList.remove('running-glow');
+      container.classList.add('morphing-out');
+    }
     if (actionsContainer) actionsContainer.classList.add('hide');
 
     await new Promise(r => setTimeout(r, 200));
@@ -4047,7 +4069,7 @@ otpForm.addEventListener('submit', async (e) => {
     console.error('Verify OTP Error:', error);
     const container = document.getElementById('otp-boxes-container');
     if (container) {
-      container.classList.remove('morphing-out');
+      container.classList.remove('morphing-out', 'running-glow');
       container.classList.add('error-shake');
       setTimeout(() => {
         container.classList.remove('error-shake');

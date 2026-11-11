@@ -39,25 +39,24 @@ function updateProgressUI(status, activeBtn, statusLabel) {
   const total = Number(status?.totalBytes || 0);
   const speedStr = formatSpeed(status?.speedKbps);
 
-  let labelText = 'Preparing download...';
+  let labelText = 'Preparing...';
   let btnText = 'Downloading...';
 
   if (status?.state === 'checking') {
-    labelText = 'Checking APK package...';
+    labelText = 'Checking...';
     btnText = 'Checking...';
   } else if (status?.state === 'downloading') {
-    const mbText = total > 0 ? `${formatMb(dl)} / ${formatMb(total)} MB` : `${formatMb(dl)} MB`;
-    labelText = `Downloading ${pct}% • ${mbText}${speedStr ? ` (${speedStr})` : ''}`;
-    btnText = total > 0 ? `${pct}% (${formatMb(dl)}/${formatMb(total)} MB)` : `${formatMb(dl)} MB...`;
+    labelText = `Downloading ${pct}%`;
+    btnText = `${pct}%`;
   } else if (status?.state === 'verifying') {
-    labelText = 'Verifying APK signature...';
+    labelText = 'Verifying...';
     btnText = 'Verifying...';
   } else if (status?.state === 'ready') {
-    labelText = 'APK verified • Opening Android installer...';
-    btnText = 'Open Installer';
+    labelText = 'Ready to install';
+    btnText = 'Install';
   } else if (status?.state === 'error') {
-    labelText = `Update failed: ${status.error || 'Download error'}`;
-    btnText = 'Retry Update';
+    labelText = 'Update failed';
+    btnText = 'Retry';
   }
 
   banner.style.display = 'flex';
@@ -91,41 +90,22 @@ function createBanner() {
 
   banner = document.createElement('div');
   banner.id = 'apk-ota-banner';
-  banner.style.cssText = [
-    'position:fixed',
-    'left:50%',
-    'bottom:18px',
-    'transform:translateX(-50%)',
-    'z-index:11000',
-    'display:none',
-    'flex-direction:column',
-    'gap:8px',
-    'padding:11px 14px',
-    'border-radius:14px',
-    'background:linear-gradient(135deg, rgba(24,30,56,0.97), rgba(45,25,64,0.97))',
-    'border:1px solid rgba(167,139,250,0.45)',
-    'box-shadow:0 14px 36px rgba(0,0,0,0.65)',
-    'color:#f8fafc',
-    'font-family:Outfit,sans-serif',
-    'font-size:13px',
-    'min-width:260px',
-    'max-width:92vw'
-  ].join(';');
 
   banner.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <span id="apk-ota-msg" style="font-weight:600;line-height:1.25;">Update ready</span>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <button id="apk-ota-apply-btn" style="padding:6px 12px;border-radius:10px;border:1px solid rgba(196,181,253,0.5);background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">
-          Update Now
-        </button>
-        <button id="apk-ota-dismiss-btn" aria-label="Dismiss" style="padding:4px 7px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">
+    <div class="apk-ota-banner-row">
+      <div class="apk-ota-title-wrap">
+        <span class="apk-ota-dot" aria-hidden="true"></span>
+        <span id="apk-ota-msg">Update available</span>
+      </div>
+      <div class="apk-ota-actions">
+        <button id="apk-ota-apply-btn" type="button">Update</button>
+        <button id="apk-ota-dismiss-btn" type="button" aria-label="Dismiss">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
     </div>
-    <div id="apk-ota-progress-wrap" style="display:none;width:100%;height:6px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;">
-      <div id="apk-ota-progress-bar" style="width:0%;height:100%;border-radius:999px;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width 180ms ease;"></div>
+    <div id="apk-ota-progress-wrap" style="display:none;">
+      <div id="apk-ota-progress-bar"></div>
     </div>
   `;
 
@@ -218,18 +198,15 @@ function attachUpdateTriggers(checkFn) {
     const box = document.createElement('div');
     box.id = 'apk-ota-settings-box';
     box.className = 'tweaks-section';
-    box.style.borderTop = '1px solid rgba(255,255,255,0.08)';
-    box.style.paddingTop = '0.7rem';
-    box.style.marginTop = '0.35rem';
     box.innerHTML = `
-      <div class="tweaks-label" style="font-size:0.68rem;color:#c4b5fd;font-weight:700;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.06em;">App Live Update</div>
-      <div id="apk-ota-ver-label" style="font-size:0.74rem;color:#cbd5e1;margin-bottom:0.45rem;">Checking version...</div>
-      <div id="apk-ota-settings-progress-wrap" style="display:none;width:100%;height:5px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;margin-bottom:0.5rem;">
-        <div id="apk-ota-settings-progress-bar" style="width:0%;height:100%;border-radius:999px;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width 180ms ease;"></div>
+      <div class="apk-ota-settings-head">
+        <span class="apk-ota-settings-label">App Update</span>
+        <span id="apk-ota-ver-label">v—</span>
       </div>
-      <button id="apk-ota-manual-btn" class="btn-note-view" style="width:100%;justify-content:center;padding:0.48rem 0.8rem;font-size:0.76rem;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
-        Check for Update
-      </button>
+      <div id="apk-ota-settings-progress-wrap" style="display:none;">
+        <div id="apk-ota-settings-progress-bar"></div>
+      </div>
+      <button id="apk-ota-manual-btn" type="button">Check update</button>
     `;
     panel.appendChild(box);
     box.querySelector('#apk-ota-manual-btn')?.addEventListener('click', (e) => {
@@ -238,15 +215,15 @@ function attachUpdateTriggers(checkFn) {
     });
   }
 
-  // 2. Also add a direct compact "Check Update" pill in top-right header so it is always 1-tap visible on Mobile & Tablet
+  // 2. Compact header trigger when not replaced by settings sheet
   const headerRight = document.querySelector('.header-right-actions');
   if (headerRight && !document.getElementById('apk-header-update-btn')) {
     const hBtn = document.createElement('button');
     hBtn.id = 'apk-header-update-btn';
     hBtn.className = 'nav-btn';
-    hBtn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;border-color:rgba(167,139,250,0.38);color:#e9d5ff;font-size:0.7rem;padding:0.36rem 0.65rem;cursor:pointer;';
+    hBtn.type = 'button';
     hBtn.innerHTML = `
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       <span>Update</span>
     `;
     hBtn.addEventListener('click', (e) => {
@@ -280,7 +257,7 @@ export function initApkOtaUpdater() {
       const data = await res.json();
 
       if (verLabel) {
-        verLabel.textContent = `Web v${data.currentWebVersion || 1} • APK v${data.currentNativeVersionCode || 4}`;
+        verLabel.textContent = `Build ${data.currentNativeVersionCode || 17} (${data.currentWebVersion || 16})`;
       }
 
       const hasNative = Boolean(data.hasNativeUpdate);
@@ -291,21 +268,17 @@ export function initApkOtaUpdater() {
         const msgEl = banner.querySelector('#apk-ota-msg');
         const applyBtn = banner.querySelector('#apk-ota-apply-btn');
         if (msgEl) {
-          msgEl.textContent = hasNative
-            ? `New APK v${data.remoteNativeVersionCode} Ready`
-            : `Update v${data.remoteWebVersion} Available`;
+          msgEl.textContent = hasNative ? 'New update' : 'Update ready';
         }
         if (applyBtn) {
-          applyBtn.textContent = hasNative ? 'Install APK' : 'Update Now';
+          applyBtn.textContent = hasNative ? 'Install' : 'Update';
           applyBtn.onclick = () => applyUpdate(hasNative, applyBtn, verLabel);
         }
         banner.style.display = 'flex';
 
         if (headerBtn) {
           headerBtn.disabled = false;
-          headerBtn.style.borderColor = '#ec4899';
-          headerBtn.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.35), rgba(236,72,153,0.3))';
-          headerBtn.querySelector('span').textContent = hasNative ? `Get APK v${data.remoteNativeVersionCode}` : `Update v${data.remoteWebVersion}`;
+          headerBtn.querySelector('span').textContent = hasNative ? 'Install' : 'Update';
           headerBtn.onclick = (e) => {
             e.stopPropagation();
             applyUpdate(hasNative, headerBtn, verLabel);
@@ -314,7 +287,7 @@ export function initApkOtaUpdater() {
 
         if (manualBtn) {
           manualBtn.disabled = false;
-          manualBtn.textContent = hasNative ? `Install APK v${data.remoteNativeVersionCode}` : `Install Update v${data.remoteWebVersion}`;
+          manualBtn.textContent = hasNative ? 'Install update' : 'Update now';
           manualBtn.onclick = (e) => {
             e.stopPropagation();
             applyUpdate(hasNative, manualBtn, verLabel);
@@ -323,33 +296,33 @@ export function initApkOtaUpdater() {
       } else {
         if (headerBtn) {
           headerBtn.disabled = false;
-          headerBtn.querySelector('span').textContent = manual ? 'Up to Date' : 'Update';
+          headerBtn.querySelector('span').textContent = manual ? 'Latest' : 'Update';
           if (manual) {
             setTimeout(() => {
               const sp = headerBtn.querySelector('span');
-              if (sp && sp.textContent === 'Up to Date') sp.textContent = 'Update';
-            }, 2500);
+              if (sp && sp.textContent === 'Latest') sp.textContent = 'Update';
+            }, 2200);
           }
         }
         if (manualBtn) {
           manualBtn.disabled = false;
-          manualBtn.textContent = manual ? 'Up to Date' : 'Check for Update';
+          manualBtn.textContent = manual ? 'Up to date' : 'Check update';
           if (manual) {
             setTimeout(() => {
-              if (manualBtn.textContent === 'Up to Date') manualBtn.textContent = 'Check for Update';
-            }, 2500);
+              if (manualBtn.textContent === 'Up to date') manualBtn.textContent = 'Check update';
+            }, 2200);
           }
         }
       }
     } catch {
-      if (verLabel) verLabel.textContent = 'Offline / Local Mode';
+      if (verLabel) verLabel.textContent = 'Offline';
       if (headerBtn) {
         headerBtn.disabled = false;
         headerBtn.querySelector('span').textContent = 'Update';
       }
       if (manualBtn) {
         manualBtn.disabled = false;
-        manualBtn.textContent = 'Check for Update';
+        manualBtn.textContent = 'Check update';
       }
     }
   };

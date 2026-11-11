@@ -577,7 +577,7 @@ main#app {
   cursor: pointer;
 }
 
-/* ── Auth Layout: Open Hero [Logo] Nightingale Top + Get OTP Card Bottom-Left ── */
+/* ── Auth Layout: Centered Balanced Tablet Hero + Bottom-Left Get OTP Card ── */
 body.apk-is-auth .app-header,
 body:has(#app-header.hide) .app-header {
   display: none !important;
@@ -585,20 +585,20 @@ body:has(#app-header.hide) .app-header {
 
 body.apk-is-auth main#app,
 body:has(#app-header.hide) main#app {
-  padding: 28px 36px 32px !important;
+  padding: clamp(28px, 6vw, 64px) !important;
   min-height: 100vh;
   display: flex !important;
   flex-direction: column;
-  align-items: stretch;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
 }
 
 body.apk-is-auth main#app > .container,
 body:has(#app-header.hide) main#app > .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  flex: 1;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
 }
@@ -609,14 +609,13 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 }
 
 .auth-hero-wrapper {
-  flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-start;
-  gap: 32px;
-  padding: 12px 0 8px;
+  gap: clamp(26px, 4.5vh, 44px);
+  padding: 12px 0;
 }
 
 .apk-auth-showcase {
@@ -627,8 +626,9 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   box-shadow: none;
   backdrop-filter: none;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
   min-width: 0;
   animation: apkFadeSlide 0.36s var(--fluid-ease) both;
 }
@@ -637,7 +637,7 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: clamp(12px, 1.8vw, 20px);
+  gap: clamp(14px, 2vw, 22px);
   flex-wrap: nowrap;
   max-width: 100%;
   min-width: 0;
@@ -645,25 +645,47 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 }
 
 .apk-auth-showcase .apk-logo-badge {
-  width: clamp(50px, 6vw, 76px);
-  height: clamp(50px, 6vw, 76px);
-  border-radius: clamp(16px, 2vw, 23px);
+  width: clamp(54px, 6.4vw, 80px);
+  height: clamp(54px, 6.4vw, 80px);
+  border-radius: clamp(17px, 2.2vw, 25px);
 }
 
 .apk-auth-showcase .apk-logo-badge svg {
-  width: clamp(28px, 3.4vw, 42px);
-  height: clamp(28px, 3.4vw, 42px);
+  width: clamp(30px, 3.6vw, 44px);
+  height: clamp(30px, 3.6vw, 44px);
 }
 
 .apk-showcase-title {
   margin: 0;
-  font-size: clamp(2.6rem, 7.6vw, 5.6rem);
+  font-size: clamp(2.85rem, 7.6vw, 5.4rem);
   line-height: 1.24;
   padding: 0.06em 6px 0.14em 0;
   letter-spacing: -0.03em;
   white-space: nowrap;
   flex-shrink: 1;
   min-width: 0;
+}
+
+.apk-showcase-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.apk-showcase-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: var(--bg-glass-strong);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-soft);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 #auth-screen,
@@ -685,9 +707,30 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   animation: apkFadeSlide 0.4s var(--fluid-ease) both;
 }
 
-#auth-screen .brand-header,
+#auth-screen .brand-header {
+  display: block !important;
+  margin: 0 0 14px !important;
+  text-align: left !important;
+}
+
+#auth-screen:has(#otp-step:not(.hide)) .brand-header {
+  display: none !important;
+}
+
+#auth-screen .brand-title,
 #auth-screen .form-label {
   display: none !important;
+}
+
+#auth-screen .brand-subtitle {
+  display: block !important;
+  margin: 0 !important;
+  font-style: normal !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+  line-height: 1.4 !important;
 }
 
 .form-group {
@@ -809,55 +852,44 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   transition: transform 0.22s var(--spring-bounce), border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, background-color 0.22s ease;
 }
 
-/* Orbiting luminous line around active OTP box */
+/* Clean static focus highlight while entering digits (no laser before completion) */
 .otp-box:focus,
 .otp-digit-box:focus {
-  border-color: transparent;
-  background-color: transparent;
-  background-image:
-    linear-gradient(var(--bg-elevated), var(--bg-elevated)),
-    conic-gradient(from var(--otp-angle), rgba(99, 102, 241, 0.16) 0deg, rgba(99, 102, 241, 0.16) 215deg, #38BDF8 285deg, #4F46E5 340deg, rgba(99, 102, 241, 0.16) 360deg);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.28);
-  transform: translateY(-2px) scale(1.04);
-  animation: apkOtpOrbit 1.05s linear infinite;
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  transform: translateY(-2px) scale(1.03);
 }
 
-/* Turns crisp emerald green with subtle glow pulse once digit entered */
+/* Crisp emerald green state once digit is entered */
 .otp-box.filled {
   border-color: #10B981;
-  background-color: transparent;
-  background-image:
-    linear-gradient(var(--success-bg), var(--success-bg)),
-    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.35) 0deg, #10B981 120deg, #34D399 240deg, #10B981 360deg);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  background: var(--success-bg);
   color: var(--success-ink);
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.26);
-  animation: apkOtpFilledSweep 0.65s var(--fluid-ease) 1;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.22);
+  transform: scale(1);
 }
 
 .otp-box.filled:focus {
-  border-color: transparent;
-  background-image:
-    linear-gradient(var(--success-bg), var(--success-bg)),
-    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.22) 0deg, rgba(16, 185, 129, 0.22) 210deg, #10B981 290deg, #34D399 340deg, rgba(16, 185, 129, 0.22) 360deg);
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.36);
-  animation: apkOtpOrbit 1s linear infinite;
+  border-color: #10B981;
+  background: var(--success-bg);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.22);
+  transform: translateY(-2px) scale(1.03);
 }
 
-/* Sequential running glow sweep before merging into one box */
+/* Revolving luminous laser activates ONLY after all 6 digits are entered (verification loading) */
 .otp-boxes-container.running-glow .otp-box {
   border-color: transparent;
+  background-color: transparent;
   background-image:
     linear-gradient(var(--success-bg), var(--success-bg)),
-    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.25) 0deg, #10B981 120deg, #34D399 220deg, #6EE7B7 300deg, rgba(16, 185, 129, 0.25) 360deg);
+    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.14) 0deg, rgba(16, 185, 129, 0.14) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.14) 360deg);
   background-origin: border-box;
   background-clip: padding-box, border-box;
   color: var(--success-ink);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.34);
   animation:
-    apkOtpOrbit 0.8s linear infinite,
+    apkOtpOrbit 0.9s linear infinite,
     apkOtpWave 0.55s var(--spring-bounce) calc(var(--i, 0) * 0.07s) 1;
 }
 
@@ -1764,55 +1796,225 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   color: #FFFFFF;
 }
 
+/* ── Minimal OTA Update Banner & Settings Section ── */
 #apk-ota-banner {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 22px !important;
+  transform: translateX(-50%) !important;
+  z-index: 11000 !important;
+  display: none;
+  flex-direction: column !important;
+  gap: 8px !important;
+  min-width: 248px !important;
+  max-width: min(360px, 92vw) !important;
+  padding: 10px 12px 10px 16px !important;
+  border-radius: 20px !important;
   background: var(--bg-glass-strong) !important;
-  color: var(--text-primary) !important;
+  backdrop-filter: blur(20px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4) !important;
   border: 1px solid var(--border-strong) !important;
   box-shadow: var(--shadow-float) !important;
-  border-radius: 18px !important;
-  bottom: 84px !important;
+  color: var(--text-primary) !important;
+  font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif !important;
 }
 
-/* ── Mobile Responsive Overrides (< 768px): Floating Bottom Dock & Stacked Auth ── */
-@media (max-width: 767px) {
+.apk-ota-banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.apk-ota-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.apk-ota-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  flex-shrink: 0;
+}
+
+#apk-ota-msg {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apk-ota-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#apk-ota-apply-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent-grad);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(91, 62, 168, 0.25);
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+#apk-ota-apply-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+#apk-ota-dismiss-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+#apk-ota-progress-wrap,
+#apk-ota-settings-progress-wrap {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  overflow: hidden;
+}
+
+#apk-ota-progress-bar,
+#apk-ota-settings-progress-bar {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-grad);
+  transition: width 180ms ease;
+}
+
+#apk-ota-settings-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  margin-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.apk-ota-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.apk-ota-settings-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+#apk-ota-ver-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+#apk-ota-manual-btn {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent-grad);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+#apk-ota-manual-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+/* ── Small Phone Responsive Auth (< 600px) — keeps portrait tablets large! ── */
+@media (max-width: 599px) {
   body.apk-is-auth main#app,
   body:has(#app-header.hide) main#app {
-    padding: 22px 16px 26px !important;
-    justify-content: space-between;
+    padding: 24px 18px 28px !important;
+    justify-content: center;
   }
 
   .auth-hero-wrapper {
     gap: 24px;
-    padding: 8px 0 4px;
-    align-items: stretch;
+    padding: 8px 0;
+    align-items: center;
   }
 
   .apk-auth-showcase {
-    justify-content: flex-start;
+    align-items: center;
   }
 
   .apk-auth-showcase .apk-logo-badge {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
   }
 
   .apk-auth-showcase .apk-logo-badge svg {
-    width: 24px;
-    height: 24px;
+    width: 25px;
+    height: 25px;
   }
 
   .apk-showcase-title {
-    font-size: clamp(1.85rem, 8.6vw, 2.75rem);
+    font-size: clamp(1.95rem, 8.8vw, 2.7rem);
     line-height: 1.24;
     padding: 0.06em 4px 0.14em 0;
   }
 
+  .apk-showcase-pills {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .apk-showcase-pill {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
   #auth-screen,
   .auth-container {
+    align-self: stretch;
     max-width: 100%;
     padding: 24px 20px;
     border-radius: 24px;
+  }
+}
+
+/* ── Compact / Mobile Floating Bottom Dock (< 768px) ── */
+@media (max-width: 767px) {
+  #apk-ota-banner {
+    bottom: 84px !important;
   }
 
   .app-header {
