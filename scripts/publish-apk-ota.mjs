@@ -21,11 +21,26 @@ const releaseNotes = notesIdx >= 0 && args[notesIdx + 1]
 console.log('1. Building Hinglish-only Vite bundle...');
 execSync('npm run build:apk', { cwd: ROOT, stdio: 'inherit' });
 
-console.log('2. Packaging lightweight hinglish-bundle.zip (skipping static media)...');
+// Determine target webVersion BEFORE zipping so version.json inside bundle matches manifest.json 1:1
+let nextWebVersion = 1;
+try {
+  const res = await fetch(`https://api.github.com/repos/takexuu-ux/Nightingale/contents/manifest.json?ref=ota-hinglish`, {
+    headers: { 'Accept': 'application/vnd.github.raw+json', 'User-Agent': 'NightingalePublisher' }
+  });
+  if (res.ok) {
+    const cur = await res.json();
+    nextWebVersion = (Number(cur.webVersion) || 0) + 1;
+  }
+} catch {}
+
+// Write version.json into dist/ cleanly
+fs.writeFileSync(path.join(ROOT, 'dist', 'version.json'), JSON.stringify({ webVersion: nextWebVersion }));
+
+console.log(`2. Packaging lightweight hinglish-bundle.zip (webVersion=${nextWebVersion})...`);
 fs.rmSync(OTA_TMP, { recursive: true, force: true });
 fs.mkdirSync(OTA_TMP, { recursive: true });
 
-// Exclude unchanged large static background files so Web OTA stays ~350 KB
+// Exclude unchanged large static background files so Web OTA stays ~230 KB
 const otaWebStage = path.join(OTA_TMP, 'web_files');
 fs.mkdirSync(otaWebStage, { recursive: true });
 for (const entry of fs.readdirSync(`${ROOT}/dist`)) {
@@ -41,22 +56,10 @@ execSync(
 );
 fs.rmSync(otaWebStage, { recursive: true, force: true });
 
-// Check current manifest version on ota-hinglish via GitHub API (zero stale Fastly cache)
-let nextWebVersion = 1;
-try {
-  const res = await fetch(`https://api.github.com/repos/takexuu-ux/Nightingale/contents/manifest.json?ref=ota-hinglish`, {
-    headers: { 'Accept': 'application/vnd.github.raw+json', 'User-Agent': 'NightingalePublisher' }
-  });
-  if (res.ok) {
-    const cur = await res.json();
-    nextWebVersion = (Number(cur.webVersion) || 0) + 1;
-  }
-} catch {}
-
 // Read NATIVE_VERSION_CODE from OtaManager.java
 const otaJava = fs.readFileSync(`${ANDROID_ROOT}/app/src/main/java/in/nightingale/hinglish/OtaManager.java`, 'utf8');
 const nativeMatch = otaJava.match(/NATIVE_VERSION_CODE\s*=\s*(\d+)/);
-const nativeVersionCode = nativeMatch ? Number(nativeMatch[1]) : 4;
+const nativeVersionCode = nativeMatch ? Number(nativeMatch[1]) : 7;
 
 const manifest = {
   webVersion: nextWebVersion,
