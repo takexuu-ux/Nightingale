@@ -41,10 +41,12 @@ execSync(
 );
 fs.rmSync(otaWebStage, { recursive: true, force: true });
 
-// Check current manifest version on ota-hinglish if present
+// Check current manifest version on ota-hinglish via GitHub API (zero stale Fastly cache)
 let nextWebVersion = 1;
 try {
-  const res = await fetch(`https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/manifest.json?t=${Date.now()}`);
+  const res = await fetch(`https://api.github.com/repos/takexuu-ux/Nightingale/contents/manifest.json?ref=ota-hinglish`, {
+    headers: { 'Accept': 'application/vnd.github.raw+json', 'User-Agent': 'NightingalePublisher' }
+  });
   if (res.ok) {
     const cur = await res.json();
     nextWebVersion = (Number(cur.webVersion) || 0) + 1;
