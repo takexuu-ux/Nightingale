@@ -1,14 +1,14 @@
-// Nightingale Recorded Lectures Library Logic
-// Architected for production-grade reliability, strict hierarchy matching, dedicated Subject Pages, and VdoCipher playback
-
+// Nightingale All Videos Library — Instant Subject + Teacher Catalog, Throttled On-Demand Topic Loading & Batch 103 Live Sync
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
-import { getBatchBaselineState, syncBatchLive } from './utils/batch104Sync.js';
-import { IS_HINGLISH_APK } from './config/appMode.js';
+import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
+import { getBatchBaselineState, syncBatchLive, fetchWithAutoAuth } from './utils/batch104Sync.js';
+import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
 
 const API_BASE = '/api';
+const SUBJECT_VIDEO_CACHE_PREFIX = 'nnl_vid_subj_cache_v1_';
 
-// Fast lookup maps for ALL Subjects Handwritten Notes PDFs by subtopic ID or normalized title
+// Fast lookup maps for matching Handwritten Notes PDFs by subtopic ID or normalized title
 const NOTE_BY_SUBTOPIC = new Map();
 const NOTE_BY_TITLE = new Map();
 const ALL_VERIFIED_NOTES = [
@@ -32,144 +32,119 @@ function findMatchingNotePdf(subtopicId, lectureTitle) {
   return null;
 }
 
-// Allowed Sapphire Batches (Locked to Red Sapphire Hinglish in APK flavor)
 const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
-  ? ['Red Sapphire Batch (Hinglish)']
-  : [
-      'Red Sapphire Batch (Hinglish)',
-      'Blue Sapphire Batch (Hinglish)'
-    ];
-
-let videoSectionMode = 'rb103'; // 'rb103' (Batch 103 Hinglish live recordings) | 'plan77' (C+ Plan 77 library)
-let batch103VideoState = getBatchBaselineState(103);
-
-// Fetch with timeout helper — prevents stalled network requests
-function fetchWithTimeout(url, options = {}, ms = 12000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-  return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
-}
+  ? ['Red Sapphire (Hinglish)']
+  : ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)'];
 
 let activeBatch = IS_HINGLISH_APK
-  ? 'Red Sapphire Batch (Hinglish)'
+  ? 'Red Sapphire (Hinglish)'
   : localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
-  activeBatch = 'Red Sapphire Batch (Hinglish)';
+  activeBatch = 'Red Sapphire (Hinglish)';
   localStorage.setItem('nnl_active_batch', activeBatch);
 }
 
-let currentRecordings = [];
-let cachedSubjectResults = [];
-let currentlyOpenSubject = null;
+// State
+let videoSectionMode = 'all'; // 'all' (All Videos Subjects & Teachers) | 'rb103' (Batch 103 Hinglish Past Classes)
+let activeCategoryFilter = 'ALL';
+let searchQuery = '';
+let lectureFilterQuery = '';
+let activeTopicFilter = 'ALL';
+let currentOpenSubject = null; // { id, title, faculty, category, videoCount, isBatch103, videos }
+let batch103State = getBatchBaselineState(103);
+const loadedVideosBySubjectId = new Map();
 
+// Pre-seed Medicine (73) immediately + populate matched notes PDFs
+if (PRESEEDED_VIDEOS_BY_SUBJECT['73']) {
+  const enriched = PRESEEDED_VIDEOS_BY_SUBJECT['73'].map(v => {
+    const note = findMatchingNotePdf(v.subtopicId, v.title);
+    return { ...v, notePdfUrl: note?.url || '', notePdfTitle: note?.title || '' };
+  });
+  loadedVideosBySubjectId.set('73', enriched);
+}
+
+// DOM Elements
 const classListContainer = document.getElementById('class-list-container');
 const subjectsCatalogView = document.getElementById('subjects-catalog-view');
 const subjectDetailView = document.getElementById('subject-detail-view');
 const subjectLecturesContainer = document.getElementById('subject-lectures-container');
+const videosSearchInput = document.getElementById('videos-search-input');
+const videosSearchClear = document.getElementById('videos-search-clear');
+const lectureSearchInput = document.getElementById('subject-lecture-search');
+const catFiltersBar = document.getElementById('vid-category-filters');
+const topicFiltersBar = document.getElementById('subject-topic-filters');
 
-function getPlanIdForBatch(batchName) {
-  const name = (batchName || activeBatch || '').toUpperCase();
-  if (name.includes('RED')) {
-    return 77; // Plan MLB Pro Red Sapphire Batch(Hinglish)
+const pdfModal = document.getElementById('pdf-modal');
+const pdfModalTitle = document.getElementById('pdf-modal-title');
+const pdfModalIframe = document.getElementById('pdf-modal-iframe');
+const pdfModalDownloadBtn = document.getElementById('pdf-modal-download-btn');
+
+const SUBJECT_SVG = {
+  pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3"/>',
+  anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714"/>',
+  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>',
+  pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>',
+  midwifery: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>',
+  community: '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125h5.25v-4.875h4.5V21H19.5V9.75"/>',
+  default: '<polygon stroke-linecap="round" stroke-linejoin="round" points="5 3 19 12 5 21 5 3"/>'
+};
+
+function getSubjectSVG(title) {
+  const l = String(title || '').toLowerCase();
+  for (const [k, p] of Object.entries(SUBJECT_SVG)) {
+    if (l.includes(k)) return p;
   }
-  return 40; // Plan MLB Pro Blue Sapphire Batch (Hinglish)
+  return SUBJECT_SVG.default;
 }
 
-function getBatchIdForBatch(batchName) {
-  const name = (batchName || activeBatch || '').toUpperCase();
-  if (name.includes('RED')) {
-    return 103; // Red Sapphire Batch (Hing)
-  }
-  return 8; // Pearl Batch (Hinglish) & Blue Sapphire (NORCET 11.0)
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function getLectureNumber(title) {
+  const m = String(title || '').match(/(?:Day|Lecture|Class|Part)\s*(\d+)/i);
+  return m ? parseInt(m[1], 10) : 9999;
 }
 
 function findVideoUrl(obj) {
   if (!obj) return '';
   if (typeof obj === 'string') {
-    if (obj.startsWith('http') && (obj.includes('.mp4') || obj.includes('.m3u8') || obj.includes('download') || obj.includes('stream') || obj.includes('video'))) {
-      return obj;
-    }
-    return '';
+    return (obj.startsWith('http') && (obj.includes('.mp4') || obj.includes('.m3u8') || obj.includes('stream'))) ? obj : '';
   }
   if (typeof obj === 'object') {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const result = findVideoUrl(obj[key]);
-        if (result) return result;
-      }
+    for (const k of Object.keys(obj)) {
+      const r = findVideoUrl(obj[k]);
+      if (r) return r;
     }
   }
   return '';
 }
 
-function getLectureNumber(title) {
-  const match = title.match(/(?:Day|Lecture|Class|Part)\s*(\d+)/i);
-  return match ? parseInt(match[1], 10) : 999;
-}
-
-// SVG icon paths keyed by subject keyword
-const SUBJECT_SVG = {
-  pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>',
-  anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714"/>',
-  physiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>',
-  biochemistry: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082"/>',
-  microbiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/>',
-  pathology: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>',
-  surgery: '<path stroke-linecap="round" stroke-linejoin="round" d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a7.464 7.464 0 01-1.15 3.993m1.989 3.559A11.209 11.209 0 008.25 10.5a3.75 3.75 0 117.5 0c0 .527-.021 1.049-.064 1.565M12 10.5a14.94 14.94 0 01-3.6 9.75m6.633-4.596a18.666 18.666 0 01-2.485 5.33"/>',
-  obstetrics: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/>',
-  obg: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/>',
-  pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>',
-  community: '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>',
-  psychiatry: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>',
-  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>',
-  critical: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>',
-  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>',
-};
-
-const DEFAULT_SVG = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>';
-
-function getSubjectSVG(name) {
-  const lower = (name || '').toLowerCase();
-  for (const [key, path] of Object.entries(SUBJECT_SVG)) {
-    if (lower.includes(key)) return path;
-  }
-  return DEFAULT_SVG;
-}
-
-function initBatchDropdown() {
+function initHeaderAndSettings() {
+  const label = document.getElementById('current-batch-label');
+  const statBatch = document.getElementById('stat-batch-name');
   const batchBtn = document.getElementById('header-batch-btn');
   const dropdown = document.getElementById('header-batch-dropdown');
-  const label = document.getElementById('current-batch-label');
-  const pageTitle = document.getElementById('page-batch-title');
 
   if (label) label.textContent = activeBatch;
-  if (pageTitle) pageTitle.textContent = `${activeBatch} Lectures`;
+  if (statBatch) statBatch.textContent = activeBatch;
 
   if (dropdown) {
-    dropdown.innerHTML = ALLOWED_SAPPHIRE_BATCHES.map(b => {
-      const isActive = b === activeBatch;
-      return `<button class="dropdown-item ${isActive ? 'active' : ''}" data-batch="${b}">${b}</button>`;
-    }).join('');
-
+    dropdown.innerHTML = ALLOWED_SAPPHIRE_BATCHES.map(b =>
+      `<button class="dropdown-item ${b === activeBatch ? 'active' : ''}" data-batch="${b}">${b}</button>`
+    ).join('');
     dropdown.querySelectorAll('.dropdown-item').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const selected = btn.getAttribute('data-batch');
-        if (selected && selected !== activeBatch) {
-          activeBatch = selected;
-          localStorage.setItem('nnl_active_batch', activeBatch);
-          if (label) label.textContent = activeBatch;
-          if (pageTitle) pageTitle.textContent = `${activeBatch} Lectures`;
-          dropdown.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('active'));
-          btn.classList.add('active');
-          dropdown.classList.add('hide');
-
-          // Return to catalog view and re-load
-          closeSubjectPage();
-          loadRecordings();
-        } else {
-          dropdown.classList.add('hide');
-        }
+        activeBatch = btn.getAttribute('data-batch') || 'Red Sapphire (Hinglish)';
+        localStorage.setItem('nnl_active_batch', activeBatch);
+        if (label) label.textContent = activeBatch;
+        if (statBatch) statBatch.textContent = activeBatch;
+        dropdown.classList.add('hide');
       });
     });
   }
@@ -177,415 +152,465 @@ function initBatchDropdown() {
   if (batchBtn && dropdown) {
     batchBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      dropdown.classList.toggle('hide');
+      if (ALLOWED_SAPPHIRE_BATCHES.length > 1) dropdown.classList.toggle('hide');
     });
+    document.addEventListener('click', () => dropdown.classList.add('hide'));
+  }
 
-    document.addEventListener('click', () => {
-      dropdown.classList.add('hide');
+  document.getElementById('tab-live')?.addEventListener('click', () => { window.location.href = '/'; });
+  document.getElementById('tab-notes')?.addEventListener('click', () => { window.location.href = '/notes.html'; });
+  document.getElementById('tab-tests')?.addEventListener('click', () => { window.location.href = '/tests.html'; });
+
+  const refetchBtn = document.getElementById('videos-refetch-btn');
+  if (refetchBtn) {
+    refetchBtn.addEventListener('click', () => {
+      refetchBtn.classList.add('spinning');
+      const task = videoSectionMode === 'rb103'
+        ? syncBatchLive(103, { force: true }).then(u => {
+            batch103State = u;
+            renderCurrentCatalog();
+          })
+        : (currentOpenSubject ? fetchSubjectVideosOnDemand(currentOpenSubject, true).then(vids => {
+            currentOpenSubject.videos = vids;
+            renderSubjectLecturesList();
+          }) : Promise.resolve(renderCurrentCatalog()));
+      Promise.resolve(task).finally(() => setTimeout(() => refetchBtn.classList.remove('spinning'), 600));
+    });
+  }
+
+  // Student Profile & Settings Widget
+  const phone = localStorage.getItem('nnl_phone') || (localStorage.getItem('nnl_access_token') ? 'Student' : 'Open Access');
+  const phoneEl = document.getElementById('user-phone');
+  const avatarEl = document.getElementById('user-avatar');
+  if (phoneEl) phoneEl.textContent = phone;
+  if (avatarEl) avatarEl.textContent = phone.slice(0, 1).toUpperCase();
+
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    localStorage.removeItem('nnl_access_token');
+    localStorage.removeItem('nnl_refresh_token');
+    window.location.href = '/';
+  });
+
+  const toggleBtn = document.getElementById('tweak-panel-toggle-btn');
+  const tweaksWidget = document.querySelector('.cyber-tweaks-widget');
+  if (toggleBtn && tweaksWidget) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      tweaksWidget.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!tweaksWidget.contains(e.target)) tweaksWidget.classList.remove('open');
     });
   }
 }
 
-async function loadRecordings() {
-  // Always render Batch 103 Hinglish Live Class Videos cleanly when in rb103 mode
+function updateTopStats() {
+  const rbVideos = (batch103State?.subjects || []).reduce((a, s) => a + (s.videos?.length || 0), 0);
+  const rbActiveCount = (batch103State?.subjects || []).filter(s => (s.videos?.length || 0) > 0).length;
+
+  const vidCountAll = document.getElementById('vid-count-all');
+  const vidCountRb = document.getElementById('vid-count-rb103');
+  if (vidCountAll) vidCountAll.textContent = ALL_VIDEOS_TOTALS.videos.toLocaleString();
+  if (vidCountRb) vidCountRb.textContent = rbVideos;
+
+  const statSub = document.getElementById('stat-subjects');
+  const statLec = document.getElementById('stat-lectures');
   if (videoSectionMode === 'rb103') {
-    renderBatch103VideosCatalog();
-    syncBatchLive(103, {
-      onUpdate: (updated) => {
-        batch103VideoState = updated;
-        if (videoSectionMode === 'rb103' && !currentlyOpenSubject) {
-          renderBatch103VideosCatalog();
-        }
-      }
+    if (statSub) statSub.textContent = rbActiveCount;
+    if (statLec) statLec.textContent = rbVideos;
+  } else {
+    if (statSub) statSub.textContent = ALL_VIDEOS_TOTALS.subjects;
+    if (statLec) statLec.textContent = ALL_VIDEOS_TOTALS.videos.toLocaleString();
+  }
+}
+
+function renderCategoryChips() {
+  if (!catFiltersBar) return;
+  if (videoSectionMode !== 'all') {
+    catFiltersBar.style.display = 'none';
+    return;
+  }
+  catFiltersBar.style.display = 'flex';
+  const cats = ['ALL', 'Core Subjects', 'Fastrack', 'T&D Series', 'Procedures & Non-Nursing', 'OTR Revision'];
+  catFiltersBar.innerHTML = cats.map(c => {
+    const cnt = c === 'ALL'
+      ? ALL_VIDEO_SUBJECTS.length
+      : ALL_VIDEO_SUBJECTS.filter(s => s.category === c).length;
+    return `<button class="filter-chip vid-cat-chip ${activeCategoryFilter === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">${c === 'ALL' ? 'All Subjects' : escapeHtml(c)} (${cnt})</button>`;
+  }).join('');
+
+  catFiltersBar.querySelectorAll('.vid-cat-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategoryFilter = btn.getAttribute('data-cat') || 'ALL';
+      renderCategoryChips();
+      renderCurrentCatalog();
     });
+  });
+}
+
+function renderCurrentCatalog() {
+  if (!classListContainer) return;
+  updateTopStats();
+  renderCategoryChips();
+
+  const q = searchQuery.trim().toLowerCase();
+  let list = [];
+
+  if (videoSectionMode === 'rb103') {
+    list = (batch103State?.subjects || [])
+      .filter(s => (s.videos?.length || 0) > 0)
+      .map(s => ({
+        id: String(s.id),
+        title: s.title,
+        faculty: s.faculty || 'NNL Faculty',
+        category: 'Batch 103 Hinglish',
+        videoCount: s.videos.length,
+        isBatch103: true,
+        videos: s.videos.map(v => ({ ...v, instructor: v.instructor || s.faculty || 'NNL Faculty' }))
+      }));
+  } else {
+    list = ALL_VIDEO_SUBJECTS
+      .filter(s => activeCategoryFilter === 'ALL' || s.category === activeCategoryFilter)
+      .map(s => ({ ...s, isBatch103: false }));
+  }
+
+  if (q) {
+    list = list.filter(s =>
+      `${s.title} ${s.faculty} ${s.category}`.toLowerCase().includes(q)
+    );
+  }
+
+  if (list.length === 0) {
+    classListContainer.innerHTML = `
+      <div class="notes-empty-state" style="grid-column: 1 / -1;">
+        <h3 class="notes-empty-title">No Video Subjects Found</h3>
+        <p class="notes-empty-desc">Try clearing the filter or searching another subject or teacher name.</p>
+      </div>
+    `;
     return;
   }
 
-  if (classListContainer) {
-    classListContainer.innerHTML = `
-      <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
-        <div class="spinner"></div>
-        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">Loading ${activeBatch} Lectures...</p>
+  classListContainer.innerHTML = list.map(sub => {
+    const svg = getSubjectSVG(sub.title);
+    const isHighlight = sub.id === '73' || sub.category === 'Core Subjects' || sub.isBatch103;
+    return `
+      <div class="subject-card ${isHighlight ? 'curated-highlight' : ''}" data-sub-id="${escapeHtml(sub.id)}" data-rb="${sub.isBatch103 ? '1' : '0'}">
+        <div class="subject-card-top">
+          <div class="subject-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">${svg}</svg>
+          </div>
+          <div class="subject-card-meta">
+            <h3 class="subject-card-title">${escapeHtml(sub.title)}</h3>
+            <div class="subject-card-badge">
+              <span>${escapeHtml(sub.faculty)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="subject-card-bottom">
+          <span class="subject-card-count">${sub.videoCount} Video${sub.videoCount === 1 ? '' : 's'}</span>
+          <span class="subject-card-arrow">
+            <span>Watch</span>
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </span>
+        </div>
       </div>
     `;
+  }).join('');
+
+  classListContainer.querySelectorAll('.subject-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-sub-id');
+      const found = list.find(x => String(x.id) === String(id));
+      if (found) openSubjectPage(found);
+    });
+  });
+}
+
+async function fetchPaginatedWithAutoAuth(path) {
+  const results = [];
+  let url = path;
+  let page = 1;
+  while (url && page <= 20) {
+    const res = await fetchWithAutoAuth(url);
+    if (!res || !res.ok) break;
+    const json = await res.json();
+    const d = json.data || json.results || [];
+    if (Array.isArray(d)) results.push(...d);
+    let nextUrl = json.next_page_link || json.next || null;
+    if (!nextUrl && json.max_pages && page < json.max_pages) {
+      const sep = path.includes('?') ? '&' : '?';
+      nextUrl = `${path}${sep}page=${page + 1}`;
+    }
+    url = nextUrl;
+    page++;
+  }
+  return results;
+}
+
+async function fetchSubjectVideosOnDemand(sub, force = false) {
+  if (sub.isBatch103) return sub.videos || [];
+
+  const sid = String(sub.id);
+  if (!force && loadedVideosBySubjectId.has(sid)) {
+    return loadedVideosBySubjectId.get(sid);
+  }
+
+  if (!force) {
+    try {
+      const cached = localStorage.getItem(SUBJECT_VIDEO_CACHE_PREFIX + sid);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          loadedVideosBySubjectId.set(sid, parsed);
+          return parsed;
+        }
+      }
+    } catch {}
   }
 
   const token = localStorage.getItem('nnl_access_token');
-  if (!token) {
-    if (classListContainer) {
-      classListContainer.innerHTML = `
-        <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
-          <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">Login Required</h3>
-          <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Please log in with your registered NNL ONE mobile number to access your recorded lectures.</p>
-          <a href="/" style="display: inline-block; padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; text-decoration: none; border-radius: 12px; letter-spacing: 0.05em;">Go to Login</a>
-        </div>
-      `;
-    }
-    return;
+  if (!token) return [];
+
+  const topics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/topic/?subject=${sid}&page_size=100`);
+  const collected = [];
+
+  // Throttled chunks of 4 topics so Android/Tablet connection never saturates
+  const chunkSize = 4;
+  for (let i = 0; i < topics.length; i += chunkSize) {
+    const chunk = topics.slice(i, i + chunkSize);
+    await Promise.allSettled(chunk.map(async top => {
+      const subtopics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/subtopic/?topic=${top.id}&page_size=100`);
+      subtopics.forEach(st => {
+        const vid = st.videos || st.video;
+        if (!vid || typeof vid !== 'object') return;
+        const hrs = vid.duration ? Math.floor(vid.duration / 3600) : 0;
+        const mins = vid.duration ? Math.floor((vid.duration % 3600) / 60) : 0;
+        const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+        const title = (vid.title || st.title || 'Lecture Video').trim();
+        const note = findMatchingNotePdf(st.id || vid.subtopic, title);
+        collected.push({
+          id: vid.id,
+          subtopicId: st.id || vid.subtopic || null,
+          title,
+          topic: (top.title || sub.title).trim(),
+          instructor: vid.faculty?.name || sub.faculty || 'NNL Faculty',
+          duration: durStr,
+          date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : '',
+          video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
+          videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
+          thumbnails: vid.thumbnails || [],
+          notePdfUrl: note?.url || '',
+          notePdfTitle: note?.title || ''
+        });
+      });
+    }));
   }
 
-  const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
+  collected.sort((a, b) => getLectureNumber(a.title) - getLectureNumber(b.title));
 
-  try {
-    // 1. Resolve active plan ID strictly from active batch
-    const planId = getPlanIdForBatch(activeBatch);
-    const batchId = getBatchIdForBatch(activeBatch);
+  if (collected.length > 0) {
+    loadedVideosBySubjectId.set(sid, collected);
+    try {
+      localStorage.setItem(SUBJECT_VIDEO_CACHE_PREFIX + sid, JSON.stringify(collected));
+    } catch {}
+  }
 
-    console.log(`[Content Engine] Fetching lectures for ${activeBatch} (Plan: ${planId}, Batch: ${batchId})...`);
+  return collected;
+}
 
-    // 2. Fetch real subjects for the plan
-    let subjects = [];
-    let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=100`, { headers });
-    if (!subRes.ok) {
-      subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=100`, { headers });
-    }
-    if (subRes.ok) {
-      const sData = await subRes.json();
-      subjects = sData.data || sData.results || [];
-    }
+async function openSubjectPage(subject) {
+  currentOpenSubject = { ...subject, videos: subject.videos || [] };
+  activeTopicFilter = 'ALL';
+  lectureFilterQuery = '';
+  if (lectureSearchInput) lectureSearchInput.value = '';
 
-    // Fallback to batch subjects if plan subjects empty
-    if (subjects.length === 0 && batchId) {
-      const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/${batchId}/`, { headers });
-      if (bRes.ok) {
-        const bData = await bRes.json();
-        const bSubjects = bData.subjects || bData.data?.subjects || [];
-        if (bSubjects.length > 0) {
-          subjects = bSubjects;
-        }
-      }
-    }
+  subjectsCatalogView?.classList.add('hide');
+  subjectDetailView?.classList.remove('hide');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (subjects.length === 0) {
-      classListContainer.innerHTML = `
-        <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
-          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); text-transform: uppercase;">No subjects found for ${activeBatch}.</p>
+  const cleanTitle = (subject.title || 'Videos').replace(/\s*\([^)]*\)\s*$/, '').trim() || subject.title;
+  const titleEl = document.getElementById('subject-detail-title');
+  const teacherEl = document.getElementById('subject-detail-teacher');
+  const countEl = document.getElementById('subject-detail-count');
+
+  if (titleEl) titleEl.textContent = cleanTitle;
+  if (teacherEl) teacherEl.textContent = subject.faculty || 'NNL Faculty';
+  if (countEl) countEl.textContent = `${subject.videoCount || 0} Videos`;
+
+  if (!subject.isBatch103 && !loadedVideosBySubjectId.has(String(subject.id))) {
+    if (!localStorage.getItem('nnl_access_token')) {
+      subjectLecturesContainer.innerHTML = `
+        <div class="notes-empty-state">
+          <h3 class="notes-empty-title">Sign In Required</h3>
+          <p class="notes-empty-desc">Log in on the Live Classes home page with your registered mobile number to load and stream this subject's lectures.</p>
+          <a href="/" class="btn-note-view" style="display:inline-flex;margin-top:0.85rem;text-decoration:none;">Go to Login</a>
         </div>
       `;
+      if (topicFiltersBar) topicFiltersBar.style.display = 'none';
       return;
     }
 
-    // 3. Concurrently fetch topics and subtopic videos for each subject
-    const subjectContentPromises = subjects.map(async (subj) => {
-      const subjectVideos = [];
-      try {
-        const topRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/topic/?subject=${subj.id}&page_size=100`, { headers });
-        if (topRes.ok) {
-          const topData = await topRes.json();
-          const topics = topData.data || topData.results || [];
-
-          const subtopicPromises = topics.map(async (top) => {
-            try {
-              const stRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=100`, { headers });
-              if (stRes.ok) {
-                const stData = await stRes.json();
-                const subtopics = stData.data || stData.results || [];
-                subtopics.forEach(st => {
-                  const vid = st.videos || st.video;
-                  if (vid && typeof vid === 'object') {
-                    const durHrs = vid.duration ? Math.floor(vid.duration / 3600) : 0;
-                    const durMins = vid.duration ? Math.floor((vid.duration % 3600) / 60) : 0;
-                    const durStr = durHrs > 0 ? `${durHrs}h ${durMins}m` : `${durMins}m`;
-                    const title = vid.title || st.title || 'Lecture Video';
-                    const matchedNote = findMatchingNotePdf(st.id || vid.subtopic, title);
-
-                    subjectVideos.push({
-                      id: vid.id,
-                      subtopicId: st.id || vid.subtopic || null,
-                      title,
-                      instructor: vid.faculty?.name || 'Faculty',
-                      subject: subj.title,
-                      topic: top.title,
-                      duration: durStr,
-                      notePdfUrl: matchedNote ? matchedNote.url : '',
-                      notePdfTitle: matchedNote ? matchedNote.title : '',
-                      video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
-                      videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
-                      thumbnails: vid.thumbnails || null,
-                      date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : ''
-                    });
-                  }
-                });
-              }
-            } catch (err) {
-              console.warn(`[Content Engine] Error fetching subtopics for topic ${top.id}:`, err);
-            }
-          });
-
-          await Promise.all(subtopicPromises);
-        }
-      } catch (err) {
-        console.warn(`[Content Engine] Error fetching topics for subject ${subj.id}:`, err);
-      }
-
-      // Sort videos naturally by Day / Lecture number
-      subjectVideos.sort((a, b) => getLectureNumber(a.title) - getLectureNumber(b.title));
-
-      return {
-        subject: subj,
-        videos: subjectVideos
-      };
-    });
-
-    const subjectResults = await Promise.all(subjectContentPromises);
-
-    cachedSubjectResults = subjectResults;
-
-    const populatedRecordings = [];
-    subjectResults.forEach(sr => {
-      populatedRecordings.push(...sr.videos);
-    });
-
-    currentRecordings = populatedRecordings;
-
-    // Render clean subject catalog (Cards that open dedicated subject pages on click!)
-    renderSubjectCatalog(subjectResults);
-
-    // If there is an active hash (e.g. #subject=Anatomy), open that page directly
-    handleHashNavigation();
-
-  } catch (err) {
-    console.error('[Content Engine] Fatal error loading lectures:', err);
-    if (classListContainer) {
-      classListContainer.innerHTML = `
-        <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 68, 68, 0.2); border-radius: 20px;">
-          <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: #f87171; margin-bottom: 0.5rem;">Failed to Load Lectures</h3>
-          <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">${err.message}</p>
-          <button onclick="window.location.reload()" style="padding: 0.75rem 1.75rem; background: #00f3d0; color: #000; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: none; border-radius: 12px; cursor: pointer;">Retry</button>
-        </div>
-      `;
-    }
-  }
-}
-
-// ── VIEW 1: Render Subject Catalog Grid ──
-// Strictly renders clean, clickable tiles. Clicking opens the dedicated page without expanding in place!
-function renderSubjectCatalog(subjectResults) {
-  if (!classListContainer) return;
-  classListContainer.innerHTML = '';
-
-  const totalLectures = currentRecordings.length;
-  const activeSubjects = subjectResults.filter(sr => sr.videos.length > 0);
-
-  // Update header stats
-  const statSubjectsEl = document.getElementById('stat-subjects');
-  const statLecturesEl = document.getElementById('stat-lectures');
-  const statsEl = document.getElementById('cp-stats');
-  if (statSubjectsEl) statSubjectsEl.textContent = activeSubjects.length;
-  if (statLecturesEl) statLecturesEl.textContent = totalLectures;
-  if (statsEl) statsEl.style.display = 'flex';
-  if (videoSectionMode === 'plan77') {
-    const p77CountEl = document.getElementById('vid-count-plan77');
-    if (p77CountEl) p77CountEl.textContent = totalLectures;
-  }
-
-  if (activeSubjects.length === 0) {
-    classListContainer.innerHTML = `
-      <div style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 4rem; text-align: center;">
-        <p style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; font-family: var(--font-display);">No recorded lectures available for ${activeBatch}.</p>
-      </div>
-    `;
-    return;
-  }
-
-  activeSubjects.forEach(sr => {
-    const subj = sr.subject;
-    const subjName = subj.title || 'Subject';
-    const count = sr.videos.length;
-
-    const tile = document.createElement('div');
-    tile.className = 'subject-tile';
-    tile.setAttribute('data-subj-id', subj.id);
-    tile.innerHTML = `
-      <div class="st-top">
-        <div class="st-icon">
-          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-            ${getSubjectSVG(subjName)}
-          </svg>
-        </div>
-        <div class="st-meta">
-          <div class="st-title" title="${subjName}">${subjName}</div>
-          <div class="st-count">${count} Recorded Lecture${count !== 1 ? 's' : ''}</div>
-        </div>
-      </div>
-      <div class="st-footer">
-        <span style="color: var(--text-secondary); font-size: 0.7rem;">High-Yield Series</span>
-        <div class="st-footer-action">
-          <span>Open Subject</span>
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-        </div>
-      </div>
-    `;
-
-    // Clicking tile immediately opens the dedicated Subject Detail Page (NO accordion expansion!)
-    tile.addEventListener('click', () => {
-      openSubjectPage(sr);
-    });
-
-    classListContainer.appendChild(tile);
-  });
-}
-
-// ── VIEW 2: Dedicated Subject Detail Page View ──
-function openSubjectPage(subjectData) {
-  if (!subjectData) return;
-  currentlyOpenSubject = subjectData;
-
-  const subj = subjectData.subject;
-  const videos = subjectData.videos;
-
-  if (subjectsCatalogView) subjectsCatalogView.classList.add('hide');
-  if (subjectDetailView) subjectDetailView.classList.remove('hide');
-
-  const titleEl = document.getElementById('subject-detail-title');
-  const countEl = document.getElementById('subject-detail-count');
-  const batchEl = document.getElementById('subject-detail-batch');
-  const topBatchEl = document.getElementById('sd-top-batch-label');
-
-  if (titleEl) titleEl.textContent = subj.title;
-  if (countEl) countEl.textContent = `${videos.length} Lectures`;
-  if (batchEl) batchEl.textContent = activeBatch;
-  if (topBatchEl) topBatchEl.textContent = activeBatch;
-
-  // Set URL hash for browser history / back button navigation
-  window.location.hash = `#subject=${encodeURIComponent(subj.title)}`;
-
-  // Render lectures in this subject
-  renderSubjectLecturesList(videos);
-
-  // Setup search input inside subject
-  const searchInput = document.getElementById('subject-lecture-search');
-  if (searchInput) {
-    searchInput.value = '';
-    searchInput.oninput = () => {
-      const q = searchInput.value.trim().toLowerCase();
-      if (!q) {
-        renderSubjectLecturesList(videos);
-      } else {
-        const filtered = videos.filter(v => 
-          (v.title || '').toLowerCase().includes(q) || 
-          (v.topic || '').toLowerCase().includes(q) ||
-          (v.instructor || '').toLowerCase().includes(q)
-        );
-        renderSubjectLecturesList(filtered);
-      }
-    };
-  }
-
-  // Scroll to top smoothly
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function renderSubjectLecturesList(lectures) {
-  if (!subjectLecturesContainer) return;
-  subjectLecturesContainer.innerHTML = '';
-
-  if (lectures.length === 0) {
     subjectLecturesContainer.innerHTML = `
-      <div style="background: rgba(10, 13, 24, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 3rem; text-align: center;">
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display);">No lectures matching your search in this subject.</p>
+      <div class="cp-loading" style="padding: 3.5rem 1.5rem; text-align: center;">
+        <div class="spinner"></div>
+        <p style="color:var(--text-secondary);margin-top:0.75rem;font-family:var(--font-display);font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;">Loading ${escapeHtml(cleanTitle)} lectures...</p>
       </div>
     `;
-    return;
+    const fetched = await fetchSubjectVideosOnDemand(subject);
+    currentOpenSubject.videos = fetched;
+  } else if (!subject.isBatch103) {
+    currentOpenSubject.videos = loadedVideosBySubjectId.get(String(subject.id)) || [];
   }
 
-  lectures.forEach((rec, idx) => {
-    const rowNum = (idx + 1).toString().padStart(2, '0');
-    const thumb = rec.thumbnails && rec.thumbnails.length > 0 ? (rec.thumbnails[0]?.url || '') : '';
-
-    const card = document.createElement('div');
-    card.className = 'sd-lecture-card';
-    card.setAttribute('data-rec-id', rec.id);
-
-    card.innerHTML = `
-      <span class="sd-lecture-num">${rowNum}</span>
-      ${thumb ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">` : `
-        <div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#00f3d0;">
-          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </div>
-      `}
-      <div class="sd-lecture-details">
-        <div class="sd-lecture-title" title="${rec.title}">${rec.title}</div>
-        <div class="sd-lecture-meta">
-          <span style="color: #00f3d0; font-weight: 600;">${rec.instructor}</span>
-          ${rec.topic ? `<span>•</span><span>${rec.topic}</span>` : ''}
-          ${rec.duration ? `<span>•</span><span>${rec.duration}</span>` : ''}
-          ${rec.date ? `<span>•</span><span>${rec.date}</span>` : ''}
-        </div>
-      </div>
-      <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
-        ${rec.notePdfUrl ? `
-          <a href="${rec.notePdfUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open Handwritten Notes PDF: ${rec.notePdfTitle}" class="sd-note-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            <span>Notes PDF</span>
-          </a>
-        ` : ''}
-        <button class="sd-lecture-btn" data-rec-id="${rec.id}">
-          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          <span>Play Lecture</span>
-        </button>
-      </div>
-    `;
-
-    card.addEventListener('click', (e) => {
-      openRecordingPlayer(rec);
-    });
-
-    subjectLecturesContainer.appendChild(card);
-  });
+  if (countEl) countEl.textContent = `${currentOpenSubject.videos.length} Videos`;
+  renderSubjectLecturesList();
 }
 
 function closeSubjectPage() {
-  currentlyOpenSubject = null;
-  if (subjectDetailView) subjectDetailView.classList.add('hide');
-  if (subjectsCatalogView) subjectsCatalogView.classList.remove('hide');
-  if (window.location.hash.startsWith('#subject=')) {
-    history.pushState('', document.title, window.location.pathname + window.location.search);
-  }
+  currentOpenSubject = null;
+  activeTopicFilter = 'ALL';
+  subjectDetailView?.classList.add('hide');
+  subjectsCatalogView?.classList.remove('hide');
 }
 
-function handleHashNavigation() {
-  const hash = window.location.hash;
-  if (hash.startsWith('#subject=')) {
-    const rawTitle = decodeURIComponent(hash.replace('#subject=', ''));
-    const matched = cachedSubjectResults.find(sr => sr.subject.title.toLowerCase() === rawTitle.toLowerCase());
-    if (matched) {
-      openSubjectPage(matched);
-      return;
+function renderSubjectLecturesList() {
+  if (!subjectLecturesContainer || !currentOpenSubject) return;
+  const videos = currentOpenSubject.videos || [];
+
+  // Build topic pills
+  const topics = [];
+  const seenTopics = new Set();
+  videos.forEach(v => {
+    const t = (v.topic || 'Lectures').trim();
+    if (!seenTopics.has(t)) {
+      seenTopics.add(t);
+      topics.push(t);
+    }
+  });
+
+  if (topicFiltersBar) {
+    if (topics.length > 1) {
+      topicFiltersBar.style.display = 'flex';
+      topicFiltersBar.innerHTML = `
+        <button class="filter-chip vid-topic-chip ${activeTopicFilter === 'ALL' ? 'active' : ''}" data-topic="ALL" style="font-size:0.72rem;padding:0.32rem 0.72rem;">All Topics (${videos.length})</button>
+        ${topics.map(t => {
+          const cnt = videos.filter(x => (x.topic || 'Lectures').trim() === t).length;
+          return `<button class="filter-chip vid-topic-chip ${activeTopicFilter === t ? 'active' : ''}" data-topic="${escapeHtml(t)}" style="font-size:0.72rem;padding:0.32rem 0.72rem;">${escapeHtml(t)} (${cnt})</button>`;
+        }).join('')}
+      `;
+      topicFiltersBar.querySelectorAll('.vid-topic-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeTopicFilter = btn.getAttribute('data-topic') || 'ALL';
+          renderSubjectLecturesList();
+        });
+      });
+    } else {
+      topicFiltersBar.style.display = 'none';
     }
   }
-  closeSubjectPage();
+
+  const q = lectureFilterQuery.trim().toLowerCase();
+  const filtered = videos.filter(v => {
+    if (activeTopicFilter !== 'ALL' && (v.topic || 'Lectures').trim() !== activeTopicFilter) return false;
+    if (q) {
+      const hay = `${v.title} ${v.topic} ${v.instructor}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    subjectLecturesContainer.innerHTML = `
+      <div class="notes-empty-state">
+        <h3 class="notes-empty-title">No Lectures Found</h3>
+        <p class="notes-empty-desc">Try selecting a different topic or clearing the search filter.</p>
+      </div>
+    `;
+    return;
+  }
+
+  subjectLecturesContainer.innerHTML = filtered.map((rec, idx) => {
+    const rowNum = String(idx + 1).padStart(2, '0');
+    const thumb = rec.thumbnails?.[0]?.url || rec.thumb || '';
+    return `
+      <div class="sd-lecture-card" data-rec-idx="${idx}">
+        <span class="sd-lecture-num">${rowNum}</span>
+        ${thumb
+          ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
+          : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
+        <div class="sd-lecture-details">
+          <div class="sd-lecture-title" title="${escapeHtml(rec.title)}">${escapeHtml(rec.title)}</div>
+          <div class="sd-lecture-meta">
+            <span style="color:#ddd6fe;font-weight:600;">${escapeHtml(rec.instructor || 'NNL Faculty')}</span>
+            ${rec.topic ? `<span>•</span><span>${escapeHtml(rec.topic)}</span>` : ''}
+            ${rec.duration ? `<span>•</span><span>${escapeHtml(rec.duration)}</span>` : ''}
+            ${rec.date ? `<span>•</span><span>${escapeHtml(rec.date)}</span>` : ''}
+          </div>
+        </div>
+        <div class="sd-lecture-actions">
+          ${rec.notePdfUrl ? `
+            <button class="sd-note-btn btn-open-lec-pdf" data-title="${encodeURIComponent(rec.notePdfTitle || rec.title)}" data-url="${encodeURIComponent(rec.notePdfUrl)}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Notes PDF</span>
+            </button>
+          ` : ''}
+          <button class="sd-lecture-btn">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span>Play</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  subjectLecturesContainer.querySelectorAll('.btn-open-lec-pdf').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPdfModal(
+        decodeURIComponent(btn.getAttribute('data-title')),
+        decodeURIComponent(btn.getAttribute('data-url'))
+      );
+    });
+  });
+
+  subjectLecturesContainer.querySelectorAll('.sd-lecture-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.getAttribute('data-rec-idx'), 10);
+      if (!isNaN(idx) && filtered[idx]) openRecordingPlayer(filtered[idx]);
+    });
+  });
 }
 
-window.addEventListener('hashchange', handleHashNavigation);
+function openPdfModal(title, url) {
+  if (!pdfModal) return;
+  if (pdfModalTitle) pdfModalTitle.textContent = title;
+  if (pdfModalDownloadBtn) pdfModalDownloadBtn.href = url;
+  if (pdfModalIframe) pdfModalIframe.src = getPdfPreviewSrc(url);
+  pdfModal.classList.remove('hide');
+  document.body.style.overflow = 'hidden';
+}
 
-// Back to subjects button click listener
-const btnBackToSubjects = document.getElementById('btn-back-to-subjects');
-if (btnBackToSubjects) {
-  btnBackToSubjects.addEventListener('click', () => {
-    closeSubjectPage();
-  });
+function closePdfModal() {
+  if (!pdfModal) return;
+  pdfModal.classList.add('hide');
+  if (pdfModalIframe) pdfModalIframe.src = '';
+  document.body.style.overflow = '';
 }
 
 // ── VdoCipher Video Player Engine ──
 function initRecordingsViewer() {
-  const closeViewerBtn = document.getElementById('close-recording-viewer');
-  if (closeViewerBtn) {
-    closeViewerBtn.addEventListener('click', () => {
-      const viewer = document.getElementById('recording-viewer');
-      const videoEl = document.getElementById('recording-video');
-      if (viewer) viewer.classList.add('hide');
-      if (videoEl) { 
-        videoEl.pause(); 
-        videoEl.src = ''; 
-        videoEl.classList.add('hide'); 
-      }
-      const oldIframe = document.getElementById('recording-cipher-iframe');
-      if (oldIframe) oldIframe.remove();
-      const loader = document.getElementById('recording-cipher-loader');
-      if (loader) loader.remove();
-    });
-  }
+  document.getElementById('close-recording-viewer')?.addEventListener('click', () => {
+    const viewer = document.getElementById('recording-viewer');
+    const videoEl = document.getElementById('recording-video');
+    viewer?.classList.add('hide');
+    if (videoEl) {
+      videoEl.pause();
+      videoEl.src = '';
+      videoEl.classList.add('hide');
+    }
+    document.getElementById('recording-cipher-iframe')?.remove();
+    document.getElementById('recording-cipher-loader')?.remove();
+  });
 }
 
 function openRecordingPlayer(recording) {
@@ -595,106 +620,92 @@ function openRecordingPlayer(recording) {
   const videoEl = document.getElementById('recording-video');
   const noUrlEl = document.getElementById('recording-no-url');
   const retryBtn = document.getElementById('recording-retry-btn');
-  const errDesc = document.getElementById('recording-error-desc');
-  
+
   if (!viewer) return;
-  
   if (titleEl) titleEl.textContent = recording.title || 'Recorded Lecture';
   if (instructorEl) instructorEl.textContent = `Instructor: ${recording.instructor || 'Faculty'}`;
 
-  // Attach lecture Handwritten Notes PDF button inside the video viewer header if available
-  const viewerHeader = viewer.querySelector('.recording-viewer-header');
-  const existingNoteBtn = document.getElementById('recording-viewer-note-btn');
-  if (existingNoteBtn) existingNoteBtn.remove();
-  if (viewerHeader && recording.notePdfUrl) {
-    const noteLink = document.createElement('a');
-    noteLink.id = 'recording-viewer-note-btn';
-    noteLink.className = 'sd-note-btn';
-    noteLink.href = recording.notePdfUrl;
-    noteLink.target = '_blank';
-    noteLink.rel = 'noopener noreferrer';
-    noteLink.style.marginLeft = 'auto';
-    noteLink.style.marginRight = '0.75rem';
-    noteLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Open Lecture Notes PDF</span>`;
-    const closeBtn = viewerHeader.querySelector('#close-recording-viewer');
-    if (closeBtn) {
-      viewerHeader.insertBefore(noteLink, closeBtn);
-    } else {
-      viewerHeader.appendChild(noteLink);
-    }
-  }
-  
   viewer.classList.remove('hide');
-
-  // Clean up any existing player
-  const oldIframe = document.getElementById('recording-cipher-iframe');
-  if (oldIframe) oldIframe.remove();
-  const oldLoader = document.getElementById('recording-cipher-loader');
-  if (oldLoader) oldLoader.remove();
+  document.getElementById('recording-cipher-iframe')?.remove();
+  document.getElementById('recording-cipher-loader')?.remove();
   if (videoEl) {
     videoEl.pause();
     videoEl.src = '';
     videoEl.classList.add('hide');
   }
-  if (noUrlEl) noUrlEl.classList.add('hide');
-  
-  // Show spinner
+  noUrlEl?.classList.add('hide');
+
   const bodyEl = document.querySelector('.recording-viewer-body');
   const loader = document.createElement('div');
   loader.id = 'recording-cipher-loader';
   loader.className = 'full-loader';
-  loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.75rem; font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: #00f3d0;">Securing DRM Stream via VdoCipher...</p>';
+  loader.innerHTML = '<div class="spinner"></div><p style="margin-top:0.75rem;font-family:var(--font-display);font-size:0.8rem;letter-spacing:0.06em;text-transform:uppercase;color:#c4b5fd;">Securing Stream via VdoCipher...</p>';
   bodyEl.appendChild(loader);
 
-  const token = localStorage.getItem('nnl_access_token');
-  const authHeaders = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
-
-  const tryGetOtp = (url) => {
-    return fetch(url, { method: 'GET', headers: authHeaders }).then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    });
+  const tryGetOtp = async (path) => {
+    const res = await fetchWithAutoAuth(path);
+    if (!res || !res.ok) {
+      const txt = res ? await res.text().catch(() => '') : '';
+      const err = new Error(`HTTP ${res?.status || 401}: ${txt.slice(0, 120)}`);
+      err.status = res?.status || 401;
+      throw err;
+    }
+    return res.json();
   };
 
   const recId = recording.id;
+  const endpoints = currentOpenSubject?.isBatch103
+    ? [
+        `/batch_cms/videos/${recId}/generate_videocipher_otp/`,
+        `/batch_cms/videos/${recId}/generate_videocipher_offline/`,
+        `/cms/videos/${recId}/generate_videocipher_otp/`
+      ]
+    : [
+        `/cms/videos/${recId}/generate_videocipher_otp/`,
+        `/cms/videos/${recId}/generate_videocipher_offline/`,
+        `/batch_cms/videos/${recId}/generate_videocipher_otp/`,
+        `/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`,
+        `/cms/question_bank/${recId}/generate_videocipher_otp/`
+      ];
 
-  const launchPlayback = () => {
-    tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_otp/`)
-      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_otp/`))
-      .catch(() => tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_offline/`))
-      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_offline/`))
-      .catch(() => tryGetOtp(`${API_BASE}/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`))
-      .catch(() => tryGetOtp(`${API_BASE}/cms/question_bank/${recId}/generate_videocipher_otp/`))
-      .then(data => {
-        if (loader) loader.remove();
+  const launchPlayback = async () => {
+    for (const ep of endpoints) {
+      try {
+        const data = await tryGetOtp(ep);
         if (data && data.otp && data.playbackInfo) {
+          loader.remove();
           const iframe = document.createElement('iframe');
           iframe.id = 'recording-cipher-iframe';
           iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;
-          iframe.style.border = 'none';
-          iframe.style.width = '100%';
-          iframe.style.height = '100%';
-          iframe.style.borderRadius = '12px';
+          iframe.style.cssText = 'border:none;width:100%;height:100%;border-radius:12px;';
           iframe.setAttribute('allow', 'encrypted-media *; autoplay *; fullscreen *; picture-in-picture *');
           iframe.setAttribute('allowfullscreen', 'true');
-          iframe.setAttribute('webkitallowfullscreen', 'true');
-          iframe.setAttribute('mozallowfullscreen', 'true');
-          iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
           bodyEl.appendChild(iframe);
-        } else {
-          fallbackToDirectVideo(recording);
+          return;
         }
-      })
-      .catch(err => {
-        console.warn('[Player Engine] VdoCipher OTP cascade failed, checking direct URL:', err);
-        if (loader) loader.remove();
-        fallbackToDirectVideo(recording);
-      });
+      } catch {}
+    }
+
+    loader.remove();
+    if (recording.videoUrl && videoEl) {
+      videoEl.src = recording.videoUrl;
+      videoEl.classList.remove('hide');
+      videoEl.load();
+      videoEl.play().catch(() => {});
+    } else if (noUrlEl) {
+      const errDesc = document.getElementById('recording-error-desc');
+      if (errDesc) {
+        errDesc.textContent = localStorage.getItem('nnl_access_token')
+          ? 'Could not retrieve VdoCipher stream token from NNL server. Please verify your session login.'
+          : 'Please log in on the Live Classes home page first to stream lectures.';
+      }
+      noUrlEl.classList.remove('hide');
+    }
   };
 
   if (retryBtn) {
     retryBtn.onclick = () => {
-      if (noUrlEl) noUrlEl.classList.add('hide');
+      noUrlEl?.classList.add('hide');
       bodyEl.appendChild(loader);
       launchPlayback();
     };
@@ -703,96 +714,63 @@ function openRecordingPlayer(recording) {
   launchPlayback();
 }
 
-function fallbackToDirectVideo(recording) {
-  const videoEl = document.getElementById('recording-video');
-  const noUrlEl = document.getElementById('recording-no-url');
-  const errDesc = document.getElementById('recording-error-desc');
+document.addEventListener('DOMContentLoaded', () => {
+  initHeaderAndSettings();
+  initRecordingsViewer();
 
-  if (recording.videoUrl && videoEl) {
-    videoEl.src = recording.videoUrl;
-    videoEl.classList.remove('hide');
-    videoEl.load();
-    videoEl.play().catch(err => console.log('Autoplay deferred:', err));
-    if (noUrlEl) noUrlEl.classList.add('hide');
-  } else {
-    if (videoEl) {
-      videoEl.src = '';
-      videoEl.classList.add('hide');
-    }
-    if (noUrlEl) {
-      if (errDesc) errDesc.textContent = 'Session preparation complete. Click Retry to reload video stream.';
-      noUrlEl.classList.remove('hide');
-    }
-  }
-}
-
-function renderBatch103VideosCatalog() {
-  const subjects = batch103VideoState?.subjects || [];
-  const results = subjects
-    .map(sub => {
-      const vids = (sub.videos || []).map((v, idx) => ({
-        id: v.id,
-        title: v.title,
-        topic: v.topic,
-        instructor: v.instructor || sub.faculty || 'NNL Faculty',
-        thumbnails: v.thumb ? [{ url: v.thumb }] : [],
-        duration: v.duration || '',
-        date: v.date || '',
-        video_cipher_id: v.video_cipher_id || '',
-        videoUrl: v.videoUrl || '',
-        notePdfUrl: v.notePdfUrl || '',
-        notePdfTitle: v.notePdfTitle || ''
-      }));
-      return { subject: { id: sub.id, title: sub.title }, videos: vids };
-    })
-    .filter(sr => sr.videos.length > 0);
-
-  const totalVids = results.reduce((a, r) => a + r.videos.length, 0);
-  const rbEl = document.getElementById('vid-count-rb103');
-  if (rbEl) rbEl.textContent = totalVids;
-
-  currentRecordings = results.flatMap(r => r.videos);
-  cachedSubjectResults = results;
-  renderSubjectCatalog(results);
-}
-
-// Top navigation & section tabs wiring
-document.getElementById('tab-live')?.addEventListener('click', () => { window.location.href = '/'; });
-document.getElementById('tab-notes')?.addEventListener('click', () => { window.location.href = '/notes.html'; });
-document.getElementById('tab-tests')?.addEventListener('click', () => { window.location.href = '/tests.html'; });
-
-document.getElementById('vid-tab-rb103')?.addEventListener('click', () => {
-  videoSectionMode = 'rb103';
-  document.getElementById('vid-tab-rb103')?.classList.add('active');
-  document.getElementById('vid-tab-plan77')?.classList.remove('active');
-  closeSubjectPage();
-  loadRecordings();
-});
-
-document.getElementById('vid-tab-plan77')?.addEventListener('click', () => {
-  videoSectionMode = 'plan77';
-  document.getElementById('vid-tab-plan77')?.classList.add('active');
-  document.getElementById('vid-tab-rb103')?.classList.remove('active');
-  closeSubjectPage();
-  loadRecordings();
-});
-
-const videosRefetchBtn = document.getElementById('videos-refetch-btn');
-if (videosRefetchBtn) {
-  videosRefetchBtn.addEventListener('click', () => {
-    videosRefetchBtn.classList.add('spinning');
-    Promise.resolve(videoSectionMode === 'rb103' ? syncBatchLive(103, { force: true }).then(u => { batch103VideoState = u; renderBatch103VideosCatalog(); }) : loadRecordings())
-      .finally(() => setTimeout(() => videosRefetchBtn.classList.remove('spinning'), 600));
+  document.getElementById('btn-back-to-subjects')?.addEventListener('click', closeSubjectPage);
+  document.getElementById('pdf-modal-close-btn')?.addEventListener('click', closePdfModal);
+  pdfModal?.addEventListener('click', (e) => {
+    if (e.target === pdfModal) closePdfModal();
   });
-}
 
-// Initialize page elements
-initBatchDropdown();
-initRecordingsViewer();
-loadRecordings();
+  document.getElementById('vid-tab-all')?.addEventListener('click', () => {
+    videoSectionMode = 'all';
+    document.getElementById('vid-tab-all')?.classList.add('active');
+    document.getElementById('vid-tab-rb103')?.classList.remove('active');
+    closeSubjectPage();
+    renderCurrentCatalog();
+  });
 
-// Ping Render proxy server asynchronously on load
-(function wakeUpRenderProxy() {
-  fetch('https://nightingale-9n2c.onrender.com/', { mode: 'no-cors', cache: 'no-store' })
-    .catch(() => {});
-})();
+  document.getElementById('vid-tab-rb103')?.addEventListener('click', () => {
+    videoSectionMode = 'rb103';
+    document.getElementById('vid-tab-rb103')?.classList.add('active');
+    document.getElementById('vid-tab-all')?.classList.remove('active');
+    closeSubjectPage();
+    renderCurrentCatalog();
+  });
+
+  videosSearchInput?.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    if (videosSearchClear) videosSearchClear.style.display = searchQuery ? 'block' : 'none';
+    renderCurrentCatalog();
+  });
+
+  videosSearchClear?.addEventListener('click', () => {
+    searchQuery = '';
+    if (videosSearchInput) videosSearchInput.value = '';
+    videosSearchClear.style.display = 'none';
+    renderCurrentCatalog();
+  });
+
+  lectureSearchInput?.addEventListener('input', (e) => {
+    lectureFilterQuery = e.target.value;
+    renderSubjectLecturesList();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (pdfModal && !pdfModal.classList.contains('hide')) closePdfModal();
+      else if (currentOpenSubject) closeSubjectPage();
+    }
+  });
+
+  renderCurrentCatalog();
+  syncBatchLive(103, {
+    onUpdate: (u) => {
+      batch103State = u;
+      updateTopStats();
+      if (videoSectionMode === 'rb103' && !currentOpenSubject) renderCurrentCatalog();
+    }
+  });
+});

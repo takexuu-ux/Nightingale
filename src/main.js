@@ -3971,6 +3971,11 @@ otpForm.addEventListener('submit', async (e) => {
   verifyBtn.disabled = true;
   verifyBtn.innerHTML = '<div class="spinner"></div> Logging in...';
 
+  const ua = navigator.userAgent || '';
+  const isAndroidEnv = /Android/i.test(ua) || Boolean(window.__NNL_ANDROID_APK__);
+  const isTabletScreen = isAndroidEnv && (!/Mobile/i.test(ua) || Math.min(window.screen?.width || 0, window.screen?.height || 0) >= 600);
+  const resolvedDeviceName = isTabletScreen ? 'Android Tablet' : (isAndroidEnv ? 'Android Mobile' : 'Web Browser');
+
   try {
     const response = await fetch(`${API_BASE}/auth/login/otp/validate/`, {
       method: 'POST',
@@ -3981,7 +3986,7 @@ otpForm.addEventListener('submit', async (e) => {
       body: JSON.stringify({
         code: otp,
         device_id: deviceId,
-        device_name: "PC Browser",
+        device_name: resolvedDeviceName,
         force_login: true,
         token: flowToken || sessionStorage.getItem('nnl_flow_token') || ''
       })
