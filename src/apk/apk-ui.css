@@ -36,20 +36,22 @@
 }
 
 :root {
-  --bg-canvas: #FCFAFF;
+  --bg-canvas: #EBF3FF;
   --bg-elevated: #FFFFFF;
-  --bg-subtle: #F4F0FA;
+  --bg-subtle: #F4F7FF;
   --bg-tint: #EFE9FF;
-  --bg-glass: rgba(252, 250, 255, 0.86);
+  --bg-glass: rgba(255, 255, 255, 0.84);
   --bg-glass-strong: rgba(255, 255, 255, 0.94);
 
   --text-primary: #151123;
-  --text-secondary: #68627A;
-  --text-muted: #938AA8;
+  --text-secondary: #5E5973;
+  --text-muted: #8E86A6;
 
   --accent: #5B3EA8;
   --accent-bright: #7050C9;
   --accent-glow: #8D74E5;
+  --accent-ink: #4E329A;
+  --accent-soft: rgba(91, 62, 168, 0.14);
   --accent-grad: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 55%, #8D74E5 100%);
   --accent-soft-grad: linear-gradient(145deg, rgba(91, 62, 168, 0.08), rgba(141, 116, 229, 0.04));
 
@@ -62,10 +64,12 @@
   --danger-ink: #B43F37;
   --danger-border: #F1C7C7;
 
-  --border-hairline: #ECE7F5;
-  --border-strong: #DAD0F3;
-  --shadow-card: 0 2px 10px rgba(91, 62, 168, 0.045), 0 1px 2px rgba(21, 17, 35, 0.035);
-  --shadow-float: 0 12px 32px rgba(33, 27, 49, 0.12), 0 2px 8px rgba(91, 62, 168, 0.08);
+  --border-hairline: #E2EAF7;
+  --border-subtle: #E2EAF7;
+  --border-strong: #D1DDF5;
+  --shadow-card: 0 2px 10px rgba(37, 68, 128, 0.06), 0 1px 2px rgba(21, 17, 35, 0.04);
+  --shadow-soft: 0 4px 14px rgba(37, 68, 128, 0.08);
+  --shadow-float: 0 14px 34px rgba(31, 49, 92, 0.12), 0 2px 8px rgba(91, 62, 168, 0.08);
   --ripple-color: rgba(91, 62, 168, 0.16);
 
   --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -80,20 +84,22 @@
 }
 
 [data-theme="dark"] {
-  --bg-canvas: #100C18;
-  --bg-elevated: #191426;
-  --bg-subtle: #211B31;
+  --bg-canvas: #0B1020;
+  --bg-elevated: #161C2E;
+  --bg-subtle: #1D243A;
   --bg-tint: rgba(141, 116, 229, 0.18);
-  --bg-glass: rgba(22, 17, 35, 0.84);
-  --bg-glass-strong: rgba(27, 21, 42, 0.94);
+  --bg-glass: rgba(18, 24, 42, 0.84);
+  --bg-glass-strong: rgba(23, 29, 49, 0.94);
 
-  --text-primary: #FCFAFF;
-  --text-secondary: #B0A9C7;
-  --text-muted: #7F7892;
+  --text-primary: #F8FAFF;
+  --text-secondary: #A9B4CE;
+  --text-muted: #7984A2;
 
   --accent: #987CE9;
   --accent-bright: #AD8DE4;
   --accent-glow: #8D74E5;
+  --accent-ink: #C9B8FF;
+  --accent-soft: rgba(152, 124, 233, 0.22);
   --accent-grad: linear-gradient(135deg, #6F4FC4 0%, #8D74E5 100%);
   --accent-soft-grad: linear-gradient(145deg, rgba(141, 116, 229, 0.16), rgba(91, 62, 168, 0.06));
 
@@ -106,10 +112,12 @@
   --danger-ink: #FCA5A5;
   --danger-border: rgba(248, 113, 113, 0.32);
 
-  --border-hairline: rgba(189, 166, 236, 0.14);
-  --border-strong: rgba(189, 166, 236, 0.28);
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.28);
-  --shadow-float: 0 16px 38px rgba(0, 0, 0, 0.56);
+  --border-hairline: rgba(167, 189, 236, 0.14);
+  --border-subtle: rgba(167, 189, 236, 0.14);
+  --border-strong: rgba(167, 189, 236, 0.26);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.32);
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.36);
+  --shadow-float: 0 18px 40px rgba(0, 0, 0, 0.56);
   --ripple-color: rgba(173, 141, 228, 0.24);
 }
 
@@ -118,14 +126,29 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html {
   margin: 0;
   padding: 0;
   width: 100%;
   max-width: 100%;
   min-height: 100%;
-  overflow-x: clip;
   background: var(--bg-canvas);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-x: clip;
+  background-color: #EBF3FF;
+  background-image:
+    radial-gradient(62% 54% at 12% 10%, rgba(96, 165, 250, 0.28), transparent 72%),
+    radial-gradient(56% 50% at 88% 88%, rgba(56, 189, 248, 0.24), transparent 72%),
+    radial-gradient(42% 40% at 82% 14%, rgba(167, 139, 250, 0.14), transparent 70%),
+    linear-gradient(150deg, #E2EEFF 0%, #EEF5FF 48%, #F6F9FF 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -134,26 +157,14 @@ html, body {
   transition: background-color 0.28s var(--fluid-ease), color 0.22s var(--fluid-ease);
 }
 
-/* Crisp Violet App Canvas with Subtle Light-Blue Sky Gradient Glow Behind Auth / Pages */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(62% 52% at 14% 12%, rgba(147, 197, 253, 0.28), transparent 70%),
-    radial-gradient(54% 48% at 88% 86%, rgba(186, 230, 253, 0.26), transparent 72%),
-    radial-gradient(46% 42% at 80% 14%, rgba(196, 181, 253, 0.16), transparent 68%),
-    linear-gradient(155deg, #FCFAFF 0%, #EEF5FF 54%, #F8FAFF 100%);
-}
-
-[data-theme="dark"] body::before {
-  background:
-    radial-gradient(60% 52% at 12% 8%, rgba(141, 116, 229, 0.20), transparent 68%),
-    radial-gradient(56% 48% at 88% 92%, rgba(56, 189, 248, 0.12), transparent 72%),
-    radial-gradient(36% 32% at 82% 16%, rgba(167, 139, 250, 0.11), transparent 66%),
-    linear-gradient(160deg, #0E0A16 0%, #150F23 55%, #100C18 100%);
+[data-theme="dark"] body {
+  background-color: #0B1020;
+  background-image:
+    radial-gradient(60% 52% at 14% 10%, rgba(56, 189, 248, 0.16), transparent 70%),
+    radial-gradient(54% 48% at 86% 90%, rgba(129, 140, 248, 0.18), transparent 72%),
+    radial-gradient(38% 34% at 82% 16%, rgba(141, 116, 229, 0.12), transparent 68%),
+    linear-gradient(155deg, #090E1C 0%, #10172D 54%, #0D0B18 100%);
+  background-attachment: fixed;
 }
 
 .hide {
@@ -577,7 +588,7 @@ main#app {
   cursor: pointer;
 }
 
-/* ── Auth Layout: Centered Balanced Tablet Hero + Bottom-Left Get OTP Card ── */
+/* ── Auth Layout: Dynamic Responsive Hero Top + Compact Lower-Left Get OTP Card ── */
 body.apk-is-auth .app-header,
 body:has(#app-header.hide) .app-header {
   display: none !important;
@@ -585,20 +596,20 @@ body:has(#app-header.hide) .app-header {
 
 body.apk-is-auth main#app,
 body:has(#app-header.hide) main#app {
-  padding: clamp(28px, 6vw, 64px) !important;
+  padding: clamp(28px, 5.5vh, 56px) clamp(26px, 5.5vw, 68px) !important;
   min-height: 100vh;
   display: flex !important;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: stretch;
 }
 
 body.apk-is-auth main#app > .container,
 body:has(#app-header.hide) main#app > .container {
   width: 100%;
-  max-width: 900px;
+  max-width: 1120px;
   margin: 0 auto;
-  flex: 0 1 auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -609,13 +620,14 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 }
 
 .auth-hero-wrapper {
+  flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: clamp(26px, 4.5vh, 44px);
-  padding: 12px 0;
+  gap: clamp(24px, 4.5vh, 48px);
+  padding: clamp(8px, 2vh, 24px) 0;
 }
 
 .apk-auth-showcase {
@@ -637,7 +649,7 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: clamp(14px, 2vw, 22px);
+  gap: clamp(14px, 2.2vw, 24px);
   flex-wrap: nowrap;
   max-width: 100%;
   min-width: 0;
@@ -645,22 +657,22 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 }
 
 .apk-auth-showcase .apk-logo-badge {
-  width: clamp(54px, 6.4vw, 80px);
-  height: clamp(54px, 6.4vw, 80px);
-  border-radius: clamp(17px, 2.2vw, 25px);
+  width: clamp(58px, 7.4vw, 90px);
+  height: clamp(58px, 7.4vw, 90px);
+  border-radius: clamp(18px, 2.4vw, 27px);
 }
 
 .apk-auth-showcase .apk-logo-badge svg {
-  width: clamp(30px, 3.6vw, 44px);
-  height: clamp(30px, 3.6vw, 44px);
+  width: clamp(32px, 4.1vw, 50px);
+  height: clamp(32px, 4.1vw, 50px);
 }
 
 .apk-showcase-title {
   margin: 0;
-  font-size: clamp(2.85rem, 7.6vw, 5.4rem);
+  font-size: clamp(3.4rem, 9.2vw, 6.4rem);
   line-height: 1.24;
   padding: 0.06em 6px 0.14em 0;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.032em;
   white-space: nowrap;
   flex-shrink: 1;
   min-width: 0;
@@ -694,11 +706,12 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   flex-direction: column;
   justify-content: center;
   align-self: flex-start;
+  margin-top: auto;
   width: 100%;
-  max-width: 440px;
+  max-width: 368px;
   min-width: 0;
-  padding: 28px 26px;
-  border-radius: 26px;
+  padding: 20px 22px;
+  border-radius: 22px;
   background: var(--bg-glass-strong);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
@@ -709,7 +722,7 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 
 #auth-screen .brand-header {
   display: block !important;
-  margin: 0 0 14px !important;
+  margin: 0 0 12px !important;
   text-align: left !important;
 }
 
@@ -726,7 +739,7 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   display: block !important;
   margin: 0 !important;
   font-style: normal !important;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
   color: var(--text-secondary) !important;
   opacity: 1 !important;
@@ -737,15 +750,15 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .input-wrapper {
   display: flex;
   align-items: stretch;
   width: 100%;
-  height: 54px;
-  border-radius: 16px;
+  height: 48px;
+  border-radius: 14px;
   border: 1.5px solid var(--border-strong);
   background: var(--bg-subtle);
   overflow: hidden;
@@ -1006,10 +1019,10 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 #verify-otp-btn,
 .btn-verify-compact {
   width: 100%;
-  height: 52px;
+  height: 46px;
   border: none;
-  border-radius: 16px;
-  font-size: 15px;
+  border-radius: 14px;
+  font-size: 14.5px;
   font-weight: 800;
   letter-spacing: 0.01em;
   display: flex;
@@ -1957,43 +1970,87 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   cursor: default;
 }
 
-/* ── Small Phone Responsive Auth (< 600px) — keeps portrait tablets large! ── */
-@media (max-width: 599px) {
+/* ── Portrait Tablet Auth (width >= 500px, portrait orientation) ── */
+@media (orientation: portrait) and (min-width: 500px) {
   body.apk-is-auth main#app,
   body:has(#app-header.hide) main#app {
-    padding: 24px 18px 28px !important;
-    justify-content: center;
+    padding: clamp(32px, 6.5vh, 64px) clamp(26px, 5vw, 52px) !important;
   }
 
   .auth-hero-wrapper {
-    gap: 24px;
-    padding: 8px 0;
-    align-items: center;
+    justify-content: space-between;
+    align-items: flex-start;
   }
 
   .apk-auth-showcase {
-    align-items: center;
+    align-items: flex-start;
   }
 
   .apk-auth-showcase .apk-logo-badge {
-    width: 46px;
-    height: 46px;
-    border-radius: 15px;
+    width: clamp(54px, 8.8vw, 76px);
+    height: clamp(54px, 8.8vw, 76px);
+    border-radius: clamp(16px, 2.6vw, 24px);
   }
 
   .apk-auth-showcase .apk-logo-badge svg {
-    width: 25px;
-    height: 25px;
+    width: clamp(30px, 4.8vw, 42px);
+    height: clamp(30px, 4.8vw, 42px);
   }
 
   .apk-showcase-title {
-    font-size: clamp(1.95rem, 8.8vw, 2.7rem);
+    font-size: clamp(2.85rem, 10.2vw, 5.1rem);
+  }
+
+  #auth-screen,
+  .auth-container {
+    align-self: flex-start;
+    margin-top: auto;
+    max-width: 380px;
+  }
+}
+
+/* ── Small Phone Responsive Auth (< 500px) ── */
+@media (max-width: 499px) {
+  body.apk-is-auth main#app,
+  body:has(#app-header.hide) main#app {
+    padding: clamp(24px, 5.5vh, 42px) 18px max(22px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .auth-hero-wrapper {
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 8px 0 0;
+  }
+
+  .apk-auth-showcase {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .apk-brand-inline-row {
+    gap: 12px;
+  }
+
+  .apk-auth-showcase .apk-logo-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .apk-auth-showcase .apk-logo-badge svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .apk-showcase-title {
+    font-size: clamp(2rem, 9.8vw, 2.65rem);
     line-height: 1.24;
     padding: 0.06em 4px 0.14em 0;
   }
 
   .apk-showcase-pills {
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
   }
 
@@ -2005,9 +2062,10 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   #auth-screen,
   .auth-container {
     align-self: stretch;
+    margin-top: auto;
     max-width: 100%;
-    padding: 24px 20px;
-    border-radius: 24px;
+    padding: 20px 18px;
+    border-radius: 22px;
   }
 }
 
