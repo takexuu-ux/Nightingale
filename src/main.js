@@ -3121,55 +3121,78 @@ function renderClasses(classes) {
       return aTime - bTime;
     });
 
-    // ── Render today's classes in the main area (no headers, clean) ──
+    // ── Render today's classes or show upcoming scheduled classes if today is off ──
     if (upcomingOrPastClasses.length === 0) {
-      classListContainer.innerHTML = `
-        <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);">
-          <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>
-        </div>
-      `;
-    } else {
-      upcomingOrPastClasses.forEach(c => {
-        classListContainer.appendChild(createClassCard(c, c._isLiveNow, c._isStartingSoon));
-      });
-    }
-
-    // ── Tomorrow sidebar: only show when there are classes ──
-    const upcomingSidebarEl = document.getElementById('upcoming-sidebar-list');
-    const sidebarEl = document.getElementById('schedule-sidebar');
-    if (upcomingSidebarEl && sidebarEl) {
-      upcomingSidebarEl.innerHTML = '';
-      sidebarEl.style.display = 'none';
-
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(tomorrow);
-      dayEnd.setHours(23, 59, 59, 999);
-
-      const tomorrowClasses = poolForLive.filter(c => {
+      // Find upcoming classes for future days so the student never sees an empty screen
+      const futureClasses = poolForLive.filter(c => {
         try {
           const start = parseApiDate(c.start || c.startTime || '');
-          return !isNaN(start.getTime()) && start >= tomorrow && start <= dayEnd;
+          return !isNaN(start.getTime()) && start > now;
         } catch (e) { return false; }
       }).sort((a, b) =>
         parseApiDate(a.start || a.startTime || '').getTime() -
         parseApiDate(b.start || b.startTime || '').getTime()
       );
 
-      if (tomorrowClasses.length > 0) {
-        // Show sidebar with date label
-        sidebarEl.style.display = 'flex';
-        const tomorrowFull = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-        const labelEl = document.getElementById('tomorrow-date-label');
-        if (labelEl) {
-          labelEl.textContent = `Tomorrow · ${tomorrowFull}`;
-        }
-        tomorrowClasses.forEach(c => {
-          // Use same createClassCard — not live, not starting soon → shows as scheduled
-          const card = createClassCard(c, false, false);
-          upcomingSidebarEl.appendChild(card);
+      if (futureClasses.length > 0) {
+        classListContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; margin-bottom: 1.25rem; background: rgba(10, 11, 16, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; backdrop-filter: blur(12px);">
+            <div>
+              <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600;">Classroom Schedule</span>
+              <p style="margin: 0.25rem 0 0 0; color: #f1f5f9; font-size: 0.92rem; font-weight: 500;">No live session right now. Displaying upcoming scheduled classes below:</p>
+            </div>
+            <span style="font-size: 0.78rem; background: rgba(255, 45, 85, 0.15); border: 1px solid rgba(255, 45, 85, 0.35); color: #ff3b5b; padding: 0.35rem 0.85rem; border-radius: 999px; font-weight: 600; white-space: nowrap;">${futureClasses.length} Upcoming</span>
+          </div>
+        `;
+        futureClasses.forEach(c => {
+          classListContainer.appendChild(createClassCard(c, false, false));
         });
+      } else {
+        classListContainer.innerHTML = `
+          <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center; backdrop-filter: blur(10px);">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; margin: 0;">No classes live or scheduled for today.</p>
+          </div>
+        `;
+      }
+    } else {
+      upcomingOrPastClasses.forEach(c => {
+        classListContainer.appendChild(createClassCard(c, c._isLiveNow, c._isStartingSoon));
+      });
+    }
+
+    // ── Upcoming Schedule sidebar: only show alongside today's classes (otherwise main grid displays all upcoming) ──
+    const upcomingSidebarEl = document.getElementById('upcoming-sidebar-list');
+    const sidebarEl = document.getElementById('schedule-sidebar');
+    if (upcomingSidebarEl && sidebarEl) {
+      upcomingSidebarEl.innerHTML = '';
+      sidebarEl.style.display = 'none';
+
+      if (upcomingOrPastClasses.length > 0) {
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+
+        const upcomingDaysClasses = poolForLive.filter(c => {
+          try {
+            const start = parseApiDate(c.start || c.startTime || '');
+            return !isNaN(start.getTime()) && start >= tomorrow;
+          } catch (e) { return false; }
+        }).sort((a, b) =>
+          parseApiDate(a.start || a.startTime || '').getTime() -
+          parseApiDate(b.start || b.startTime || '').getTime()
+        );
+
+        if (upcomingDaysClasses.length > 0) {
+          sidebarEl.style.display = 'flex';
+          const labelEl = document.getElementById('tomorrow-date-label');
+          if (labelEl) {
+            labelEl.textContent = 'Upcoming Schedule';
+          }
+          upcomingDaysClasses.forEach(c => {
+            const card = createClassCard(c, false, false);
+            upcomingSidebarEl.appendChild(card);
+          });
+        }
       }
     }
 
@@ -3187,7 +3210,10 @@ function renderClasses(classes) {
       const isFuture = !isNaN(start) && start > now;
       return !isLive && isFuture;
     } catch (e) { return false; }
-  });
+  }).sort((a, b) =>
+    parseApiDate(a.start || a.startTime || '').getTime() -
+    parseApiDate(b.start || b.startTime || '').getTime()
+  );
 
   if (upcoming.length === 0) {
     classListContainer.innerHTML = `

@@ -1,7 +1,29 @@
 // Nightingale Recorded Lectures Library Logic
 // Architected for production-grade reliability, strict hierarchy matching, dedicated Subject Pages, and VdoCipher playback
 
+import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
+
 const API_BASE = '/api';
+
+// Fast lookup maps for Medicine Handwritten Notes PDFs by subtopic ID or normalized title
+const MED_NOTE_BY_SUBTOPIC = new Map();
+const MED_NOTE_BY_TITLE = new Map();
+MEDICINE_MASTER_NOTES.forEach(n => {
+  if (n.subtopicId) MED_NOTE_BY_SUBTOPIC.set(Number(n.subtopicId), n);
+  if (n.lectureTitle) MED_NOTE_BY_TITLE.set(n.lectureTitle.trim().toLowerCase(), n);
+  if (n.title) MED_NOTE_BY_TITLE.set(n.title.trim().toLowerCase(), n);
+});
+
+function findMatchingNotePdf(subtopicId, lectureTitle) {
+  if (subtopicId && MED_NOTE_BY_SUBTOPIC.has(Number(subtopicId))) {
+    return MED_NOTE_BY_SUBTOPIC.get(Number(subtopicId));
+  }
+  if (lectureTitle) {
+    const k = lectureTitle.trim().toLowerCase();
+    if (MED_NOTE_BY_TITLE.has(k)) return MED_NOTE_BY_TITLE.get(k);
+  }
+  return null;
+}
 
 // Allowed Sapphire Batches (Strictly Hinglish Only)
 const ALLOWED_SAPPHIRE_BATCHES = [
@@ -185,9 +207,9 @@ async function loadRecordings() {
 
     // 2. Fetch real subjects for the plan
     let subjects = [];
-    let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, { headers });
+    let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=100`, { headers });
     if (!subRes.ok) {
-      subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, { headers });
+      subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=100`, { headers });
     }
     if (subRes.ok) {
       const sData = await subRes.json();
@@ -219,14 +241,14 @@ async function loadRecordings() {
     const subjectContentPromises = subjects.map(async (subj) => {
       const subjectVideos = [];
       try {
-        const topRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/topic/?subject=${subj.id}&page_size=50`, { headers });
+        const topRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/topic/?subject=${subj.id}&page_size=100`, { headers });
         if (topRes.ok) {
           const topData = await topRes.json();
           const topics = topData.data || topData.results || [];
 
           const subtopicPromises = topics.map(async (top) => {
             try {
-              const stRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=50`, { headers });
+              const stRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=100`, { headers });
               if (stRes.ok) {
                 const stData = await stRes.json();
                 const subtopics = stData.data || stData.results || [];
@@ -236,14 +258,19 @@ async function loadRecordings() {
                     const durHrs = vid.duration ? Math.floor(vid.duration / 3600) : 0;
                     const durMins = vid.duration ? Math.floor((vid.duration % 3600) / 60) : 0;
                     const durStr = durHrs > 0 ? `${durHrs}h ${durMins}m` : `${durMins}m`;
+                    const title = vid.title || st.title || 'Lecture Video';
+                    const matchedNote = findMatchingNotePdf(st.id || vid.subtopic, title);
 
                     subjectVideos.push({
                       id: vid.id,
-                      title: vid.title || st.title || 'Lecture Video',
+                      subtopicId: st.id || vid.subtopic || null,
+                      title,
                       instructor: vid.faculty?.name || 'Faculty',
                       subject: subj.title,
                       topic: top.title,
                       duration: durStr,
+                      notePdfUrl: matchedNote ? matchedNote.url : '',
+                      notePdfTitle: matchedNote ? matchedNote.title : '',
                       video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
                       videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
                       thumbnails: vid.thumbnails || null,
@@ -454,10 +481,17 @@ function renderSubjectLecturesList(lectures) {
           ${rec.date ? `<span>•</span><span>${rec.date}</span>` : ''}
         </div>
       </div>
-      <button class="sd-lecture-btn" data-rec-id="${rec.id}">
-        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <span>Play Lecture</span>
-      </button>
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+        ${rec.notePdfUrl ? `
+          <a href="${rec.notePdfUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open Handwritten Notes PDF: ${rec.notePdfTitle}" style="padding: 0.45rem 0.85rem; background: rgba(168, 85, 247, 0.14); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 10px; color: #d8b4fe; font-size: 0.72rem; font-weight: 600; text-decoration: none; white-space: nowrap;">
+            Notes PDF
+          </a>
+        ` : ''}
+        <button class="sd-lecture-btn" data-rec-id="${rec.id}">
+          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span>Play Lecture</span>
+        </button>
+      </div>
     `;
 
     card.addEventListener('click', (e) => {

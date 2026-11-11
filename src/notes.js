@@ -1,7 +1,9 @@
 // Nightingale Study Notes & PDFs Logic
-// Architected for high-performance rendering, zero-latency caching, minimal design, and seamless in-app reading.
+// Architected for clean subject isolation, complete Medicine library (141+ verified PDFs),
+// paginated API fetching, and Red Sapphire Brochure & Timetable access.
 
-import { ONCOLOGY_SUBJECT, ONCOLOGY_MASTER_NOTES } from './data/oncologyNotes.js';
+import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
+import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
 
 const API_BASE = '/api';
 
@@ -10,11 +12,54 @@ const ALLOWED_SAPPHIRE_BATCHES = [
   'Red Sapphire (English)'
 ];
 
+const SCHEDULE_SUBJECT = {
+  id: 'red-sapphire-schedule',
+  title: 'Red Sapphire Brochure & Timetable',
+  shortTitle: 'Timetable & Brochure',
+  category: 'Plan MLB Pro • Complete Schedule',
+  faculty: 'Batch 103 & 104',
+  isScheduleSubject: true,
+  description: 'Official Plan MLB Pro Red Sapphire features breakdown, class timetable, and NNL TOC brochures.'
+};
+
 // Timeout wrapper to prevent hanging network requests
-function fetchWithTimeout(url, options = {}, ms = 10000) {
+function fetchWithTimeout(url, options = {}, ms = 12000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
+// Fetch all pages for any paginated NNL endpoint
+async function fetchAllPaginated(path, headers, maxPages = 20) {
+  const results = [];
+  let url = path;
+  let page = 1;
+
+  while (url && page <= maxPages) {
+    try {
+      const targetUrl = url.startsWith('http')
+        ? url.replace('https://prod-api.nnlone.com', API_BASE)
+        : (url.startsWith(API_BASE) ? url : `${API_BASE}${url}`);
+
+      const res = await fetchWithTimeout(targetUrl, { headers });
+      if (!res.ok) break;
+      const json = await res.json();
+      const items = json.data || json.results || [];
+      if (Array.isArray(items)) results.push(...items);
+
+      let nextUrl = json.next_page_link || json.next || null;
+      if (!nextUrl && json.max_pages && page < json.max_pages) {
+        const sep = path.includes('?') ? '&' : '?';
+        nextUrl = `${path}${sep}page=${page + 1}`;
+      }
+      url = nextUrl;
+      page++;
+    } catch (e) {
+      console.warn('[Pagination Error]', path, e);
+      break;
+    }
+  }
+  return results;
 }
 
 let activeBatch = localStorage.getItem('nnl_active_batch');
@@ -27,24 +72,19 @@ if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
   localStorage.setItem('nnl_active_batch', activeBatch);
 }
 
-// In-memory cache & state
+// In-memory state
 let allSubjects = [];
 let subjectNotesMap = new Map(); // subjectId -> array of notes
 let currentOpenSubject = null;
-let currentFilterType = 'all'; // 'all', 'oncology', 'handwritten', 'daywise', 'highyield', 'slides'
+let currentFilterType = 'all'; // 'all', 'handwritten', 'oncology', 'liveclass', 'revision', 'schedule'
+let currentTopicFilter = 'ALL'; // system/topic sub-filter inside subject detail view
+let currentScheduleLang = 'hinglish';
 let searchQuery = '';
 
 // Open Access / Reading Mode subjects (available immediately without login)
 const OPEN_ACCESS_SUBJECTS = [
-  ONCOLOGY_SUBJECT,
-  { id: 'sub-pharma', title: 'Pharmacology & Clinical Therapeutics', shortTitle: 'Pharmacology', category: 'Basic Sciences' },
-  { id: 'sub-ap', title: 'Anatomy & Physiology', shortTitle: 'Anatomy & Physiology', category: 'Basic Sciences' },
-  { id: 'sub-fon', title: 'Nursing Foundation (FON)', shortTitle: 'Nursing Foundation', category: 'Clinical Procedures' },
-  { id: 'sub-chn', title: 'Community Health Nursing (CHN)', shortTitle: 'Community Health', category: 'Community Health' },
-  { id: 'sub-obg', title: 'Midwifery & Obstetrical Nursing (OBG)', shortTitle: 'OBG & Midwifery', category: 'Obstetrics' },
-  { id: 'sub-ped', title: 'Child Health Nursing (Pediatrics)', shortTitle: 'Pediatrics', category: 'Pediatrics' },
-  { id: 'sub-mhn', title: 'Mental Health Nursing (Psychiatry)', shortTitle: 'Psychiatry', category: 'Mental Health' },
-  { id: 'sub-micro', title: 'Microbiology & Pathology', shortTitle: 'Microbiology', category: 'Basic Sciences' }
+  MEDICINE_SUBJECT,
+  SCHEDULE_SUBJECT
 ];
 
 // DOM Elements
@@ -65,7 +105,7 @@ const subjectDetailBatch = document.getElementById('subject-detail-batch');
 const subjectTopBatchLabel = document.getElementById('subject-top-batch-label');
 const notesRefetchBtn = document.getElementById('notes-refetch-btn');
 
-// In-App PDF Reader Modal Elements
+// In-App Minimal PDF Reader Modal Elements
 const pdfModal = document.getElementById('pdf-modal');
 const pdfModalTitle = document.getElementById('pdf-modal-title');
 const pdfModalIframe = document.getElementById('pdf-modal-iframe');
@@ -74,31 +114,30 @@ const pdfModalDownloadBtn = document.getElementById('pdf-modal-download-btn');
 
 function getPlanIdForBatch(batchName) {
   const name = (batchName || activeBatch || '').toUpperCase();
-  if (name.includes('ENGLISH') || name.includes('(ENG)')) return 78; // Red Sapphire (English)
+  if (name.includes('ENGLISH') || name.includes('(ENG)')) return 79; // Red Sapphire (English)
   return 77; // Red Sapphire (Hinglish)
 }
 
 function getBatchIdForBatch(batchName) {
   const name = (batchName || activeBatch || '').toUpperCase();
-  if (name.includes('ENGLISH') || name.includes('(ENG)')) return 102; // Red Sapphire (English)
+  if (name.includes('ENGLISH') || name.includes('(ENG)')) return 104; // Red Sapphire (English)
   return 103; // Red Sapphire (Hinglish)
 }
 
 // Medical Subject SVG Icon Library
 const SUBJECT_SVG = {
-  oncology: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>',
+  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>',
+  timetable: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>',
   anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714"/>',
-  physiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>',
   pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>',
   microbiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6"/>',
   pathology: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>',
   surgery: '<path stroke-linecap="round" stroke-linejoin="round" d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a7.464 7.464 0 01-1.15 3.993m1.989 3.559A11.209 11.209 0 008.25 10.5a3.75 3.75 0 117.5 0c0 .527-.021 1.049-.064 1.565M12 10.5a14.94 14.94 0 01-3.6 9.75m6.633-4.596a18.666 18.666 0 01-2.485 5.33"/>',
   pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>',
   community: '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>',
-  psychiatry: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>',
-  obg: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/>',
-  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>',
-  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>'
+  mental: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>',
+  midwifery: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/>',
+  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>'
 };
 
 const DEFAULT_SVG = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>';
@@ -149,7 +188,6 @@ function initBatchDropdown() {
           btn.classList.add('active');
           dropdown.classList.add('hide');
 
-          // Switch back to catalog view and load fresh batch notes
           closeSubjectView();
           loadNotesRepository(true);
         } else {
@@ -191,7 +229,6 @@ function initUserHeader() {
     });
   }
 
-  // Top Tabs Click Actions
   const tabLive = document.getElementById('tab-live');
   if (tabLive) {
     tabLive.addEventListener('click', () => {
@@ -209,9 +246,8 @@ function initUserHeader() {
   if (notesRefetchBtn) {
     notesRefetchBtn.addEventListener('click', () => {
       notesRefetchBtn.classList.add('spinning');
-      // Clear cache for current batch
       const batchId = getBatchIdForBatch(activeBatch);
-      sessionStorage.removeItem(`nnl_notes_cache_${batchId}`);
+      sessionStorage.removeItem(`nnl_notes_cache_v5_${batchId}`);
       subjectNotesMap.clear();
       loadNotesRepository(true).finally(() => {
         setTimeout(() => notesRefetchBtn.classList.remove('spinning'), 600);
@@ -220,71 +256,84 @@ function initUserHeader() {
   }
 }
 
-// Categorize note from title
+// Categorize note strictly by title / properties
 function determineNoteCategory(title) {
   const upper = (title || '').toUpperCase();
-  if (upper.includes('HANDWRITTEN') || upper.includes('HAND WRITTEN') || upper.includes('CLASS NOTE')) {
-    return 'HANDWRITTEN';
+  if (upper.includes('REVISION') || upper.includes('FASTRACK')) {
+    return 'REVISION';
   }
-  if (upper.includes('DAY') || upper.includes('LEC') || upper.includes('CLASS')) {
-    return 'DAY-WISE';
+  if (upper.includes('CLASS NOTE') || upper.includes('DAY ')) {
+    return 'LIVE CLASS';
   }
-  if (upper.includes('SUMMARY') || upper.includes('FLOWCHART') || upper.includes('HIGH YIELD') || upper.includes('REVISION') || upper.includes('HANDOUT') || upper.includes('PEARL')) {
-    return 'HIGH-YIELD';
-  }
-  if (upper.includes('SLIDE') || upper.includes('PPT') || upper.includes('PRESENTATION') || upper.includes('MINDMAP')) {
-    return 'SLIDES';
-  }
-  return 'HIGH-YIELD';
+  return 'HANDWRITTEN';
 }
 
-// Normalize and consolidate subjects list so there is NEVER a duplicate Adult Health Nursing / Oncology card.
-// Guarantees a single unified card titled "Oncology (Dr. Deepak Marwah)".
+// Normalize subjects so Medicine (Dr. Deepak Marwah) is cleanly isolated and NEVER mixed with Anatomy/other subjects.
 function normalizeSubjectsList(rawSubjects) {
   const list = Array.isArray(rawSubjects) ? [...rawSubjects] : [];
-  let primaryOncoFound = false;
-  const filtered = [];
+  const result = [];
+  let hasMedicine = false;
+
+  // First, place Medicine (Dr. Deepak Marwah) and Schedule at the top
+  result.push({ ...MEDICINE_SUBJECT });
+  result.push({ ...SCHEDULE_SUBJECT });
+  hasMedicine = true;
+
+  const seenTitles = new Set();
 
   for (const s of list) {
     if (!s || !s.title) continue;
-    const titleLower = s.title.toLowerCase();
-    const isOncoOrAhn = String(s.id) === String(ONCOLOGY_SUBJECT.id) ||
-      titleLower.includes('oncology') ||
-      titleLower.includes('adult health') ||
-      titleLower.includes('med-surg') ||
-      titleLower.includes('ahn');
+    const tLower = s.title.toLowerCase();
 
-    if (isOncoOrAhn) {
-      if (!primaryOncoFound) {
-        primaryOncoFound = true;
-        filtered.push({
-          ...ONCOLOGY_SUBJECT,
-          // Preserve real API subject ID if present
-          apiSubjectId: s.id !== ONCOLOGY_SUBJECT.id ? s.id : undefined
-        });
-      }
-      // Silently discard any duplicate Adult Health Nursing / Oncology cards
-    } else {
-      filtered.push(s);
+    // Medicine subjects (73, 574, 676, etc.) are consolidated into MEDICINE_SUBJECT
+    if (
+      String(s.id) === String(MEDICINE_SUBJECT.id) ||
+      tLower.includes('medicine') ||
+      tLower.includes('oncology')
+    ) {
+      continue;
     }
+
+    if (s.isScheduleSubject || String(s.id) === String(SCHEDULE_SUBJECT.id)) {
+      continue;
+    }
+
+    // Filter out clutter sub-variants (F10, F11.0, Reasoning/Aptitude with 0 notes, etc.)
+    if (tLower.includes('(f10)') || tLower.includes('(f11.0)') || tLower.includes('otr')) {
+      continue;
+    }
+    if (s.handwritten_notes_count === 0 && s.notes_count === 0) {
+      continue;
+    }
+
+    // Strip redundant (H) / (E) for cleaner card titles while keeping strict subject ID separation
+    const cleanTitle = s.title.replace(/\s*\((H|E)\)\s*$/i, '').trim();
+    const normKey = cleanTitle.toLowerCase();
+    if (seenTitles.has(normKey)) continue;
+    seenTitles.add(normKey);
+
+    result.push({
+      ...s,
+      title: cleanTitle,
+      apiSubjectId: s.id,
+      category: s.handwritten_notes_count ? `${s.handwritten_notes_count} Notes` : 'Class Notes'
+    });
   }
 
-  // Ensure the single unified Oncology card is always present at the very beginning
-  if (!primaryOncoFound) {
-    filtered.unshift({ ...ONCOLOGY_SUBJECT });
-  }
-
-  return filtered;
+  return result;
 }
 
-// Fetch subjects and notes with smart caching (Supports Full Open Access / Reading Mode)
+// Fetch subjects & notes with strict isolation and Open Access support
 async function loadNotesRepository(forceReload = false) {
   const token = localStorage.getItem('nnl_access_token');
   const planId = getPlanIdForBatch(activeBatch);
   const batchId = getBatchIdForBatch(activeBatch);
-  const cacheKey = `nnl_notes_cache_v4_${batchId}`;
+  const cacheKey = `nnl_notes_cache_v5_${batchId}`;
 
-  // Check sessionStorage cache first for instant display
+  // Always seed Medicine & Schedule immediately
+  subjectNotesMap.set(String(MEDICINE_SUBJECT.id), [...MEDICINE_MASTER_NOTES]);
+  subjectNotesMap.set(String(SCHEDULE_SUBJECT.id), [...RED_SAPPHIRE_DATA.brochures]);
+
   if (!forceReload) {
     try {
       const cached = sessionStorage.getItem(cacheKey);
@@ -292,10 +341,13 @@ async function loadNotesRepository(forceReload = false) {
         const parsed = JSON.parse(cached);
         allSubjects = normalizeSubjectsList(parsed.subjects || []);
         if (parsed.notesMap) {
-          subjectNotesMap = new Map(Object.entries(parsed.notesMap));
+          Object.entries(parsed.notesMap).forEach(([k, v]) => {
+            if (k !== String(MEDICINE_SUBJECT.id) && k !== String(SCHEDULE_SUBJECT.id)) {
+              subjectNotesMap.set(k, v);
+            }
+          });
         }
         if (allSubjects.length > 0) {
-          subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
           renderSubjectCards();
           updateTotalStats();
           return;
@@ -306,23 +358,19 @@ async function loadNotesRepository(forceReload = false) {
     }
   }
 
-  // If no auth token is present, DO NOT BLOCK THE USER!
-  // Launch Open Access / Reading Mode immediately with the full academic repository.
   if (!token) {
-    console.log('[Notes] Reading Mode active — full open access to study library enabled.');
+    console.log('[Notes] Open Access Mode — Medicine (141 PDFs) & Red Sapphire Schedule ready.');
     allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
-    subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
     renderSubjectCards();
     updateTotalStats();
     return;
   }
 
-  // Render loading state
   if (subjectsGrid) {
     subjectsGrid.innerHTML = `
       <div class="cp-loading" style="grid-column: 1 / -1; padding: 5rem 2rem; text-align: center;">
         <div class="spinner"></div>
-        <p style="color: var(--text-secondary); margin-top: 1rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Indexing Study Library for ${activeBatch}...</p>
+        <p style="color: var(--text-secondary); margin-top: 1rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Loading Study Library for ${getCleanBatchName(activeBatch)}...</p>
       </div>
     `;
   }
@@ -330,231 +378,82 @@ async function loadNotesRepository(forceReload = false) {
   const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
 
   try {
-    // 1. Fetch real subjects
-    let subjects = [];
-    let subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?plan_id=${planId}&page_size=50`, { headers });
-    if (subRes.status === 401 || subRes.status === 403) {
-      console.warn('[Notes] Token invalid or expired — serving Open Access library');
-      allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
-      subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-      renderSubjectCards();
-      updateTotalStats();
-      return;
-    }
-    if (!subRes.ok) {
-      subRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subject/?page_size=50`, { headers });
-      if (subRes.status === 401 || subRes.status === 403) {
-        allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
-        subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-        renderSubjectCards();
-        updateTotalStats();
-        return;
-      }
-    }
-    if (subRes.ok) {
-      const sData = await subRes.json();
-      subjects = sData.data || sData.results || [];
-    }
-
-    // Fallback: batch subjects
-    if (subjects.length === 0 && batchId) {
-      try {
-        const bRes = await fetchWithTimeout(`${API_BASE}/cms/batches/${batchId}/`, { headers });
-        if (bRes.ok) {
-          const bData = await bRes.json();
-          const batchObj = bData.data || bData;
-          if (batchObj && batchObj.subjects) {
-            subjects = batchObj.subjects;
-          }
-        }
-      } catch (e) {}
-    }
-
+    // Use the dedicated handwritten notes subjects endpoint (clean, no duplicate video subjects!)
+    let subjects = await fetchAllPaginated(`/cms/fe/handwritten_notes/subject/?plan_id=${planId}&page_size=100`, headers);
     if (subjects.length === 0) {
-      subjects = [...OPEN_ACCESS_SUBJECTS];
+      subjects = await fetchAllPaginated(`/cms/fe/handwritten_notes/subject/?page_size=100`, headers);
     }
 
-    // Consolidate into a single Oncology card with Dr. Deepak Marwah (no duplicate AHN cards)
     allSubjects = normalizeSubjectsList(subjects);
-    subjectNotesMap.set(String(ONCOLOGY_SUBJECT.id), [...ONCOLOGY_MASTER_NOTES]);
-
     renderSubjectCards();
     updateTotalStats();
 
-    // 2. Fetch notes for all subjects in parallel chunks to keep UI silky smooth
-    await fetchNotesForSubjects(allSubjects, batchId, headers);
+    // Fetch notes strictly per subject (skipping Medicine & Schedule which already have full verified catalogs,
+    // though we still let Medicine check for any brand-new uploaded PDFs cleanly!)
+    await fetchNotesForSubjects(allSubjects, headers);
 
-    // Save into cache
     try {
       const mapObj = {};
       subjectNotesMap.forEach((val, key) => { mapObj[key] = val; });
       sessionStorage.setItem(cacheKey, JSON.stringify({ subjects: allSubjects, notesMap: mapObj }));
     } catch (e) {}
 
-    // Re-render cards with updated counts
     renderSubjectCards();
     updateTotalStats();
 
   } catch (err) {
     console.error('[Notes Repo Error]:', err);
-    if (subjectsGrid) {
-      subjectsGrid.innerHTML = `
-        <div class="notes-empty-state" style="grid-column: 1 / -1;">
-          <h3 class="notes-empty-title">Failed to Load Notes</h3>
-          <p class="notes-empty-desc">${err.message || 'Please check your connection and try refreshing.'}</p>
-        </div>
-      `;
-    }
+    allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
+    renderSubjectCards();
+    updateTotalStats();
   }
 }
 
-// Fetch notes for a single subject
-async function fetchSingleSubjectNotes(subjectId, batchId, headers) {
-  const currentSub = allSubjects.find(s => String(s.id) === String(subjectId));
-  const isDedicatedOnco = String(subjectId) === String(ONCOLOGY_SUBJECT.id);
-
-  let notes = [];
-  if (isDedicatedOnco) {
-    notes.push(...ONCOLOGY_MASTER_NOTES);
+// Fetch notes strictly for a single subject — NEVER crosses over to Anatomy or other subjects
+async function fetchSingleSubjectNotes(subjectId, headers) {
+  if (String(subjectId) === String(SCHEDULE_SUBJECT.id)) {
+    return [...RED_SAPPHIRE_DATA.brochures];
   }
 
-  // If this is dedicated oncology without a backend API subject ID, return the master notes directly
-  const querySubjectId = isDedicatedOnco ? (currentSub?.apiSubjectId) : subjectId;
-  if (!querySubjectId || querySubjectId === ONCOLOGY_SUBJECT.id) {
+  const currentSub = allSubjects.find(s => String(s.id) === String(subjectId));
+  const isMedicine = String(subjectId) === String(MEDICINE_SUBJECT.id);
+  const querySubjectId = currentSub?.apiSubjectId || subjectId;
+
+  const notes = isMedicine ? [...MEDICINE_MASTER_NOTES] : [];
+
+  if (!querySubjectId || isNaN(Number(querySubjectId))) {
     return notes;
   }
 
-  // 1. Handwritten Notes
+  // 1. Fetch Handwritten Notes Topics & Subtopics (Paginated)
   try {
-    const htRes = await fetchWithTimeout(`${API_BASE}/cms/fe/handwritten_notes/topic/?subject=${subjectId}&page_size=50`, { headers });
-    if (htRes.ok) {
-      const htData = await htRes.json();
-      const htopics = htData.data || htData.results || [];
-      for (const top of htopics) {
-        try {
-          const hstRes = await fetchWithTimeout(`${API_BASE}/cms/fe/handwritten_notes/subtopic/?topic=${top.id}&page_size=50`, { headers });
-          if (hstRes.ok) {
-            const hstData = await hstRes.json();
-            const hsubtopics = hstData.data || hstData.results || [];
-            hsubtopics.forEach(st => {
-              const n = st.handwritten_notes || st.notes || st.handwritten_note;
-              if (n && typeof n === 'object') {
-                const url = n.url || n.file || n.pdf_url || '';
-                if (url) {
-                  notes.push({
-                    id: n.id || Math.random(),
-                    title: n.title || st.title || 'Day-wise Lecture Notes',
-                    url: url,
-                    category: determineNoteCategory(n.title || st.title)
-                  });
-                }
-              }
-            });
-          }
-        } catch (e) {}
-      }
-    }
-  } catch (e) {}
-
-  // 2. Digital Notes & Handouts
-  try {
-    const ntRes = await fetchWithTimeout(`${API_BASE}/cms/fe/notes/topic/?subject=${subjectId}&page_size=50`, { headers });
-    if (ntRes.ok) {
-      const ntData = await ntRes.json();
-      const ntopics = ntData.data || ntData.results || [];
-      for (const top of ntopics) {
-        try {
-          const nstRes = await fetchWithTimeout(`${API_BASE}/cms/fe/notes/subtopic/?topic=${top.id}&page_size=50`, { headers });
-          if (nstRes.ok) {
-            const nstData = await nstRes.json();
-            const nsubtopics = nstData.data || nstData.results || [];
-            nsubtopics.forEach(st => {
-              const n = st.notes || st.note;
-              if (n && typeof n === 'object') {
-                const url = n.url || n.file || n.pdf_url || '';
-                if (url) {
-                  notes.push({
-                    id: n.id || Math.random(),
-                    title: n.title || st.title || 'High-Yield Clinical Handout',
-                    url: url,
-                    category: determineNoteCategory(n.title || st.title)
-                  });
-                }
-              }
-            });
-          }
-        } catch (e) {}
-      }
-    }
-  } catch (e) {}
-
-  // 3. Fallback Batch Handwritten Notes
-  if (notes.length === 0 && batchId) {
-    try {
-      const nRes = await fetchWithTimeout(`${API_BASE}/batch_cms/batch_handwritten_notes/?batch_id=${batchId}&subject_id=${subjectId}`, { headers });
-      if (nRes.ok) {
-        const d = await nRes.json();
-        const allN = d.data || d.results || [];
-        allN.forEach(n => {
+    const htopics = await fetchAllPaginated(`/cms/fe/handwritten_notes/topic/?subject=${querySubjectId}&page_size=100`, headers);
+    for (const top of htopics) {
+      const hsubtopics = await fetchAllPaginated(`/cms/fe/handwritten_notes/subtopic/?topic=${top.id}&page_size=100`, headers);
+      hsubtopics.forEach(st => {
+        const n = st.handwritten_notes || st.notes || st.handwritten_note;
+        if (n && typeof n === 'object') {
           const url = n.url || n.file || n.pdf_url || '';
           if (url) {
+            const title = (n.title || st.title || 'Class Notes').trim();
             notes.push({
               id: n.id || Math.random(),
-              title: n.title || 'Official Batch Class Handout',
-              url: url,
-              category: determineNoteCategory(n.title)
+              title,
+              lectureTitle: st.title || title,
+              topic: top.title || currentSub?.title || 'Notes',
+              faculty: currentSub?.faculty || '',
+              url: url.trim(),
+              category: determineNoteCategory(title)
             });
           }
-        });
-      }
-    } catch (e) {}
+        }
+      });
+    }
+  } catch (e) {
+    console.warn(`[Notes] HW fetch failed for subject ${querySubjectId}:`, e);
   }
 
-  // 4. Video Subtopics Notes & Handouts Scanner (Extracts attached PDFs from all videos, including Marwah sir's classes)
-  try {
-    const vtRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/topic/?subject=${subjectId}&page_size=50`, { headers });
-    if (vtRes.ok) {
-      const vtData = await vtRes.json();
-      const vTopics = vtData.data || vtData.results || [];
-      for (const top of vTopics) {
-        try {
-          const vstRes = await fetchWithTimeout(`${API_BASE}/cms/fe/videos/subtopic/?topic=${top.id}&page_size=50`, { headers });
-          if (vstRes.ok) {
-            const vstData = await vstRes.json();
-            const vSubtopics = vstData.data || vstData.results || [];
-            vSubtopics.forEach(st => {
-              const noteCandidates = [
-                st.handwritten_notes, st.handwritten_note, st.notes, st.note, st.attachment, st.pdf,
-                st.video?.handwritten_notes, st.video?.notes, st.video?.attachment, st.video?.pdf_url, st.video?.pdf
-              ];
-              noteCandidates.forEach(nc => {
-                if (nc && typeof nc === 'object') {
-                  const url = nc.url || nc.file || nc.pdf_url || nc.download_url || '';
-                  if (url) {
-                    notes.push({
-                      id: nc.id || Math.random(),
-                      title: nc.title || st.title || `${top.title} Class Notes`,
-                      url: url,
-                      category: determineNoteCategory(nc.title || st.title)
-                    });
-                  }
-                } else if (typeof nc === 'string' && nc.startsWith('http')) {
-                  notes.push({
-                    id: Math.random(),
-                    title: st.title || `${top.title} Class Notes`,
-                    url: nc,
-                    category: determineNoteCategory(st.title)
-                  });
-                }
-              });
-            });
-          }
-        } catch (e) {}
-      }
-    }
-  } catch (e) {}
-
-  // Deduplicate by URL or title
+  // Deduplicate strictly by URL
   const seen = new Set();
   const deduped = [];
   notes.forEach(n => {
@@ -569,34 +468,42 @@ async function fetchSingleSubjectNotes(subjectId, batchId, headers) {
 }
 
 // Parallel worker for fetching notes across subjects
-async function fetchNotesForSubjects(subjects, batchId, headers) {
+async function fetchNotesForSubjects(subjects, headers) {
   const chunkSize = 4;
   for (let i = 0; i < subjects.length; i += chunkSize) {
     const chunk = subjects.slice(i, i + chunkSize);
     await Promise.allSettled(chunk.map(async sub => {
-      const notes = await fetchSingleSubjectNotes(sub.id, batchId, headers);
+      if (String(sub.id) === String(SCHEDULE_SUBJECT.id)) return;
+      // Medicine already has all 141 verified PDFs, only refresh if needed when explicitly clicked or after
+      if (String(sub.id) === String(MEDICINE_SUBJECT.id)) {
+        updateSubjectCardBadge(sub.id, MEDICINE_MASTER_NOTES.length);
+        return;
+      }
+      const notes = await fetchSingleSubjectNotes(sub.id, headers);
       subjectNotesMap.set(String(sub.id), notes);
       updateSubjectCardBadge(sub.id, notes.length);
     }));
   }
 }
 
-// Update specific card badge in real time as data arrives
 function updateSubjectCardBadge(subjectId, count) {
   const badgeEl = document.getElementById(`card-count-${subjectId}`);
   if (badgeEl) {
-    badgeEl.textContent = `${count} PDFs Ready`;
+    badgeEl.textContent = String(subjectId) === String(SCHEDULE_SUBJECT.id)
+      ? `${RED_SAPPHIRE_DATA.hinglishSchedule.length + RED_SAPPHIRE_DATA.englishSchedule.length} Scheduled Classes`
+      : `${count} PDFs Ready`;
   }
 }
 
-// Update total statistics badges in hero header
 function updateTotalStats() {
   if (statSubjectsCount) {
     statSubjectsCount.textContent = allSubjects.length;
   }
   if (statNotesCount) {
     let total = 0;
-    subjectNotesMap.forEach(arr => { total += arr.length; });
+    subjectNotesMap.forEach((arr, key) => {
+      if (key !== String(SCHEDULE_SUBJECT.id)) total += arr.length;
+    });
     statNotesCount.textContent = total;
   }
 }
@@ -607,22 +514,19 @@ function renderSubjectCards() {
 
   const query = searchQuery.trim().toLowerCase();
   const filtered = allSubjects.filter(sub => {
-    // If filter chip is Oncology, only show Oncology
-    if (currentFilterType === 'oncology') {
-      const sTitle = (sub.title || '').toLowerCase();
-      const isMatch = sub.isCuratedOncology || 
-                      sTitle.includes('onco') || 
-                      sTitle.includes('cancer');
-      if (!isMatch) return false;
+    if (currentFilterType === 'schedule') {
+      return Boolean(sub.isScheduleSubject);
+    }
+    if (currentFilterType === 'oncology' || currentFilterType === 'liveclass' || currentFilterType === 'revision') {
+      return Boolean(sub.isMedicineMaster);
     }
 
     if (!query) return true;
     const titleMatch = (sub.title || '').toLowerCase().includes(query) || (sub.faculty || '').toLowerCase().includes(query);
-    // Also match against cached notes within this subject
     const notes = subjectNotesMap.get(String(sub.id)) || [];
-    const notesMatch = notes.some(n => 
-      (n.title || '').toLowerCase().includes(query) || 
-      (n.summary || '').toLowerCase().includes(query)
+    const notesMatch = notes.some(n =>
+      (n.title || '').toLowerCase().includes(query) ||
+      (n.topic || '').toLowerCase().includes(query)
     );
     return titleMatch || notesMatch;
   });
@@ -631,7 +535,7 @@ function renderSubjectCards() {
     subjectsGrid.innerHTML = `
       <div class="notes-empty-state" style="grid-column: 1 / -1;">
         <h3 class="notes-empty-title">No Subjects Found</h3>
-        <p class="notes-empty-desc">No study materials matched "${searchQuery || currentFilterType}". Try selecting another category or keyword.</p>
+        <p class="notes-empty-desc">No study materials matched "${searchQuery || currentFilterType}".</p>
       </div>
     `;
     return;
@@ -640,21 +544,48 @@ function renderSubjectCards() {
   subjectsGrid.innerHTML = filtered.map(sub => {
     const svgIcon = getSubjectIconSVG(sub.title);
     const notes = subjectNotesMap.get(String(sub.id)) || [];
-    const countStr = subjectNotesMap.has(String(sub.id)) ? `${notes.length} PDFs Ready` : 'Checking PDFs...';
-    const isCurated = sub.isCuratedOncology;
+    const isMedicine = Boolean(sub.isMedicineMaster);
+    const isSchedule = Boolean(sub.isScheduleSubject);
+
+    let countStr = 'Checking PDFs...';
+    if (isSchedule) {
+      countStr = `${RED_SAPPHIRE_DATA.hinglishSchedule.length + RED_SAPPHIRE_DATA.englishSchedule.length} Classes • ${RED_SAPPHIRE_DATA.brochures.length} Brochures`;
+    } else if (subjectNotesMap.has(String(sub.id))) {
+      countStr = `${notes.length} PDFs Ready`;
+    } else if (sub.handwritten_notes_count) {
+      countStr = `${sub.handwritten_notes_count} PDFs`;
+    }
+
+    const highlightStyle = isMedicine
+      ? 'border-color: rgba(255, 45, 85, 0.45); background: linear-gradient(135deg, rgba(255, 45, 85, 0.09) 0%, rgba(18, 21, 34, 0.78) 100%);'
+      : (isSchedule
+        ? 'border-color: rgba(0, 243, 208, 0.35); background: linear-gradient(135deg, rgba(0, 243, 208, 0.08) 0%, rgba(18, 21, 34, 0.78) 100%);'
+        : '');
+
+    const iconStyle = isMedicine
+      ? 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;'
+      : (isSchedule
+        ? 'background: rgba(0, 243, 208, 0.15); border-color: rgba(0, 243, 208, 0.35); color: #00f3d0;'
+        : '');
+
+    const badgeStyle = isMedicine
+      ? 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;'
+      : (isSchedule
+        ? 'background: rgba(0, 243, 208, 0.14); border-color: rgba(0, 243, 208, 0.3); color: #00f3d0;'
+        : '');
 
     return `
-      <div class="subject-card ${isCurated ? 'curated-highlight' : ''}" data-sub-id="${sub.id}" style="${isCurated ? 'border-color: rgba(255, 45, 85, 0.45); background: linear-gradient(135deg, rgba(255, 45, 85, 0.08) 0%, rgba(18, 21, 34, 0.75) 100%);' : ''}">
+      <div class="subject-card ${isMedicine ? 'curated-highlight' : ''}" data-sub-id="${sub.id}" style="${highlightStyle}">
         <div class="subject-card-top">
-          <div class="subject-card-icon" style="${isCurated ? 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;' : ''}">
+          <div class="subject-card-icon" style="${iconStyle}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               ${svgIcon}
             </svg>
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${sub.title}</h3>
-            <div class="subject-card-badge" style="${isCurated ? 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;' : ''}">
-              <span>${isCurated ? 'Dr. Deepak Marwah' : (sub.category || 'Class Notes &amp; Handouts')}</span>
+            <div class="subject-card-badge" style="${badgeStyle}">
+              <span>${isMedicine ? 'Dr. Deepak Marwah' : (isSchedule ? 'Red Sapphire Plan & Schedule' : (sub.category || 'Class Notes & Handouts'))}</span>
             </div>
           </div>
         </div>
@@ -669,14 +600,11 @@ function renderSubjectCards() {
     `;
   }).join('');
 
-  // Bind click on subject cards to open detail view
   subjectsGrid.querySelectorAll('.subject-card').forEach(card => {
     card.addEventListener('click', () => {
       const subId = card.getAttribute('data-sub-id');
       const subject = allSubjects.find(s => String(s.id) === String(subId));
-      if (subject) {
-        openSubjectView(subject);
-      }
+      if (subject) openSubjectView(subject);
     });
   });
 }
@@ -684,26 +612,30 @@ function renderSubjectCards() {
 // Open Dedicated Subject Detail View
 async function openSubjectView(subject) {
   currentOpenSubject = subject;
+  currentTopicFilter = 'ALL';
   notesCatalogView.classList.add('hide');
   notesSubjectView.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (subjectDetailTitle) subjectDetailTitle.textContent = subject.title;
-  if (subjectDetailBatch) subjectDetailBatch.textContent = activeBatch;
-  if (subjectTopBatchLabel) subjectTopBatchLabel.textContent = `// ${activeBatch}`;
+  if (subjectDetailBatch) subjectDetailBatch.textContent = getCleanBatchName(activeBatch);
+  if (subjectTopBatchLabel) subjectTopBatchLabel.textContent = `// ${getCleanBatchName(activeBatch)}`;
 
-  // If notes aren't loaded yet for this subject, fetch on demand
+  if (subject.isScheduleSubject) {
+    if (subjectDetailCount) {
+      subjectDetailCount.textContent = `${RED_SAPPHIRE_DATA.hinglishSchedule.length + RED_SAPPHIRE_DATA.englishSchedule.length} Classes`;
+    }
+    renderRedSapphireBrochureView();
+    return;
+  }
+
   let notes = subjectNotesMap.get(String(subject.id));
-  if (!notes) {
+  if (!notes || (String(subject.id) !== String(MEDICINE_SUBJECT.id) && notes.length === 0)) {
     const token = localStorage.getItem('nnl_access_token');
-    const sTitle = (subject.title || '').toLowerCase();
-    const isMedSurg = sTitle.includes('onco') || sTitle.includes('adult health') || sTitle.includes('medicine');
-
-    if (!token) {
-      notes = isMedSurg ? [...ONCOLOGY_MASTER_NOTES] : [];
+    if (String(subject.id) === String(MEDICINE_SUBJECT.id)) {
+      notes = [...MEDICINE_MASTER_NOTES];
       subjectNotesMap.set(String(subject.id), notes);
-      updateTotalStats();
-    } else {
+    } else if (token) {
       if (notesDocList) {
         notesDocList.innerHTML = `
           <div class="cp-loading" style="padding: 4rem 2rem; text-align: center;">
@@ -713,13 +645,11 @@ async function openSubjectView(subject) {
         `;
       }
       const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
-      const batchId = getBatchIdForBatch(activeBatch);
-      notes = await fetchSingleSubjectNotes(subject.id, batchId, headers);
-      if (notes.length === 0 && isMedSurg) {
-        notes = [...ONCOLOGY_MASTER_NOTES];
-      }
+      notes = await fetchSingleSubjectNotes(subject.id, headers);
       subjectNotesMap.set(String(subject.id), notes);
       updateTotalStats();
+    } else {
+      notes = [];
     }
   }
 
@@ -730,81 +660,235 @@ async function openSubjectView(subject) {
   renderSubjectNotesList();
 }
 
-// Close Subject Detail View (Back to Catalog)
 function closeSubjectView() {
   currentOpenSubject = null;
+  currentTopicFilter = 'ALL';
   notesSubjectView.classList.add('hide');
   notesCatalogView.classList.remove('hide');
   renderSubjectCards();
 }
 
-// Render Notes inside Subject View
+// Render Red Sapphire Brochure, Plans & Full Timetable View
+function renderRedSapphireBrochureView() {
+  if (!notesDocList) return;
+
+  const isEng = getCleanBatchName(activeBatch).toLowerCase().includes('english');
+  const activeScheduleList = currentScheduleLang === 'english'
+    ? RED_SAPPHIRE_DATA.englishSchedule
+    : RED_SAPPHIRE_DATA.hinglishSchedule;
+
+  const query = searchQuery.trim().toLowerCase();
+  const filteredSchedule = activeScheduleList.filter(c => {
+    if (!query) return true;
+    return (c.title || '').toLowerCase().includes(query) ||
+      (c.faculty || '').toLowerCase().includes(query) ||
+      (c.start || '').toLowerCase().includes(query);
+  });
+
+  // Format date helper
+  const formatSlot = (startStr, endStr) => {
+    try {
+      const d = new Date(startStr);
+      const e = new Date(endStr);
+      const datePart = d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      const sTime = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const eTime = !isNaN(e.getTime()) ? e.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : '';
+      return { datePart, timeRange: eTime ? `${sTime} – ${eTime}` : sTime, isFuture: d > new Date() };
+    } catch {
+      return { datePart: startStr, timeRange: '', isFuture: false };
+    }
+  };
+
+  // Sort upcoming first, then most recent completed
+  const sortedSchedule = [...filteredSchedule].sort((a, b) => new Date(b.start) - new Date(a.start));
+
+  const featuresHtml = RED_SAPPHIRE_DATA.features.map(f => `
+    <div style="background: rgba(14, 17, 28, 0.72); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 1.2rem 1.4rem;">
+      <h4 style="color: #00f3d0; font-family: var(--font-display); font-size: 0.85rem; margin: 0 0 0.75rem 0; letter-spacing: 0.04em; text-transform: uppercase;">${f.title}</h4>
+      <ul style="margin: 0; padding-left: 1.15rem; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.55;">
+        ${f.bullets.map(b => `<li style="margin-bottom: 0.3rem;">${b}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+
+  const brochuresHtml = RED_SAPPHIRE_DATA.brochures.map(b => `
+    <div class="note-doc-card">
+      <div class="note-doc-info">
+        <div class="note-doc-icon" style="color: #00f3d0;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        </div>
+        <div class="note-doc-details">
+          <div class="note-doc-title">${b.title}</div>
+          <div class="note-doc-badges">
+            <span class="category-tag" style="background: rgba(0, 243, 208, 0.14); color: #00f3d0;">BROCHURE PDF</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">${b.note}</span>
+          </div>
+        </div>
+      </div>
+      <div class="note-doc-actions">
+        <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(b.title)}" data-url="${encodeURIComponent(b.url)}" data-filename="${encodeURIComponent(b.title.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf')}">
+          <span>View PDF</span>
+        </button>
+        <a href="${b.url}" target="_blank" rel="noopener noreferrer" download class="btn-note-download">
+          <span>Download</span>
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  const timetableRowsHtml = sortedSchedule.map(c => {
+    const slot = formatSlot(c.start, c.end);
+    return `
+      <div class="note-doc-card" style="${slot.isFuture ? 'border-color: rgba(0, 243, 208, 0.45); background: rgba(0, 243, 208, 0.06);' : ''}">
+        <div class="note-doc-info">
+          <div class="note-doc-details">
+            <div class="note-doc-title">${c.title}</div>
+            <div class="note-doc-badges">
+              ${slot.isFuture
+                ? '<span class="category-tag" style="background: rgba(0, 243, 208, 0.2); color: #00f3d0;">UPCOMING</span>'
+                : '<span class="category-tag" style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1;">COMPLETED</span>'}
+              <span style="font-size: 0.76rem; color: #f8fafc; font-weight: 600;">${slot.datePart}</span>
+              <span style="font-size: 0.74rem; color: var(--text-muted);">${slot.timeRange}</span>
+              <span style="font-size: 0.74rem; color: #ff6b81;">${c.faculty}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  notesDocList.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <div style="background: rgba(14, 17, 28, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+        <div>
+          <h3 style="margin: 0; font-family: var(--font-display); font-size: 1rem; color: #ffffff;">Plan MLB Pro Red Sapphire — Official Features &amp; Syllabus Plan</h3>
+          <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct data extracted from Plan 77 (Hinglish) &amp; Plan 79 (English) + Live Batches 103 &amp; 104.</p>
+        </div>
+        <button id="btn-print-timetable" style="padding: 0.55rem 1.1rem; background: rgba(0, 243, 208, 0.14); border: 1px solid rgba(0, 243, 208, 0.35); border-radius: 10px; color: #00f3d0; font-weight: 700; font-size: 0.75rem; cursor: pointer;">Print / Save Schedule PDF</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+        ${featuresHtml}
+      </div>
+
+      <div>
+        <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: #fff; margin: 0.5rem 0 0.75rem 0; letter-spacing: 0.05em; text-transform: uppercase;">Official NNL Batch Brochures &amp; TOC PDFs</h3>
+        ${brochuresHtml}
+      </div>
+
+      <div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.5rem 0 0.85rem 0;">
+          <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: #fff; margin: 0; letter-spacing: 0.05em; text-transform: uppercase;">Red Sapphire Live Class Timetable (${filteredSchedule.length} Classes)</h3>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'hinglish' ? 'active' : ''}" data-lang="hinglish">Hinglish (Batch 103 · ${RED_SAPPHIRE_DATA.hinglishSchedule.length})</button>
+            <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'english' ? 'active' : ''}" data-lang="english">English (Batch 104 · ${RED_SAPPHIRE_DATA.englishSchedule.length})</button>
+          </div>
+        </div>
+        ${timetableRowsHtml}
+      </div>
+    </div>
+  `;
+
+  notesDocList.querySelectorAll('.rs-lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentScheduleLang = btn.getAttribute('data-lang') || 'hinglish';
+      renderRedSapphireBrochureView();
+    });
+  });
+
+  const printBtn = document.getElementById('btn-print-timetable');
+  if (printBtn) {
+    printBtn.addEventListener('click', () => window.print());
+  }
+
+  notesDocList.querySelectorAll('.btn-preview-pdf').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPdfModal(
+        decodeURIComponent(btn.getAttribute('data-title')),
+        decodeURIComponent(btn.getAttribute('data-url')),
+        decodeURIComponent(btn.getAttribute('data-filename') || '')
+      );
+    });
+  });
+}
+
+// Render Notes inside Subject View (Cleanly Grouped by Topic / System)
 function renderSubjectNotesList() {
   if (!notesDocList || !currentOpenSubject) return;
+
+  if (currentOpenSubject.isScheduleSubject) {
+    renderRedSapphireBrochureView();
+    return;
+  }
 
   const notes = subjectNotesMap.get(String(currentOpenSubject.id)) || [];
   const query = searchQuery.trim().toLowerCase();
 
-  // Filter by category chip and search query
+  // Extract unique topics for quick sub-navigation
+  const topicsList = [];
+  const seenTopics = new Set();
+  notes.forEach(n => {
+    const t = (n.topic || 'General').trim();
+    if (!seenTopics.has(t)) {
+      seenTopics.add(t);
+      topicsList.push(t);
+    }
+  });
+
   const filtered = notes.filter(n => {
-    // Filter chip check
-    if (currentFilterType === 'handwritten' && n.category !== 'HANDWRITTEN' && !(n.title || '').toLowerCase().includes('handwritten')) return false;
-    if (currentFilterType === 'daywise' && n.category !== 'DAY-WISE' && n.category !== 'HANDWRITTEN') return false;
-    if (currentFilterType === 'highyield' && n.category !== 'HIGH-YIELD') return false;
-    if (currentFilterType === 'slides' && n.category !== 'SLIDES') return false;
+    if (currentFilterType === 'handwritten' && n.category !== 'HANDWRITTEN') return false;
+    if (currentFilterType === 'liveclass' && n.category !== 'LIVE CLASS') return false;
+    if (currentFilterType === 'revision' && n.category !== 'REVISION') return false;
     if (currentFilterType === 'oncology') {
-      const tLower = (n.title || '').toLowerCase();
-      const sLower = (n.summary || '').toLowerCase();
-      const subLower = (n.subject || '').toLowerCase();
-      const isOnco = tLower.includes('onco') || 
-                     tLower.includes('cancer') || 
-                     tLower.includes('tumor') || 
-                     tLower.includes('marwa') || 
-                     tLower.includes('chemo') || 
-                     tLower.includes('radiation') || 
-                     tLower.includes('extravasation') || 
-                     tLower.includes('leukemia') || 
-                     tLower.includes('myeloma') || 
-                     tLower.includes('emergenc') || 
-                     sLower.includes('onco') || 
-                     subLower.includes('onco');
-      if (!isOnco) return false;
+      const match = (n.topic || '').toLowerCase().includes('onco') ||
+        (n.title || '').toLowerCase().includes('onco') ||
+        (n.title || '').toLowerCase().includes('cancer');
+      if (!match) return false;
     }
 
-    // Search query check
-    if (query && !n.title.toLowerCase().includes(query) && !(n.summary || '').toLowerCase().includes(query)) return false;
+    if (currentTopicFilter !== 'ALL' && (n.topic || 'General').trim() !== currentTopicFilter) {
+      return false;
+    }
+
+    if (query) {
+      const hay = `${n.title || ''} ${n.lectureTitle || ''} ${n.topic || ''}`.toLowerCase();
+      if (!hay.includes(query)) return false;
+    }
 
     return true;
   });
 
+  // Topic pill bar (shown when subject has multiple systems/topics like Medicine's 15 groups)
+  const topicBarHtml = topicsList.length > 1 ? `
+    <div style="display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1.25rem; padding: 0.85rem 1rem; background: rgba(12, 15, 25, 0.6); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px;">
+      <button class="filter-chip topic-pill-btn ${currentTopicFilter === 'ALL' ? 'active' : ''}" data-topic="ALL" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;">All Topics (${notes.length})</button>
+      ${topicsList.map(t => {
+        const cnt = notes.filter(x => (x.topic || 'General').trim() === t).length;
+        return `<button class="filter-chip topic-pill-btn ${currentTopicFilter === t ? 'active' : ''}" data-topic="${t.replace(/"/g, '&quot;')}" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;">${t} (${cnt})</button>`;
+      }).join('')}
+    </div>
+  ` : '';
+
   if (filtered.length === 0) {
-    notesDocList.innerHTML = `
+    notesDocList.innerHTML = topicBarHtml + `
       <div class="notes-empty-state">
         <h3 class="notes-empty-title">No Notes Found</h3>
-        <p class="notes-empty-desc">${notes.length === 0 ? 'No PDF notes are currently available for this subject.' : 'No notes matched the selected filter or search keyword.'}</p>
+        <p class="notes-empty-desc">${notes.length === 0 ? 'Please sign in with your NNL account to load this subject\'s PDFs.' : 'No notes matched the selected topic or search keyword.'}</p>
       </div>
     `;
+    bindTopicPills();
     return;
   }
 
-  notesDocList.innerHTML = filtered.map(n => {
-    let tagClass = 'tag-highyield';
-    if (n.category === 'HANDWRITTEN') tagClass = 'tag-handwritten';
-    else if (n.category === 'DAY-WISE') tagClass = 'tag-daywise';
-    else if (n.category === 'SLIDES') tagClass = 'tag-slides';
+  const cardsHtml = filtered.map(n => {
+    let tagClass = 'tag-handwritten';
+    if (n.category === 'REVISION') tagClass = 'tag-highyield';
+    else if (n.category === 'LIVE CLASS') tagClass = 'tag-daywise';
 
-    // Clean title from redundant brackets, repeated teacher name, or redundant subject prefixes
-    const rawTitle = n.title || 'Class Note';
-    const cleanTitle = rawTitle
-      .replace(/\[.*?\]/g, '')
-      .replace(/\(Dr\.?\s*Deepak\s*Marwah\)/gi, '')
-      .replace(/^Oncology\s*[-–—:]\s*/i, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
+    const cleanTitle = (n.title || n.lectureTitle || 'Class Note').trim();
     const safeDownloadName = (n.downloadName || `${cleanTitle}.pdf`).replace(/[^a-zA-Z0-9_.-]/g, '_');
-    const pageMeta = n.pages || 'Official PDF';
-    const sizeMeta = n.size || 'Multi-Page';
+    const topicLabel = (n.topic || '').trim();
 
     return `
       <div class="note-doc-card">
@@ -818,7 +902,7 @@ function renderSubjectNotesList() {
             <div class="note-doc-title" title="${cleanTitle}">${cleanTitle}</div>
             <div class="note-doc-badges">
               <span class="category-tag ${tagClass}">${n.category || 'HANDWRITTEN'}</span>
-              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">${pageMeta} • ${sizeMeta}</span>
+              ${topicLabel ? `<span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">${topicLabel}</span>` : ''}
             </div>
           </div>
         </div>
@@ -837,7 +921,9 @@ function renderSubjectNotesList() {
     `;
   }).join('');
 
-  // Bind click on "View PDF" to open built-in modal
+  notesDocList.innerHTML = topicBarHtml + cardsHtml;
+  bindTopicPills();
+
   notesDocList.querySelectorAll('.btn-preview-pdf').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -845,6 +931,16 @@ function renderSubjectNotesList() {
       const url = decodeURIComponent(btn.getAttribute('data-url'));
       const filename = decodeURIComponent(btn.getAttribute('data-filename') || '');
       openPdfModal(title, url, filename);
+    });
+  });
+}
+
+function bindTopicPills() {
+  if (!notesDocList) return;
+  notesDocList.querySelectorAll('.topic-pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTopicFilter = btn.getAttribute('data-topic') || 'ALL';
+      renderSubjectNotesList();
     });
   });
 }
@@ -879,27 +975,12 @@ function closePdfModal() {
   document.body.style.overflow = '';
 }
 
-// Auth Required Display
-function renderLoginRequired() {
-  if (subjectsGrid) {
-    subjectsGrid.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 4rem 2rem; text-align: center; background: rgba(10, 11, 16, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
-        <h3 style="font-family: var(--font-display); font-size: 1.2rem; color: #fff; margin-bottom: 0.75rem;">Login Required</h3>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Please log in with your registered NNL ONE mobile number to access notes and academic PDFs.</p>
-        <a href="/" style="display: inline-block; padding: 0.75rem 1.75rem; background: var(--accent-red); color: #fff; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; text-decoration: none; border-radius: 12px; letter-spacing: 0.05em;">Go to Login</a>
-      </div>
-    `;
-  }
-}
-
 // Event Listeners Initialization
 function initEventListeners() {
-  // Back to All Subjects Button
   if (btnBackSubjects) {
     btnBackSubjects.addEventListener('click', closeSubjectView);
   }
 
-  // Search Input Handler (Real-time with instant responsiveness)
   if (notesSearchInput) {
     notesSearchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value;
@@ -914,7 +995,6 @@ function initEventListeners() {
     });
   }
 
-  // Clear Search Button
   if (notesSearchClear) {
     notesSearchClear.addEventListener('click', () => {
       searchQuery = '';
@@ -928,12 +1008,22 @@ function initEventListeners() {
     });
   }
 
-  // Filter Chips (All, Oncology, Day-wise, High-yield, Slides)
   filterChips.forEach(chip => {
     chip.addEventListener('click', () => {
       filterChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       currentFilterType = chip.getAttribute('data-filter') || 'all';
+
+      if (currentFilterType === 'schedule') {
+        openSubjectView(SCHEDULE_SUBJECT);
+        return;
+      }
+
+      if ((currentFilterType === 'oncology' || currentFilterType === 'liveclass' || currentFilterType === 'revision') && !currentOpenSubject) {
+        openSubjectView(MEDICINE_SUBJECT);
+        return;
+      }
+
       if (currentOpenSubject) {
         renderSubjectNotesList();
       } else {
@@ -942,7 +1032,6 @@ function initEventListeners() {
     });
   });
 
-  // Modal Close Listeners
   if (pdfModalCloseBtn) {
     pdfModalCloseBtn.addEventListener('click', closePdfModal);
   }
@@ -955,7 +1044,6 @@ function initEventListeners() {
     });
   }
 
-  // Keyboard Shortcuts (ESC to close modal or go back to subjects)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (pdfModal && !pdfModal.classList.contains('hide')) {
@@ -983,7 +1071,6 @@ function initSettingsWidget() {
     });
   }
 
-  // Accent theme colors
   const colorDots = document.querySelectorAll('.cyber-tweaks-widget .color-dot');
   colorDots.forEach(dot => {
     dot.addEventListener('click', (e) => {
@@ -999,7 +1086,6 @@ function initSettingsWidget() {
     });
   });
 
-  // Restore saved color
   const savedColor = localStorage.getItem('nnl_tweak_color') || 'pink';
   if (savedColor && savedColor !== 'pink') {
     document.body.classList.add(`tweak-${savedColor}-mode`);
@@ -1011,7 +1097,6 @@ function initSettingsWidget() {
   }
 }
 
-// Bootstrapper
 document.addEventListener('DOMContentLoaded', () => {
   initBatchDropdown();
   initUserHeader();
