@@ -5,7 +5,7 @@
 import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
-import { getBatch104BaselineState, syncBatch104Live } from './utils/batch104Sync.js';
+import { getBatchBaselineState, syncBatchLive, getBatchIdFromName } from './utils/batch104Sync.js';
 
 const API_BASE = '/api';
 
@@ -85,7 +85,10 @@ let searchQuery = '';
 
 const initialParams = new URLSearchParams(window.location.search);
 let currentSectionMode = initialParams.get('section') === 'rb104' ? 'rb104' : 'master';
-let batch104State = getBatch104BaselineState();
+let activeRbBatchId = Number(initialParams.get('batch')) === 104
+  ? 104
+  : (Number(initialParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch));
+let batch104State = getBatchBaselineState(activeRbBatchId);
 
 // Complete Verified Subjects (Available immediately in Open Access AND Signed-In Mode — 1,319 PDFs)
 const OPEN_ACCESS_SUBJECTS = [
@@ -205,11 +208,8 @@ function initBatchDropdown() {
           dropdown.classList.add('hide');
 
           closeSubjectView();
-          if (getCleanBatchName(activeBatch).includes('English')) {
-            switchSectionMode('rb104');
-          } else {
-            loadNotesRepository(true);
-          }
+          setRbBatchId(getBatchIdFromName(activeBatch), true);
+          loadNotesRepository(true);
         } else {
           dropdown.classList.add('hide');
         }
@@ -542,15 +542,48 @@ function updateRb104StatusUi(syncResult) {
   }
 }
 
+function updateRbToggleUi() {
+  const badge = document.getElementById('rb-active-batch-badge');
+  const b103 = document.getElementById('rb-lang-103');
+  const b104 = document.getElementById('rb-lang-104');
+  const isEng = activeRbBatchId === 104;
+  if (badge) badge.textContent = isEng ? 'Batch 104 • English' : 'Batch 103 • Hinglish';
+  if (b103) {
+    b103.style.background = !isEng ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.36), rgba(236, 72, 153, 0.28))' : 'transparent';
+    b103.style.borderColor = !isEng ? 'rgba(167, 139, 250, 0.45)' : 'transparent';
+  }
+  if (b104) {
+    b104.style.background = isEng ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.36), rgba(236, 72, 153, 0.28))' : 'transparent';
+    b104.style.borderColor = isEng ? 'rgba(167, 139, 250, 0.45)' : 'transparent';
+  }
+}
+
+function setRbBatchId(nextId, keepCurrentMode = false) {
+  activeRbBatchId = Number(nextId) === 104 ? 104 : 103;
+  batch104State = getBatchBaselineState(activeRbBatchId);
+  updateRbToggleUi();
+  updateTotalStats();
+  updateRb104StatusUi(batch104State);
+  if (!keepCurrentMode && currentSectionMode !== 'rb104') {
+    switchSectionMode('rb104');
+  } else if (currentSectionMode === 'rb104') {
+    if (currentOpenSubject?.isBatch104) closeSubjectView();
+    renderSubjectCards();
+  }
+  triggerBatch104Sync(false);
+}
+
 async function triggerBatch104Sync(force = false) {
   const statusEl = document.getElementById('rb104-sync-status');
   const syncBtn = document.getElementById('rb104-sync-btn');
-  if (force && statusEl) statusEl.textContent = 'Checking Batch 104 updates...';
+  const targetBatch = activeRbBatchId;
+  if (force && statusEl) statusEl.textContent = `Checking Batch ${targetBatch} updates...`;
   if (force && syncBtn) syncBtn.disabled = true;
 
-  const res = await syncBatch104Live({
+  const res = await syncBatchLive(targetBatch, {
     force,
     onUpdate: (updated) => {
+      if (updated.batchId !== activeRbBatchId) return;
       batch104State = updated;
       updateTotalStats();
       updateRb104StatusUi(updated);
@@ -565,10 +598,16 @@ async function triggerBatch104Sync(force = false) {
     }
   });
 
+  // Also passively keep the companion Red Sapphire batch synced in background
+  const otherBatch = targetBatch === 103 ? 104 : 103;
+  syncBatchLive(otherBatch, { force });
+
   if (force && syncBtn) syncBtn.disabled = false;
-  batch104State = res;
-  updateTotalStats();
-  updateRb104StatusUi(res);
+  if (targetBatch === activeRbBatchId) {
+    batch104State = res;
+    updateTotalStats();
+    updateRb104StatusUi(res);
+  }
   return res;
 }
 
@@ -1425,6 +1464,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (secTabMaster) secTabMaster.addEventListener('click', () => switchSectionMode('master'));
   if (secTabRb104) secTabRb104.addEventListener('click', () => switchSectionMode('rb104'));
   if (rb104SyncBtn) rb104SyncBtn.addEventListener('click', () => triggerBatch104Sync(true));
+  document.getElementById('rb-lang-103')?.addEventListener('click', () => setRbBatchId(103));
+  document.getElementById('rb-lang-104')?.addEventListener('click', () => setRbBatchId(104));
+
+  updateRbToggleUi();
 
   if (currentSectionMode === 'rb104') {
     if (secTabMaster) secTabMaster.classList.remove('active');

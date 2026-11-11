@@ -1,12 +1,34 @@
-// Shared Red Sapphire (English) — Batch 104 Auto-Sync & Authenticated API Utility
-// Merges verified static baseline with live updates from /cms/batches/104/ & /batch_cms/topic/
-// Automatically picks up new classes, notes PDFs, and next-day tests whenever published.
+// Shared Red Sapphire Auto-Sync & Authenticated API Utility
+// Supports BOTH Red Sapphire (Hinglish) — Batch 103 AND Red Sapphire (English) — Batch 104.
+// Merges verified static baseline with live updates from /cms/batches/{id}/ & /batch_cms/topic/
+// so new classes, notes PDFs, and next-day tests populate automatically for Notes & Tests.
 
+import { BATCH_103_ID, BATCH_103_SUBJECTS, BATCH_103_BASELINE_SYNC } from '../data/batch103HinglishData.js';
 import { BATCH_104_ID, BATCH_104_SUBJECTS, BATCH_104_BASELINE_SYNC } from '../data/batch104EnglishData.js';
 
 const API_BASE = '/api';
-const CACHE_STORAGE_KEY = 'nnl_batch104_live_cache_v1';
-const SYNC_COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes between passive background syncs
+const SYNC_COOLDOWN_MS = 3 * 60 * 1000;
+
+const BATCH_CONFIGS = {
+  103: {
+    id: BATCH_103_ID,
+    title: 'Red Sapphire (Hinglish)',
+    subjects: BATCH_103_SUBJECTS,
+    baselineSync: BATCH_103_BASELINE_SYNC,
+    cacheKey: 'nnl_batch_103_live_cache_v1'
+  },
+  104: {
+    id: BATCH_104_ID,
+    title: 'Red Sapphire (English)',
+    subjects: BATCH_104_SUBJECTS,
+    baselineSync: BATCH_104_BASELINE_SYNC,
+    cacheKey: 'nnl_batch104_live_cache_v1'
+  }
+};
+
+export function getBatchIdFromName(batchName) {
+  return String(batchName || '').toUpperCase().includes('ENGLISH') ? 104 : 103;
+}
 
 function fetchWithTimeout(url, options = {}, ms = 12000) {
   const ctrl = new AbortController();
@@ -31,7 +53,7 @@ export async function refreshAccessToken() {
       return true;
     }
   } catch (e) {
-    console.warn('[Batch104Sync] Token refresh failed:', e);
+    console.warn('[SapphireSync] Token refresh failed:', e);
   }
   return false;
 }
@@ -82,7 +104,7 @@ async function fetchAllBatchPaginated(path, maxPages = 15) {
       url = nextUrl;
       page++;
     } catch (e) {
-      console.warn('[Batch104Sync] Pagination error:', path, e);
+      console.warn('[SapphireSync] Pagination error:', path, e);
       break;
     }
   }
@@ -90,7 +112,7 @@ async function fetchAllBatchPaginated(path, maxPages = 15) {
 }
 
 function cleanSubjectTitle(raw) {
-  return String(raw || '').replace(/\s*\(RB\)\s*/gi, ' ').replace(/\s+/g, ' ').trim();
+  return String(raw || '').replace(/\s*\((R|RB)\)\s*/gi, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function guessFaculty(subjectTitle, existingFaculty) {
@@ -108,10 +130,11 @@ function extractNoteUrl(obj) {
   return (obj?.handwritten_notes || obj?.notes || obj?.file || obj?.url || obj?.pdf_url || '').trim();
 }
 
-function normalizeTopicNotes(topic, baseSubTitle) {
+function normalizeTopicNotes(topic, baseSubTitle, batchId) {
   const notes = [];
   const topicTitle = topic.title || baseSubTitle;
   const dateStr = (topic.date || topic.created || '').slice(0, 10);
+  const tag = batchId === 103 ? 'r' : 'rb';
 
   const pushItems = (arr, categoryLabel, prefix) => {
     if (!Array.isArray(arr)) return;
@@ -120,7 +143,7 @@ function normalizeTopicNotes(topic, baseSubTitle) {
       if (!url) return;
       const title = (n.title || `${topicTitle} Notes ${idx + 1}`).trim();
       notes.push({
-        id: `${prefix}-${n.id || `${topic.id}-${idx}`}`,
+        id: `${tag}-${prefix}-${n.id || `${topic.id}-${idx}`}`,
         title,
         topic: topicTitle,
         date: dateStr,
@@ -131,8 +154,8 @@ function normalizeTopicNotes(topic, baseSubTitle) {
     });
   };
 
-  pushItems(topic.handwritten_notes, 'HANDWRITTEN', 'rb-hn');
-  pushItems(topic.notes, 'CLASS NOTES', 'rb-n');
+  pushItems(topic.handwritten_notes, 'HANDWRITTEN', 'hn');
+  pushItems(topic.notes, 'CLASS NOTES', 'n');
   return notes;
 }
 
@@ -163,6 +186,7 @@ function mergeSubjectLists(baselineSubjects, liveSubjects) {
   baselineSubjects.forEach(s => {
     byId.set(String(s.id), {
       ...s,
+      faculty: guessFaculty(s.title, s.faculty),
       notes: [...(s.notes || [])],
       tests: [...(s.tests || []).map(t => ({ ...t, isBatchTest: true, source: 'batch_cms' }))]
     });
@@ -202,7 +226,7 @@ function mergeSubjectLists(baselineSubjects, liveSubjects) {
   return Array.from(byId.values());
 }
 
-export function computeBatch104Totals(subjects) {
+export function computeBatchTotals(subjects) {
   let notes = 0;
   let tests = 0;
   let completedSubjects = 0;
@@ -213,53 +237,57 @@ export function computeBatch104Totals(subjects) {
     tests += tc;
     if (nc > 0 || tc > 0 || (s.videoCount || 0) > 0) completedSubjects++;
   });
-  return {
-    subjects: (subjects || []).length,
-    completedSubjects,
-    notes,
-    tests
-  };
+  return { subjects: (subjects || []).length, completedSubjects, notes, tests };
 }
 
-export function getBatch104BaselineState() {
+export function getBatchBaselineState(batchId = 104) {
+  const id = Number(batchId) === 103 ? 103 : 104;
+  const cfg = BATCH_CONFIGS[id];
+
   try {
-    const cachedRaw = localStorage.getItem(CACHE_STORAGE_KEY);
+    const cachedRaw = localStorage.getItem(cfg.cacheKey);
     if (cachedRaw) {
       const cached = JSON.parse(cachedRaw);
       if (Array.isArray(cached.subjects) && cached.subjects.length > 0) {
-        const merged = mergeSubjectLists(BATCH_104_SUBJECTS, cached.subjects);
+        const merged = mergeSubjectLists(cfg.subjects, cached.subjects);
         return {
+          batchId: id,
+          batchTitle: cfg.title,
           subjects: merged,
-          lastSyncedAt: cached.lastSyncedAt || BATCH_104_BASELINE_SYNC,
-          totals: computeBatch104Totals(merged),
+          lastSyncedAt: cached.lastSyncedAt || cfg.baselineSync,
+          totals: computeBatchTotals(merged),
           fromLiveCache: true
         };
       }
     }
   } catch (e) {
-    console.warn('[Batch104Sync] Cache read failed:', e);
+    console.warn(`[SapphireSync ${id}] Cache read failed:`, e);
   }
 
-  const subjects = mergeSubjectLists(BATCH_104_SUBJECTS, []);
+  const subjects = mergeSubjectLists(cfg.subjects, []);
   return {
+    batchId: id,
+    batchTitle: cfg.title,
     subjects,
-    lastSyncedAt: BATCH_104_BASELINE_SYNC,
-    totals: computeBatch104Totals(subjects),
+    lastSyncedAt: cfg.baselineSync,
+    totals: computeBatchTotals(subjects),
     fromLiveCache: false
   };
 }
 
-let inFlightSync = null;
+const inFlightByBatch = new Map();
 
-export async function syncBatch104Live({ force = false, onUpdate } = {}) {
-  const baselineState = getBatch104BaselineState();
+export async function syncBatchLive(batchId = 104, { force = false, onUpdate } = {}) {
+  const id = Number(batchId) === 103 ? 103 : 104;
+  const cfg = BATCH_CONFIGS[id];
+  const baselineState = getBatchBaselineState(id);
   const token = localStorage.getItem('nnl_access_token');
   if (!token) {
     return { status: 'no-auth', ...baselineState, newNotes: 0, newTests: 0 };
   }
 
   try {
-    const cachedRaw = localStorage.getItem(CACHE_STORAGE_KEY);
+    const cachedRaw = localStorage.getItem(cfg.cacheKey);
     if (!force && cachedRaw) {
       const cached = JSON.parse(cachedRaw);
       if (cached.lastSyncedAt && (Date.now() - new Date(cached.lastSyncedAt).getTime()) < SYNC_COOLDOWN_MS) {
@@ -268,11 +296,11 @@ export async function syncBatch104Live({ force = false, onUpdate } = {}) {
     }
   } catch {}
 
-  if (inFlightSync && !force) return inFlightSync;
+  if (inFlightByBatch.has(id) && !force) return inFlightByBatch.get(id);
 
-  inFlightSync = (async () => {
+  const p = (async () => {
     try {
-      const batchRes = await fetchWithAutoAuth(`/cms/batches/${BATCH_104_ID}/`);
+      const batchRes = await fetchWithAutoAuth(`/cms/batches/${id}/`);
       if (!batchRes || !batchRes.ok) {
         return { status: 'error', ...baselineState, newNotes: 0, newTests: 0 };
       }
@@ -291,14 +319,14 @@ export async function syncBatch104Live({ force = false, onUpdate } = {}) {
           const notes = [];
           const tests = [];
           let videoCount = 0;
+          const cleanTitle = cleanSubjectTitle(subj.title);
 
           topics.forEach(top => {
             if (Array.isArray(top.video)) videoCount += top.video.length;
-            notes.push(...normalizeTopicNotes(top, cleanSubjectTitle(subj.title)));
-            tests.push(...normalizeTopicTests(top, cleanSubjectTitle(subj.title)));
+            notes.push(...normalizeTopicNotes(top, cleanTitle, id));
+            tests.push(...normalizeTopicTests(top, cleanTitle));
           });
 
-          const cleanTitle = cleanSubjectTitle(subj.title);
           return {
             id: String(subj.id),
             title: cleanTitle,
@@ -316,22 +344,24 @@ export async function syncBatch104Live({ force = false, onUpdate } = {}) {
         });
       }
 
-      const mergedSubjects = mergeSubjectLists(BATCH_104_SUBJECTS, liveSubjects);
+      const mergedSubjects = mergeSubjectLists(cfg.subjects, liveSubjects);
       const prevTotals = baselineState.totals;
-      const nextTotals = computeBatch104Totals(mergedSubjects);
+      const nextTotals = computeBatchTotals(mergedSubjects);
       const nowIso = new Date().toISOString();
 
       try {
-        localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify({
+        localStorage.setItem(cfg.cacheKey, JSON.stringify({
           subjects: mergedSubjects,
           lastSyncedAt: nowIso
         }));
       } catch (e) {
-        console.warn('[Batch104Sync] Failed writing local cache:', e);
+        console.warn(`[SapphireSync ${id}] Cache write failed:`, e);
       }
 
       const payload = {
         status: 'synced',
+        batchId: id,
+        batchTitle: cfg.title,
         subjects: mergedSubjects,
         lastSyncedAt: nowIso,
         totals: nextTotals,
@@ -343,12 +373,18 @@ export async function syncBatch104Live({ force = false, onUpdate } = {}) {
       if (typeof onUpdate === 'function') onUpdate(payload);
       return payload;
     } catch (err) {
-      console.warn('[Batch104Sync] Sync error:', err);
+      console.warn(`[SapphireSync ${id}] Sync error:`, err);
       return { status: 'error', ...baselineState, newNotes: 0, newTests: 0 };
     } finally {
-      inFlightSync = null;
+      inFlightByBatch.delete(id);
     }
   })();
 
-  return inFlightSync;
+  inFlightByBatch.set(id, p);
+  return p;
 }
+
+// Backwards-compatible aliases
+export const getBatch104BaselineState = () => getBatchBaselineState(104);
+export const syncBatch104Live = (opts) => syncBatchLive(104, opts);
+export const computeBatch104Totals = computeBatchTotals;

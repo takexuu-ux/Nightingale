@@ -1,6 +1,6 @@
 // Nightingale Categorized Practice Tests, Question Bank & Batch 104 CBT Controller
 import { PRACTICE_TEST_SERIES, QBANK_SUBJECTS, TESTS_CATALOG_TOTALS } from './data/allTestsCatalog.js';
-import { getBatch104BaselineState, syncBatch104Live, fetchWithAutoAuth } from './utils/batch104Sync.js';
+import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth } from './utils/batch104Sync.js';
 
 const ALLOWED_SAPPHIRE_BATCHES = [
   'Red Sapphire (Hinglish)',
@@ -23,7 +23,10 @@ let currentSection = urlParams.get('section') === 'rb104'
 let currentOpenItem = null; // { kind: 'series' | 'qbank' | 'rb104', data }
 let currentSubFilter = 'ALL';
 let searchQuery = '';
-let batch104State = getBatch104BaselineState();
+let activeRbBatchId = Number(urlParams.get('batch')) === 104
+  ? 104
+  : (Number(urlParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch));
+let batch104State = getBatchBaselineState(activeRbBatchId);
 
 // CBT Quiz Runner State
 let quizQuestions = [];
@@ -125,9 +128,7 @@ function initHeaderAndDropdown() {
           dropdown.querySelectorAll('.dropdown-item').forEach(d => d.classList.toggle('active', d.getAttribute('data-batch') === activeBatch));
           dropdown.classList.add('hide');
 
-          if (getCleanBatchName(activeBatch).includes('English')) {
-            switchSection('rb104');
-          }
+          setRbBatchId(getBatchIdFromName(activeBatch), true);
         }
       });
     });
@@ -231,15 +232,48 @@ function updateRb104StatusUi(syncResult) {
   }
 }
 
+function updateRbToggleUi() {
+  const badge = document.getElementById('rb-tests-active-badge');
+  const b103 = document.getElementById('rb-tests-lang-103');
+  const b104 = document.getElementById('rb-tests-lang-104');
+  const isEng = activeRbBatchId === 104;
+  if (badge) badge.textContent = isEng ? 'Batch 104 • English' : 'Batch 103 • Hinglish';
+  if (b103) {
+    b103.style.background = !isEng ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.36), rgba(236, 72, 153, 0.28))' : 'transparent';
+    b103.style.borderColor = !isEng ? 'rgba(167, 139, 250, 0.45)' : 'transparent';
+  }
+  if (b104) {
+    b104.style.background = isEng ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.36), rgba(236, 72, 153, 0.28))' : 'transparent';
+    b104.style.borderColor = isEng ? 'rgba(167, 139, 250, 0.45)' : 'transparent';
+  }
+}
+
+function setRbBatchId(nextId, keepCurrentSection = false) {
+  activeRbBatchId = Number(nextId) === 104 ? 104 : 103;
+  batch104State = getBatchBaselineState(activeRbBatchId);
+  updateRbToggleUi();
+  updateStats();
+  updateRb104StatusUi(batch104State);
+  if (!keepCurrentSection && currentSection !== 'rb104') {
+    switchSection('rb104');
+  } else if (currentSection === 'rb104') {
+    if (currentOpenItem?.kind === 'rb104') closeDetailView();
+    renderCatalogGrid();
+  }
+  triggerBatch104TestsSync(false);
+}
+
 async function triggerBatch104TestsSync(force = false) {
   const statusEl = document.getElementById('rb104-tests-sync-status');
   const btn = document.getElementById('rb104-tests-sync-btn');
-  if (force && statusEl) statusEl.textContent = 'Syncing Batch 104 tests...';
+  const targetBatch = activeRbBatchId;
+  if (force && statusEl) statusEl.textContent = `Syncing Batch ${targetBatch} tests...`;
   if (force && btn) btn.disabled = true;
 
-  const res = await syncBatch104Live({
+  const res = await syncBatchLive(targetBatch, {
     force,
     onUpdate: (updated) => {
+      if (updated.batchId !== activeRbBatchId) return;
       batch104State = updated;
       updateStats();
       updateRb104StatusUi(updated);
@@ -254,10 +288,16 @@ async function triggerBatch104TestsSync(force = false) {
     }
   });
 
+  // Also keep companion Red Sapphire batch synced in background
+  const otherBatch = targetBatch === 103 ? 104 : 103;
+  syncBatchLive(otherBatch, { force });
+
   if (force && btn) btn.disabled = false;
-  batch104State = res;
-  updateStats();
-  updateRb104StatusUi(res);
+  if (targetBatch === activeRbBatchId) {
+    batch104State = res;
+    updateStats();
+    updateRb104StatusUi(res);
+  }
   return res;
 }
 
@@ -898,6 +938,9 @@ function initEventBindings() {
   document.getElementById('test-tab-qbank')?.addEventListener('click', () => switchSection('qbank'));
   document.getElementById('test-tab-rb104')?.addEventListener('click', () => switchSection('rb104'));
   document.getElementById('rb104-tests-sync-btn')?.addEventListener('click', () => triggerBatch104TestsSync(true));
+  document.getElementById('rb-tests-lang-103')?.addEventListener('click', () => setRbBatchId(103));
+  document.getElementById('rb-tests-lang-104')?.addEventListener('click', () => setRbBatchId(104));
+  updateRbToggleUi();
   document.getElementById('custom-alert-ok-btn')?.addEventListener('click', () => {
     document.getElementById('custom-alert-modal')?.classList.add('hide');
   });

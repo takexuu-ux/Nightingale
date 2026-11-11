@@ -133,15 +133,19 @@
             </button>
             <button id="sec-tab-rb104" class="section-mode-tab" data-section="rb104">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
-              <span>Red Sapphire (English) — Past Classes</span>
+              <span>Red Sapphire Live Batch — Past Classes</span>
               <span id="sec-count-rb104" class="section-mode-count">—</span>
             </button>
           </div>
 
-          <!-- Dedicated Red Sapphire English Live Status Bar (shown in RB104 mode) -->
+          <!-- Dedicated Red Sapphire Live Status Bar (Hinglish Batch 103 + English Batch 104) -->
           <div id="rb104-status-bar" class="rb-section-header-bar hide">
-            <div class="rb-section-title-wrap">
-              <span class="rb-section-badge">Batch 104 • Ongoing</span>
+            <div class="rb-section-title-wrap" style="flex-wrap:wrap;">
+              <span id="rb-active-batch-badge" class="rb-section-badge">Batch 103 • Hinglish</span>
+              <div style="display:inline-flex;gap:0.35rem;background:rgba(15,23,42,0.7);padding:3px;border-radius:999px;border:1px solid rgba(167,139,250,0.22);">
+                <button id="rb-lang-103" class="rb-sync-btn" style="padding:0.24rem 0.65rem;font-size:0.7rem;" data-rb-id="103">Hinglish (103)</button>
+                <button id="rb-lang-104" class="rb-sync-btn" style="padding:0.24rem 0.65rem;font-size:0.7rem;background:transparent;border-color:transparent;" data-rb-id="104">English (104)</button>
+              </div>
               <span id="rb104-summary-text" style="font-size: 0.84rem; font-weight: 600; color: #f1f5f9;">
                 Completed subjects &amp; live class notes + tests synced automatically
               </span>
