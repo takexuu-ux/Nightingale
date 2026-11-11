@@ -21,15 +21,25 @@ const releaseNotes = notesIdx >= 0 && args[notesIdx + 1]
 console.log('1. Building Hinglish-only Vite bundle...');
 execSync('npm run build:apk', { cwd: ROOT, stdio: 'inherit' });
 
-console.log('2. Packaging hinglish-bundle.zip...');
+console.log('2. Packaging lightweight hinglish-bundle.zip (skipping static media)...');
 fs.rmSync(OTA_TMP, { recursive: true, force: true });
 fs.mkdirSync(OTA_TMP, { recursive: true });
 
+// Exclude unchanged large static background files so Web OTA stays ~350 KB
+const otaWebStage = path.join(OTA_TMP, 'web_files');
+fs.mkdirSync(otaWebStage, { recursive: true });
+for (const entry of fs.readdirSync(`${ROOT}/dist`)) {
+  const lower = entry.toLowerCase();
+  if (lower.endsWith('.mp4') || lower === 'bg.svg' || lower === 'nightingale.jpg' || lower === 'nightingale.png') continue;
+  fs.cpSync(path.join(`${ROOT}/dist`, entry), path.join(otaWebStage, entry), { recursive: true });
+}
+
 const zipPath = path.join(OTA_TMP, 'hinglish-bundle.zip');
 execSync(
-  `powershell -NoProfile -Command "Compress-Archive -Path '${ROOT}/dist/*' -DestinationPath '${zipPath}' -Force"`,
+  `powershell -NoProfile -Command "Compress-Archive -Path '${otaWebStage}/*' -DestinationPath '${zipPath}' -Force"`,
   { stdio: 'inherit' }
 );
+fs.rmSync(otaWebStage, { recursive: true, force: true });
 
 // Check current manifest version on ota-hinglish if present
 let nextWebVersion = 1;

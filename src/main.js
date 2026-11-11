@@ -1,4 +1,4 @@
-import { IS_HINGLISH_APK } from './config/appMode.js';
+import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/appMode.js';
 
 // NNL ONE Web Client App Logic
 
@@ -4012,6 +4012,7 @@ otpForm.addEventListener('submit', async (e) => {
     if (refreshToken) localStorage.setItem('nnl_refresh_token', refreshToken);
     localStorage.setItem('nnl_phone', phone);
     sessionStorage.removeItem('nnl_explicit_logout');
+    persistApkSession();
 
     // Smooth animation: Fade out 6 boxes into 1 green button with checkmark
     const container = document.getElementById('otp-boxes-container');
@@ -4134,6 +4135,7 @@ async function refreshAccessToken() {
 
     localStorage.setItem('nnl_access_token', newToken);
     if (data.refresh) localStorage.setItem('nnl_refresh_token', data.refresh);
+    persistApkSession();
     console.log('Access token refreshed silently.');
     return true;
   } catch (e) {
@@ -4147,6 +4149,7 @@ function handleLogout() {
   sessionStorage.setItem('nnl_explicit_logout', 'true');
   localStorage.removeItem('nnl_access_token');
   localStorage.removeItem('nnl_refresh_token');
+  clearApkSession();
   // Preserving schedule cache so re-logging in renders the timetable in 0ms without waiting!
   // Keep nnl_phone to make re-login easier, unless it was a Guest session!
   if (localStorage.getItem('nnl_phone') === 'Guest User') {
