@@ -4965,6 +4965,16 @@ function openRecordingPlayer(recording) {
       .then(data => {
         if (loader) loader.remove();
         if (data && data.otp && data.playbackInfo) {
+          if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideo === 'function') {
+            viewer.classList.add('hide');
+            window.AndroidVideoBridge.playVideo(
+              data.otp,
+              data.playbackInfo,
+              recording.title || 'Recorded Lecture',
+              recording.instructor || 'NNL Faculty'
+            );
+            return;
+          }
           const iframe = document.createElement('iframe');
           iframe.id = 'recording-cipher-iframe';
           iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;
