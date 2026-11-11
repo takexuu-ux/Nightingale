@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/src/style.css" />
     <title>Nightingale — Notes &amp; PDFs</title>
   </head>
-  <body>
+  <body class="notes-theme-page">
     <!-- Battlefield Background -->
     <div id="nightingale-bg-container" class="nightingale-bg-container">
       <div class="bg-drift-wrapper">
@@ -84,35 +84,28 @@
     <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
       <div class="notes-page-container">
 
-        <!-- Hero Header -->
-        <section class="notes-hero-header">
-          <div>
-            <div class="notes-hero-badge">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-              <span>ACADEMIC REPOSITORY</span>
-            </div>
-            <h1 class="notes-hero-title">Study Notes &amp; PDFs</h1>
-            <p class="notes-hero-subtitle">High-yield faculty handouts, day-wise class notes, clinical summaries, and revision guides.</p>
-          </div>
-
-          <div class="notes-hero-stats">
-            <div class="notes-stat-pill">
-              <strong id="stat-subjects-count">—</strong>
-              <span>Subjects</span>
-            </div>
-            <div class="notes-stat-pill">
-              <strong id="stat-notes-count">—</strong>
-              <span>PDFs Ready</span>
-            </div>
-            <div class="notes-stat-pill accent-pill">
-              <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
+        <!-- Clean Compact Header: "Notes" + Stats + Search Box -->
+        <section class="notes-hero-header" style="align-items: center; justify-content: space-between; gap: 1.25rem; margin-bottom: 1.85rem;">
+          <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+              <h1 class="notes-hero-title" style="margin: 0; font-size: 1.65rem;">Notes</h1>
+              <div class="notes-hero-stats">
+                <div class="notes-stat-pill">
+                  <strong id="stat-subjects-count">—</strong>
+                  <span>Subjects</span>
+                </div>
+                <div class="notes-stat-pill">
+                  <strong id="stat-notes-count">—</strong>
+                  <span>Notes</span>
+                </div>
+                <div class="notes-stat-pill accent-pill">
+                  <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
 
-        <!-- Fast Controls Bar: Real-time Search + Quick Category Filters -->
-        <section class="notes-controls-bar">
-          <div class="notes-search-wrapper">
+          <div class="notes-search-wrapper" style="min-width: 280px; max-width: 440px; width: 100%;">
             <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
             </svg>
@@ -120,24 +113,48 @@
               type="text" 
               id="notes-search-input" 
               class="notes-search-input" 
-              placeholder="Search notes, subjects, or topics (e.g. Pharmacology, ECG, Cardiac)..." 
+              placeholder="Search subjects, topics, or PDFs..." 
               autocomplete="off" 
             />
-            <button id="notes-search-clear" class="notes-search-clear" title="Clear Search">✕</button>
-          </div>
-
-          <div class="notes-filter-chips">
-            <button class="filter-chip active" data-filter="all">All Documents</button>
-            <button class="filter-chip" data-filter="handwritten" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">✍️ Handwritten</button>
-            <button class="filter-chip" data-filter="oncology" style="border-color: rgba(255, 30, 56, 0.4); color: #ff3b52;">🎗️ Oncology</button>
-            <button class="filter-chip" data-filter="liveclass">Live Class</button>
-            <button class="filter-chip" data-filter="revision">Revision</button>
-            <button class="filter-chip" data-filter="schedule" style="border-color: rgba(0, 243, 208, 0.4); color: #00f3d0;">📅 Red Sapphire Timetable</button>
+            <button id="notes-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
           </div>
         </section>
 
         <!-- VIEW 1: All Subjects Catalog Grid -->
         <section id="notes-catalog-view" class="notes-catalog-view">
+          <!-- Section Switcher: Conceptual Notes vs Red Sapphire (English) Live Batch -->
+          <div class="section-mode-tabs">
+            <button id="sec-tab-master" class="section-mode-tab active" data-section="master">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>Conceptual Library (Plan 77)</span>
+              <span id="sec-count-master" class="section-mode-count">1,319</span>
+            </button>
+            <button id="sec-tab-rb104" class="section-mode-tab" data-section="rb104">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+              <span>Red Sapphire (English) — Past Classes</span>
+              <span id="sec-count-rb104" class="section-mode-count">—</span>
+            </button>
+          </div>
+
+          <!-- Dedicated Red Sapphire English Live Status Bar (shown in RB104 mode) -->
+          <div id="rb104-status-bar" class="rb-section-header-bar hide">
+            <div class="rb-section-title-wrap">
+              <span class="rb-section-badge">Batch 104 • Ongoing</span>
+              <span id="rb104-summary-text" style="font-size: 0.84rem; font-weight: 600; color: #f1f5f9;">
+                Completed subjects &amp; live class notes + tests synced automatically
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <span id="rb104-sync-status" class="rb-sync-status-pill">Auto-sync ready</span>
+              <button id="rb104-sync-btn" class="rb-sync-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                <span>Sync Live</span>
+              </button>
+            </div>
+          </div>
+
           <div id="subjects-grid" class="notes-subject-grid">
             <div class="cp-loading" style="grid-column: 1 / -1; padding: 5rem 2rem; text-align: center;">
               <div class="spinner"></div>
@@ -148,26 +165,28 @@
 
         <!-- VIEW 2: Dedicated Subject Drill-down View (Hidden by default) -->
         <section id="notes-subject-view" class="notes-subject-view hide">
-          <div class="notes-back-nav">
-            <button id="btn-back-subjects" class="btn-notes-back">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-              <span>Back to All Subjects</span>
-            </button>
-            <span id="subject-top-batch-label" style="font-size:0.75rem;font-family:var(--font-display);color:var(--accent-red);letter-spacing:0.05em;text-transform:uppercase;"></span>
-          </div>
+          <div class="notes-detail-compact-bar">
+            <div class="compact-bar-left">
+              <button id="btn-back-subjects" class="btn-notes-back">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                <span>Back</span>
+              </button>
+            </div>
 
-          <div class="notes-detail-header-card">
-            <div class="notes-detail-title-group">
-              <div style="font-family: var(--font-display); font-size: 0.65rem; color: var(--accent-red); letter-spacing: 0.15em; font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem;">// SUBJECT STUDY MATERIAL</div>
+            <div class="compact-bar-center">
               <h2 id="subject-detail-title">Subject Title</h2>
-              <div class="notes-detail-meta">
-                <span id="subject-detail-count" class="notes-detail-pill pill-count">0 PDFs</span>
-                <span id="subject-detail-batch" class="notes-detail-pill">Red Sapphire Batch (Hinglish)</span>
-              </div>
+              <span id="subject-detail-count" class="notes-detail-pill pill-count">0 PDFs</span>
+            </div>
+
+            <div class="compact-bar-right">
+              <span id="subject-detail-teacher" class="compact-teacher-pill">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="subject-detail-teacher-name">Faculty</span>
+              </span>
             </div>
           </div>
 
-          <!-- Document List Container -->
+          <!-- Document List Container (Topic filter buttons + PDFs) -->
           <div id="notes-doc-list" class="notes-doc-list">
             <!-- Populated dynamically via JS -->
           </div>

@@ -24,7 +24,8 @@ export default defineConfig({
       input: {
         main: './index.html',
         allVideos: './all-videos.html',
-        notes: './notes.html'
+        notes: './notes.html',
+        tests: './tests.html'
       }
     }
   },

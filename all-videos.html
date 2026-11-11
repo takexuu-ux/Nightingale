@@ -541,7 +541,9 @@
           Your browser does not support video playback.
         </video>
         <div id="recording-no-url" class="recording-no-url hide">
-          <div style="font-size:3rem;margin-bottom:1rem;">📹</div>
+          <div style="width:56px;height:56px;margin:0 auto 1rem;border-radius:16px;background:rgba(0,243,208,0.1);border:1px solid rgba(0,243,208,0.3);display:flex;align-items:center;justify-content:center;color:#00f3d0;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+          </div>
           <h3 id="recording-error-title" style="font-family:var(--font-display);font-size:1rem;margin-bottom:0.5rem;">Playback Preparation</h3>
           <p id="recording-error-desc" style="color:var(--text-secondary);font-size:0.85rem;">Securing session stream via VdoCipher DRM...</p>
           <button id="recording-retry-btn" class="btn" style="margin-top:1rem;padding:0.6rem 1.4rem;background:#00f3d0;color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;">Retry Playback</button>

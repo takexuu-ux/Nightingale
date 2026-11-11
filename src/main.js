@@ -109,7 +109,10 @@ let flowToken = sessionStorage.getItem('nnl_flow_token') || ''; // Returned by s
 // Read initial tab from URL query if present (e.g. /?tab=tests)
 const initialUrlParams = new URLSearchParams(window.location.search);
 const requestedTab = initialUrlParams.get('tab');
-let activeTab = (requestedTab === 'tests' || requestedTab === 'subjects' || requestedTab === 'recordings') ? requestedTab : 'live';
+if (requestedTab === 'tests') {
+  window.location.replace('/tests.html');
+}
+let activeTab = (requestedTab === 'subjects' || requestedTab === 'recordings') ? requestedTab : 'live';
 let classesData = [];
 let zoomClient = null;
 let zoomSdkLoaded = false;
@@ -4204,9 +4207,9 @@ if (tabNotes) {
 }
 
 if (tabTests) {
-  tabTests.addEventListener('click', () => {
-    setActiveTabNav('tests');
-    loadDashboard();
+  tabTests.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = '/tests.html';
   });
 }
 
@@ -4778,7 +4781,7 @@ async function renderVideoLibrary(isSilent = false) {
       subjectAccordion.innerHTML = `
         <div class="subject-accordion-header">
           <div class="subject-accordion-title">
-            <div class="subject-icon">📚</div>
+            <div class="subject-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
             <span class="subject-name">${subjectName}</span>
             <span class="subject-count">(${subjectVids.length} lecture${subjectVids.length !== 1 ? 's' : ''})</span>
           </div>
@@ -5139,7 +5142,7 @@ async function renderSubjectLibrary(isSilent = false) {
       subjectAccordion.innerHTML = `
         <div class="subject-accordion-header">
           <div class="subject-accordion-title">
-            <div class="subject-icon">📚</div>
+            <div class="subject-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
             <span class="subject-name">${sub.title}</span>
             <span class="subject-count" id="sub-meta-count-${sub.id}"></span>
           </div>
@@ -5152,7 +5155,7 @@ async function renderSubjectLibrary(isSilent = false) {
             <!-- Videos column -->
             <div class="material-column" id="sub-vids-${sub.id}" style="${activeTab === 'notes' || activeTab === 'tests' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
-                📹 Recorded Classes
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>Recorded Classes
               </div>
               <div class="full-loader" style="padding: 1rem;"><div class="spinner"></div></div>
             </div>
@@ -5160,7 +5163,7 @@ async function renderSubjectLibrary(isSilent = false) {
             <!-- Notes column -->
             <div class="material-column" id="sub-notes-${sub.id}" style="${activeTab === 'tests' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
-                📄 Class Notes
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Class Notes
               </div>
               <div class="full-loader" style="padding: 1rem;"><div class="spinner"></div></div>
             </div>
@@ -5168,7 +5171,7 @@ async function renderSubjectLibrary(isSilent = false) {
             <!-- Tests column -->
             <div class="material-column" id="sub-tests-${sub.id}" style="${activeTab === 'notes' ? 'display: none !important;' : ''}">
               <div class="material-column-title">
-                📝 Practice Tests
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Practice Tests
               </div>
               <div class="full-loader" style="padding: 1rem;"><div class="spinner"></div></div>
             </div>
@@ -5441,7 +5444,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     }
 
     // 1. Populate videos
-    let vidsHtml = '<div class="material-column-title">📹 Recorded Classes</div>';
+    let vidsHtml = '<div class="material-column-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>Recorded Classes</div>';
     if (videos.length === 0) {
       vidsHtml += '<p style="color: var(--text-muted); font-size: 0.75rem; padding: 1rem 0; margin: 0; text-align: center;">No recorded lectures available for this subject.</p>';
     } else {
@@ -5476,7 +5479,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     });
 
     // 2. Populate notes
-    let notesHtml = '<div class="material-column-title">📄 Class Notes & Handouts</div>';
+    let notesHtml = '<div class="material-column-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Class Notes &amp; Handouts</div>';
     if (notes.length === 0) {
       notesHtml += '<p style="color: var(--text-muted); font-size: 0.75rem; padding: 1rem 0; margin: 0; text-align: center;">No PDF notes available for this subject.</p>';
     } else {
@@ -5511,7 +5514,7 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
     subNotes.innerHTML = notesHtml;
 
     // 3. Populate tests
-    let testsHtml = '<div class="material-column-title">📝 Practice & CBT Tests</div>';
+    let testsHtml = '<div class="material-column-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Practice &amp; CBT Tests</div>';
     if (tests.length === 0) {
       testsHtml += '<p style="color: var(--text-muted); font-size: 0.7rem; padding: 0.5rem 0; margin: 0; text-align: center;">No quizzes available.</p>';
     } else {
@@ -5554,9 +5557,9 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
 
   } catch (error) {
     console.error('Error loading subject materials:', error);
-    subVids.innerHTML = `<div class="material-column-title">📹 Recorded Classes</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
-    subNotes.innerHTML = `<div class="material-column-title">📄 Class Notes</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
-    subTests.innerHTML = `<div class="material-column-title">📝 Practice Tests</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
+    subVids.innerHTML = `<div class="material-column-title">Recorded Classes</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
+    subNotes.innerHTML = `<div class="material-column-title">Class Notes</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
+    subTests.innerHTML = `<div class="material-column-title">Practice Tests</div><p style="color:#f87171; font-size:0.7rem; text-align:center; padding:0.5rem 0;">Sync failed: ${error.message}</p>`;
   }
 }
 
@@ -5564,82 +5567,102 @@ async function fetchSubjectMaterials(batchId, subjectId, accordionEl) {
 // PRACTICE TESTS HUB (DAILY TATs, BENCHMARK CTATs, & ARCHIVE CARDS)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Bespoke vector SVG icon system (zero default emojis)
+function getCustomSubjectIconSvg(groupId) {
+  const icons = {
+    ap: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l1.5-3 2 6 1.5-3h6.27"/></svg>',
+    bn: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.4l-5.4 9a1.8 1.8 0 0 0 1.5 2.6h11.8a1.8 1.8 0 0 0 1.5-2.6L14 9.4V3"/></svg>',
+    nrs: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>',
+    ahn: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>',
+    ped: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>',
+    pharma: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>',
+    fon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v4"/><path d="M14 14h-4"/><path d="M14 18h-4"/><path d="M14 8h-4"/><path d="M18 12h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h2"/><path d="M18 22V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v18"/></svg>',
+    chn: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    mhn: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z"/></svg>',
+    obg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>',
+    micro: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>',
+    benchmark: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
+    other: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
+  };
+  return icons[groupId] || icons.other;
+}
+
 // Helper to categorize batch tests by subject
 function getSubjectGroupForTest(test) {
   const tUpper = (test.title || '').toUpperCase();
   if (tUpper.includes('A&P') || tUpper.includes('ANATOMY') || tUpper.includes('PHYSIO')) {
-    return { id: 'ap', name: 'Anatomy & Physiology', icon: '🫀' };
+    return { id: 'ap', name: 'Anatomy & Physiology', icon: getCustomSubjectIconSvg('ap') };
   }
   if (tUpper.includes('B&N') || tUpper.includes('BIOCHEM') || tUpper.includes('NUTRITION')) {
-    return { id: 'bn', name: 'Biochemistry & Nutrition', icon: '🥗' };
+    return { id: 'bn', name: 'Biochemistry & Nutrition', icon: getCustomSubjectIconSvg('bn') };
   }
   if (tUpper.includes('NRS') || tUpper.includes('RESEARCH') || tUpper.includes('STATISTIC')) {
-    return { id: 'nrs', name: 'Nursing Research & Statistics', icon: '📊' };
+    return { id: 'nrs', name: 'Nursing Research & Statistics', icon: getCustomSubjectIconSvg('nrs') };
   }
   if (tUpper.includes('AHN') || tUpper.includes('MEDICINE') || tUpper.includes('SURGERY') || tUpper.includes('ADULT HEALTH') || tUpper.includes('MSN')) {
-    return { id: 'ahn', name: 'Adult Health Nursing (Med-Surg)', icon: '🩺' };
+    return { id: 'ahn', name: 'Adult Health Nursing (Med-Surg)', icon: getCustomSubjectIconSvg('ahn') };
   }
   if (tUpper.includes('PEDIATRIC') || tUpper.includes('CHILD') || tUpper.includes('PEDIA')) {
-    return { id: 'ped', name: 'Child Health Nursing (Pediatrics)', icon: '👶' };
+    return { id: 'ped', name: 'Child Health Nursing (Pediatrics)', icon: getCustomSubjectIconSvg('ped') };
   }
   if (tUpper.includes('PHARMA')) {
-    return { id: 'pharma', name: 'Pharmacology', icon: '💊' };
+    return { id: 'pharma', name: 'Pharmacology', icon: getCustomSubjectIconSvg('pharma') };
   }
   if (tUpper.includes('FON') || tUpper.includes('FOUNDATION')) {
-    return { id: 'fon', name: 'Nursing Foundation (FON)', icon: '🏥' };
+    return { id: 'fon', name: 'Nursing Foundation (FON)', icon: getCustomSubjectIconSvg('fon') };
   }
   if (tUpper.includes('CHN') || tUpper.includes('COMMUNITY')) {
-    return { id: 'chn', name: 'Community Health Nursing (CHN)', icon: '🏘️' };
+    return { id: 'chn', name: 'Community Health Nursing (CHN)', icon: getCustomSubjectIconSvg('chn') };
   }
   if (tUpper.includes('MHN') || tUpper.includes('PSYCHIATR') || tUpper.includes('MENTAL')) {
-    return { id: 'mhn', name: 'Mental Health Nursing (MHN)', icon: '🧠' };
+    return { id: 'mhn', name: 'Mental Health Nursing (MHN)', icon: getCustomSubjectIconSvg('mhn') };
   }
   if (tUpper.includes('OBG') || tUpper.includes('MIDWIFERY') || tUpper.includes('OBSTETRIC')) {
-    return { id: 'obg', name: 'Midwifery & Obstetrical Nursing (OBG)', icon: '🤰' };
+    return { id: 'obg', name: 'Midwifery & Obstetrical Nursing (OBG)', icon: getCustomSubjectIconSvg('obg') };
   }
   if (tUpper.includes('MICROBIO')) {
-    return { id: 'micro', name: 'Microbiology', icon: '🔬' };
+    return { id: 'micro', name: 'Microbiology', icon: getCustomSubjectIconSvg('micro') };
   }
   if (tUpper.includes('CSAT') || tUpper.includes('CPAT') || tUpper.includes('GRAND') || tUpper.includes('BENCHMARK')) {
-    return { id: 'benchmark', name: 'Cumulative Subject Benchmarks (CSAT / CPAT)', icon: '🏆' };
+    return { id: 'benchmark', name: 'Cumulative Subject Benchmarks (CSAT / CPAT)', icon: getCustomSubjectIconSvg('benchmark') };
   }
-  return { id: 'other', name: 'Clinical & Nursing Practice', icon: '📝' };
+  return { id: 'other', name: 'Clinical & Nursing Practice', icon: getCustomSubjectIconSvg('other') };
 }
 
 // Helper to categorize live class into a subject
 function getSubjectGroupForClass(classItem) {
   const title = ((classItem.title || classItem.topic || '') + ' ' + (classItem.subject?.title || classItem.subject_name || '')).toUpperCase();
   if (title.includes('ANATOMY') || title.includes('PHYSIO') || title.includes('A&P')) {
-    return { id: 'ap', name: 'Anatomy & Physiology', icon: '🫀' };
+    return { id: 'ap', name: 'Anatomy & Physiology', icon: getCustomSubjectIconSvg('ap') };
   }
   if (title.includes('BIOCHEM') || title.includes('NUTRITION') || title.includes('B&N')) {
-    return { id: 'bn', name: 'Biochemistry & Nutrition', icon: '🥗' };
+    return { id: 'bn', name: 'Biochemistry & Nutrition', icon: getCustomSubjectIconSvg('bn') };
   }
   if (title.includes('RESEARCH') || title.includes('STATISTIC') || title.includes('NRS')) {
-    return { id: 'nrs', name: 'Nursing Research & Statistics', icon: '📊' };
+    return { id: 'nrs', name: 'Nursing Research & Statistics', icon: getCustomSubjectIconSvg('nrs') };
   }
   if (title.includes('MEDICINE') || title.includes('SURGERY') || title.includes('AHN') || title.includes('ADULT')) {
-    return { id: 'ahn', name: 'Adult Health Nursing (Med-Surg)', icon: '🩺' };
+    return { id: 'ahn', name: 'Adult Health Nursing (Med-Surg)', icon: getCustomSubjectIconSvg('ahn') };
   }
   if (title.includes('PEDIATRIC') || title.includes('CHILD') || title.includes('PEDIA')) {
-    return { id: 'ped', name: 'Child Health Nursing (Pediatrics)', icon: '👶' };
+    return { id: 'ped', name: 'Child Health Nursing (Pediatrics)', icon: getCustomSubjectIconSvg('ped') };
   }
   if (title.includes('PHARMA')) {
-    return { id: 'pharma', name: 'Pharmacology', icon: '💊' };
+    return { id: 'pharma', name: 'Pharmacology', icon: getCustomSubjectIconSvg('pharma') };
   }
   if (title.includes('FOUNDATION') || title.includes('FON')) {
-    return { id: 'fon', name: 'Nursing Foundation (FON)', icon: '🏥' };
+    return { id: 'fon', name: 'Nursing Foundation (FON)', icon: getCustomSubjectIconSvg('fon') };
   }
   if (title.includes('COMMUNITY') || title.includes('CHN')) {
-    return { id: 'chn', name: 'Community Health Nursing (CHN)', icon: '🏘️' };
+    return { id: 'chn', name: 'Community Health Nursing (CHN)', icon: getCustomSubjectIconSvg('chn') };
   }
   if (title.includes('PSYCHIATR') || title.includes('MENTAL') || title.includes('MHN')) {
-    return { id: 'mhn', name: 'Mental Health Nursing (MHN)', icon: '🧠' };
+    return { id: 'mhn', name: 'Mental Health Nursing (MHN)', icon: getCustomSubjectIconSvg('mhn') };
   }
   if (title.includes('OBG') || title.includes('MIDWIFERY') || title.includes('OBSTETRIC')) {
-    return { id: 'obg', name: 'Midwifery & Obstetrical Nursing (OBG)', icon: '🤰' };
+    return { id: 'obg', name: 'Midwifery & Obstetrical Nursing (OBG)', icon: getCustomSubjectIconSvg('obg') };
   }
-  return { id: 'other', name: 'Clinical Lecture', icon: '🎓' };
+  return { id: 'other', name: 'Clinical Lecture', icon: getCustomSubjectIconSvg('other') };
 }
 
 // Helper to extract day number from title (e.g. Day 1, TAT 1, Part 1)
@@ -5803,13 +5826,13 @@ async function renderPracticeTestsHub(isSilent = false) {
             <div class="tat-spotlight-title-area">
               <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <span class="cyber-hero-badge">// DAILY TOPIC ASSESSMENT (TAT)</span>
-                <span style="font-size: 0.68rem; background: rgba(0, 243, 208, 0.12); color: #00f3d0; border: 1px solid rgba(0, 243, 208, 0.3); padding: 0.2rem 0.55rem; border-radius: 99px; font-weight: 800; letter-spacing: 0.04em;">
-                  ${isMatchingClassToday ? '⚡ ACTIVE TODAY\'S TAT' : 'LATEST ASSIGNED TAT'}
+                <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.68rem; background: rgba(0, 243, 208, 0.12); color: #00f3d0; border: 1px solid rgba(0, 243, 208, 0.3); padding: 0.2rem 0.55rem; border-radius: 99px; font-weight: 800; letter-spacing: 0.04em;">
+                  ${isMatchingClassToday ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ACTIVE TODAY\'S TAT' : 'LATEST ASSIGNED TAT'}
                 </span>
               </div>
               <h2 class="tat-spotlight-title">${matchingTat.title}</h2>
               <div class="tat-linked-lecture-pill">
-                <span>🎓 Linked Lecture:</span>
+                <span style="display:inline-flex;align-items:center;gap:0.35rem;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Linked Lecture:</span>
                 <strong>${classTitleStr}</strong>
                 <span style="opacity: 0.6;">• ${timeStr}</span>
               </div>
@@ -6109,7 +6132,7 @@ async function loadQuiz(testId, testTitle, duration, initialMode = 'practice') {
       // In practice mode, untimed
       const timerEl = document.getElementById('quiz-timer');
       if (timerEl) {
-        timerEl.textContent = '⚡ PRACTICE';
+        timerEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>PRACTICE';
         timerEl.style.color = '#00f3d0';
         timerEl.style.borderColor = 'rgba(0, 243, 208, 0.35)';
       }
@@ -6133,14 +6156,14 @@ function updateQuizModePill() {
   if (currentQuizMode === 'exam') {
     modeToggleBtn.classList.add('exam-mode');
     if (modeLabelEl) modeLabelEl.textContent = 'Exam Mode';
-    if (modeIconEl) modeIconEl.textContent = '⏱️';
+    if (modeIconEl) modeIconEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/></svg>';
   } else if (currentQuizMode === 'review') {
     modeToggleBtn.classList.add('review-mode');
     if (modeLabelEl) modeLabelEl.textContent = 'Review Mode';
-    if (modeIconEl) modeIconEl.textContent = '📖';
+    if (modeIconEl) modeIconEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
   } else {
     if (modeLabelEl) modeLabelEl.textContent = 'Practice Mode';
-    if (modeIconEl) modeIconEl.textContent = '⚡';
+    if (modeIconEl) modeIconEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
   }
 }
 
@@ -6148,7 +6171,9 @@ function updateTimerDisplay() {
   const el = document.getElementById('quiz-timer');
   if (!el) return;
   if (currentQuizMode !== 'exam') {
-    el.textContent = currentQuizMode === 'review' ? '📖 REVIEW' : '⚡ PRACTICE';
+    el.innerHTML = currentQuizMode === 'review'
+      ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>REVIEW'
+      : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>PRACTICE';
     el.style.color = '#00f3d0';
     el.style.borderColor = 'rgba(0,243,208,0.35)';
     return;
@@ -6205,13 +6230,13 @@ function renderQuestion() {
     if (isPracticeOrReview && hasAnswered) {
       if (isSelected && isCorrect) {
         btnClass += ' correct selected';
-        statusTagHtml = '<span class="quiz-option-status-tag correct">✓ Correct</span>';
+        statusTagHtml = '<span class="quiz-option-status-tag correct" style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Correct</span>';
       } else if (isSelected && !isCorrect) {
         btnClass += ' incorrect selected';
-        statusTagHtml = '<span class="quiz-option-status-tag incorrect">✗ Your Answer</span>';
+        statusTagHtml = '<span class="quiz-option-status-tag incorrect" style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Your Answer</span>';
       } else if (!isSelected && isCorrect) {
         btnClass += ' correct';
-        statusTagHtml = '<span class="quiz-option-status-tag correct">✓ Correct Answer</span>';
+        statusTagHtml = '<span class="quiz-option-status-tag correct" style="display:inline-flex;align-items:center;gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Correct Answer</span>';
       }
 
       // Show selection percentage if available from API

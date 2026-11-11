@@ -488,8 +488,9 @@ function renderSubjectLecturesList(lectures) {
       </div>
       <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
         ${rec.notePdfUrl ? `
-          <a href="${rec.notePdfUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open Handwritten Notes PDF: ${rec.notePdfTitle}" style="padding: 0.45rem 0.85rem; background: rgba(168, 85, 247, 0.14); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 10px; color: #d8b4fe; font-size: 0.72rem; font-weight: 600; text-decoration: none; white-space: nowrap;">
-            Notes PDF
+          <a href="${rec.notePdfUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open Handwritten Notes PDF: ${rec.notePdfTitle}" class="sd-note-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Notes PDF</span>
           </a>
         ` : ''}
         <button class="sd-lecture-btn" data-rec-id="${rec.id}">
@@ -581,11 +582,13 @@ function openRecordingPlayer(recording) {
   if (viewerHeader && recording.notePdfUrl) {
     const noteLink = document.createElement('a');
     noteLink.id = 'recording-viewer-note-btn';
+    noteLink.className = 'sd-note-btn';
     noteLink.href = recording.notePdfUrl;
     noteLink.target = '_blank';
     noteLink.rel = 'noopener noreferrer';
-    noteLink.style.cssText = 'padding: 0.45rem 0.9rem; background: rgba(168, 85, 247, 0.16); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 10px; color: #e9d5ff; font-size: 0.75rem; font-weight: 700; text-decoration: none; margin-left: auto; margin-right: 0.75rem; white-space: nowrap;';
-    noteLink.textContent = 'Open Lecture Notes PDF';
+    noteLink.style.marginLeft = 'auto';
+    noteLink.style.marginRight = '0.75rem';
+    noteLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Open Lecture Notes PDF</span>`;
     const closeBtn = viewerHeader.querySelector('#close-recording-viewer');
     if (closeBtn) {
       viewerHeader.insertBefore(noteLink, closeBtn);

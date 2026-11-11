@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Nightingale Categorized Practice Tests, Question Bank &amp; Red Sapphire Live Assessments." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>Nightingale — Practice Tests</title>
+  </head>
+  <body class="tests-theme-page">
+    <!-- Subtle Atmospheric Backdrop -->
+    <div id="nightingale-bg-container" class="nightingale-bg-container">
+      <div class="bg-drift-wrapper">
+        <img src="/nightingale.png?v=1790910745157" class="nightingale-bg-image" alt="" fetchpriority="high" decoding="async" draggable="false" oncontextmenu="return false;">
+      </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header id="app-header" class="app-header">
+      <div id="header-logo" class="header-logo" style="cursor: pointer;" onclick="window.location.href='/'">
+        <span class="logo-text">NIGHTINGALE</span>
+      </div>
+
+      <nav class="header-nav-tabs">
+        <div class="nav-tabs" style="margin: 0 !important;">
+          <button id="tab-live" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+            </svg>
+            <span>LIVE CLASSES</span>
+          </button>
+
+          <button id="tab-notes" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>NOTES &amp; PDFs</span>
+          </button>
+
+          <button id="tab-tests" class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span>PRACTICE TESTS</span>
+          </button>
+        </div>
+
+        <button id="tests-refetch-btn" class="nav-tab-refresh-btn" title="Sync Practice Tests">
+          <svg class="refresh-gyro-icon" viewBox="0 0 24 24" fill="none">
+            <circle class="gyro-core" cx="12" cy="12" r="1.3" fill="currentColor" />
+            <path class="gyro-arc-1" d="M12 4a8 8 0 0 1 8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+            <path class="gyro-arc-2" d="M12 20a8 8 0 0 1-8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </nav>
+
+      <div class="header-right-actions">
+        <div class="batch-dropdown-container">
+          <button id="header-batch-btn" class="nav-btn">
+            <span id="current-batch-label">Red Sapphire (Hinglish)</span>
+            <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-left: 5px; display: inline-block; vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+          </button>
+          <div id="header-batch-dropdown" class="header-batch-dropdown hide"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Categorized Practice Tests Application -->
+    <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
+      <div class="notes-page-container">
+
+        <!-- Compact Header: "Tests" + Pills + Search Box -->
+        <section class="notes-hero-header" style="align-items: center; justify-content: space-between; gap: 1.25rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+            <h1 class="notes-hero-title" style="margin: 0; font-size: 1.65rem;">Tests</h1>
+            <div class="notes-hero-stats">
+              <div class="notes-stat-pill">
+                <strong id="stat-categories-count">—</strong>
+                <span>Categories</span>
+              </div>
+              <div class="notes-stat-pill">
+                <strong id="stat-tests-count">—</strong>
+                <span>Tests</span>
+              </div>
+              <div class="notes-stat-pill accent-pill">
+                <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="notes-search-wrapper" style="min-width: 280px; max-width: 440px; width: 100%;">
+            <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <input
+              type="text"
+              id="tests-search-input"
+              class="notes-search-input"
+              placeholder="Search tests, PYQs, or subjects..."
+              autocomplete="off"
+            />
+            <button id="tests-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- VIEW 1: Categorized Practice Tests Grid -->
+        <section id="tests-catalog-view" class="notes-catalog-view">
+          <!-- Section Switcher: Test Series vs Question Bank vs Red Sapphire English Batch 104 -->
+          <div class="section-mode-tabs">
+            <button id="test-tab-series" class="section-mode-tab active" data-section="series">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span>Test Series (PYQs, Grand &amp; Subject)</span>
+              <span id="test-count-series" class="section-mode-count">473</span>
+            </button>
+            <button id="test-tab-qbank" class="section-mode-tab" data-section="qbank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
+              <span>Question Bank (19 Subjects)</span>
+              <span id="test-count-qbank" class="section-mode-count">530</span>
+            </button>
+            <button id="test-tab-rb104" class="section-mode-tab" data-section="rb104">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+              <span>Red Sapphire (English) — Past Classes</span>
+              <span id="test-count-rb104" class="section-mode-count">—</span>
+            </button>
+          </div>
+
+          <!-- Dedicated Red Sapphire English Live Status Bar -->
+          <div id="rb104-tests-status-bar" class="rb-section-header-bar hide">
+            <div class="rb-section-title-wrap">
+              <span class="rb-section-badge">Batch 104 • Ongoing</span>
+              <span id="rb104-tests-summary" style="font-size: 0.84rem; font-weight: 600; color: #f1f5f9;">
+                Completed class tests synced automatically whenever published
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <span id="rb104-tests-sync-status" class="rb-sync-status-pill">Auto-sync ready</span>
+              <button id="rb104-tests-sync-btn" class="rb-sync-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                <span>Sync Live</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="tests-grid" class="notes-subject-grid"></div>
+        </section>
+
+        <!-- VIEW 2: Category / Subject Drill-down (Compact Header Bar + Topic Pills + Test Cards) -->
+        <section id="tests-detail-view" class="notes-subject-view hide">
+          <div class="notes-detail-compact-bar">
+            <div class="compact-bar-left">
+              <button id="btn-back-tests" class="btn-notes-back">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                <span>Back</span>
+              </button>
+            </div>
+
+            <div class="compact-bar-center">
+              <h2 id="test-detail-title">Category Title</h2>
+              <span id="test-detail-count" class="notes-detail-pill pill-count">0 Tests</span>
+            </div>
+
+            <div class="compact-bar-right">
+              <span class="compact-teacher-pill">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="test-detail-right-label">NNL Test Bank</span>
+              </span>
+            </div>
+          </div>
+
+          <div id="tests-list-container" class="notes-doc-list"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Fullscreen Quiz / CBT Test Runner Overlay -->
+    <div id="quiz-viewer" class="quiz-viewer-overlay hide">
+      <div class="quiz-viewer-box">
+        <div class="quiz-viewer-header">
+          <div class="quiz-viewer-title-area">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
+              <span id="quiz-badge-type" class="cyber-hero-badge">// PRACTICE ASSESSMENT</span>
+              <button id="quiz-mode-toggle-btn" class="quiz-mode-toggle-pill" title="Toggle Practice / Exam Mode">
+                <span id="quiz-mode-icon" style="display:inline-flex;align-items:center;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
+                <span id="quiz-mode-label">Practice Mode</span>
+              </button>
+            </div>
+            <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Practice Test</h2>
+            <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
+          </div>
+          <div class="quiz-header-controls" style="display: flex; align-items: center; gap: 0.75rem;">
+            <div id="quiz-timer-container" class="quiz-timer-container">
+              <div id="quiz-timer" class="quiz-timer">PRACTICE</div>
+            </div>
+            <button id="quiz-top-close-btn" class="btn-close-quiz" title="Close Test" aria-label="Close test">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="quiz-viewer-body">
+          <div id="quiz-question-view" class="quiz-question-container">
+            <div class="question-header">
+              <span id="question-number-badge" class="question-number-badge">Question 1</span>
+              <span id="question-level-badge" class="question-level-badge">Medium</span>
+              <button id="quiz-explain-btn" class="quiz-explain-pill" title="Toggle Clinical Explanation">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Explain</span>
+              </button>
+            </div>
+            <div id="question-text" class="question-text">Loading question...</div>
+            <div id="quiz-options-list" class="quiz-options-list"></div>
+            <div id="question-explanation" class="question-explanation hide">
+              <h4>// CLINICAL EXPLANATION &amp; RATIONALE</h4>
+              <div id="explanation-text"></div>
+            </div>
+          </div>
+
+          <div id="quiz-result-view" class="quiz-result-view hide">
+            <div class="result-summary">
+              <div class="result-glow"></div>
+              <h3 style="font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.05em; margin-bottom: 1rem; color: var(--primary);">Assessment Completed</h3>
+              <div class="score-circle">
+                <span id="result-percentage" style="font-size: 2.2rem; font-family: var(--font-display); font-weight: 900; color: #00f3d0;">0%</span>
+                <span id="result-ratio" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">0 / 0 Correct</span>
+              </div>
+              <p id="result-feedback" style="color: var(--text-secondary); font-size: 0.9rem; max-width: 340px; line-height: 1.5; margin: 1.5rem auto;"></p>
+              <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                <button id="quiz-review-btn" class="btn btn-zoom" style="display:inline-flex;align-items:center;gap:0.45rem;font-size: 0.8rem; padding: 0.5rem 1.2rem; background: #00f3d0; color: #000; font-weight: 700;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Review with Explanations</span>
+                </button>
+                <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Try Again</button>
+                <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Close Test</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="quiz-sidebar" class="quiz-sidebar">
+            <div class="quiz-sidebar-title">Question Navigator</div>
+            <div id="quiz-navigator-grid" class="quiz-navigator-grid"></div>
+            <div class="quiz-sidebar-legend">
+              <div class="legend-item"><span class="legend-dot unanswered"></span> Not Attempted</div>
+              <div class="legend-item"><span class="legend-dot answered"></span> Attempted</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-viewer-footer">
+          <button id="quiz-prev-btn" class="btn btn-secondary">Previous</button>
+          <button id="quiz-show-ans-btn" class="btn btn-zoom">Explain</button>
+          <button id="quiz-next-btn" class="btn btn-secondary">Next</button>
+          <button id="quiz-submit-btn" class="btn btn-exit" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">Submit Test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal" class="pdf-modal-overlay hide" style="z-index: 10050;">
+      <div style="background: linear-gradient(145deg, #13182b, #1d1633); border: 1px solid rgba(167,139,250,0.3); border-radius: 16px; padding: 1.5rem 1.75rem; max-width: 420px; width: 92%; box-shadow: 0 24px 60px rgba(0,0,0,0.65);">
+        <h3 id="custom-alert-title" style="margin:0 0 0.65rem 0; font-family:var(--font-display); font-size:0.95rem; letter-spacing:0.06em; color:#ede9fe;">Notice</h3>
+        <p id="custom-alert-msg" style="margin:0 0 1.25rem 0; font-size:0.86rem; color:#cbd5e1; line-height:1.55;"></p>
+        <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
+          <button id="custom-alert-ok-btn" class="btn-note-view" style="padding:0.48rem 1.15rem;">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Settings Widget -->
+    <div class="cyber-tweaks-widget">
+      <div class="tweaks-panel">
+        <div class="tweaks-section">
+          <div class="tweaks-label">Student Profile</div>
+          <div style="display:flex;align-items:center;gap:0.6rem;padding:0.35rem 0;">
+            <span id="user-avatar" style="width:28px;height:28px;border-radius:8px;background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.35);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.78rem;color:#fff;">N</span>
+            <span id="user-phone" style="font-size:0.78rem;color:#e2e8f0;font-weight:600;">Student</span>
+          </div>
+          <button id="logout-btn" class="settings-logout-btn">Logout Account</button>
+        </div>
+      </div>
+      <button id="tweak-panel-toggle-btn" class="tweaks-toggle-btn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+
+    <script type="module" src="/src/tests.js"></script>
+  </body>
+</html>

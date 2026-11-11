@@ -5,6 +5,7 @@
 import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
+import { getBatch104BaselineState, syncBatch104Live } from './utils/batch104Sync.js';
 
 const API_BASE = '/api';
 
@@ -81,6 +82,10 @@ let currentFilterType = 'all'; // 'all', 'handwritten', 'oncology', 'liveclass',
 let currentTopicFilter = 'ALL'; // system/topic sub-filter inside subject detail view
 let currentScheduleLang = 'hinglish';
 let searchQuery = '';
+
+const initialParams = new URLSearchParams(window.location.search);
+let currentSectionMode = initialParams.get('section') === 'rb104' ? 'rb104' : 'master';
+let batch104State = getBatch104BaselineState();
 
 // Complete Verified Subjects (Available immediately in Open Access AND Signed-In Mode — 1,319 PDFs)
 const OPEN_ACCESS_SUBJECTS = [
@@ -200,7 +205,11 @@ function initBatchDropdown() {
           dropdown.classList.add('hide');
 
           closeSubjectView();
-          loadNotesRepository(true);
+          if (getCleanBatchName(activeBatch).includes('English')) {
+            switchSectionMode('rb104');
+          } else {
+            loadNotesRepository(true);
+          }
         } else {
           dropdown.classList.add('hide');
         }
@@ -250,7 +259,7 @@ function initUserHeader() {
   const tabTests = document.getElementById('tab-tests');
   if (tabTests) {
     tabTests.addEventListener('click', () => {
-      window.location.href = '/?tab=tests';
+      window.location.href = '/tests.html';
     });
   }
 
@@ -260,7 +269,10 @@ function initUserHeader() {
       const batchId = getBatchIdForBatch(activeBatch);
       sessionStorage.removeItem(`nnl_notes_cache_v5_${batchId}`);
       subjectNotesMap.clear();
-      loadNotesRepository(true).finally(() => {
+      Promise.all([
+        loadNotesRepository(true),
+        triggerBatch104Sync(true)
+      ]).finally(() => {
         setTimeout(() => notesRefetchBtn.classList.remove('spinning'), 600);
       });
     });
@@ -485,21 +497,306 @@ function updateSubjectCardBadge(subjectId, count) {
 }
 
 function updateTotalStats() {
-  if (statSubjectsCount) {
-    statSubjectsCount.textContent = allSubjects.length;
+  const secCountMaster = document.getElementById('sec-count-master');
+  const secCountRb104 = document.getElementById('sec-count-rb104');
+  let masterTotal = 0;
+  subjectNotesMap.forEach((arr, key) => {
+    if (key !== String(SCHEDULE_SUBJECT.id)) masterTotal += arr.length;
+  });
+
+  const rbTotals = batch104State?.totals || { subjects: 0, notes: 0, tests: 0 };
+  if (secCountMaster) secCountMaster.textContent = masterTotal.toLocaleString();
+  if (secCountRb104) secCountRb104.textContent = `${rbTotals.notes} Notes • ${rbTotals.tests} Tests`;
+
+  if (currentSectionMode === 'rb104') {
+    if (statSubjectsCount) statSubjectsCount.textContent = rbTotals.subjects;
+    if (statNotesCount) statNotesCount.textContent = `${rbTotals.notes} PDFs + ${rbTotals.tests} Tests`;
+  } else {
+    if (statSubjectsCount) statSubjectsCount.textContent = allSubjects.length;
+    if (statNotesCount) statNotesCount.textContent = masterTotal;
   }
-  if (statNotesCount) {
-    let total = 0;
-    subjectNotesMap.forEach((arr, key) => {
-      if (key !== String(SCHEDULE_SUBJECT.id)) total += arr.length;
+}
+
+function updateRb104StatusUi(syncResult) {
+  const statusEl = document.getElementById('rb104-sync-status');
+  const summaryEl = document.getElementById('rb104-summary-text');
+  if (summaryEl && syncResult?.totals) {
+    const t = syncResult.totals;
+    summaryEl.textContent = `${t.completedSubjects} of ${t.subjects} subjects active • ${t.notes} Class Notes PDFs & ${t.tests} Topic Tests`;
+  }
+  if (!statusEl) return;
+
+  const ts = syncResult?.lastSyncedAt
+    ? new Date(syncResult.lastSyncedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    : 'Cached';
+
+  if (syncResult?.status === 'no-auth') {
+    statusEl.textContent = `Verified Baseline (${ts}) • Sign in for auto-updates`;
+  } else if (syncResult?.status === 'synced') {
+    const delta = (syncResult.newNotes || 0) + (syncResult.newTests || 0);
+    statusEl.textContent = delta > 0
+      ? `Synced ${ts} (+${syncResult.newNotes} notes, +${syncResult.newTests} tests)`
+      : `Live Synced • ${ts}`;
+  } else {
+    statusEl.textContent = `Auto-Sync • ${ts}`;
+  }
+}
+
+async function triggerBatch104Sync(force = false) {
+  const statusEl = document.getElementById('rb104-sync-status');
+  const syncBtn = document.getElementById('rb104-sync-btn');
+  if (force && statusEl) statusEl.textContent = 'Checking Batch 104 updates...';
+  if (force && syncBtn) syncBtn.disabled = true;
+
+  const res = await syncBatch104Live({
+    force,
+    onUpdate: (updated) => {
+      batch104State = updated;
+      updateTotalStats();
+      updateRb104StatusUi(updated);
+      if (currentSectionMode === 'rb104') {
+        if (currentOpenSubject && currentOpenSubject.isBatch104) {
+          const freshSubj = updated.subjects.find(s => String(s.id) === String(currentOpenSubject.id));
+          if (freshSubj) openBatch104SubjectView(freshSubj);
+        } else if (!currentOpenSubject) {
+          renderSubjectCards();
+        }
+      }
+    }
+  });
+
+  if (force && syncBtn) syncBtn.disabled = false;
+  batch104State = res;
+  updateTotalStats();
+  updateRb104StatusUi(res);
+  return res;
+}
+
+function switchSectionMode(mode) {
+  currentSectionMode = mode === 'rb104' ? 'rb104' : 'master';
+  const tabMaster = document.getElementById('sec-tab-master');
+  const tabRb104 = document.getElementById('sec-tab-rb104');
+  const rbBar = document.getElementById('rb104-status-bar');
+
+  if (tabMaster) tabMaster.classList.toggle('active', currentSectionMode === 'master');
+  if (tabRb104) tabRb104.classList.toggle('active', currentSectionMode === 'rb104');
+  if (rbBar) rbBar.classList.toggle('hide', currentSectionMode !== 'rb104');
+
+  if (currentOpenSubject) closeSubjectView();
+  updateTotalStats();
+  renderSubjectCards();
+}
+
+function renderBatch104Cards() {
+  if (!subjectsGrid) return;
+  const subjects = batch104State?.subjects || [];
+  const query = searchQuery.trim().toLowerCase();
+
+  const filtered = subjects.filter(sub => {
+    if (!query) return true;
+    const matchTitle = (sub.title || '').toLowerCase().includes(query) || (sub.faculty || '').toLowerCase().includes(query);
+    const matchNotes = (sub.notes || []).some(n => (n.title || '').toLowerCase().includes(query) || (n.topic || '').toLowerCase().includes(query));
+    const matchTests = (sub.tests || []).some(t => (t.title || '').toLowerCase().includes(query) || (t.topic || '').toLowerCase().includes(query));
+    return matchTitle || matchNotes || matchTests;
+  });
+
+  if (filtered.length === 0) {
+    subjectsGrid.innerHTML = `
+      <div class="notes-empty-state" style="grid-column: 1 / -1;">
+        <h3 class="notes-empty-title">No Red Sapphire Subjects Matched</h3>
+        <p class="notes-empty-desc">Try another keyword or clear search.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Sort completed subjects (with notes/tests/videos) first, preserving natural order within each group
+  const sorted = [...filtered].sort((a, b) => {
+    const scoreA = (a.notes?.length || 0) + (a.tests?.length || 0) * 2 + (a.videoCount > 0 ? 1 : 0);
+    const scoreB = (b.notes?.length || 0) + (b.tests?.length || 0) * 2 + (b.videoCount > 0 ? 1 : 0);
+    if ((scoreA > 0) !== (scoreB > 0)) return scoreB > 0 ? 1 : -1;
+    return 0;
+  });
+
+  subjectsGrid.innerHTML = sorted.map(sub => {
+    const svgIcon = getSubjectIconSVG(sub.title);
+    const notesCount = sub.notes?.length || 0;
+    const testsCount = sub.tests?.length || 0;
+    const hasContent = notesCount > 0 || testsCount > 0 || (sub.videoCount || 0) > 0;
+    const countStr = hasContent
+      ? `${notesCount} Notes • ${testsCount} Tests`
+      : `${sub.topicCount || 0} Planned Topics • Upcoming`;
+
+    return `
+      <div class="subject-card ${hasContent ? 'curated-highlight' : ''}" data-rb-sub-id="${sub.id}" style="${hasContent ? 'border-color: rgba(244, 63, 94, 0.35);' : 'opacity: 0.78;'}">
+        <div class="subject-card-top">
+          <div class="subject-card-icon" style="${hasContent ? 'color: #fda4af; border-color: rgba(251, 113, 133, 0.35); background: rgba(244, 63, 94, 0.14);' : ''}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              ${svgIcon}
+            </svg>
+          </div>
+          <div class="subject-card-meta">
+            <h3 class="subject-card-title">${sub.title}</h3>
+            <div class="subject-card-badge" style="${hasContent ? 'background: rgba(244, 63, 94, 0.14); border-color: rgba(251, 113, 133, 0.28); color: #fecdd3;' : ''}">
+              <span>${sub.faculty || 'NNL Faculty'} • ${hasContent ? 'Classes Completed' : 'Upcoming'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="subject-card-bottom">
+          <span class="subject-card-count">${countStr}</span>
+          <span class="subject-card-arrow">
+            <span>Open</span>
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  subjectsGrid.querySelectorAll('[data-rb-sub-id]').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-rb-sub-id');
+      const subj = (batch104State?.subjects || []).find(s => String(s.id) === String(id));
+      if (subj) openBatch104SubjectView(subj);
     });
-    statNotesCount.textContent = total;
+  });
+}
+
+function openBatch104SubjectView(subj) {
+  currentOpenSubject = { ...subj, isBatch104: true };
+  notesCatalogView.classList.add('hide');
+  notesSubjectView.classList.remove('hide');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (subjectDetailTitle) subjectDetailTitle.textContent = subj.title;
+  const teacherEl = document.getElementById('subject-detail-teacher-name');
+  if (teacherEl) teacherEl.textContent = subj.faculty || 'NNL Faculty';
+
+  const notes = subj.notes || [];
+  const tests = subj.tests || [];
+  if (subjectDetailCount) {
+    subjectDetailCount.textContent = `${notes.length} Notes • ${tests.length} Tests`;
   }
+
+  const query = searchQuery.trim().toLowerCase();
+  const fNotes = notes.filter(n => !query || `${n.title} ${n.topic}`.toLowerCase().includes(query));
+  const fTests = tests.filter(t => !query || `${t.title} ${t.topic}`.toLowerCase().includes(query));
+
+  if (!notesDocList) return;
+
+  if (fNotes.length === 0 && fTests.length === 0) {
+    notesDocList.innerHTML = `
+      <div class="notes-empty-state">
+        <h3 class="notes-empty-title">${notes.length === 0 && tests.length === 0 ? 'Classes Upcoming in Red Sapphire (English)' : 'No Matches Found'}</h3>
+        <p class="notes-empty-desc">${notes.length === 0 && tests.length === 0
+          ? 'This subject has not started or uploaded notes/tests yet. Auto-Sync will add new notes and next-day tests automatically once published.'
+          : 'No class notes or tests matched your search filter.'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  const notesSectionHtml = fNotes.length > 0 ? `
+    <div style="margin-bottom: 1.5rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+        <h3 style="margin:0; font-family:var(--font-display); font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; color:#ddd6fe;">Class Notes &amp; PDFs (${fNotes.length})</h3>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0.65rem;">
+        ${fNotes.map(n => {
+          const safeName = (n.downloadName || `${n.title}.pdf`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+          return `
+            <div class="note-doc-card">
+              <div class="note-doc-info">
+                <div class="note-doc-icon">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                  </svg>
+                </div>
+                <div class="note-doc-details">
+                  <div class="note-doc-title" title="${n.title}">${n.title}</div>
+                  <div class="note-doc-badges">
+                    <span class="category-tag tag-handwritten">${n.category || 'CLASS NOTES'}</span>
+                    ${n.topic ? `<span style="font-size:0.72rem; color:var(--text-muted);">${n.topic}</span>` : ''}
+                    ${n.date ? `<span style="font-size:0.7rem; color:#94a3b8;">${n.date}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="note-doc-actions">
+                <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(n.title)}" data-url="${encodeURIComponent(n.url)}" data-filename="${encodeURIComponent(safeName)}">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>View PDF</span>
+                </button>
+                <a href="${n.url}" target="_blank" rel="noopener noreferrer" download="${safeName}" class="btn-note-download">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  <span>Download</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  const testsSectionHtml = fTests.length > 0 ? `
+    <div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+        <h3 style="margin:0; font-family:var(--font-display); font-size:0.85rem; letter-spacing:0.06em; text-transform:uppercase; color:#fecdd3;">Topic Assessment Tests (${fTests.length})</h3>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0.65rem;">
+        ${fTests.map(t => {
+          const mins = Math.max(1, Math.round((t.duration || 1800) / 60));
+          const testUrl = `/tests.html?batchTest=${encodeURIComponent(t.id)}&title=${encodeURIComponent(t.title)}&duration=${encodeURIComponent(t.duration || 1800)}&subject=${encodeURIComponent(subj.title)}`;
+          return `
+            <div class="note-doc-card" style="border-color: rgba(251, 113, 133, 0.22);">
+              <div class="note-doc-info">
+                <div class="note-doc-icon" style="color: #fda4af; background: rgba(244, 63, 94, 0.14); border-color: rgba(251, 113, 133, 0.3);">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <div class="note-doc-details">
+                  <div class="note-doc-title" title="${t.title}">${t.title}</div>
+                  <div class="note-doc-badges">
+                    <span class="category-tag tag-highyield">${t.totalQuestions || 30} Qs • ${mins} min</span>
+                    ${t.topic ? `<span style="font-size:0.72rem; color:var(--text-muted);">${t.topic}</span>` : ''}
+                    ${t.date ? `<span style="font-size:0.7rem; color:#94a3b8;">${t.date}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="note-doc-actions">
+                <a href="${testUrl}" class="btn-note-view" style="text-decoration:none;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Attempt Test</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  notesDocList.innerHTML = notesSectionHtml + testsSectionHtml;
+
+  notesDocList.querySelectorAll('.btn-preview-pdf').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPdfModal(
+        decodeURIComponent(btn.getAttribute('data-title')),
+        decodeURIComponent(btn.getAttribute('data-url')),
+        decodeURIComponent(btn.getAttribute('data-filename') || '')
+      );
+    });
+  });
 }
 
 // Render Subject Cards Grid
 function renderSubjectCards() {
   if (!subjectsGrid) return;
+
+  if (currentSectionMode === 'rb104') {
+    renderBatch104Cards();
+    return;
+  }
 
   const query = searchQuery.trim().toLowerCase();
   const filtered = allSubjects.filter(sub => {
@@ -613,7 +910,15 @@ async function openSubjectView(subject) {
   notesSubjectView.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  if (subjectDetailTitle) subjectDetailTitle.textContent = subject.title;
+  // Clean center Subject Name (without parenthetical teacher) & populate Teacher Name on the right
+  const rawSubTitle = subject.title || 'Subject Notes';
+  const centerSubjectName = rawSubTitle.replace(/\s*\([^)]*\)\s*$/, '').trim() || rawSubTitle;
+  const teacherMatch = rawSubTitle.match(/\(([^)]+)\)\s*$/);
+  const teacherName = subject.faculty || (teacherMatch ? teacherMatch[1] : 'NNL Faculty');
+
+  if (subjectDetailTitle) subjectDetailTitle.textContent = centerSubjectName;
+  const teacherEl = document.getElementById('subject-detail-teacher-name');
+  if (teacherEl) teacherEl.textContent = teacherName;
   if (subjectDetailBatch) subjectDetailBatch.textContent = getCleanBatchName(activeBatch);
   if (subjectTopBatchLabel) subjectTopBatchLabel.textContent = `// ${getCleanBatchName(activeBatch)}`;
 
@@ -723,9 +1028,11 @@ function renderRedSapphireBrochureView() {
       </div>
       <div class="note-doc-actions">
         <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(b.title)}" data-url="${encodeURIComponent(b.url)}" data-filename="${encodeURIComponent(b.title.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf')}">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><circle cx="12" cy="12" r="3"/></svg>
           <span>View PDF</span>
         </button>
         <a href="${b.url}" target="_blank" rel="noopener noreferrer" download class="btn-note-download">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
           <span>Download</span>
         </a>
       </div>
@@ -760,7 +1067,10 @@ function renderRedSapphireBrochureView() {
           <h3 style="margin: 0; font-family: var(--font-display); font-size: 1rem; color: #ffffff;">Plan MLB Pro Red Sapphire — Official Features &amp; Syllabus Plan</h3>
           <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct data extracted from Plan 77 (Hinglish) &amp; Plan 79 (English) + Live Batches 103 &amp; 104.</p>
         </div>
-        <button id="btn-print-timetable" style="padding: 0.55rem 1.1rem; background: rgba(0, 243, 208, 0.14); border: 1px solid rgba(0, 243, 208, 0.35); border-radius: 10px; color: #00f3d0; font-weight: 700; font-size: 0.75rem; cursor: pointer;">Print / Save Schedule PDF</button>
+        <button id="btn-print-timetable" class="btn-note-view" style="background: rgba(0, 243, 208, 0.14); border-color: rgba(0, 243, 208, 0.35); color: #00f3d0;">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          <span>Print / Save Schedule PDF</span>
+        </button>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
@@ -812,6 +1122,11 @@ function renderRedSapphireBrochureView() {
 // Render Notes inside Subject View (Cleanly Grouped by Topic / System)
 function renderSubjectNotesList() {
   if (!notesDocList || !currentOpenSubject) return;
+
+  if (currentOpenSubject.isBatch104) {
+    openBatch104SubjectView(currentOpenSubject);
+    return;
+  }
 
   if (currentOpenSubject.isScheduleSubject) {
     renderRedSapphireBrochureView();
@@ -957,7 +1272,11 @@ function openPdfModal(title, url, downloadName = '') {
   }
 
   if (pdfModalIframe) {
-    pdfModalIframe.src = url;
+    // Append fit-width & clean toolbar hint so PDFs fill the full reader cleanly
+    const viewerUrl = url.toLowerCase().includes('.pdf') && !url.includes('#')
+      ? `${url}#view=FitH&toolbar=1&navpanes=0`
+      : url;
+    pdfModalIframe.src = viewerUrl;
   }
 
   pdfModal.classList.remove('hide');
@@ -1098,5 +1417,23 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserHeader();
   initSettingsWidget();
   initEventListeners();
+
+  const secTabMaster = document.getElementById('sec-tab-master');
+  const secTabRb104 = document.getElementById('sec-tab-rb104');
+  const rb104SyncBtn = document.getElementById('rb104-sync-btn');
+
+  if (secTabMaster) secTabMaster.addEventListener('click', () => switchSectionMode('master'));
+  if (secTabRb104) secTabRb104.addEventListener('click', () => switchSectionMode('rb104'));
+  if (rb104SyncBtn) rb104SyncBtn.addEventListener('click', () => triggerBatch104Sync(true));
+
+  if (currentSectionMode === 'rb104') {
+    if (secTabMaster) secTabMaster.classList.remove('active');
+    if (secTabRb104) secTabRb104.classList.add('active');
+    const rbBar = document.getElementById('rb104-status-bar');
+    if (rbBar) rbBar.classList.remove('hide');
+  }
+
   loadNotesRepository();
+  updateRb104StatusUi(batch104State);
+  triggerBatch104Sync(false);
 });

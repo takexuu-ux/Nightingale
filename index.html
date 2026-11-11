@@ -482,7 +482,9 @@
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
               <span id="quiz-badge-type" class="cyber-hero-badge">// DAILY TAT ASSESSMENT</span>
               <button id="quiz-mode-toggle-btn" class="quiz-mode-toggle-pill" title="Toggle Practice / Exam Mode">
-                <span id="quiz-mode-icon">⚡</span>
+                <span id="quiz-mode-icon" style="display:inline-flex;align-items:center;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
                 <span id="quiz-mode-label">Practice Mode</span>
               </button>
             </div>
@@ -493,7 +495,9 @@
             <div id="quiz-timer-container" class="quiz-timer-container">
               <div id="quiz-timer" class="quiz-timer">00:00</div>
             </div>
-            <button id="quiz-top-close-btn" class="btn-close-quiz" title="Close Test">✕</button>
+            <button id="quiz-top-close-btn" class="btn-close-quiz" title="Close Test" aria-label="Close test">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
           </div>
         </div>
         
@@ -527,7 +531,10 @@
               </div>
               <p id="result-feedback" style="color: var(--text-secondary); font-size: 0.9rem; max-width: 320px; line-height: 1.5; margin: 1.5rem auto;">Excellent score! You are well prepared for the exam. Review your incorrect answers in the explorer.</p>
               <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
-                <button id="quiz-review-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1.2rem; background: #00f3d0; color: #000; font-weight: 700;">📖 Review with Explanations</button>
+                <button id="quiz-review-btn" class="btn btn-zoom" style="display:inline-flex;align-items:center;gap:0.45rem;font-size: 0.8rem; padding: 0.5rem 1.2rem; background: #00f3d0; color: #000; font-weight: 700;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Review with Explanations</span>
+                </button>
                 <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Try Again</button>
                 <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Close Test</button>
               </div>

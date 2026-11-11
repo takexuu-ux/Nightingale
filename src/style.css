@@ -6983,20 +6983,33 @@ header.app-header.hide {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* ── MINIMAL IN-APP PDF READER MODAL ── */
+/* ── LARGE IN-APP PDF READER MODAL ── */
 .pdf-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 5, 8, 0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(6, 8, 15, 0.9);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
   box-sizing: border-box;
   animation: fadeInModal 0.2s ease-out;
+}
+
+.pdf-modal-container {
+  width: 96vw;
+  max-width: 1440px;
+  height: 92vh;
+  background: rgba(13, 16, 27, 0.98);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.72);
 }
 
 @keyframes fadeInModal {
@@ -7004,23 +7017,10 @@ header.app-header.hide {
   to { opacity: 1; }
 }
 
-.pdf-modal-container {
-  width: 100%;
-  max-width: 1200px;
-  height: 90vh;
-  background: rgba(10, 12, 19, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-}
-
 .pdf-modal-header {
-  padding: 0.9rem 1.5rem;
-  background: rgba(14, 16, 26, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.85rem 1.4rem;
+  background: linear-gradient(135deg, rgba(22, 27, 46, 0.96), rgba(31, 24, 52, 0.96));
+  border-bottom: 1px solid rgba(167, 139, 250, 0.16);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7047,16 +7047,19 @@ header.app-header.hide {
 .pdf-modal-body {
   flex: 1;
   position: relative;
-  background: #11131a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 0;
+  width: 100%;
+  background: #0d101b;
+  display: block;
 }
 
 .pdf-iframe {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   border: none;
+  display: block;
 }
 
 .pdf-fallback-box {
@@ -7439,3 +7442,283 @@ header.app-header.hide {
   transform: scale(0.97) !important;
   background: rgba(255, 30, 56, 0.3) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTES & TESTS SUBTLE GRADIENT THEME + COMPACT HEADER + CARDS
+   Strictly scoped to body.notes-theme-page / body.tests-theme-page
+   so Classes UI (index.html) stays 100% untouched.
+   ═══════════════════════════════════════════════════════════════ */
+body.notes-theme-page,
+body.tests-theme-page {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(99, 102, 241, 0.14) 0%, transparent 42%),
+    radial-gradient(circle at 88% 18%, rgba(236, 72, 153, 0.11) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.09) 0%, transparent 50%),
+    linear-gradient(160deg, #090c16 0%, #0f1324 52%, #0a0e1b 100%);
+  background-attachment: fixed;
+}
+
+body.notes-theme-page .notes-hero-header,
+body.tests-theme-page .notes-hero-header {
+  background: linear-gradient(135deg, rgba(24, 30, 54, 0.72), rgba(34, 24, 52, 0.65));
+  border-bottom: 1px solid rgba(167, 139, 250, 0.16);
+  box-shadow: 0 8px 28px rgba(4, 7, 18, 0.35);
+}
+
+body.notes-theme-page .subject-card,
+body.tests-theme-page .subject-card {
+  background: linear-gradient(145deg, rgba(22, 27, 48, 0.78), rgba(16, 20, 38, 0.86));
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 8px 24px rgba(3, 6, 18, 0.32);
+}
+
+body.notes-theme-page .subject-card:hover,
+body.tests-theme-page .subject-card:hover {
+  background: linear-gradient(145deg, rgba(35, 42, 74, 0.9), rgba(45, 27, 66, 0.82));
+  border-color: rgba(167, 139, 250, 0.38);
+  box-shadow: 0 12px 30px rgba(79, 70, 229, 0.22);
+}
+
+body.notes-theme-page .note-doc-card,
+body.tests-theme-page .note-doc-card {
+  background: linear-gradient(145deg, rgba(20, 25, 45, 0.78), rgba(15, 19, 34, 0.88));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+body.notes-theme-page .note-doc-card:hover,
+body.tests-theme-page .note-doc-card:hover {
+  background: linear-gradient(145deg, rgba(30, 37, 66, 0.92), rgba(40, 28, 62, 0.85));
+  border-color: rgba(167, 139, 250, 0.35);
+}
+
+body.notes-theme-page .btn-note-view,
+body.tests-theme-page .btn-note-view {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.24), rgba(168, 85, 247, 0.24));
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  color: #ede9fe;
+}
+
+body.notes-theme-page .btn-note-view:hover,
+body.tests-theme-page .btn-note-view:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.42), rgba(236, 72, 153, 0.32));
+  border-color: rgba(196, 181, 253, 0.55);
+}
+
+body.notes-theme-page .btn-note-download,
+body.tests-theme-page .btn-note-download {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.72), rgba(30, 27, 75, 0.55));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+}
+
+body.notes-theme-page .notes-search-wrapper,
+body.tests-theme-page .notes-search-wrapper {
+  background: linear-gradient(135deg, rgba(22, 28, 50, 0.82), rgba(28, 22, 46, 0.78));
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 12px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+/* Compact single-row Subject Detail bar (Back left | Subject center | Teacher right) */
+.notes-detail-compact-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.72rem 1.1rem;
+  margin-bottom: 0.85rem;
+  background: linear-gradient(135deg, rgba(24, 30, 56, 0.82), rgba(38, 25, 58, 0.76));
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 14px;
+  backdrop-filter: blur(14px);
+}
+
+.compact-bar-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.compact-bar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  text-align: center;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.compact-bar-center h2,
+.notes-detail-compact-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #ffffff 10%, #ddd6fe 60%, #fbcfe8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.compact-bar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.compact-teacher-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.36rem 0.82rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(236, 72, 153, 0.14));
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 780px) {
+  .notes-detail-compact-bar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 0.6rem;
+  }
+  .compact-bar-left,
+  .compact-bar-right {
+    justify-content: center;
+  }
+}
+
+/* Video lecture row Notes PDF button */
+.sd-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.72rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  color: #ede9fe;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sd-note-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(236, 72, 153, 0.32));
+  transform: translateY(-1px);
+}
+
+/* Dedicated Live Batch Section Banner & Sync Pill */
+.rb-section-header-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1.15rem;
+  margin-bottom: 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.14), rgba(99, 102, 241, 0.14));
+  border: 1px solid rgba(251, 113, 133, 0.26);
+}
+.rb-section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.rb-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(244, 63, 94, 0.22);
+  border: 1px solid rgba(251, 113, 133, 0.4);
+  color: #ffe4e6;
+}
+.rb-sync-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.34rem 0.78rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #cbd5e1;
+}
+.rb-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.34rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(236, 72, 153, 0.24));
+  border: 1px solid rgba(167, 139, 250, 0.38);
+  color: #ffffff;
+  cursor: pointer;
+}
+.rb-sync-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.45), rgba(236, 72, 153, 0.38));
+}
+
+/* Section Segmented Switcher (Plan 77 vs Red Sapphire Live English) */
+.section-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+.section-mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.58rem 1.05rem;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(18, 22, 40, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.section-mode-tab:hover {
+  border-color: rgba(167, 139, 250, 0.38);
+  color: #e2e8f0;
+}
+.section-mode-tab.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.32), rgba(236, 72, 153, 0.22));
+  border-color: rgba(167, 139, 250, 0.5);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.22);
+}
+.section-mode-count {
+  padding: 0.14rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
