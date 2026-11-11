@@ -34,7 +34,7 @@ execSync(
 // Check current manifest version on ota-hinglish if present
 let nextWebVersion = 1;
 try {
-  const res = await fetch(`https://raw.githubusercontent.com/takexuu-ux/Nightingale/ota-hinglish/manifest.json?t=${Date.now()}`);
+  const res = await fetch(`https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/manifest.json?t=${Date.now()}`);
   if (res.ok) {
     const cur = await res.json();
     nextWebVersion = (Number(cur.webVersion) || 0) + 1;
@@ -44,15 +44,15 @@ try {
 // Read NATIVE_VERSION_CODE from OtaManager.java
 const otaJava = fs.readFileSync(`${ANDROID_ROOT}/app/src/main/java/in/nightingale/hinglish/OtaManager.java`, 'utf8');
 const nativeMatch = otaJava.match(/NATIVE_VERSION_CODE\s*=\s*(\d+)/);
-const nativeVersionCode = nativeMatch ? Number(nativeMatch[1]) : 2;
+const nativeVersionCode = nativeMatch ? Number(nativeMatch[1]) : 4;
 
 const manifest = {
   webVersion: nextWebVersion,
   nativeVersionCode,
   updatedAt: new Date().toISOString(),
   notes: releaseNotes,
-  zipUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/ota-hinglish/hinglish-bundle.zip',
-  apkUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/ota-hinglish/RedSapphireHinglish.apk'
+  zipUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/hinglish-bundle.zip',
+  apkUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/RedSapphireHinglish.apk'
 };
 
 fs.writeFileSync(path.join(OTA_TMP, 'manifest.json'), JSON.stringify(manifest, null, 2));

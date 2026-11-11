@@ -48,9 +48,15 @@ function createBanner() {
 }
 
 async function applyUpdate(isNative, applyBtn, statusLabel) {
+  const setBtnText = (txt) => {
+    if (!applyBtn) return;
+    const sp = applyBtn.querySelector('span');
+    if (sp) sp.textContent = txt;
+    else applyBtn.textContent = txt;
+  };
   if (applyBtn) {
     applyBtn.disabled = true;
-    applyBtn.textContent = isNative ? 'Downloading APK...' : 'Updating...';
+    setBtnText(isNative ? 'Downloading APK...' : 'Updating...');
   }
   if (statusLabel) {
     statusLabel.textContent = isNative ? 'Downloading installer...' : 'Applying live update...';
@@ -62,10 +68,10 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
     const json = await res.json();
     if (json.ok) {
       if (!isNative) {
-        if (applyBtn) applyBtn.textContent = 'Reloading...';
+        setBtnText('Reloading...');
         setTimeout(() => window.location.reload(), 300);
       } else if (applyBtn) {
-        applyBtn.textContent = 'Installer Opened';
+        setBtnText('Installer Opened');
         applyBtn.disabled = false;
       }
     } else {
@@ -75,34 +81,52 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
     if (statusLabel) statusLabel.textContent = `Update failed: ${err.message}`;
     if (applyBtn) {
       applyBtn.disabled = false;
-      applyBtn.textContent = 'Retry Update';
+      setBtnText('Retry Update');
     }
   }
 }
 
-function attachToSettingsPanel(checkFn) {
-  const panel = document.querySelector('.tweaks-panel');
-  if (!panel || document.getElementById('apk-ota-settings-box')) return;
+function attachUpdateTriggers(checkFn) {
+  // 1. Attach inside Settings panel on both index.html (.tweaks-body) & subpages (.tweaks-panel)
+  const panel = document.querySelector('.tweaks-panel, .tweaks-body');
+  if (panel && !document.getElementById('apk-ota-settings-box')) {
+    const box = document.createElement('div');
+    box.id = 'apk-ota-settings-box';
+    box.className = 'tweaks-section';
+    box.style.borderTop = '1px solid rgba(255,255,255,0.08)';
+    box.style.paddingTop = '0.7rem';
+    box.style.marginTop = '0.35rem';
+    box.innerHTML = `
+      <div class="tweaks-label" style="font-size:0.68rem;color:#c4b5fd;font-weight:700;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.06em;">App Live Update</div>
+      <div id="apk-ota-ver-label" style="font-size:0.74rem;color:#cbd5e1;margin-bottom:0.45rem;">Checking version...</div>
+      <button id="apk-ota-manual-btn" class="btn-note-view" style="width:100%;justify-content:center;padding:0.48rem 0.8rem;font-size:0.76rem;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
+        Check for Update
+      </button>
+    `;
+    panel.appendChild(box);
+    box.querySelector('#apk-ota-manual-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      checkFn(true);
+    });
+  }
 
-  const box = document.createElement('div');
-  box.id = 'apk-ota-settings-box';
-  box.className = 'tweaks-section';
-  box.style.borderTop = '1px solid rgba(255,255,255,0.08)';
-  box.style.paddingTop = '0.7rem';
-  box.style.marginTop = '0.5rem';
-  box.innerHTML = `
-    <div class="tweaks-label">APK Live Update</div>
-    <div id="apk-ota-ver-label" style="font-size:0.74rem;color:#cbd5e1;margin-bottom:0.45rem;">Checking version...</div>
-    <button id="apk-ota-manual-btn" class="btn-note-view" style="width:100%;justify-content:center;padding:0.48rem 0.8rem;font-size:0.76rem;border-radius:10px;cursor:pointer;">
-      Check for Update
-    </button>
-  `;
-  panel.appendChild(box);
-
-  box.querySelector('#apk-ota-manual-btn')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    checkFn(true);
-  });
+  // 2. Also add a direct compact "Check Update" pill in top-right header so it is always 1-tap visible on Mobile & Tablet
+  const headerRight = document.querySelector('.header-right-actions');
+  if (headerRight && !document.getElementById('apk-header-update-btn')) {
+    const hBtn = document.createElement('button');
+    hBtn.id = 'apk-header-update-btn';
+    hBtn.className = 'nav-btn';
+    hBtn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;border-color:rgba(167,139,250,0.38);color:#e9d5ff;font-size:0.7rem;padding:0.36rem 0.65rem;cursor:pointer;';
+    hBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Update</span>
+    `;
+    hBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      checkFn(true);
+    });
+    headerRight.insertBefore(hBtn, headerRight.firstChild);
+  }
 }
 
 export function initApkOtaUpdater() {
@@ -111,10 +135,15 @@ export function initApkOtaUpdater() {
 
   const checkForUpdates = async (manual = false) => {
     const manualBtn = document.getElementById('apk-ota-manual-btn');
+    const headerBtn = document.getElementById('apk-header-update-btn');
     const verLabel = document.getElementById('apk-ota-ver-label');
     if (manual && manualBtn) {
       manualBtn.disabled = true;
       manualBtn.textContent = 'Checking...';
+    }
+    if (manual && headerBtn) {
+      headerBtn.disabled = true;
+      headerBtn.querySelector('span').textContent = 'Checking...';
     }
 
     try {
@@ -123,7 +152,7 @@ export function initApkOtaUpdater() {
       const data = await res.json();
 
       if (verLabel) {
-        verLabel.textContent = `Web v${data.currentWebVersion || 1} • APK v${data.currentNativeVersionCode || 2}`;
+        verLabel.textContent = `Web v${data.currentWebVersion || 1} • APK v${data.currentNativeVersionCode || 4}`;
       }
 
       const hasNative = Boolean(data.hasNativeUpdate);
@@ -144,6 +173,17 @@ export function initApkOtaUpdater() {
         }
         banner.style.display = 'flex';
 
+        if (headerBtn) {
+          headerBtn.disabled = false;
+          headerBtn.style.borderColor = '#ec4899';
+          headerBtn.style.background = 'linear-gradient(135deg, rgba(99,102,241,0.35), rgba(236,72,153,0.3))';
+          headerBtn.querySelector('span').textContent = hasNative ? `Get APK v${data.remoteNativeVersionCode}` : `Update v${data.remoteWebVersion}`;
+          headerBtn.onclick = (e) => {
+            e.stopPropagation();
+            applyUpdate(hasNative, headerBtn, verLabel);
+          };
+        }
+
         if (manualBtn) {
           manualBtn.disabled = false;
           manualBtn.textContent = hasNative ? `Install APK v${data.remoteNativeVersionCode}` : `Install Update v${data.remoteWebVersion}`;
@@ -152,17 +192,33 @@ export function initApkOtaUpdater() {
             applyUpdate(hasNative, manualBtn, verLabel);
           };
         }
-      } else if (manualBtn) {
-        manualBtn.disabled = false;
-        manualBtn.textContent = manual ? 'Up to Date' : 'Check for Update';
-        if (manual) {
-          setTimeout(() => {
-            if (manualBtn.textContent === 'Up to Date') manualBtn.textContent = 'Check for Update';
-          }, 2500);
+      } else {
+        if (headerBtn) {
+          headerBtn.disabled = false;
+          headerBtn.querySelector('span').textContent = manual ? 'Up to Date' : 'Update';
+          if (manual) {
+            setTimeout(() => {
+              const sp = headerBtn.querySelector('span');
+              if (sp && sp.textContent === 'Up to Date') sp.textContent = 'Update';
+            }, 2500);
+          }
+        }
+        if (manualBtn) {
+          manualBtn.disabled = false;
+          manualBtn.textContent = manual ? 'Up to Date' : 'Check for Update';
+          if (manual) {
+            setTimeout(() => {
+              if (manualBtn.textContent === 'Up to Date') manualBtn.textContent = 'Check for Update';
+            }, 2500);
+          }
         }
       }
     } catch {
       if (verLabel) verLabel.textContent = 'Offline / Local Mode';
+      if (headerBtn) {
+        headerBtn.disabled = false;
+        headerBtn.querySelector('span').textContent = 'Update';
+      }
       if (manualBtn) {
         manualBtn.disabled = false;
         manualBtn.textContent = 'Check for Update';
@@ -171,7 +227,7 @@ export function initApkOtaUpdater() {
   };
 
   const boot = () => {
-    attachToSettingsPanel(checkForUpdates);
+    attachUpdateTriggers(checkForUpdates);
     setTimeout(() => checkForUpdates(false), 1200);
   };
 
