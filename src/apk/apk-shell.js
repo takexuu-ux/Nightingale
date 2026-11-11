@@ -37,7 +37,7 @@ try {
   }
 } catch {}
 
-const NIGHTINGALE_MARK_SVG = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="11.5" r="3.2" fill="#DBEAFE"/></svg>';
+const NIGHTINGALE_MARK_SVG = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="11.5" r="3.2" fill="#E9DFFF"/></svg>';
 
 const NAV_ICONS = {
   live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>',
@@ -297,7 +297,7 @@ function normalizeHeaderAndChrome() {
   if (authEl) {
     new MutationObserver(syncAuthMode).observe(authEl, { attributes: true, attributeFilter: ['class'] });
 
-    // Clean Showcase with inline [Logo] Nightingale (no Red Sapphire Hinglish, no Study Room, no theme toggle)
+    // Bare Hero Header [Logo] Nightingale outside container on top
     const wrapper = authEl.closest('.auth-hero-wrapper');
     if (wrapper && !document.getElementById('apk-auth-showcase')) {
       const showcase = document.createElement('div');
@@ -307,11 +307,6 @@ function normalizeHeaderAndChrome() {
         <div class="apk-brand-inline-row">
           <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
           <h1 class="apk-showcase-title apk-brand-gradient-text">Nightingale</h1>
-        </div>
-        <div class="apk-showcase-pills">
-          <span class="apk-showcase-pill">${NAV_ICONS.live}Live</span>
-          <span class="apk-showcase-pill">${NAV_ICONS.videos}Lectures</span>
-          <span class="apk-showcase-pill">${NAV_ICONS.notes}Notes</span>
         </div>
       `;
       wrapper.insertBefore(showcase, authEl);
