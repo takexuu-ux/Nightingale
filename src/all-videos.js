@@ -35,7 +35,7 @@ function findMatchingNotePdf(subtopicId, lectureTitle) {
 }
 
 const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
-  ? ['Red Sapphire (Hinglish)']
+  ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
   : ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)'];
 
 let activeBatch = IS_HINGLISH_APK
@@ -390,10 +390,10 @@ function renderCurrentCatalog() {
           <div class="sd-lecture-details">
             <div class="sd-lecture-title">${escapeHtml(it.title)}</div>
             <div class="sd-lecture-meta">
-              <span style="color:#ddd6fe;font-weight:600;">${escapeHtml(it.instructor || 'NNL Faculty')}</span>
+              <span style="color:var(--accent);font-weight:700;">${escapeHtml(it.instructor || 'NNL Faculty')}</span>
               ${it.subject ? `<span>•</span><span>${escapeHtml(it.subject)}</span>` : ''}
               <span>•</span>
-              <span style="color:${it.completed ? '#6ee7b7' : '#fde68a'};font-weight:600;">${escapeHtml(statusLabel)}</span>
+              <span style="color:${it.completed ? 'var(--success-ink)' : 'var(--accent)'};font-weight:700;">${escapeHtml(statusLabel)}</span>
             </div>
           </div>
           <div class="sd-lecture-actions">
@@ -853,10 +853,11 @@ function renderSubjectLecturesList() {
         <div class="sd-lecture-details">
           <div class="sd-lecture-title" title="${escapeHtml(rec.title)}">${escapeHtml(rec.title)}</div>
           <div class="sd-lecture-meta">
-            <span style="color:#ddd6fe;font-weight:600;">${escapeHtml(rec.instructor || 'NNL Faculty')}</span>
+            <span style="color:var(--accent);font-weight:700;">${escapeHtml(rec.instructor || 'NNL Faculty')}</span>
             ${rec.topic ? `<span>•</span><span>${escapeHtml(rec.topic)}</span>` : ''}
             ${rec.duration ? `<span>•</span><span>${escapeHtml(rec.duration)}</span>` : ''}
             ${rec.date ? `<span>•</span><span>${escapeHtml(rec.date)}</span>` : ''}
+            ${offState && (offState.status === 'downloading' || offState.status === 'pending') && offState.totalSizeBytes > 0 ? `<span>•</span><span>${(offState.bytesDownloaded / (1024 * 1024)).toFixed(1)}/${(offState.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB</span>` : ''}
           </div>
         </div>
         <div class="sd-lecture-actions">
@@ -1129,13 +1130,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  const syncBatchId = getBatchIdFromName(activeBatch);
+  batch103State = getBatchBaselineState(syncBatchId);
   renderCurrentCatalog();
   refreshOfflineDownloads();
-  syncBatchLive(103, {
+  syncBatchLive(syncBatchId, {
     onUpdate: (u) => {
       batch103State = u;
       updateTopStats();
       if (videoSectionMode === 'rb103' && !currentOpenSubject) renderCurrentCatalog();
     }
   });
+
+  window.__nnlSelectBatch = (chosen) => {
+    activeBatch = chosen;
+    try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
+    const lbl = document.getElementById('current-batch-label');
+    if (lbl) lbl.textContent = activeBatch;
+    const bid = getBatchIdFromName(activeBatch);
+    batch103State = getBatchBaselineState(bid);
+    if (currentOpenSubject) closeSubjectPage();
+    renderCurrentCatalog();
+    syncBatchLive(bid, {
+      force: true,
+      onUpdate: (u) => {
+        batch103State = u;
+        updateTopStats();
+        if (videoSectionMode === 'rb103' && !currentOpenSubject) renderCurrentCatalog();
+      }
+    });
+  };
 });

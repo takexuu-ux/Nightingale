@@ -4,7 +4,7 @@ import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAuto
 import { IS_HINGLISH_APK } from './config/appMode.js';
 
 const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
-  ? ['Red Sapphire (Hinglish)']
+  ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
   : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
 let activeBatch = IS_HINGLISH_APK
@@ -80,9 +80,11 @@ function getCategoryIconSvg(title) {
 
 function getCleanBatchName(batch) {
   if (!batch) return 'Red Sapphire (Hinglish)';
-  return (batch.toUpperCase().includes('ENGLISH') || batch.toUpperCase().includes('(ENG)'))
-    ? 'Red Sapphire (English)'
-    : 'Red Sapphire (Hinglish)';
+  const u = String(batch).toUpperCase();
+  if (u.includes('BLUE')) return 'Blue Sapphire (Hinglish)';
+  if (u.includes('FAST')) return 'Fast Track';
+  if (u.includes('ENGLISH') || u.includes('(ENG)')) return 'Red Sapphire (English)';
+  return 'Red Sapphire (Hinglish)';
 }
 
 function showNotice(msg, title = 'Notice') {
@@ -478,7 +480,7 @@ function openDetailView(kind, item) {
 
   if (kind === 'series') {
     tests = item.tests || [];
-    rightText = item.badge || 'Plan 77 Series';
+    rightText = item.badge || 'Red Sapphire';
     if (item.id === 'series-subject-wise') filterField = 'subjectGroup';
   } else if (kind === 'qbank') {
     tests = item.tests || [];
@@ -520,11 +522,11 @@ function renderDetailTestsList(tests, filterField, parentItem) {
   }
 
   const filterBarHtml = filterValues.length > 1 ? `
-    <div style="display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1.15rem; padding: 0.8rem 1rem; background: rgba(12, 15, 28, 0.65); border: 1px solid rgba(167, 139, 250, 0.16); border-radius: 14px;">
-      <button class="filter-chip test-filter-pill ${currentSubFilter === 'ALL' ? 'active' : ''}" data-filter="ALL" style="font-size:0.72rem; padding:0.35rem 0.78rem;">All (${tests.length})</button>
+    <div class="test-filter-strip">
+      <button class="filter-chip test-filter-pill ${currentSubFilter === 'ALL' ? 'active' : ''}" data-filter="ALL">All (${tests.length})</button>
       ${filterValues.map(v => {
         const cnt = tests.filter(x => (x[filterField] || 'General').trim() === v).length;
-        return `<button class="filter-chip test-filter-pill ${currentSubFilter === v ? 'active' : ''}" data-filter="${escapeHtml(v)}" style="font-size:0.72rem; padding:0.35rem 0.78rem;">${escapeHtml(v)} (${cnt})</button>`;
+        return `<button class="filter-chip test-filter-pill ${currentSubFilter === v ? 'active' : ''}" data-filter="${escapeHtml(v)}">${escapeHtml(v)} (${cnt})</button>`;
       }).join('')}
     </div>
   ` : '';
@@ -532,7 +534,7 @@ function renderDetailTestsList(tests, filterField, parentItem) {
   // Also show direct Class Notes shortcut banner for Batch 104 subjects that have notes
   const rbNotesHint = (currentOpenItem?.kind === 'rb104' && (parentItem.notes?.length || 0) > 0) ? `
     <div class="rb-section-header-bar" style="margin-bottom: 1rem;">
-      <span style="font-size:0.82rem; color:#e2e8f0; font-weight:600;">${parentItem.notes.length} Class Notes PDFs available for ${escapeHtml(parentItem.title)}</span>
+      <span style="font-size:0.82rem; font-weight:600;">${parentItem.notes.length} Class Notes PDFs available for ${escapeHtml(parentItem.title)}</span>
       <a href="/notes.html?section=rb104" class="rb-sync-btn" style="text-decoration:none;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span>View Class Notes</span>
@@ -617,7 +619,7 @@ function renderTestRowHtml(t, metaSubLabel) {
           data-batch="${isBatch ? '1' : '0'}"
           data-mode="exam">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/></svg>
-          <span>Exam Mode</span>
+          <span>Exam</span>
         </button>
       </div>
     </div>
@@ -1044,6 +1046,15 @@ document.addEventListener('DOMContentLoaded', () => {
   switchSection(currentSection);
   updateRb104StatusUi(batch104State);
   triggerBatch104TestsSync(false);
+
+  window.__nnlSelectBatch = (chosen) => {
+    activeBatch = chosen;
+    try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
+    const lbl = document.getElementById('current-batch-label');
+    if (lbl) lbl.textContent = getCleanBatchName(activeBatch);
+    if (statBatchName) statBatchName.textContent = getCleanBatchName(activeBatch);
+    setRbBatchId(getBatchIdFromName(activeBatch), true);
+  };
 
   // Support deep link from Notes page ("Attempt Test")
   const batchTestId = urlParams.get('batchTest');

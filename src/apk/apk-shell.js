@@ -245,13 +245,181 @@ function normalizeHeaderAndChrome() {
     rightActions.appendChild(sBtn);
   }
 
-  // Editorial single-line minimal page titles
+  const APK_BATCH_CHOICES = [
+    { value: 'Red Sapphire (Hinglish)', label: 'Red Sapphire', sub: 'Hinglish' },
+    { value: 'Blue Sapphire (Hinglish)', label: 'Blue Sapphire', sub: 'Hinglish' },
+    { value: 'Red Sapphire (English)', label: 'Red Sapphire', sub: 'English' },
+    { value: 'Fast Track', label: 'Fast Track', sub: 'Crash Course' }
+  ];
+
+  const getActiveBatchValue = () => {
+    try {
+      const saved = localStorage.getItem('nnl_active_batch');
+      if (saved && APK_BATCH_CHOICES.some(b => b.value === saved)) return saved;
+    } catch (_) {}
+    return 'Red Sapphire (Hinglish)';
+  };
+
+  const getBatchShortText = (val) => {
+    const found = APK_BATCH_CHOICES.find(b => b.value === val) || APK_BATCH_CHOICES[0];
+    return val === 'Red Sapphire (English)' ? 'Red Sapphire Eng' : found.label;
+  };
+
+  const chevronDownSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+  const syncBatchPills = () => {
+    const active = getActiveBatchValue();
+    const shortLabel = getBatchShortText(active);
+    document.querySelectorAll('.apk-batch-pill-btn').forEach(btn => {
+      btn.dataset.batch = active;
+      btn.innerHTML = `<span>${shortLabel}</span>${chevronDownSvg}`;
+    });
+  };
+
+  const openBatchSwitcherModal = () => {
+    const existing = document.getElementById('apk-batch-sheet');
+    if (existing) existing.remove();
+    const active = getActiveBatchValue();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'apk-batch-sheet';
+    overlay.className = 'apk-settings-overlay';
+    overlay.innerHTML = `
+      <div class="apk-settings-sheet" role="dialog" aria-modal="true" aria-label="Switch Batch">
+        <div class="apk-sheet-grabber"></div>
+        <div class="apk-sheet-header">
+          <div>
+            <h3 class="apk-sheet-title">Switch Batch</h3>
+            <p class="apk-sheet-sub">Select your active classroom track</p>
+          </div>
+          <button type="button" class="apk-sheet-close" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="apk-batch-options-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0 8px;">
+          ${APK_BATCH_CHOICES.map(b => {
+            const isSel = b.value === active;
+            return `
+              <button type="button" class="apk-batch-option ${isSel ? 'is-selected' : ''}" data-batch-value="${b.value}">
+                <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                  <span style="font-weight:800;font-size:14px;">${b.label}</span>
+                  <span style="font-size:11.5px;opacity:0.72;font-weight:600;">${b.sub}</span>
+                </div>
+                <span class="apk-batch-check" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;">
+                  ${isSel ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                </span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay || e.target.closest('.apk-sheet-close')) {
+        overlay.remove();
+        return;
+      }
+      const opt = e.target.closest('.apk-batch-option');
+      if (!opt) return;
+      const chosen = opt.dataset.batchValue;
+      if (!chosen) return;
+      try { localStorage.setItem('nnl_active_batch', chosen); } catch (_) {}
+      syncBatchPills();
+      overlay.remove();
+      if (typeof window.__nnlSelectBatch === 'function') {
+        try { window.__nnlSelectBatch(chosen); } catch (_) {}
+      } else {
+        const sel = document.getElementById('batch-select');
+        if (sel) {
+          sel.value = chosen;
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    });
+
+    document.body.appendChild(overlay);
+  };
+
+  if (!window.__nnlBatchClickBound) {
+    window.__nnlBatchClickBound = true;
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.apk-batch-pill-btn');
+      if (btn) {
+        e.preventDefault();
+        openBatchSwitcherModal();
+        return;
+      }
+      const brochureBtn = e.target.closest('#apk-open-brochure-row');
+      if (brochureBtn) {
+        e.preventDefault();
+        const sheet = document.getElementById('apk-settings-sheet');
+        if (sheet) sheet.classList.add('hide');
+        if (typeof window.__nnlOpenBrochure === 'function') {
+          window.__nnlOpenBrochure();
+        } else {
+          window.location.href = '/notes.html?openBrochure=1';
+        }
+      }
+    });
+
+    new MutationObserver(() => {
+      const sheet = document.getElementById('apk-settings-sheet');
+      if (!sheet || sheet.querySelector('#apk-open-brochure-row')) return;
+      const anchor = sheet.querySelector('#apk-sheet-logout-btn') || sheet.querySelector('.apk-settings-list');
+      if (!anchor || !anchor.parentElement) return;
+      const row = document.createElement('button');
+      row.id = 'apk-open-brochure-row';
+      row.type = 'button';
+      row.className = 'apk-batch-option';
+      row.style.cssText = 'width:100%;margin:8px 0 10px;';
+      row.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+          <span style="font-weight:800;font-size:13.5px;">Red Sapphire Brochure</span>
+          <span style="font-size:11.5px;opacity:0.72;font-weight:600;">Batch syllabus, plans &amp; timetable PDFs</span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      `;
+      anchor.parentElement.insertBefore(row, anchor);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Shorten verbose top category switcher tab labels & hide number clutter
+  const shortTabLabels = {
+    'sec-tab-master': 'Library',
+    'sec-tab-rb104': 'Red Sapphire',
+    'test-tab-series': 'Test Series',
+    'test-tab-qbank': 'Q-Bank',
+    'test-tab-rb104': 'Red Sapphire',
+    'vid-tab-all': 'All Subjects',
+    'vid-tab-rb103': 'Red Sapphire'
+  };
+  Object.entries(shortTabLabels).forEach(([tabId, shortText]) => {
+    const tabEl = document.getElementById(tabId);
+    if (!tabEl) return;
+    const sp = tabEl.querySelector('span:not(.section-mode-count)');
+    if (sp && sp.textContent.trim() !== shortText) {
+      sp.textContent = shortText;
+    }
+  });
+
+  // Clean modern single-line page titles (uniform Manrope typography)
   const heroTitle = document.querySelector('.notes-hero-title');
   if (heroTitle) {
     const p = window.location.pathname;
-    if (p.includes('all-videos')) heroTitle.innerHTML = '<span class="apk-editorial-serif">All</span> Videos';
-    else if (p.includes('notes')) heroTitle.innerHTML = '<span class="apk-editorial-serif">Study</span> Notes';
-    else if (p.includes('tests')) heroTitle.innerHTML = '<span class="apk-editorial-serif">Practice</span> Tests';
+    if (p.includes('all-videos')) heroTitle.textContent = 'All Videos';
+    else if (p.includes('notes')) heroTitle.textContent = 'Study Notes';
+    else if (p.includes('tests')) heroTitle.textContent = 'Practice Tests';
+  }
+
+  const heroHeader = document.querySelector('.notes-hero-header');
+  if (heroHeader && !heroHeader.querySelector('.apk-batch-pill-btn')) {
+    const pillBtn = document.createElement('button');
+    pillBtn.type = 'button';
+    pillBtn.className = 'apk-batch-pill-btn';
+    const searchWrap = heroHeader.querySelector('.notes-search-wrapper');
+    if (searchWrap) heroHeader.insertBefore(pillBtn, searchWrap);
+    else heroHeader.appendChild(pillBtn);
   }
 
   // Minimal Live page title above classes if not already present
@@ -261,11 +429,13 @@ function normalizeHeaderAndChrome() {
     bar.id = 'apk-live-topbar';
     bar.className = 'apk-page-topbar';
     bar.innerHTML = `
-      <h1 class="apk-editorial-title"><span class="apk-editorial-serif">Live</span> Classes</h1>
-      <span class="category-tag">Red Sapphire</span>
+      <h1 class="apk-editorial-title">Live Classes</h1>
+      <button type="button" id="apk-batch-pill" class="apk-batch-pill-btn" aria-label="Switch Batch"></button>
     `;
     dash.insertBefore(bar, dash.firstChild);
   }
+
+  syncBatchPills();
 
   // Minimal Preloader Logo Badge + Brand Wordmark
   const preloaderLogo = document.querySelector('.preloader-logo');

@@ -13,7 +13,7 @@ hydrateAndroidAuthSession();
 const API_BASE = '/api';
 
 const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
-  ? ['Red Sapphire (Hinglish)']
+  ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
   : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
 const SCHEDULE_SUBJECT = {
@@ -333,7 +333,7 @@ function normalizeSubjectsList(rawSubjects) {
   const result = [
     { ...MEDICINE_SUBJECT },
     ...ALL_MASTER_SUBJECTS.map(s => ({ ...s })),
-    { ...SCHEDULE_SUBJECT }
+    ...(!IS_HINGLISH_APK ? [{ ...SCHEDULE_SUBJECT }] : [])
   ];
 
   const seenTitles = new Set(result.map(s => (s.shortTitle || s.title).toLowerCase()));
@@ -390,11 +390,28 @@ async function loadNotesRepository(forceReload = false) {
   const batchId = getBatchIdForBatch(activeBatch);
   const cacheKey = `nnl_notes_cache_v6_${batchId}`;
 
-  // Seed all 14 verified subjects (1,319 PDFs) + Red Sapphire Brochure & Timetable immediately
+  // Seed all 14 verified subjects (1,319 PDFs) immediately for instant render
   seedVerifiedMasterCatalog();
   allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
 
-  if (!forceReload || !token) {
+  if (token && !forceReload) {
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.subjects) && parsed.subjects.length > 0) {
+          allSubjects = normalizeSubjectsList(parsed.subjects);
+        }
+        if (parsed.notesMap && typeof parsed.notesMap === 'object') {
+          Object.entries(parsed.notesMap).forEach(([k, v]) => {
+            if (Array.isArray(v) && v.length > 0) subjectNotesMap.set(k, v);
+          });
+        }
+      }
+    } catch {}
+    renderSubjectCards();
+    updateTotalStats();
+  } else if (!token) {
     renderSubjectCards();
     updateTotalStats();
     return;
@@ -906,20 +923,24 @@ function renderSubjectCards() {
       countStr = `${sub.handwritten_notes_count} PDFs`;
     }
 
-    const highlightStyle = isMedicine
-      ? 'border-color: rgba(255, 45, 85, 0.45); background: linear-gradient(135deg, rgba(255, 45, 85, 0.09) 0%, rgba(18, 21, 34, 0.78) 100%);'
-      : (isSchedule
-        ? 'border-color: rgba(0, 243, 208, 0.35); background: linear-gradient(135deg, rgba(0, 243, 208, 0.08) 0%, rgba(18, 21, 34, 0.78) 100%);'
-        : '');
+    const highlightStyle = IS_HINGLISH_APK
+      ? (isMedicine
+        ? 'border-color: rgba(244, 63, 94, 0.28);'
+        : (isSchedule ? 'border-color: rgba(16, 185, 129, 0.28);' : ''))
+      : (isMedicine
+        ? 'border-color: rgba(255, 45, 85, 0.45); background: linear-gradient(135deg, rgba(255, 45, 85, 0.09) 0%, rgba(18, 21, 34, 0.78) 100%);'
+        : (isSchedule
+          ? 'border-color: rgba(0, 243, 208, 0.35); background: linear-gradient(135deg, rgba(0, 243, 208, 0.08) 0%, rgba(18, 21, 34, 0.78) 100%);'
+          : ''));
 
     const iconStyle = isMedicine
-      ? 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;'
+      ? (IS_HINGLISH_APK ? 'background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.28); color: #E11D48;' : 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;')
       : (isSchedule
         ? 'background: rgba(0, 243, 208, 0.15); border-color: rgba(0, 243, 208, 0.35); color: #00f3d0;'
         : '');
 
     const badgeStyle = isMedicine
-      ? 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;'
+      ? (IS_HINGLISH_APK ? 'background: rgba(244, 63, 94, 0.10); border-color: rgba(244, 63, 94, 0.22); color: #E11D48;' : 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;')
       : (isSchedule
         ? 'background: rgba(0, 243, 208, 0.14); border-color: rgba(0, 243, 208, 0.3); color: #00f3d0;'
         : '');
@@ -1061,8 +1082,8 @@ function renderRedSapphireBrochureView() {
   const sortedSchedule = [...filteredSchedule].sort((a, b) => new Date(b.start) - new Date(a.start));
 
   const featuresHtml = RED_SAPPHIRE_DATA.features.map(f => `
-    <div style="background: rgba(14, 17, 28, 0.72); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 1.2rem 1.4rem;">
-      <h4 style="color: #00f3d0; font-family: var(--font-display); font-size: 0.85rem; margin: 0 0 0.75rem 0; letter-spacing: 0.04em; text-transform: uppercase;">${f.title}</h4>
+    <div style="background: ${IS_HINGLISH_APK ? 'var(--bg-elevated)' : 'rgba(14, 17, 28, 0.72)'}; border: 1px solid var(--border-hairline); border-radius: 14px; padding: 1.1rem 1.25rem;">
+      <h4 style="color: ${IS_HINGLISH_APK ? 'var(--accent)' : '#00f3d0'}; font-family: var(--font-display); font-size: 0.85rem; margin: 0 0 0.65rem 0; letter-spacing: 0.04em; text-transform: uppercase;">${f.title}</h4>
       <ul style="margin: 0; padding-left: 1.15rem; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.55;">
         ${f.bullets.map(b => `<li style="margin-bottom: 0.3rem;">${b}</li>`).join('')}
       </ul>
@@ -1099,17 +1120,17 @@ function renderRedSapphireBrochureView() {
   const timetableRowsHtml = sortedSchedule.map(c => {
     const slot = formatSlot(c.start, c.end);
     return `
-      <div class="note-doc-card" style="${slot.isFuture ? 'border-color: rgba(0, 243, 208, 0.45); background: rgba(0, 243, 208, 0.06);' : ''}">
+      <div class="note-doc-card" style="${slot.isFuture ? 'border-color: rgba(16, 185, 129, 0.35);' : ''}">
         <div class="note-doc-info">
           <div class="note-doc-details">
             <div class="note-doc-title">${c.title}</div>
             <div class="note-doc-badges">
               ${slot.isFuture
-                ? '<span class="category-tag" style="background: rgba(0, 243, 208, 0.2); color: #00f3d0;">UPCOMING</span>'
-                : '<span class="category-tag" style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1;">COMPLETED</span>'}
-              <span style="font-size: 0.76rem; color: #f8fafc; font-weight: 600;">${slot.datePart}</span>
+                ? '<span class="category-tag" style="background: rgba(16, 185, 129, 0.14); color: #059669;">UPCOMING</span>'
+                : '<span class="category-tag" style="background: var(--bg-subtle); color: var(--text-secondary);">COMPLETED</span>'}
+              <span style="font-size: 0.76rem; color: var(--text-primary); font-weight: 600;">${slot.datePart}</span>
               <span style="font-size: 0.74rem; color: var(--text-muted);">${slot.timeRange}</span>
-              <span style="font-size: 0.74rem; color: #ff6b81;">${c.faculty}</span>
+              <span style="font-size: 0.74rem; color: var(--accent);">${c.faculty}</span>
             </div>
           </div>
         </div>
@@ -1118,30 +1139,30 @@ function renderRedSapphireBrochureView() {
   }).join('');
 
   notesDocList.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      <div style="background: rgba(14, 17, 28, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <div style="background: var(--bg-elevated); border: 1px solid var(--border-hairline); border-radius: 16px; padding: 1.15rem 1.35rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
         <div>
-          <h3 style="margin: 0; font-family: var(--font-display); font-size: 1rem; color: #ffffff;">Plan MLB Pro Red Sapphire — Official Features &amp; Syllabus Plan</h3>
-          <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Direct data extracted from Plan 77 (Hinglish) &amp; Plan 79 (English) + Live Batches 103 &amp; 104.</p>
+          <h3 style="margin: 0; font-family: var(--font-display); font-size: 1rem; color: var(--text-primary);">Red Sapphire — Official Features &amp; Syllabus Plan</h3>
+          <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Hinglish &amp; English Live Batch Features and Schedule.</p>
         </div>
-        <button id="btn-print-timetable" class="btn-note-view" style="background: rgba(0, 243, 208, 0.14); border-color: rgba(0, 243, 208, 0.35); color: #00f3d0;">
+        <button id="btn-print-timetable" class="btn-note-view">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-          <span>Print / Save Schedule PDF</span>
+          <span>Print / Save PDF</span>
         </button>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.9rem;">
         ${featuresHtml}
       </div>
 
       <div>
-        <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: #fff; margin: 0.5rem 0 0.75rem 0; letter-spacing: 0.05em; text-transform: uppercase;">Official NNL Batch Brochures &amp; TOC PDFs</h3>
+        <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: var(--text-primary); margin: 0.4rem 0 0.75rem 0; letter-spacing: 0.04em; text-transform: uppercase;">Official NNL Batch Brochures</h3>
         ${brochuresHtml}
       </div>
 
       <div>
-        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.5rem 0 0.85rem 0;">
-          <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: #fff; margin: 0; letter-spacing: 0.05em; text-transform: uppercase;">Red Sapphire Live Class Timetable (${filteredSchedule.length} Classes)</h3>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.4rem 0 0.85rem 0;">
+          <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: var(--text-primary); margin: 0; letter-spacing: 0.04em; text-transform: uppercase;">Live Class Timetable (${filteredSchedule.length} Classes)</h3>
           <div style="display: flex; gap: 0.5rem;">
             <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'hinglish' ? 'active' : ''}" data-lang="hinglish">Hinglish (Batch 103 · ${RED_SAPPHIRE_DATA.hinglishSchedule.length})</button>
             <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'english' ? 'active' : ''}" data-lang="english">English (Batch 104 · ${RED_SAPPHIRE_DATA.englishSchedule.length})</button>
@@ -1493,4 +1514,20 @@ document.addEventListener('DOMContentLoaded', () => {
   loadNotesRepository();
   updateRb104StatusUi(batch104State);
   triggerBatch104Sync(false);
+
+  window.__nnlOpenBrochure = () => {
+    openSubjectView({ ...SCHEDULE_SUBJECT });
+  };
+  window.__nnlSelectBatch = (chosen) => {
+    activeBatch = chosen;
+    try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
+    const lbl = document.getElementById('current-batch-label');
+    if (lbl) lbl.textContent = getCleanBatchName(activeBatch);
+    if (statBatchName) statBatchName.textContent = getCleanBatchName(activeBatch);
+    setRbBatchId(getBatchIdFromName(activeBatch), true);
+  };
+
+  if (new URLSearchParams(window.location.search).get('openBrochure') === '1') {
+    window.__nnlOpenBrochure();
+  }
 });

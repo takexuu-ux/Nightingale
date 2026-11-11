@@ -46,7 +46,10 @@ function updateProgressUI(status, activeBtn, statusLabel) {
     labelText = 'Checking...';
     btnText = 'Checking...';
   } else if (status?.state === 'downloading') {
-    labelText = `Downloading ${pct}%`;
+    const mbText = total > 0
+      ? `${formatMb(dl)} / ${formatMb(total)} MB`
+      : (dl > 0 ? `${formatMb(dl)} MB` : 'update');
+    labelText = `Downloading ${mbText}`;
     btnText = `${pct}%`;
   } else if (status?.state === 'verifying') {
     labelText = 'Verifying...';

@@ -2978,6 +2978,8 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
 function getSimplifiedBatchTitle(title) {
   if (!title) return 'Red Sapphire (Hinglish)';
   const tUpper = title.toUpperCase();
+  if (tUpper.includes('BLUE')) return 'Blue Sapphire (Hinglish)';
+  if (tUpper.includes('FAST')) return 'Fast Track';
   if (tUpper.includes('ENGLISH') || tUpper.includes('(ENG)')) {
     return 'Red Sapphire (English)';
   }
@@ -2985,7 +2987,10 @@ function getSimplifiedBatchTitle(title) {
 }
 
 function doesClassMatchBatch(c, activeBatch) {
-  const isEnglishTarget = (activeBatch || '').toUpperCase().includes('ENGLISH');
+  const targetUpper = (activeBatch || '').toUpperCase();
+  const isBlueTarget = targetUpper.includes('BLUE');
+  const isFastTarget = targetUpper.includes('FAST');
+  const isEnglishTarget = targetUpper.includes('ENGLISH');
   const rawBatchTitle = (c.batch?.title || c.liveClass?.batch?.title || '').toUpperCase();
   const classTitle = ((c.title || c.topic || '').toString()).toUpperCase();
   const subjectTitle = (c.subject?.title || c.subject_name || c.subject || '').toString().toUpperCase();
@@ -3001,6 +3006,15 @@ function doesClassMatchBatch(c, activeBatch) {
     subjectId === 729
   ) {
     return false;
+  }
+
+  if (isBlueTarget) {
+    if (rawBatchTitle) return rawBatchTitle.includes('BLUE');
+    return classTitle.includes('BLUE');
+  }
+  if (isFastTarget) {
+    if (rawBatchTitle) return rawBatchTitle.includes('FAST');
+    return classTitle.includes('FAST');
   }
 
   const lang = (c.language || c.lang || '').toUpperCase();
@@ -3141,7 +3155,15 @@ function renderClasses(classes) {
       );
 
       if (futureClasses.length > 0) {
-        classListContainer.innerHTML = `
+        classListContainer.innerHTML = IS_HINGLISH_APK ? `
+          <div class="apk-schedule-banner" style="grid-column: 1 / -1;">
+            <div>
+              <span class="apk-schedule-kicker">Classroom Schedule</span>
+              <p class="apk-schedule-sub">No live session right now</p>
+            </div>
+            <span class="apk-schedule-count">${futureClasses.length} Upcoming</span>
+          </div>
+        ` : `
           <div style="grid-column: 1 / -1; margin-bottom: 1.25rem; background: rgba(10, 11, 16, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; backdrop-filter: blur(12px);">
             <div>
               <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600;">Classroom Schedule</span>
@@ -4444,7 +4466,7 @@ function initTweaksPanel() {
 
 // ── Explicit Sapphire Batches (Locked to Hinglish in APK flavor) ──
 const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
-  ? ['Red Sapphire (Hinglish)']
+  ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
   : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
 async function fetchAndSyncUserBatches() {
@@ -4453,7 +4475,10 @@ async function fetchAndSyncUserBatches() {
 
 function getCleanBatchName(batch) {
   if (!batch) return 'Red Sapphire (Hinglish)';
-  if (batch.toUpperCase().includes('ENGLISH')) return 'Red Sapphire (English)';
+  const u = batch.toUpperCase();
+  if (u.includes('BLUE')) return 'Blue Sapphire (Hinglish)';
+  if (u.includes('FAST')) return 'Fast Track';
+  if (u.includes('ENGLISH')) return 'Red Sapphire (English)';
   return 'Red Sapphire (Hinglish)';
 }
 
@@ -4533,6 +4558,17 @@ function initBatchSelection() {
   
   // Render batch selector dropdown instantly on load
   renderBatchSelector();
+
+  window.__nnlSelectBatch = (chosen) => {
+    const item = document.querySelector(`#header-batch-dropdown .dropdown-item[data-batch="${chosen}"]`);
+    if (item) {
+      item.click();
+    } else {
+      activeBatch = chosen;
+      try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
+      renderBatchSelector();
+    }
+  };
   
   const batchBtn = document.getElementById('header-batch-btn');
   const dropdown = document.getElementById('header-batch-dropdown');
