@@ -2,25 +2,30 @@
 // Architected for production-grade reliability, strict hierarchy matching, dedicated Subject Pages, and VdoCipher playback
 
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
+import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 
 const API_BASE = '/api';
 
-// Fast lookup maps for Medicine Handwritten Notes PDFs by subtopic ID or normalized title
-const MED_NOTE_BY_SUBTOPIC = new Map();
-const MED_NOTE_BY_TITLE = new Map();
-MEDICINE_MASTER_NOTES.forEach(n => {
-  if (n.subtopicId) MED_NOTE_BY_SUBTOPIC.set(Number(n.subtopicId), n);
-  if (n.lectureTitle) MED_NOTE_BY_TITLE.set(n.lectureTitle.trim().toLowerCase(), n);
-  if (n.title) MED_NOTE_BY_TITLE.set(n.title.trim().toLowerCase(), n);
+// Fast lookup maps for ALL Subjects Handwritten Notes PDFs by subtopic ID or normalized title
+const NOTE_BY_SUBTOPIC = new Map();
+const NOTE_BY_TITLE = new Map();
+const ALL_VERIFIED_NOTES = [
+  ...MEDICINE_MASTER_NOTES,
+  ...Object.values(MASTER_NOTES_BY_SUBJECT).flat()
+];
+ALL_VERIFIED_NOTES.forEach(n => {
+  if (n.subtopicId) NOTE_BY_SUBTOPIC.set(Number(n.subtopicId), n);
+  if (n.lectureTitle) NOTE_BY_TITLE.set(n.lectureTitle.trim().toLowerCase(), n);
+  if (n.title) NOTE_BY_TITLE.set(n.title.trim().toLowerCase(), n);
 });
 
 function findMatchingNotePdf(subtopicId, lectureTitle) {
-  if (subtopicId && MED_NOTE_BY_SUBTOPIC.has(Number(subtopicId))) {
-    return MED_NOTE_BY_SUBTOPIC.get(Number(subtopicId));
+  if (subtopicId && NOTE_BY_SUBTOPIC.has(Number(subtopicId))) {
+    return NOTE_BY_SUBTOPIC.get(Number(subtopicId));
   }
   if (lectureTitle) {
     const k = lectureTitle.trim().toLowerCase();
-    if (MED_NOTE_BY_TITLE.has(k)) return MED_NOTE_BY_TITLE.get(k);
+    if (NOTE_BY_TITLE.has(k)) return NOTE_BY_TITLE.get(k);
   }
   return null;
 }
@@ -568,6 +573,26 @@ function openRecordingPlayer(recording) {
   
   if (titleEl) titleEl.textContent = recording.title || 'Recorded Lecture';
   if (instructorEl) instructorEl.textContent = `Instructor: ${recording.instructor || 'Faculty'}`;
+
+  // Attach lecture Handwritten Notes PDF button inside the video viewer header if available
+  const viewerHeader = viewer.querySelector('.recording-viewer-header');
+  const existingNoteBtn = document.getElementById('recording-viewer-note-btn');
+  if (existingNoteBtn) existingNoteBtn.remove();
+  if (viewerHeader && recording.notePdfUrl) {
+    const noteLink = document.createElement('a');
+    noteLink.id = 'recording-viewer-note-btn';
+    noteLink.href = recording.notePdfUrl;
+    noteLink.target = '_blank';
+    noteLink.rel = 'noopener noreferrer';
+    noteLink.style.cssText = 'padding: 0.45rem 0.9rem; background: rgba(168, 85, 247, 0.16); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 10px; color: #e9d5ff; font-size: 0.75rem; font-weight: 700; text-decoration: none; margin-left: auto; margin-right: 0.75rem; white-space: nowrap;';
+    noteLink.textContent = 'Open Lecture Notes PDF';
+    const closeBtn = viewerHeader.querySelector('#close-recording-viewer');
+    if (closeBtn) {
+      viewerHeader.insertBefore(noteLink, closeBtn);
+    } else {
+      viewerHeader.appendChild(noteLink);
+    }
+  }
   
   viewer.classList.remove('hide');
 

@@ -3,6 +3,7 @@
 // paginated API fetching, and Red Sapphire Brochure & Timetable access.
 
 import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
+import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
 
 const API_BASE = '/api';
@@ -81,11 +82,21 @@ let currentTopicFilter = 'ALL'; // system/topic sub-filter inside subject detail
 let currentScheduleLang = 'hinglish';
 let searchQuery = '';
 
-// Open Access / Reading Mode subjects (available immediately without login)
+// Complete Verified Subjects (Available immediately in Open Access AND Signed-In Mode — 1,319 PDFs)
 const OPEN_ACCESS_SUBJECTS = [
   MEDICINE_SUBJECT,
+  ...ALL_MASTER_SUBJECTS,
   SCHEDULE_SUBJECT
 ];
+
+// Helper: Seed all verified master catalogs into subjectNotesMap (zero network delay, 100% isolated)
+function seedVerifiedMasterCatalog() {
+  subjectNotesMap.set(String(MEDICINE_SUBJECT.id), [...MEDICINE_MASTER_NOTES]);
+  subjectNotesMap.set(String(SCHEDULE_SUBJECT.id), [...RED_SAPPHIRE_DATA.brochures]);
+  Object.entries(MASTER_NOTES_BY_SUBJECT).forEach(([sid, notes]) => {
+    subjectNotesMap.set(String(sid), [...notes]);
+  });
+}
 
 // DOM Elements
 const subjectsGrid = document.getElementById('subjects-grid');
@@ -268,45 +279,64 @@ function determineNoteCategory(title) {
   return 'HANDWRITTEN';
 }
 
-// Normalize subjects so Medicine (Dr. Deepak Marwah) is cleanly isolated and NEVER mixed with Anatomy/other subjects.
+// Normalize subjects into our clean verified catalog (zero duplicate cards, zero Anatomy/Medicine mixing)
+const COVERED_SUBJECT_IDS = new Set([
+  '73', '152', '574', '676', '631', '246', // Medicine
+  '64', '569', '681',                      // Anatomy
+  '66', '580', '673',                      // Nursing Foundation
+  '74', '153', '575', '679', '688', '632', // Surgery
+  '71', '572', '674',                      // Pharmacology
+  '78', '712', '579', '678',               // OBG & Gynecology
+  '75', '570', '682',                      // CHN
+  '76', '578', '677',                      // Pediatrics
+  '65', '576',                             // Biochemistry
+  '72', '573',                             // Pathology
+  '77', '67', '577', '675',                // MHN & Psychology
+  '68', '224',                             // Microbiology
+  '82', '80', '81', '581', '687', '227',   // Management, Education & Research
+  '708', '162', '163', '571', '148', '149',// Fastrack & Aptitude
+  'red-sapphire-schedule'
+]);
+
 function normalizeSubjectsList(rawSubjects) {
   const list = Array.isArray(rawSubjects) ? [...rawSubjects] : [];
-  const result = [];
-  let hasMedicine = false;
+  const result = [
+    { ...MEDICINE_SUBJECT },
+    ...ALL_MASTER_SUBJECTS.map(s => ({ ...s })),
+    { ...SCHEDULE_SUBJECT }
+  ];
 
-  // First, place Medicine (Dr. Deepak Marwah) and Schedule at the top
-  result.push({ ...MEDICINE_SUBJECT });
-  result.push({ ...SCHEDULE_SUBJECT });
-  hasMedicine = true;
-
-  const seenTitles = new Set();
+  const seenTitles = new Set(result.map(s => (s.shortTitle || s.title).toLowerCase()));
 
   for (const s of list) {
     if (!s || !s.title) continue;
-    const tLower = s.title.toLowerCase();
+    if (COVERED_SUBJECT_IDS.has(String(s.id))) continue;
 
-    // Medicine subjects (73, 574, 676, etc.) are consolidated into MEDICINE_SUBJECT
+    const tLower = s.title.toLowerCase();
     if (
-      String(s.id) === String(MEDICINE_SUBJECT.id) ||
       tLower.includes('medicine') ||
-      tLower.includes('oncology')
+      tLower.includes('oncology') ||
+      tLower.includes('anatomy') ||
+      tLower.includes('surgery') ||
+      tLower.includes('pharma') ||
+      tLower.includes('foundation') ||
+      tLower.includes('midwifery') ||
+      tLower.includes('obg') ||
+      tLower.includes('community') ||
+      tLower.includes('pediatric') ||
+      tLower.includes('biochem') ||
+      tLower.includes('pathology') ||
+      tLower.includes('mental health') ||
+      tLower.includes('psycholog') ||
+      tLower.includes('(f10)') ||
+      tLower.includes('(f11.0)') ||
+      tLower.includes('otr')
     ) {
       continue;
     }
 
-    if (s.isScheduleSubject || String(s.id) === String(SCHEDULE_SUBJECT.id)) {
-      continue;
-    }
+    if (s.handwritten_notes_count === 0 && s.notes_count === 0) continue;
 
-    // Filter out clutter sub-variants (F10, F11.0, Reasoning/Aptitude with 0 notes, etc.)
-    if (tLower.includes('(f10)') || tLower.includes('(f11.0)') || tLower.includes('otr')) {
-      continue;
-    }
-    if (s.handwritten_notes_count === 0 && s.notes_count === 0) {
-      continue;
-    }
-
-    // Strip redundant (H) / (E) for cleaner card titles while keeping strict subject ID separation
     const cleanTitle = s.title.replace(/\s*\((H|E)\)\s*$/i, '').trim();
     const normKey = cleanTitle.toLowerCase();
     if (seenTitles.has(normKey)) continue;
@@ -323,62 +353,26 @@ function normalizeSubjectsList(rawSubjects) {
   return result;
 }
 
-// Fetch subjects & notes with strict isolation and Open Access support
+// Fetch subjects & notes with instant verified catalog + live API sync when refreshed
 async function loadNotesRepository(forceReload = false) {
   const token = localStorage.getItem('nnl_access_token');
   const planId = getPlanIdForBatch(activeBatch);
   const batchId = getBatchIdForBatch(activeBatch);
-  const cacheKey = `nnl_notes_cache_v5_${batchId}`;
+  const cacheKey = `nnl_notes_cache_v6_${batchId}`;
 
-  // Always seed Medicine & Schedule immediately
-  subjectNotesMap.set(String(MEDICINE_SUBJECT.id), [...MEDICINE_MASTER_NOTES]);
-  subjectNotesMap.set(String(SCHEDULE_SUBJECT.id), [...RED_SAPPHIRE_DATA.brochures]);
+  // Seed all 14 verified subjects (1,319 PDFs) + Red Sapphire Brochure & Timetable immediately
+  seedVerifiedMasterCatalog();
+  allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
 
-  if (!forceReload) {
-    try {
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        allSubjects = normalizeSubjectsList(parsed.subjects || []);
-        if (parsed.notesMap) {
-          Object.entries(parsed.notesMap).forEach(([k, v]) => {
-            if (k !== String(MEDICINE_SUBJECT.id) && k !== String(SCHEDULE_SUBJECT.id)) {
-              subjectNotesMap.set(k, v);
-            }
-          });
-        }
-        if (allSubjects.length > 0) {
-          renderSubjectCards();
-          updateTotalStats();
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('[Notes Cache] Parse error:', e);
-    }
-  }
-
-  if (!token) {
-    console.log('[Notes] Open Access Mode — Medicine (141 PDFs) & Red Sapphire Schedule ready.');
-    allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
+  if (!forceReload || !token) {
     renderSubjectCards();
     updateTotalStats();
     return;
   }
 
-  if (subjectsGrid) {
-    subjectsGrid.innerHTML = `
-      <div class="cp-loading" style="grid-column: 1 / -1; padding: 5rem 2rem; text-align: center;">
-        <div class="spinner"></div>
-        <p style="color: var(--text-secondary); margin-top: 1rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Loading Study Library for ${getCleanBatchName(activeBatch)}...</p>
-      </div>
-    `;
-  }
-
   const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
 
   try {
-    // Use the dedicated handwritten notes subjects endpoint (clean, no duplicate video subjects!)
     let subjects = await fetchAllPaginated(`/cms/fe/handwritten_notes/subject/?plan_id=${planId}&page_size=100`, headers);
     if (subjects.length === 0) {
       subjects = await fetchAllPaginated(`/cms/fe/handwritten_notes/subject/?page_size=100`, headers);
@@ -388,8 +382,7 @@ async function loadNotesRepository(forceReload = false) {
     renderSubjectCards();
     updateTotalStats();
 
-    // Fetch notes strictly per subject (skipping Medicine & Schedule which already have full verified catalogs,
-    // though we still let Medicine check for any brand-new uploaded PDFs cleanly!)
+    // Sync any newly added notes for unseeded custom subjects or updated master subjects
     await fetchNotesForSubjects(allSubjects, headers);
 
     try {
@@ -400,16 +393,14 @@ async function loadNotesRepository(forceReload = false) {
 
     renderSubjectCards();
     updateTotalStats();
-
   } catch (err) {
-    console.error('[Notes Repo Error]:', err);
-    allSubjects = normalizeSubjectsList([...OPEN_ACCESS_SUBJECTS]);
+    console.warn('[Notes Repo Refresh]:', err);
     renderSubjectCards();
     updateTotalStats();
   }
 }
 
-// Fetch notes strictly for a single subject — NEVER crosses over to Anatomy or other subjects
+// Fetch notes strictly for a single subject — merges verified master data with any newly published API items
 async function fetchSingleSubjectNotes(subjectId, headers) {
   if (String(subjectId) === String(SCHEDULE_SUBJECT.id)) {
     return [...RED_SAPPHIRE_DATA.brochures];
@@ -419,13 +410,16 @@ async function fetchSingleSubjectNotes(subjectId, headers) {
   const isMedicine = String(subjectId) === String(MEDICINE_SUBJECT.id);
   const querySubjectId = currentSub?.apiSubjectId || subjectId;
 
-  const notes = isMedicine ? [...MEDICINE_MASTER_NOTES] : [];
+  const baseNotes = isMedicine
+    ? [...MEDICINE_MASTER_NOTES]
+    : [...(MASTER_NOTES_BY_SUBJECT[String(subjectId)] || [])];
+
+  const notes = [...baseNotes];
 
   if (!querySubjectId || isNaN(Number(querySubjectId))) {
     return notes;
   }
 
-  // 1. Fetch Handwritten Notes Topics & Subtopics (Paginated)
   try {
     const htopics = await fetchAllPaginated(`/cms/fe/handwritten_notes/topic/?subject=${querySubjectId}&page_size=100`, headers);
     for (const top of htopics) {
@@ -467,18 +461,13 @@ async function fetchSingleSubjectNotes(subjectId, headers) {
   return deduped;
 }
 
-// Parallel worker for fetching notes across subjects
+// Parallel worker for fetching live updates on explicit refresh
 async function fetchNotesForSubjects(subjects, headers) {
   const chunkSize = 4;
   for (let i = 0; i < subjects.length; i += chunkSize) {
     const chunk = subjects.slice(i, i + chunkSize);
     await Promise.allSettled(chunk.map(async sub => {
       if (String(sub.id) === String(SCHEDULE_SUBJECT.id)) return;
-      // Medicine already has all 141 verified PDFs, only refresh if needed when explicitly clicked or after
-      if (String(sub.id) === String(MEDICINE_SUBJECT.id)) {
-        updateSubjectCardBadge(sub.id, MEDICINE_MASTER_NOTES.length);
-        return;
-      }
       const notes = await fetchSingleSubjectNotes(sub.id, headers);
       subjectNotesMap.set(String(sub.id), notes);
       updateSubjectCardBadge(sub.id, notes.length);
@@ -514,16 +503,23 @@ function renderSubjectCards() {
 
   const query = searchQuery.trim().toLowerCase();
   const filtered = allSubjects.filter(sub => {
+    const notes = subjectNotesMap.get(String(sub.id)) || [];
+
     if (currentFilterType === 'schedule') {
       return Boolean(sub.isScheduleSubject);
     }
-    if (currentFilterType === 'oncology' || currentFilterType === 'liveclass' || currentFilterType === 'revision') {
+    if (currentFilterType === 'oncology') {
       return Boolean(sub.isMedicineMaster);
+    }
+    if (currentFilterType === 'liveclass') {
+      return notes.some(n => n.category === 'LIVE CLASS');
+    }
+    if (currentFilterType === 'revision') {
+      return notes.some(n => n.category === 'REVISION');
     }
 
     if (!query) return true;
     const titleMatch = (sub.title || '').toLowerCase().includes(query) || (sub.faculty || '').toLowerCase().includes(query);
-    const notes = subjectNotesMap.get(String(sub.id)) || [];
     const notesMatch = notes.some(n =>
       (n.title || '').toLowerCase().includes(query) ||
       (n.topic || '').toLowerCase().includes(query)
@@ -1019,7 +1015,7 @@ function initEventListeners() {
         return;
       }
 
-      if ((currentFilterType === 'oncology' || currentFilterType === 'liveclass' || currentFilterType === 'revision') && !currentOpenSubject) {
+      if (currentFilterType === 'oncology' && !currentOpenSubject) {
         openSubjectView(MEDICINE_SUBJECT);
         return;
       }

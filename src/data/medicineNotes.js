@@ -1,6 +1,5 @@
 // Official Medicine (Adult Health Nursing) Notes Library — Dr. Deepak Marwah
-// Extracted directly from NNL ONE API (Subject ID 73 + Red Sapphire Live Classes + Faculty ID 27 Revision)
-// Total: 141 verified CloudFront PDFs.
+// Extracted directly from NNL ONE API. Total: 141 verified CloudFront PDFs.
 
 export const MEDICINE_SUBJECT = {
   id: '73',
@@ -20,7 +19,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Heart Sounds and Cardiac Physiology",
     "topic": "Cardiovascular System",
     "subtopicId": 5476,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/dff29bba-30ae-4309-bcb4-7135d5c9d2c6.pdf",
     "downloadName": "Heart_Sound_Cardiac_Physiology.pdf"
@@ -31,7 +29,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Angina Pectoris Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5477,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/5f6ca0be-9e0e-4e81-841e-0f9cca804c95.pdf",
     "downloadName": "Angina_Pectoris_Part-1.pdf"
@@ -42,7 +39,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Angina Pectoris Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5478,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7c6e5893-49da-4c4e-9862-9dbdbb6a1c89.pdf",
     "downloadName": "Angina_Pectoris_Part-2.pdf"
@@ -53,7 +49,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Congestive Heart Failure Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5479,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/a6c2a839-ddc1-40b8-b518-8f3ff663d681.pdf",
     "downloadName": "Congestive_Heart_Failure_Part-1.pdf"
@@ -64,7 +59,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Congestive Heart Failure Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5480,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/8fe3b3fb-d85c-4cd3-be56-d709dd7ab83d.pdf",
     "downloadName": "Congestive_Heart_Failure_Part-2.pdf"
@@ -75,7 +69,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Valvular Heart Disease Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5481,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/60d3e95f-5c1f-47c8-8f2f-3916f84fc3a3.pdf",
     "downloadName": "Valvular_Heart_Disease_Part-1.pdf"
@@ -86,7 +79,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Valvular Heart Disease Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5482,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ef458e38-24ba-4b15-917c-61086de5146e.pdf",
     "downloadName": "Valvular_Heart_Disease_Part-2.pdf"
@@ -97,7 +89,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Acute Coronary Syndrome",
     "topic": "Cardiovascular System",
     "subtopicId": 5483,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/2e31296b-38a9-4242-a695-3b1daf6ca5d2.pdf",
     "downloadName": "Acute_Coronary_Syndrome.pdf"
@@ -108,7 +99,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diseases of Pericardium",
     "topic": "Cardiovascular System",
     "subtopicId": 5484,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/bf72e6c6-65ea-4a96-88f3-9bfc887d47d9.pdf",
     "downloadName": "Diseases_of_Pericardium.pdf"
@@ -119,7 +109,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cardiomyopathy Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5485,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/4a2d0045-07d5-4e77-8462-782cc777ac1c.pdf",
     "downloadName": "Cardiomyopathy_Part-1.pdf"
@@ -130,7 +119,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cardiomyopathy Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5486,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/fe02c4be-f9bb-4131-a329-46cb62c47f41.pdf",
     "downloadName": "Cardiomyopathy_Part-2.pdf"
@@ -141,7 +129,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Endocarditis",
     "topic": "Cardiovascular System",
     "subtopicId": 5487,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/44068fa0-e8cb-48c6-9ae7-a1da7eba7b53.pdf",
     "downloadName": "Endocarditis.pdf"
@@ -152,7 +139,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hypertension Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5488,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/2e9e2d19-3d8c-4199-868d-03d10a19ed39.pdf",
     "downloadName": "Hypertension_Part-1.pdf"
@@ -163,7 +149,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hypertension Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5489,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9fcf6644-6bd4-4d60-af0d-00fc8089019b.pdf",
     "downloadName": "Hypertension_Part-2.pdf"
@@ -174,7 +159,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Myocarditis",
     "topic": "Cardiovascular System",
     "subtopicId": 5490,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9796750a-1899-4df1-9dd3-4dcf5d06bd55.pdf",
     "downloadName": "Myocarditis.pdf"
@@ -185,7 +169,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Aortic Aneurysm",
     "topic": "Cardiovascular System",
     "subtopicId": 5491,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/f801252c-8d28-4da2-a670-9ad68dd8335f.pdf",
     "downloadName": "Aortic_Aneurysm.pdf"
@@ -196,7 +179,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Peripheral Arterial Disease Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5492,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/b8224d39-ce55-4ef7-a499-f83bb268a4ec.pdf",
     "downloadName": "Peripheral_Arterial_Disease_Part-1.pdf"
@@ -207,7 +189,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Peripheral Arterial Disease Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5493,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/c5f997d1-6d05-4e55-b0fa-ef84fcc40b1f.pdf",
     "downloadName": "Peripheral_Arterial_Disease_Part-2.pdf"
@@ -218,7 +199,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Central Venous Pressure Monitoring",
     "topic": "Cardiovascular System",
     "subtopicId": 5494,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/cdfae717-d85b-4e87-9129-bccc1f7478fe.pdf",
     "downloadName": "Central_Venous_Pressure_Monitoring.pdf"
@@ -229,7 +209,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Drugs Acting on Heart Part-1",
     "topic": "Cardiovascular System",
     "subtopicId": 5495,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/dc110900-88a7-4607-98bf-2f0ac59e9834.pdf",
     "downloadName": "Drugs_Acting_on_Heart_Part-1.pdf"
@@ -240,7 +219,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Drugs Acting on Heart Part-2",
     "topic": "Cardiovascular System",
     "subtopicId": 5496,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9178fb00-514b-4d86-b5f2-dabcc13f0c2d.pdf",
     "downloadName": "Drugs_Acting_on_Heart_Part-2.pdf"
@@ -251,7 +229,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Venous Disorders",
     "topic": "Cardiovascular System",
     "subtopicId": 5497,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ff7a76b6-654b-4f4d-a54e-546d8faa4b8e.pdf",
     "downloadName": "Venous_Disorders.pdf"
@@ -262,7 +239,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "ECG Wave Simplified",
     "topic": "Cardiovascular System",
     "subtopicId": 5498,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/cbfa6541-02ff-4a09-bab9-134d0d5876c6.pdf",
     "downloadName": "ECG_Wave_Simplified.pdf"
@@ -273,7 +249,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Arrhythmias Simplified",
     "topic": "Cardiovascular System",
     "subtopicId": 5499,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7b4ff666-49b6-4e12-91bf-e9c49f35cf50.pdf",
     "downloadName": "Cardiac_Dysrhythmias.pdf"
@@ -284,7 +259,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Fluid volume deficit",
     "topic": "Fluid & Electrolytes",
     "subtopicId": 5500,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/26dec957-6991-4d86-ac43-e8ad22cd257d.pdf",
     "downloadName": "Fluid_Volume_Deficit.pdf"
@@ -295,7 +269,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Fluid volume excess/ Hypervolemia",
     "topic": "Fluid & Electrolytes",
     "subtopicId": 5501,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/a0c11cb6-bf5c-44cf-a8df-4b07731a3ce6.pdf",
     "downloadName": "Hypervolemia.pdf"
@@ -306,7 +279,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hyponatremia",
     "topic": "Fluid & Electrolytes",
     "subtopicId": 5502,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/96dab9f4-9584-4ae6-80f5-b68a2f33cff2.pdf",
     "downloadName": "Hyponatremia.pdf"
@@ -317,7 +289,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Metabolic Acidosis vs Respiratory Acidosis",
     "topic": "Fluid & Electrolytes",
     "subtopicId": 5503,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7b574057-f305-4bb7-b7a1-9d0ee0f54f81.pdf",
     "downloadName": "Metabolic_Acidosis_vs_Respiratory_Acidosis.pdf"
@@ -328,7 +299,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Metabolic Alkalosis and Respiratory Alkalosis",
     "topic": "Fluid & Electrolytes",
     "subtopicId": 5504,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/30afe8cd-3670-444c-979c-06f5d6334e75.pdf",
     "downloadName": "Respiratory_Alkalosis_and_Metabolic_Alkalosis.pdf"
@@ -339,7 +309,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Chronic Obstructive Pulmonary Disease",
     "topic": "Respiratory System",
     "subtopicId": 5505,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/fe454025-f282-4679-941e-bdb4c427bd56.pdf",
     "downloadName": "Chronic_Obstructive_Pulmonary_Disease.pdf"
@@ -350,7 +319,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Respiratory Failure",
     "topic": "Respiratory System",
     "subtopicId": 5506,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9c48b0e2-475e-42f8-92ea-beb7ae33d974.pdf",
     "downloadName": "Respiratory_Failure.pdf"
@@ -361,7 +329,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "ARDS",
     "topic": "Respiratory System",
     "subtopicId": 5507,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/fa202d22-3df5-4070-8813-492fbadabf96.pdf",
     "downloadName": "Actue_Respiratory_Distress_Syndrome_ARDS.pdf"
@@ -372,7 +339,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Asthma",
     "topic": "Respiratory System",
     "subtopicId": 5508,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/206ee360-4ff4-49d6-a7a8-5c9e4a0fb977.pdf",
     "downloadName": "Bronchial_Asthma.pdf"
@@ -383,7 +349,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Tuberculosis Part-1",
     "topic": "Respiratory System",
     "subtopicId": 5509,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7f864be4-f304-4a7e-963c-bcd56a8d3729.pdf",
     "downloadName": "Tuberculosis_Part-1.pdf"
@@ -394,7 +359,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Tuberculosis Part-2",
     "topic": "Respiratory System",
     "subtopicId": 5510,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/8ed0d017-7051-4c08-81fb-1c6326ae3e9f.pdf",
     "downloadName": "Tuberculosis_Part-2.pdf"
@@ -405,7 +369,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Occupational Lung Diseases",
     "topic": "Respiratory System",
     "subtopicId": 5511,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/0fc18772-55d8-40e8-bf41-cbc1636486bf.pdf",
     "downloadName": "Occupational_Lung_Diseases.pdf"
@@ -416,7 +379,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Pleural Effussion",
     "topic": "Respiratory System",
     "subtopicId": 5512,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/006212b2-d5c4-4537-9207-269e48ad69a7.pdf",
     "downloadName": "Pleural_Effusion.pdf"
@@ -427,7 +389,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Pneumothorax",
     "topic": "Respiratory System",
     "subtopicId": 5513,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d4e126ba-b991-45ac-b0b1-3b11b9c62eb6.pdf",
     "downloadName": "Pneumothroax.pdf"
@@ -438,7 +399,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "ABG Numericals",
     "topic": "Respiratory System",
     "subtopicId": 5514,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d74cf139-99a5-409d-9fb3-dbb359ddde3c.pdf",
     "downloadName": "ABG_Numericals.pdf"
@@ -449,7 +409,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Oncology Part-1",
     "topic": "Oncology",
     "subtopicId": 5515,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/b9400587-10fd-4908-bfff-227e28e5b05f.pdf",
     "downloadName": "Oncology_Part-1.pdf"
@@ -460,7 +419,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Oncology Part-2",
     "topic": "Oncology",
     "subtopicId": 5516,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/87b233c5-c9d5-4f43-9223-aeb7e154dc48.pdf",
     "downloadName": "Oncology_Part-2.pdf"
@@ -471,7 +429,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cancer Larynx",
     "topic": "Oncology",
     "subtopicId": 5517,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/6c983341-e529-496b-8b3d-3848eeacf707.pdf",
     "downloadName": "Larynx_Cancer.pdf"
@@ -482,7 +439,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Carcinoma Breast",
     "topic": "Oncology",
     "subtopicId": 5518,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/14ff3334-78b6-43a0-a59c-3e3cfb81f2bf.pdf",
     "downloadName": "Carcinoma_of_Breast.pdf"
@@ -493,7 +449,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Lesions of Oral Cavity",
     "topic": "Oncology",
     "subtopicId": 5519,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/2b3d74d9-db18-4630-bc3c-6febc98dba0e.pdf",
     "downloadName": "Lesion_of_Oral_Cavity.pdf"
@@ -504,7 +459,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Prostrate Cancer",
     "topic": "Oncology",
     "subtopicId": 5520,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9417a2d1-f973-496c-8984-16a10c3ecf5b.pdf",
     "downloadName": "Prostate_Cancer.pdf"
@@ -515,7 +469,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Lung Cancer",
     "topic": "Oncology",
     "subtopicId": 5521,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/74815fba-6889-4fbc-8cb0-c7213ef8e1c4.pdf",
     "downloadName": "Lung_Cancer.pdf"
@@ -526,7 +479,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Testis Cancer",
     "topic": "Oncology",
     "subtopicId": 5522,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/cd543aea-7f84-435c-9694-6f0b7a8f5f77.pdf",
     "downloadName": "Testis_Cancer.pdf"
@@ -537,7 +489,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Oncological Emergencies",
     "topic": "Oncology",
     "subtopicId": 5529,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d0da7b53-a100-4079-b4fe-f60a4e24c8c3.pdf",
     "downloadName": "Oncological_Emergencies.pdf"
@@ -548,7 +499,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Anemia",
     "topic": "Hematology/Lymphatic System",
     "subtopicId": 5523,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/5250e76b-de74-4fe6-a302-23f428eac176.pdf",
     "downloadName": "Anemia.pdf"
@@ -559,7 +509,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Macrocytic Anemia",
     "topic": "Hematology/Lymphatic System",
     "subtopicId": 5524,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/dcf3e891-e11e-4415-9e62-fc8dd3aa88b7.pdf",
     "downloadName": "Macrocytic_Anemia.pdf"
@@ -570,7 +519,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Aplastic Anemia",
     "topic": "Hematology/Lymphatic System",
     "subtopicId": 5525,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/3d99eae0-234c-4dad-9f1a-31fada5ac676.pdf",
     "downloadName": "Aplastic_Anemia.pdf"
@@ -581,7 +529,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hemolytic Anemia",
     "topic": "Hematology/Lymphatic System",
     "subtopicId": 5526,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/0eb82dcb-9487-478a-a8ab-c5b983dc2d2f.pdf",
     "downloadName": "Hemolytic_Anemia.pdf"
@@ -592,7 +539,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Leukemia",
     "topic": "Hematology/Lymphatic System",
     "subtopicId": 5527,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/030c1a5f-9f1f-49aa-8b22-befbc96c5fcb.pdf",
     "downloadName": "Leukemia.pdf"
@@ -603,7 +549,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Lymphoma",
     "topic": "Hematology/Lymphatic System",
     "subtopicId": 5528,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/41d794bd-f39d-4d5e-9bb7-24e7a84062f9.pdf",
     "downloadName": "Lymphoma.pdf"
@@ -614,7 +559,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Peptic Ulcer Part-1",
     "topic": "Gastrointestinal System",
     "subtopicId": 5530,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/a5381cd8-ff44-4171-b10e-2ca6ec62c5fe.pdf",
     "downloadName": "Peptic_Ulcer_Disease.pdf"
@@ -625,7 +569,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Peptic Ulcer Part-2",
     "topic": "Gastrointestinal System",
     "subtopicId": 5531,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7b687c4c-04a3-4096-956a-1fcecb22d9bb.pdf",
     "downloadName": "Peptic_Ulcer_Management.pdf"
@@ -636,7 +579,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hemorrhoids",
     "topic": "Gastrointestinal System",
     "subtopicId": 5532,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9e347b56-f385-48ec-ba9c-d466b72e0730.pdf",
     "downloadName": "Hemorrhoids.pdf"
@@ -647,7 +589,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "UGI Endoscopy and Colonoscopy",
     "topic": "Gastrointestinal System",
     "subtopicId": 5533,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/1f3b06f2-acda-4e1b-8d7c-432480446ffd.pdf",
     "downloadName": "UGI_Endoscopy_and_Colonoscopy.pdf"
@@ -658,7 +599,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Ulcerative Colitis and Crohn Disease",
     "topic": "Gastrointestinal System",
     "subtopicId": 5534,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/530693a1-51e8-4cfb-b299-e3bef9fa3974.pdf",
     "downloadName": "Ulcerative_Colitis_and_Crohn_Disease.pdf"
@@ -669,7 +609,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Viral Hepatitis",
     "topic": "Gastrointestinal System",
     "subtopicId": 5535,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/facb1994-6f91-4bd6-8cc3-6135f5e7a346.pdf",
     "downloadName": "Viral_Hepatitis.pdf"
@@ -680,7 +619,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Abdominal Paracentesis",
     "topic": "Gastrointestinal System",
     "subtopicId": 5536,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/4c8020f6-699f-443c-be36-b7a40c84d569.pdf",
     "downloadName": "Abdominal_Paracentesis.pdf"
@@ -691,7 +629,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cirrhosis and Portal Hypertension",
     "topic": "Gastrointestinal System",
     "subtopicId": 5537,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ff9b4afa-46bb-493e-81d0-11c6f61dd819.pdf",
     "downloadName": "Cirrhosis_and_Portal_Hypertension.pdf"
@@ -702,7 +639,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Irritable Bowel Syndrome",
     "topic": "Gastrointestinal System",
     "subtopicId": 5538,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/282f1bb7-a232-4be4-b73e-9efaaf91214d.pdf",
     "downloadName": "Irritable_Bowel_Syndrome_IBS.pdf"
@@ -713,7 +649,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Liver Biopsy",
     "topic": "Gastrointestinal System",
     "subtopicId": 5539,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/a1dd7613-accd-41a2-a165-89a27c0bfd01.pdf",
     "downloadName": "Liver_Biopsy.pdf"
@@ -724,7 +659,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Pancreatitis",
     "topic": "Gastrointestinal System",
     "subtopicId": 5540,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/bb496311-025c-4b50-8bef-214deabc8813.pdf",
     "downloadName": "Pancreatitis.pdf"
@@ -735,7 +669,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diabetes mellitus Basics",
     "topic": "Endocrine System",
     "subtopicId": 5541,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/1d040863-af0e-4859-bc57-9bada7308cba.pdf",
     "downloadName": "Diabetes_Mellitus.pdf"
@@ -746,7 +679,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Nursing Interventions in DM Care",
     "topic": "Endocrine System",
     "subtopicId": 5542,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/2805f722-73d6-4728-aa5a-f6da6b862fdd.pdf",
     "downloadName": "Nursing_Interventions_in_DM_Care_Part_1.pdf"
@@ -757,7 +689,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Nursing Interventions in Diabetes",
     "topic": "Endocrine System",
     "subtopicId": 5543,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/73548b85-882b-4659-b233-c4d001a90db3.pdf",
     "downloadName": "Nursing_Interventions_in_Diabetes_Part_2.pdf"
@@ -768,7 +699,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diabetic Ketoacidosis and Hyperosmolar Coma",
     "topic": "Endocrine System",
     "subtopicId": 5544,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/070dd439-9e99-49a8-b683-d7695f0c235e.pdf",
     "downloadName": "Diabetic_Ketoacidosis_and_Hyperosmolar_Coma.pdf"
@@ -779,7 +709,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "15 15 Rule for Hypoglycemia",
     "topic": "Endocrine System",
     "subtopicId": 5545,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/81d5b70d-30e0-4bf2-b6a2-156b43666d5d.pdf",
     "downloadName": "15-15_Rule_for_Hypoglycemia.pdf"
@@ -790,7 +719,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diabetes Insipidus and SIADH",
     "topic": "Endocrine System",
     "subtopicId": 5546,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/02472d22-5d90-4844-97d6-9f0f204801f0.pdf",
     "downloadName": "Diabetes_Insipidus_and_SIADH.pdf"
@@ -801,7 +729,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hypothyroidism",
     "topic": "Endocrine System",
     "subtopicId": 5547,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/60a8e090-f2b7-4ac1-82ca-f9a8f651bc99.pdf",
     "downloadName": "Hypothyroidism.pdf"
@@ -812,7 +739,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hyperthyroidism",
     "topic": "Endocrine System",
     "subtopicId": 5548,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/84514947-3623-4c8b-96e0-033dc3cd51ae.pdf",
     "downloadName": "Hyperthyroidism.pdf"
@@ -823,7 +749,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diseases of Adrenal Gland",
     "topic": "Endocrine System",
     "subtopicId": 5549,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/e4e721a5-a399-461d-adeb-17e6d5f95f88.pdf",
     "downloadName": "Diseases_of_Adrenal_Gland.pdf"
@@ -834,7 +759,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cushing Syndrome",
     "topic": "Endocrine System",
     "subtopicId": 5550,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/be461eae-4818-44ff-8308-cce770d91848.pdf",
     "downloadName": "Cushing_Syndrome.pdf"
@@ -845,7 +769,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Pheochromocytoma",
     "topic": "Endocrine System",
     "subtopicId": 5551,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ab4d2927-b4ca-4b8a-945a-9f63a518397d.pdf",
     "downloadName": "Pheochromocytoma.pdf"
@@ -856,7 +779,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diagnostic Testing in Endocrine Problems",
     "topic": "Endocrine System",
     "subtopicId": 5552,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d49ad8ff-469c-4b7b-9035-c5cc16747074.pdf",
     "downloadName": "Diagnostic_Testing_in_Endocrine_Problems.pdf"
@@ -867,7 +789,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Adrenalectomy",
     "topic": "Endocrine System",
     "subtopicId": 5553,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/cdbee33d-f967-499f-bb1c-ff1130bd7c2d.pdf",
     "downloadName": "Adrenalectomy.pdf"
@@ -878,7 +799,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Autosomal Dominant Polycystic Kidneys",
     "topic": "Renal System",
     "subtopicId": 5554,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d0d1e50d-a943-44ff-a745-f5993b834bb9.pdf",
     "downloadName": "Autosomal_Dominant_Polycystic_Kidneys.pdf"
@@ -889,7 +809,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Kidney Stones",
     "topic": "Renal System",
     "subtopicId": 5555,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/2759dee7-d71c-479e-ae65-8a483b0b3618.pdf",
     "downloadName": "Renal_Calculi.pdf"
@@ -900,7 +819,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Nephrotic Syndrome",
     "topic": "Renal System",
     "subtopicId": 5556,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/6aa1b57d-db51-4be9-b994-5f9c434aa014.pdf",
     "downloadName": "Nephrotic_Syndrome.pdf"
@@ -911,7 +829,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Beningn Prostatic Hyperplasia",
     "topic": "Renal System",
     "subtopicId": 5557,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/4418ca54-6166-41b6-93e5-c83073aab65b.pdf",
     "downloadName": "Benign_Prostatic_Hypoplasia.pdf"
@@ -922,7 +839,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Kidney Transplantation",
     "topic": "Renal System",
     "subtopicId": 5558,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d80a221c-2985-4f27-92f3-82f1a03522a3.pdf",
     "downloadName": "Kidney_Transplantation.pdf"
@@ -933,7 +849,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Acute Kidney Injury",
     "topic": "Renal System",
     "subtopicId": 5559,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/2cbe0758-d8a4-4254-bc63-7d760fdc9e51.pdf",
     "downloadName": "Acute_Renal_Failure.pdf"
@@ -944,7 +859,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "CKD and Dialysis Techniques",
     "topic": "Renal System",
     "subtopicId": 5560,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/1819e1eb-738c-4d88-9971-362ff3d16a46.pdf",
     "downloadName": "Chronic-Renal_Failure_and_Dialysis_Technique.pdf"
@@ -955,7 +869,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Nursing Interventions in Pain Part-1",
     "topic": "Nervous System",
     "subtopicId": 5561,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/77e6d3e6-3789-4496-afbc-8603cf6f851e.pdf",
     "downloadName": "Nursing_Interventions_in_Pain_-_Part_1.pdf"
@@ -966,7 +879,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Nursing Interventions in Pain Part-2",
     "topic": "Nervous System",
     "subtopicId": 5562,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/25d0de77-6b12-40b6-a1df-848dc43534c7.pdf",
     "downloadName": "Nursina_Interventions_in_Pain_-_Part_2.pdf"
@@ -977,7 +889,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Central Nervous System Part-1",
     "topic": "Nervous System",
     "subtopicId": 5563,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/1ae85e2d-87ff-4f15-9836-c410978ea52b.pdf",
     "downloadName": "Central_Nervous_System_Part-1.pdf"
@@ -988,7 +899,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Central Nervous System Part-2",
     "topic": "Nervous System",
     "subtopicId": 5564,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ab74e1fd-e15f-4cfa-9dbe-9083e1647c22.pdf",
     "downloadName": "Central_Nervous_System_Part-2.pdf"
@@ -999,7 +909,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Central Nervous System Part-3",
     "topic": "Nervous System",
     "subtopicId": 5565,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ec2dacc1-106b-4c1a-87b6-ecb2ac28d1cb.pdf",
     "downloadName": "Central_Nervous_System_Part-3.pdf"
@@ -1010,7 +919,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Stroke Part-1",
     "topic": "Nervous System",
     "subtopicId": 5566,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/9eb3c2bc-53f2-4ed1-8802-5a411e508c82.pdf",
     "downloadName": "Stroke_Part-1.pdf"
@@ -1021,7 +929,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Stroke Part-2",
     "topic": "Nervous System",
     "subtopicId": 5567,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/6da9a1c9-aa8d-48e7-aae3-46c78f88e876.pdf",
     "downloadName": "Stroke_Part-2.pdf"
@@ -1032,7 +939,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Traumatic Brain Injury",
     "topic": "Nervous System",
     "subtopicId": 5568,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/97a0c2f5-12c7-4b4f-913b-e1d12a5a9b07.pdf",
     "downloadName": "Traumatic_Brain_Injury.pdf"
@@ -1043,7 +949,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Hyperthermia",
     "topic": "Nervous System",
     "subtopicId": 5569,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7a572020-843d-4711-b8ca-cb59b02f07a5.pdf",
     "downloadName": "Hyperthermia.pdf"
@@ -1054,7 +959,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Meningitis",
     "topic": "Nervous System",
     "subtopicId": 5570,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/65bb2ecb-312b-4a6b-a3f9-a84742322bb9.pdf",
     "downloadName": "Meningitis.pdf"
@@ -1065,7 +969,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Myasthenia Gravis",
     "topic": "Nervous System",
     "subtopicId": 5571,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/0b5555f1-73ca-4e1b-8683-1da3b6198feb.pdf",
     "downloadName": "Myasthenia_Gravis.pdf"
@@ -1076,7 +979,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Parkinsonism",
     "topic": "Nervous System",
     "subtopicId": 5572,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/79845472-c76d-4a38-a221-7ff27b6d2fe0.pdf",
     "downloadName": "Parkinsons_Disease.pdf"
@@ -1087,7 +989,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Seizures Part-1",
     "topic": "Nervous System",
     "subtopicId": 5573,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/b0df449a-fb1e-4dbc-bcf4-fe0919aaf905.pdf",
     "downloadName": "Seizures.pdf"
@@ -1098,7 +999,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Seizures Part-2",
     "topic": "Nervous System",
     "subtopicId": 5574,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/bba9ca84-a8d9-40ff-a107-203f46c880ed.pdf",
     "downloadName": "Seizure_Management.pdf"
@@ -1109,7 +1009,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Gullian Barre Syndrome",
     "topic": "Nervous System",
     "subtopicId": 5576,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/4bcd9f58-f1e7-4e66-955a-3f0de20773a8.pdf",
     "downloadName": "Gullian_Barre_Syndrome.pdf"
@@ -1120,7 +1019,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Musculoskeletal Gout",
     "topic": "Musculoskeletal System",
     "subtopicId": 5577,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7a6dcdd6-d0f4-4c9f-bd16-6f57e69a65bd.pdf",
     "downloadName": "Arthritis.pdf"
@@ -1131,7 +1029,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Ear Anatomy Part-1",
     "topic": "Ear",
     "subtopicId": 5578,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/1a24f97b-1c08-4232-9698-221dd7348f98.pdf",
     "downloadName": "Ear.pdf"
@@ -1142,7 +1039,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Ear Anatomy Part-2",
     "topic": "Ear",
     "subtopicId": 5579,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/de0025c1-34cc-4743-8efd-2896eca1b480.pdf",
     "downloadName": "Ear_Anatomy_Inner_Otosclerosis_Presbycusis.pdf"
@@ -1153,7 +1049,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Deafness, Hearing Aid and Cochlear Implants",
     "topic": "Ear",
     "subtopicId": 5580,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/13460a9c-6813-4d6f-82fc-56044e02cffe.pdf",
     "downloadName": "Deafness_and_its_Management.pdf"
@@ -1164,7 +1059,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Meniere Disease",
     "topic": "Ear",
     "subtopicId": 5581,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/88192b6e-4f91-43da-9f3f-bcd5a8696536.pdf",
     "downloadName": "Menieres_Disease.pdf"
@@ -1175,7 +1069,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Otosclerosis",
     "topic": "Ear",
     "subtopicId": 5582,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/be5895c8-4f2d-4314-a6e9-62c7e359161d.pdf",
     "downloadName": "Otosclerosis.pdf"
@@ -1186,7 +1079,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Blindness and Visual Acuity",
     "topic": "Eye",
     "subtopicId": 5583,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/ee301977-368d-47c7-84db-58dabadc86fa.pdf",
     "downloadName": "Blindness_Definition_and_Visual_Acuity.pdf"
@@ -1197,7 +1089,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cataract",
     "topic": "Eye",
     "subtopicId": 5584,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/fac6ddd3-4cd1-46cc-963c-73ed9d75c4b2.pdf",
     "downloadName": "Cataract.pdf"
@@ -1208,7 +1099,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Chemical Burns to Eye",
     "topic": "Eye",
     "subtopicId": 5585,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/1243d4d1-8c7f-4005-9f09-a3de82b2dd86.pdf",
     "downloadName": "Chemical_Burns_to_Eye.pdf"
@@ -1219,7 +1109,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Eye Anatomy",
     "topic": "Eye",
     "subtopicId": 5586,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/b8b54a7e-de19-4fc7-bf1d-ff08e4c16fda.pdf",
     "downloadName": "Eye_Anatomy_and_Refractive_Errors.pdf"
@@ -1230,7 +1119,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Glaucoma",
     "topic": "Eye",
     "subtopicId": 5587,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/f3381149-906e-4876-ab19-42633eff5d78.pdf",
     "downloadName": "Glaucoma.pdf"
@@ -1239,9 +1127,8 @@ export const MEDICINE_MASTER_NOTES = [
     "id": "med-hw-5036",
     "title": "Basics of Integumentary System including Histology and Skin Biopsy",
     "lectureTitle": "Basics of Integumentary System including Histology & Skin Biopsy",
-    "topic": "Dermatology ",
+    "topic": "Dermatology",
     "subtopicId": 13347,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/39c78561-1fa5-4da3-94e1-beb8f02b23b9.pdf",
     "downloadName": "Basics_of_Integumentary_System_including_Histology_and_Skin_Biopsy.pdf"
@@ -1250,9 +1137,8 @@ export const MEDICINE_MASTER_NOTES = [
     "id": "med-hw-5037",
     "title": "Candida, Herbs Zoster, Erysipelas & Cellulitis",
     "lectureTitle": "Candida, Herpes Zoster, Erysipelas & Cellulits",
-    "topic": "Dermatology ",
+    "topic": "Dermatology",
     "subtopicId": 13348,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/46025cf0-c135-4fb8-a28e-474d062bc431.pdf",
     "downloadName": "Candida_Herbs_Zoster_Erysipelas_Cellulitis.pdf"
@@ -1261,9 +1147,8 @@ export const MEDICINE_MASTER_NOTES = [
     "id": "med-hw-5038",
     "title": "Leprosy and Skin Infection with S. Auras",
     "lectureTitle": "Leprosy & Skin Infections with S.Aureus",
-    "topic": "Dermatology ",
+    "topic": "Dermatology",
     "subtopicId": 13349,
-    "faculty": "Dr. Deepak Marwah",
     "category": "HANDWRITTEN",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/05dd3cb2-48bf-41a1-82cb-6add3bd8c55c.pdf",
     "downloadName": "Leprosy_and_Skin_Infection_with_S_Auras.pdf"
@@ -1274,7 +1159,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 5 to 7 Class Notes Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7c9fb3f1-129d-42a2-b172-4062594a9ccc.pdf",
     "downloadName": "Day_5_to_7_Class_Notes_Medicine.pdf"
@@ -1285,7 +1169,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Medicine Class Notes (Day 1 & 2)",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/af5cf37f-929d-4702-871d-9ca92ed0fb50.pdf",
     "downloadName": "Medicine_Class_Notes_Day_1_2.pdf"
@@ -1296,7 +1179,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Medicine Class Notes (Day 1 & 2)",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/50eb707d-a023-49a7-8123-269346493147.pdf",
     "downloadName": "Medicine_Class_Notes_Day_1_2.pdf"
@@ -1307,7 +1189,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Class Notes Day 1-4 AHN Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/26e46ef7-2a26-42dd-b3b3-d070571fe56e.pdf",
     "downloadName": "Class_Notes_Day_1-4_AHN_Medicine.pdf"
@@ -1318,7 +1199,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Class Notes Day 1-4 AHN Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/97dbd02c-4daa-4fcc-a2df-aa993e1e542f.pdf",
     "downloadName": "Class_Notes_Day_1-4_AHN_Medicine.pdf"
@@ -1329,7 +1209,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 1-4 Class Notes Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/172894c0-9dff-44dd-a5f2-b83476a459f4.pdf",
     "downloadName": "Day_1-4_Class_Notes_Medicine.pdf"
@@ -1340,7 +1219,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 1 AHN Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/f8d963e4-f0c7-42cc-a3ce-c9cc8bcdaa94.pdf",
     "downloadName": "Day_1_AHN_Medicine.pdf"
@@ -1351,7 +1229,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Class Note Day 1 Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/293baf43-c71b-44f7-85fe-c1c90565833c.pdf",
     "downloadName": "Class_Note_Day_1_Medicine.pdf"
@@ -1362,7 +1239,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Class Note Day 2 Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/5a538d26-674d-410c-be15-573cc3f8e4e1.pdf",
     "downloadName": "Class_Note_Day_2_Medicine.pdf"
@@ -1373,7 +1249,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 2 AHN Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/15a47ba3-c7a4-4325-87c7-2b98dd574cce.pdf",
     "downloadName": "Day_2_AHN_Medicine.pdf"
@@ -1384,7 +1259,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 3 AHN Medicine",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/b726cc05-4bae-429e-a205-a2ef16550ff4.pdf",
     "downloadName": "Day_3_AHN_Medicine.pdf"
@@ -1395,7 +1269,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 7 Class Notes Medicine (1-7) Comp",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/eedfd95d-28de-4f82-8a6c-fec8f177cf56.pdf",
     "downloadName": "Day_7_Class_Notes_Medicine_1-7_Comp.pdf"
@@ -1406,7 +1279,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Final_Medicine Class Notes (Day 1 & 2)",
     "topic": "Red Sapphire Live Classes",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "LIVE CLASS",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/04183f45-6834-443c-b713-f66b30fbe237.pdf",
     "downloadName": "Final_Medicine_Class_Notes_Day_1_2.pdf"
@@ -1417,7 +1289,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Angina Pectoris Part-1",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/6.%20Coronary%20Artery%20Disease%20&%20MI%20(Part-1).pdf",
     "downloadName": "Angina_Pectoris_Part-1.pdf"
@@ -1428,7 +1299,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 3 AHN Medicine",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/c0e315fc-95c2-4bdd-8368-6e0e73f28a53.pdf",
     "downloadName": "Day_3_AHN_Medicine.pdf"
@@ -1439,7 +1309,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Diseases of Pericardium",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/10.%20Pericarditis.pdf",
     "downloadName": "Diseases_of_Pericardium.pdf"
@@ -1450,7 +1319,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Congestive Heart Failure - 1",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/9.%20Congestive%20Heart%20Failure%20&%20Cardiac%20Arrest.pdf",
     "downloadName": "Congestive_Heart_Failure_-_1.pdf"
@@ -1461,7 +1329,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Cardiomyopathy",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/14.%20Cardiomyopathy.pdf",
     "downloadName": "Cardiomyopathy.pdf"
@@ -1472,7 +1339,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Angina Pectoris Part-2",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/7.%20Coronary%20Artery%20Disease%20&%20MI%20(Part-2).pdf",
     "downloadName": "Angina_Pectoris_Part-2.pdf"
@@ -1483,7 +1349,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 1 AHN Medicine",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/b9dc741f-5b95-4fde-8aa7-0ab69d275f36.pdf",
     "downloadName": "Day_1_AHN_Medicine.pdf"
@@ -1494,7 +1359,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Adult Health Nursing (Medicine) Day 1 Part 1",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Fastrack%209.0/E-Notes/Medicine/Day%201%20and%202%20Class%20Notes%20Medicine.pdf",
     "downloadName": "Adult_Health_Nursing_Medicine_Day_1_Part_1.pdf"
@@ -1505,7 +1369,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Valvular Heart Disease",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/3.%20Valvular%20Heart%20Disease%20(Part-1).pdf",
     "downloadName": "Valvular_Heart_Disease.pdf"
@@ -1516,7 +1379,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Day 2 AHN Medicine",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/8f650184-be2b-4ff5-9472-16f8f09d440b.pdf",
     "downloadName": "Day_2_AHN_Medicine.pdf"
@@ -1527,7 +1389,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Myocarditis",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/8A.%20Adult%20Health%20Nursing%20(MSN-Medicine)/3.%20Cardiovascular%20System/5.%20Endocarditis%20&%20Rheumatic%20Heart%20Disease.pdf",
     "downloadName": "Myocarditis.pdf"
@@ -1538,7 +1399,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Final_Medicine Class Notes (Day 1 & 2)",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/13e29e19-1ae2-4ecf-9d50-ba1b70be50ed.pdf",
     "downloadName": "Final_Medicine_Class_Notes_Day_1_2.pdf"
@@ -1549,7 +1409,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Class Note Day 2 Medicine",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/a5806dfe-bc7d-493b-b8cd-fe4c1cd1bfae.pdf",
     "downloadName": "Class_Note_Day_2_Medicine.pdf"
@@ -1560,7 +1419,6 @@ export const MEDICINE_MASTER_NOTES = [
     "lectureTitle": "Class Note Day 1 Medicine",
     "topic": "Revision / English Modules",
     "subtopicId": null,
-    "faculty": "Dr. Deepak Marwah",
     "category": "REVISION",
     "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/e0eaf5f8-4a32-4ac3-a8e7-5212891d5467.pdf",
     "downloadName": "Class_Note_Day_1_Medicine.pdf"
