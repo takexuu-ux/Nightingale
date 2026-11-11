@@ -1,4 +1,5 @@
 import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/appMode.js';
+import { fetchFreshVdoCipherOtp } from './utils/batch104Sync.js';
 
 // NNL ONE Web Client App Logic
 
@@ -4942,29 +4943,24 @@ function openRecordingPlayer(recording) {
     loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing DRM stream via VdoCipher...</p>';
     bodyEl.appendChild(loader);
     
-    const token = localStorage.getItem('nnl_access_token');
-    const authHeaders = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json'
-    };
-
-    const tryGetOtp = (url) => {
-      return fetch(url, { method: 'GET', headers: authHeaders }).then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      });
-    };
-
-    // Cascading OTP generator: Try Batch first, then CMS, then Offline, then Live Recordings, then Question Bank
-    tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_otp/`)
-      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_otp/`))
-      .catch(() => tryGetOtp(`${API_BASE}/batch_cms/videos/${recId}/generate_videocipher_offline/`))
-      .catch(() => tryGetOtp(`${API_BASE}/cms/videos/${recId}/generate_videocipher_offline/`))
-      .catch(() => tryGetOtp(`${API_BASE}/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`))
-      .catch(() => tryGetOtp(`${API_BASE}/cms/question_bank/${recId}/generate_videocipher_otp/`))
+    fetchFreshVdoCipherOtp(recId, { isBatch103: true })
       .then(data => {
         if (loader) loader.remove();
         if (data && data.otp && data.playbackInfo) {
+          const tk = localStorage.getItem('nnl_access_token') || '';
+          if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+            viewer.classList.add('hide');
+            window.AndroidVideoBridge.playVideoWithAuth(
+              data.otp,
+              data.playbackInfo,
+              recording.title || 'Recorded Lecture',
+              recording.instructor || 'NNL Faculty',
+              String(recId || ''),
+              tk,
+              true
+            );
+            return;
+          }
           if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideo === 'function') {
             viewer.classList.add('hide');
             window.AndroidVideoBridge.playVideo(

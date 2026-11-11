@@ -5,8 +5,10 @@
 import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
-import { getBatchBaselineState, syncBatchLive, getBatchIdFromName } from './utils/batch104Sync.js';
+import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
+
+hydrateAndroidAuthSession();
 
 const API_BASE = '/api';
 
@@ -40,7 +42,7 @@ async function fetchAllPaginated(path, headers, maxPages = 20) {
   while (url && page <= maxPages) {
     try {
       const targetUrl = url.startsWith('http')
-        ? url.replace('https://prod-api.nnlone.com', API_BASE)
+        ? url.replace(/^https?:\/\/prod-api\.nnlone\.com/i, API_BASE)
         : (url.startsWith(API_BASE) ? url : `${API_BASE}${url}`);
 
       const res = await fetchWithTimeout(targetUrl, { headers });

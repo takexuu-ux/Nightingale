@@ -2,8 +2,10 @@
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
-import { getBatchBaselineState, syncBatchLive, fetchWithAutoAuth } from './utils/batch104Sync.js';
+import { getBatchBaselineState, syncBatchLive, fetchWithAutoAuth, fetchFreshVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
+
+hydrateAndroidAuthSession();
 
 const API_BASE = '/api';
 const SUBJECT_VIDEO_CACHE_PREFIX = 'nnl_vid_subj_cache_v1_';
@@ -326,14 +328,33 @@ function renderCurrentCatalog() {
   });
 }
 
-async function fetchPaginatedWithAutoAuth(path) {
+async function fetchPaginatedWithAutoAuth(path, meta = null) {
   const results = [];
   let url = path;
   let page = 1;
   while (url && page <= 20) {
-    const res = await fetchWithAutoAuth(url);
-    if (!res || !res.ok) break;
-    const json = await res.json();
+    let res = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        res = await fetchWithAutoAuth(url);
+        if (res && (res.ok || res.status === 401 || res.status === 403 || res.status === 404)) break;
+      } catch {}
+      if (attempt < 2) await new Promise(r => setTimeout(r, 450));
+    }
+    if (!res) {
+      if (meta) meta.networkError = true;
+      break;
+    }
+    if (!res.ok) {
+      if (meta) {
+        meta.lastStatus = res.status;
+        if (res.status === 401 || res.status === 403) meta.authError = true;
+        else if (res.status >= 500) meta.networkError = true;
+      }
+      break;
+    }
+    const json = await res.json().catch(() => null);
+    if (!json) break;
     const d = json.data || json.results || [];
     if (Array.isArray(d)) results.push(...d);
     let nextUrl = json.next_page_link || json.next || null;
@@ -347,10 +368,50 @@ async function fetchPaginatedWithAutoAuth(path) {
   return results;
 }
 
+function extractVideosFromSubtopic(st, topicTitle, sub) {
+  const candidates = Array.isArray(st.videos)
+    ? st.videos
+    : (st.videos && typeof st.videos === 'object'
+        ? [st.videos]
+        : (st.video && typeof st.video === 'object'
+            ? [st.video]
+            : ((st.video_cipher_id || st.video_url || st.vdo_cipher_id) ? [st] : [])));
+
+  const items = [];
+  candidates.forEach(vid => {
+    if (!vid || typeof vid !== 'object') return;
+    const vidId = vid.id || st.video_id || st.id;
+    if (!vidId) return;
+    const hrs = vid.duration ? Math.floor(vid.duration / 3600) : 0;
+    const mins = vid.duration ? Math.floor((vid.duration % 3600) / 60) : 0;
+    const durStr = hrs > 0 ? `${hrs}h ${mins}m` : (mins > 0 ? `${mins}m` : '');
+    const title = (vid.title || st.title || 'Lecture Video').trim();
+    const note = findMatchingNotePdf(st.id || vid.subtopic, title);
+    items.push({
+      id: vidId,
+      subtopicId: st.id || vid.subtopic || null,
+      title,
+      topic: (topicTitle || sub.title).trim(),
+      instructor: vid.faculty?.name || sub.faculty || 'NNL Faculty',
+      duration: durStr,
+      date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : '',
+      video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
+      videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
+      thumbnails: vid.thumbnails || [],
+      notePdfUrl: note?.url || '',
+      notePdfTitle: note?.title || ''
+    });
+  });
+  return items;
+}
+
 async function fetchSubjectVideosOnDemand(sub, force = false) {
   if (sub.isBatch103) return sub.videos || [];
 
+  hydrateAndroidAuthSession();
   const sid = String(sub.id);
+  sub.__lastLoadError = null;
+
   if (!force && loadedVideosBySubjectId.has(sid)) {
     return loadedVideosBySubjectId.get(sid);
   }
@@ -369,38 +430,46 @@ async function fetchSubjectVideosOnDemand(sub, force = false) {
   }
 
   const token = localStorage.getItem('nnl_access_token');
-  if (!token) return [];
+  if (!token) {
+    sub.__lastLoadError = 'auth';
+    return [];
+  }
 
-  const topics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/topic/?subject=${sid}&page_size=100`);
+  const meta = { authError: false, networkError: false, lastStatus: 0 };
+  let topics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/topic/?subject=${sid}&page_size=100`, meta);
+  if (topics.length === 0 && !meta.authError) {
+    topics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/topic/?subject=${sid}&plan_id=77&page_size=100`, meta);
+  }
+  if (topics.length === 0 && !meta.authError) {
+    topics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/topic/?subject_id=${sid}&page_size=100`, meta);
+  }
+
+  if (topics.length === 0) {
+    if (meta.authError) sub.__lastLoadError = 'auth';
+    else if (meta.networkError) sub.__lastLoadError = `http_${meta.lastStatus || 'net'}`;
+    return [];
+  }
+
   const collected = [];
+  const seenIds = new Set();
 
-  // Throttled chunks of 4 topics so Android/Tablet connection never saturates
-  const chunkSize = 4;
+  // Throttled chunks of 3 topics so Android/Tablet connection never saturates
+  const chunkSize = 3;
   for (let i = 0; i < topics.length; i += chunkSize) {
     const chunk = topics.slice(i, i + chunkSize);
     await Promise.allSettled(chunk.map(async top => {
-      const subtopics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/subtopic/?topic=${top.id}&page_size=100`);
+      let subtopics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/subtopic/?topic=${top.id}&page_size=100`, meta);
+      if (subtopics.length === 0 && !meta.authError) {
+        subtopics = await fetchPaginatedWithAutoAuth(`/cms/fe/videos/subtopic/?topic_id=${top.id}&page_size=100`, meta);
+      }
       subtopics.forEach(st => {
-        const vid = st.videos || st.video;
-        if (!vid || typeof vid !== 'object') return;
-        const hrs = vid.duration ? Math.floor(vid.duration / 3600) : 0;
-        const mins = vid.duration ? Math.floor((vid.duration % 3600) / 60) : 0;
-        const durStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-        const title = (vid.title || st.title || 'Lecture Video').trim();
-        const note = findMatchingNotePdf(st.id || vid.subtopic, title);
-        collected.push({
-          id: vid.id,
-          subtopicId: st.id || vid.subtopic || null,
-          title,
-          topic: (top.title || sub.title).trim(),
-          instructor: vid.faculty?.name || sub.faculty || 'NNL Faculty',
-          duration: durStr,
-          date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : '',
-          video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
-          videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
-          thumbnails: vid.thumbnails || [],
-          notePdfUrl: note?.url || '',
-          notePdfTitle: note?.title || ''
+        const items = extractVideosFromSubtopic(st, top.title, sub);
+        items.forEach(item => {
+          const k = String(item.id) + '_' + String(item.subtopicId || '');
+          if (!seenIds.has(k)) {
+            seenIds.add(k);
+            collected.push(item);
+          }
         });
       });
     }));
@@ -413,6 +482,10 @@ async function fetchSubjectVideosOnDemand(sub, force = false) {
     try {
       localStorage.setItem(SUBJECT_VIDEO_CACHE_PREFIX + sid, JSON.stringify(collected));
     } catch {}
+  } else if (meta.authError) {
+    sub.__lastLoadError = 'auth';
+  } else if (meta.networkError) {
+    sub.__lastLoadError = `http_${meta.lastStatus || 'net'}`;
   }
 
   return collected;
@@ -456,7 +529,7 @@ async function openSubjectPage(subject) {
         <p style="color:var(--text-secondary);margin-top:0.75rem;font-family:var(--font-display);font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;">Loading ${escapeHtml(cleanTitle)} lectures...</p>
       </div>
     `;
-    const fetched = await fetchSubjectVideosOnDemand(subject);
+    const fetched = await fetchSubjectVideosOnDemand(currentOpenSubject);
     currentOpenSubject.videos = fetched;
   } else if (!subject.isBatch103) {
     currentOpenSubject.videos = loadedVideosBySubjectId.get(String(subject.id)) || [];
@@ -520,12 +593,44 @@ function renderSubjectLecturesList() {
   });
 
   if (filtered.length === 0) {
+    const errType = currentOpenSubject.__lastLoadError;
+    if (videos.length === 0 && errType === 'auth') {
+      subjectLecturesContainer.innerHTML = `
+        <div class="notes-empty-state">
+          <h3 class="notes-empty-title">Session Expired</h3>
+          <p class="notes-empty-desc">Your NNL login session expired or was signed in on another device. Sign in again to load ${escapeHtml(currentOpenSubject.title)} lectures.</p>
+          <a href="/" class="btn-note-view" style="display:inline-flex;margin-top:0.85rem;text-decoration:none;">Sign In Again</a>
+        </div>
+      `;
+      return;
+    }
+    if (videos.length === 0 && errType) {
+      subjectLecturesContainer.innerHTML = `
+        <div class="notes-empty-state">
+          <h3 class="notes-empty-title">Could Not Load Lectures</h3>
+          <p class="notes-empty-desc">Connection timed out or server returned an error (${escapeHtml(errType)}). Check your internet and tap Retry.</p>
+          <button id="retry-subject-load-btn" class="btn-note-view" style="display:inline-flex;margin-top:0.85rem;cursor:pointer;">Retry Loading</button>
+        </div>
+      `;
+      document.getElementById('retry-subject-load-btn')?.addEventListener('click', async () => {
+        subjectLecturesContainer.innerHTML = `<div class="cp-loading" style="padding:3rem;text-align:center;"><div class="spinner"></div><p style="color:var(--text-secondary);margin-top:0.75rem;">Retrying...</p></div>`;
+        currentOpenSubject.videos = await fetchSubjectVideosOnDemand(currentOpenSubject, true);
+        renderSubjectLecturesList();
+      });
+      return;
+    }
     subjectLecturesContainer.innerHTML = `
       <div class="notes-empty-state">
         <h3 class="notes-empty-title">No Lectures Found</h3>
-        <p class="notes-empty-desc">Try selecting a different topic or clearing the search filter.</p>
+        <p class="notes-empty-desc">Try selecting a different topic, clearing the search filter, or refreshing this subject.</p>
+        <button id="retry-subject-load-btn" class="btn-note-view" style="display:inline-flex;margin-top:0.85rem;cursor:pointer;">Refresh Lectures</button>
       </div>
     `;
+    document.getElementById('retry-subject-load-btn')?.addEventListener('click', async () => {
+      subjectLecturesContainer.innerHTML = `<div class="cp-loading" style="padding:3rem;text-align:center;"><div class="spinner"></div><p style="color:var(--text-secondary);margin-top:0.75rem;">Refreshing...</p></div>`;
+      currentOpenSubject.videos = await fetchSubjectVideosOnDemand(currentOpenSubject, true);
+      renderSubjectLecturesList();
+    });
     return;
   }
 
@@ -642,58 +747,55 @@ function openRecordingPlayer(recording) {
   loader.innerHTML = '<div class="spinner"></div><p style="margin-top:0.75rem;font-family:var(--font-display);font-size:0.8rem;letter-spacing:0.06em;text-transform:uppercase;color:#c4b5fd;">Securing Stream via VdoCipher...</p>';
   bodyEl.appendChild(loader);
 
-  const tryGetOtp = async (path) => {
-    const res = await fetchWithAutoAuth(path);
-    if (!res || !res.ok) {
-      const txt = res ? await res.text().catch(() => '') : '';
-      const err = new Error(`HTTP ${res?.status || 401}: ${txt.slice(0, 120)}`);
-      err.status = res?.status || 401;
-      throw err;
-    }
-    return res.json();
-  };
-
   const recId = recording.id;
-  const endpoints = currentOpenSubject?.isBatch103
-    ? [
-        `/batch_cms/videos/${recId}/generate_videocipher_otp/`,
-        `/batch_cms/videos/${recId}/generate_videocipher_offline/`,
-        `/cms/videos/${recId}/generate_videocipher_otp/`
-      ]
-    : [
-        `/cms/videos/${recId}/generate_videocipher_otp/`,
-        `/cms/videos/${recId}/generate_videocipher_offline/`,
-        `/batch_cms/videos/${recId}/generate_videocipher_otp/`,
-        `/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`,
-        `/cms/question_bank/${recId}/generate_videocipher_otp/`
-      ];
+  const isBatch = Boolean(currentOpenSubject?.isBatch103);
 
   const launchPlayback = async () => {
-    for (const ep of endpoints) {
-      try {
-        const data = await tryGetOtp(ep);
-        if (data && data.otp && data.playbackInfo) {
-          loader.remove();
-          if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideo === 'function') {
-            viewer.classList.add('hide');
-            window.AndroidVideoBridge.playVideo(
-              data.otp,
-              data.playbackInfo,
-              recording.title || 'Recorded Lecture',
-              recording.instructor || 'NNL Faculty'
-            );
-            return;
-          }
-          const iframe = document.createElement('iframe');
-          iframe.id = 'recording-cipher-iframe';
-          iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;
-          iframe.style.cssText = 'border:none;width:100%;height:100%;border-radius:12px;';
-          iframe.setAttribute('allow', 'encrypted-media *; autoplay *; fullscreen *; picture-in-picture *');
-          iframe.setAttribute('allowfullscreen', 'true');
-          bodyEl.appendChild(iframe);
+    try {
+      const data = await fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch });
+      if (data && data.otp && data.playbackInfo) {
+        loader.remove();
+        const tk = localStorage.getItem('nnl_access_token') || '';
+        if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+          viewer.classList.add('hide');
+          window.AndroidVideoBridge.playVideoWithAuth(
+            data.otp,
+            data.playbackInfo,
+            recording.title || 'Recorded Lecture',
+            recording.instructor || 'NNL Faculty',
+            String(recId || ''),
+            tk,
+            isBatch
+          );
           return;
         }
-      } catch {}
+        if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideo === 'function') {
+          viewer.classList.add('hide');
+          window.AndroidVideoBridge.playVideo(
+            data.otp,
+            data.playbackInfo,
+            recording.title || 'Recorded Lecture',
+            recording.instructor || 'NNL Faculty'
+          );
+          return;
+        }
+        const iframe = document.createElement('iframe');
+        iframe.id = 'recording-cipher-iframe';
+        iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;
+        iframe.style.cssText = 'border:none;width:100%;height:100%;border-radius:12px;';
+        iframe.setAttribute('allow', 'encrypted-media *; autoplay *; fullscreen *; picture-in-picture *');
+        iframe.setAttribute('allowfullscreen', 'true');
+        bodyEl.appendChild(iframe);
+        return;
+      }
+    } catch (err) {
+      if (err && (err.status === 401 || err.status === 403) && noUrlEl) {
+        loader.remove();
+        const errDesc = document.getElementById('recording-error-desc');
+        if (errDesc) errDesc.textContent = err.message || 'Session expired — please log in again on the home page.';
+        noUrlEl.classList.remove('hide');
+        return;
+      }
     }
 
     loader.remove();

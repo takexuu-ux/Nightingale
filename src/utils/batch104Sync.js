@@ -9,6 +9,31 @@ import { BATCH_104_ID, BATCH_104_SUBJECTS, BATCH_104_BASELINE_SYNC } from '../da
 const API_BASE = '/api';
 const SYNC_COOLDOWN_MS = 3 * 60 * 1000;
 
+export function hydrateAndroidAuthSession() {
+  try {
+    if (typeof window !== 'undefined' && window.AndroidAuthBridge && typeof window.AndroidAuthBridge.getSessionJson === 'function') {
+      const raw = window.AndroidAuthBridge.getSessionJson();
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.access && !localStorage.getItem('nnl_access_token')) {
+          localStorage.setItem('nnl_access_token', saved.access);
+        }
+        if (saved.refresh && !localStorage.getItem('nnl_refresh_token')) {
+          localStorage.setItem('nnl_refresh_token', saved.refresh);
+        }
+        if (saved.phone && !localStorage.getItem('nnl_phone')) {
+          localStorage.setItem('nnl_phone', saved.phone);
+        }
+        if (saved.deviceId && !localStorage.getItem('nnl_device_id')) {
+          localStorage.setItem('nnl_device_id', saved.deviceId);
+        }
+      }
+    }
+  } catch {}
+}
+
+hydrateAndroidAuthSession();
+
 const BATCH_CONFIGS = {
   103: {
     id: BATCH_103_ID,
@@ -30,57 +55,142 @@ export function getBatchIdFromName(batchName) {
   return String(batchName || '').toUpperCase().includes('ENGLISH') ? 104 : 103;
 }
 
-function fetchWithTimeout(url, options = {}, ms = 12000) {
+function fetchWithTimeout(url, options = {}, ms = 20000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
+let inFlightRefreshPromise = null;
+
 export async function refreshAccessToken() {
+  hydrateAndroidAuthSession();
   const refresh = localStorage.getItem('nnl_refresh_token');
   if (!refresh) return false;
-  try {
-    const res = await fetchWithTimeout(`${API_BASE}/auth/token/refresh/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ refresh })
-    }, 10000);
-    if (!res.ok) return false;
-    const data = await res.json();
-    const newAccess = data.access || data.data?.access;
-    if (newAccess) {
-      localStorage.setItem('nnl_access_token', newAccess);
-      return true;
+  if (inFlightRefreshPromise) return inFlightRefreshPromise;
+
+  inFlightRefreshPromise = (async () => {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}/auth/token/refresh/`, {
+        method: 'POST',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store'
+        },
+        body: JSON.stringify({ refresh })
+      }, 12000);
+      if (!res.ok) return false;
+      const data = await res.json();
+      const newAccess = data.access || data.data?.access;
+      const newRefresh = data.refresh || data.data?.refresh || refresh;
+      if (newAccess) {
+        localStorage.setItem('nnl_access_token', newAccess);
+        if (newRefresh) localStorage.setItem('nnl_refresh_token', newRefresh);
+        try {
+          if (typeof window !== 'undefined' && window.AndroidAuthBridge && typeof window.AndroidAuthBridge.saveSession === 'function') {
+            window.AndroidAuthBridge.saveSession(
+              newAccess,
+              newRefresh,
+              localStorage.getItem('nnl_phone') || '',
+              localStorage.getItem('nnl_device_id') || ''
+            );
+          }
+        } catch {}
+        return true;
+      }
+    } catch (e) {
+      console.warn('[SapphireSync] Token refresh failed:', e);
     }
-  } catch (e) {
-    console.warn('[SapphireSync] Token refresh failed:', e);
-  }
-  return false;
+    return false;
+  })().finally(() => {
+    inFlightRefreshPromise = null;
+  });
+
+  return inFlightRefreshPromise;
 }
 
 export async function fetchWithAutoAuth(pathOrUrl, options = {}) {
+  hydrateAndroidAuthSession();
   let token = localStorage.getItem('nnl_access_token');
   if (!token) return null;
 
-  const targetUrl = pathOrUrl.startsWith('http')
-    ? pathOrUrl.replace('https://prod-api.nnlone.com', API_BASE)
-    : (pathOrUrl.startsWith(API_BASE) ? pathOrUrl : `${API_BASE}${pathOrUrl}`);
+  const targetUrl = String(pathOrUrl || '').startsWith('http')
+    ? String(pathOrUrl).replace(/^https?:\/\/prod-api\.nnlone\.com/i, API_BASE)
+    : (String(pathOrUrl).startsWith(API_BASE) ? pathOrUrl : `${API_BASE}${pathOrUrl}`);
 
   const buildHeaders = (tk) => ({
     'Authorization': `Bearer ${tk}`,
     'Accept': 'application/json',
+    'Cache-Control': 'no-cache, no-store',
     ...(options.headers || {})
   });
 
-  let res = await fetchWithTimeout(targetUrl, { ...options, headers: buildHeaders(token) });
+  let res = await fetchWithTimeout(targetUrl, {
+    cache: 'no-store',
+    ...options,
+    headers: buildHeaders(token)
+  });
   if (res.status === 401 || res.status === 403) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       token = localStorage.getItem('nnl_access_token');
-      res = await fetchWithTimeout(targetUrl, { ...options, headers: buildHeaders(token) });
+      res = await fetchWithTimeout(targetUrl, {
+        cache: 'no-store',
+        ...options,
+        headers: buildHeaders(token)
+      });
     }
   }
   return res;
+}
+
+export async function fetchFreshVdoCipherOtp(recId, { isBatch103 = false } = {}) {
+  if (!recId) throw new Error('Missing video ID');
+  const endpoints = isBatch103
+    ? [
+        `/batch_cms/videos/${recId}/generate_videocipher_otp/`,
+        `/cms/videos/${recId}/generate_videocipher_otp/`,
+        `/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`
+      ]
+    : [
+        `/cms/videos/${recId}/generate_videocipher_otp/`,
+        `/batch_cms/videos/${recId}/generate_videocipher_otp/`,
+        `/cms/v2/live_classes_recordings/${recId}/generate_videocipher_otp/`,
+        `/cms/question_bank/${recId}/generate_videocipher_otp/`
+      ];
+
+  let lastStatus = 0;
+  for (const ep of endpoints) {
+    try {
+      const bust = `${ep}${ep.includes('?') ? '&' : '?'}_ts=${Date.now()}`;
+      const res = await fetchWithAutoAuth(bust, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
+      });
+      if (!res) {
+        lastStatus = 401;
+        continue;
+      }
+      lastStatus = res.status;
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.otp && data.playbackInfo) {
+        return {
+          otp: data.otp,
+          playbackInfo: data.playbackInfo,
+          sourceEndpoint: ep
+        };
+      }
+    } catch {}
+  }
+
+  const err = new Error(lastStatus === 401 || lastStatus === 403
+    ? 'Session expired — please sign in again to stream.'
+    : 'Could not obtain VdoCipher stream token from NNL server.');
+  err.status = lastStatus;
+  throw err;
 }
 
 async function fetchAllBatchPaginated(path, maxPages = 15) {
