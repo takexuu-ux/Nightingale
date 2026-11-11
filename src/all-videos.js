@@ -2,7 +2,7 @@
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
-import { getBatchBaselineState, syncBatchLive, fetchWithAutoAuth, fetchFreshVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
+import { getBatchBaselineState, syncBatchLive, fetchWithAutoAuth, fetchFreshVdoCipherOtp, fetchOfflineVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
 
 hydrateAndroidAuthSession();
@@ -55,6 +55,104 @@ let activeTopicFilter = 'ALL';
 let currentOpenSubject = null; // { id, title, faculty, category, videoCount, isBatch103, videos }
 let batch103State = getBatchBaselineState(103);
 const loadedVideosBySubjectId = new Map();
+const hasNativeOfflineBridge = () =>
+  typeof window !== 'undefined' &&
+  window.AndroidVideoBridge &&
+  typeof window.AndroidVideoBridge.playOfflineVideo === 'function';
+
+const offlineMapByRecId = new Map();
+const offlinePendingReq = new Set();
+let offlinePollTimer = null;
+
+async function refreshOfflineDownloads({ reRender = false } = {}) {
+  if (!hasNativeOfflineBridge()) return;
+  try {
+    const res = await fetch(`/__offline/list?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json.ok || !Array.isArray(json.items)) return;
+
+    offlineMapByRecId.clear();
+    let hasActive = false;
+    let savedCount = 0;
+    json.items.forEach(item => {
+      offlineMapByRecId.set(String(item.recId), item);
+      if (item.completed) savedCount++;
+      if (item.status === 'pending' || item.status === 'downloading') hasActive = true;
+    });
+
+    const offTab = document.getElementById('vid-tab-offline');
+    const offCount = document.getElementById('vid-count-offline');
+    if (offTab) offTab.classList.remove('hide');
+    if (offCount) offCount.textContent = json.items.length;
+
+    if (hasActive && !offlinePollTimer) {
+      offlinePollTimer = setInterval(() => refreshOfflineDownloads({ reRender: true }), 1100);
+    } else if (!hasActive && offlinePollTimer) {
+      clearInterval(offlinePollTimer);
+      offlinePollTimer = null;
+    }
+
+    if (reRender) {
+      if (currentOpenSubject) renderSubjectLecturesList();
+      else if (videoSectionMode === 'offline') renderCurrentCatalog();
+    }
+  } catch {}
+}
+
+async function startOfflineLectureDownload(rec, btnEl) {
+  if (!rec || !rec.id) return;
+  const key = String(rec.id);
+  if (offlinePendingReq.has(key)) return;
+  offlinePendingReq.add(key);
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span>Preparing...</span>';
+  }
+
+  try {
+    const isBatch = Boolean(currentOpenSubject?.isBatch103);
+    const cred = await fetchOfflineVdoCipherOtp(rec.id, { isBatch103: isBatch });
+    const startRes = await fetch('/__offline/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recId: key,
+        mediaId: rec.video_cipher_id || '',
+        otp: cred.otp,
+        playbackInfo: cred.playbackInfo,
+        title: rec.title || 'Recorded Lecture',
+        instructor: rec.instructor || 'NNL Faculty',
+        subject: currentOpenSubject?.title || rec.topic || ''
+      })
+    });
+    const startJson = await startRes.json();
+    if (!startJson.ok) throw new Error(startJson.error || 'Could not queue download');
+    await refreshOfflineDownloads({ reRender: true });
+  } catch (err) {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.title = err.message;
+      btnEl.innerHTML = '<span>Retry Save</span>';
+    }
+    alert(`Download error: ${err.message}`);
+  } finally {
+    offlinePendingReq.delete(key);
+  }
+}
+
+async function deleteOfflineLecture(recId) {
+  try {
+    await fetch('/__offline/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recId: String(recId) })
+    });
+    offlineMapByRecId.delete(String(recId));
+    await refreshOfflineDownloads({ reRender: true });
+  } catch {}
+}
 
 // Pre-seed Medicine (73) immediately + populate matched notes PDFs
 if (PRESEEDED_VIDEOS_BY_SUBJECT['73']) {
@@ -217,7 +315,11 @@ function updateTopStats() {
 
   const statSub = document.getElementById('stat-subjects');
   const statLec = document.getElementById('stat-lectures');
-  if (videoSectionMode === 'rb103') {
+  if (videoSectionMode === 'offline') {
+    const items = Array.from(offlineMapByRecId.values());
+    if (statSub) statSub.textContent = items.length;
+    if (statLec) statLec.textContent = items.filter(x => x.completed).length;
+  } else if (videoSectionMode === 'rb103') {
     if (statSub) statSub.textContent = rbActiveCount;
     if (statLec) statLec.textContent = rbVideos;
   } else {
@@ -257,6 +359,80 @@ function renderCurrentCatalog() {
 
   const q = searchQuery.trim().toLowerCase();
   let list = [];
+
+  if (videoSectionMode === 'offline') {
+    const items = Array.from(offlineMapByRecId.values())
+      .filter(it => !q || `${it.title} ${it.instructor} ${it.subject}`.toLowerCase().includes(q));
+    if (items.length === 0) {
+      classListContainer.innerHTML = `
+        <div class="notes-empty-state" style="grid-column: 1 / -1;">
+          <h3 class="notes-empty-title">No Downloaded Lectures Yet</h3>
+          <p class="notes-empty-desc">Open any subject and tap Save on a lecture to watch offline without internet.</p>
+        </div>
+      `;
+      return;
+    }
+
+    classListContainer.style.display = 'flex';
+    classListContainer.style.flexDirection = 'column';
+    classListContainer.style.gap = '0.75rem';
+    classListContainer.innerHTML = items.map((it, idx) => {
+      const mbTotal = it.totalSizeBytes > 0 ? `${(it.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '';
+      const mbDone = it.bytesDownloaded > 0 ? `${(it.bytesDownloaded / (1024 * 1024)).toFixed(1)} MB` : '';
+      const statusLabel = it.completed
+        ? (it.expired ? 'Offline Expired' : `Saved Offline${mbTotal ? ` • ${mbTotal}` : ''}`)
+        : (it.status === 'failed'
+            ? `Failed${it.error ? `: ${it.error}` : ''}`
+            : `Downloading ${it.percent || 0}%${mbTotal ? ` (${mbDone}/${mbTotal})` : ''}`);
+      return `
+        <div class="sd-lecture-card" data-off-idx="${idx}">
+          <span class="sd-lecture-num">${String(idx + 1).padStart(2, '0')}</span>
+          <div class="sd-lecture-details">
+            <div class="sd-lecture-title">${escapeHtml(it.title)}</div>
+            <div class="sd-lecture-meta">
+              <span style="color:#ddd6fe;font-weight:600;">${escapeHtml(it.instructor || 'NNL Faculty')}</span>
+              ${it.subject ? `<span>•</span><span>${escapeHtml(it.subject)}</span>` : ''}
+              <span>•</span>
+              <span style="color:${it.completed ? '#6ee7b7' : '#fde68a'};font-weight:600;">${escapeHtml(statusLabel)}</span>
+            </div>
+          </div>
+          <div class="sd-lecture-actions">
+            ${it.completed && !it.expired ? `
+              <button class="sd-lecture-btn btn-play-offline" data-media-id="${escapeHtml(it.mediaId)}" data-title="${encodeURIComponent(it.title)}" data-inst="${encodeURIComponent(it.instructor || 'NNL Faculty')}">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <span>Play Offline</span>
+              </button>
+            ` : ''}
+            <button class="sd-del-btn btn-del-offline" data-rec-id="${escapeHtml(it.recId)}" title="Remove Offline Copy">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    classListContainer.querySelectorAll('.btn-play-offline').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.AndroidVideoBridge.playOfflineVideo(
+          btn.getAttribute('data-media-id'),
+          decodeURIComponent(btn.getAttribute('data-title')),
+          decodeURIComponent(btn.getAttribute('data-inst'))
+        );
+      });
+    });
+    classListContainer.querySelectorAll('.btn-del-offline').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteOfflineLecture(btn.getAttribute('data-rec-id'));
+      });
+    });
+    return;
+  }
+
+  classListContainer.style.display = '';
+  classListContainer.style.flexDirection = '';
+  classListContainer.style.gap = '';
 
   if (videoSectionMode === 'rb103') {
     list = (batch103State?.subjects || [])
@@ -637,6 +813,37 @@ function renderSubjectLecturesList() {
   subjectLecturesContainer.innerHTML = filtered.map((rec, idx) => {
     const rowNum = String(idx + 1).padStart(2, '0');
     const thumb = rec.thumbnails?.[0]?.url || rec.thumb || '';
+    const offState = offlineMapByRecId.get(String(rec.id));
+    let dlBtnHtml = '';
+    if (hasNativeOfflineBridge()) {
+      if (offState && offState.completed && !offState.expired) {
+        dlBtnHtml = `
+          <button class="sd-dl-btn saved btn-dl-lecture" data-rec-idx="${idx}" title="Play Offline Copy">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Saved</span>
+          </button>
+          <button class="sd-del-btn btn-del-lecture" data-rec-id="${escapeHtml(String(rec.id))}" title="Delete Offline Copy">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        `;
+      } else if (offState && (offState.status === 'downloading' || offState.status === 'pending')) {
+        dlBtnHtml = `
+          <button class="sd-dl-btn downloading btn-dl-lecture" data-rec-idx="${idx}" disabled>
+            <span>${offState.percent || 0}%</span>
+          </button>
+          <button class="sd-del-btn btn-del-lecture" data-rec-id="${escapeHtml(String(rec.id))}" title="Cancel Download">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        `;
+      } else {
+        dlBtnHtml = `
+          <button class="sd-dl-btn btn-dl-lecture" data-rec-idx="${idx}" title="Save Lecture for Offline Viewing">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>${offState && offState.status === 'failed' ? 'Retry Save' : 'Download'}</span>
+          </button>
+        `;
+      }
+    }
     return `
       <div class="sd-lecture-card" data-rec-idx="${idx}">
         <span class="sd-lecture-num">${rowNum}</span>
@@ -659,6 +866,7 @@ function renderSubjectLecturesList() {
               <span>Notes PDF</span>
             </button>
           ` : ''}
+          ${dlBtnHtml}
           <button class="sd-lecture-btn">
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             <span>Play</span>
@@ -667,6 +875,28 @@ function renderSubjectLecturesList() {
       </div>
     `;
   }).join('');
+
+  subjectLecturesContainer.querySelectorAll('.btn-dl-lecture').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-rec-idx'), 10);
+      const rec = !isNaN(idx) ? filtered[idx] : null;
+      if (!rec) return;
+      const st = offlineMapByRecId.get(String(rec.id));
+      if (st && st.completed && !st.expired && hasNativeOfflineBridge()) {
+        window.AndroidVideoBridge.playOfflineVideo(st.mediaId, rec.title || 'Offline Lecture', rec.instructor || 'NNL Faculty');
+        return;
+      }
+      startOfflineLectureDownload(rec, btn);
+    });
+  });
+
+  subjectLecturesContainer.querySelectorAll('.btn-del-lecture').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteOfflineLecture(btn.getAttribute('data-rec-id'));
+    });
+  });
 
   subjectLecturesContainer.querySelectorAll('.btn-open-lec-pdf').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -719,6 +949,16 @@ function initRecordingsViewer() {
 }
 
 function openRecordingPlayer(recording) {
+  const offState = offlineMapByRecId.get(String(recording?.id));
+  if (offState && offState.completed && !offState.expired && hasNativeOfflineBridge()) {
+    window.AndroidVideoBridge.playOfflineVideo(
+      offState.mediaId,
+      recording.title || 'Offline Lecture',
+      recording.instructor || 'NNL Faculty'
+    );
+    return;
+  }
+
   const viewer = document.getElementById('recording-viewer');
   const titleEl = document.getElementById('recording-viewer-title');
   const instructorEl = document.getElementById('recording-viewer-instructor');
@@ -840,6 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
     videoSectionMode = 'all';
     document.getElementById('vid-tab-all')?.classList.add('active');
     document.getElementById('vid-tab-rb103')?.classList.remove('active');
+    document.getElementById('vid-tab-offline')?.classList.remove('active');
     closeSubjectPage();
     renderCurrentCatalog();
   });
@@ -848,7 +1089,18 @@ document.addEventListener('DOMContentLoaded', () => {
     videoSectionMode = 'rb103';
     document.getElementById('vid-tab-rb103')?.classList.add('active');
     document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-offline')?.classList.remove('active');
     closeSubjectPage();
+    renderCurrentCatalog();
+  });
+
+  document.getElementById('vid-tab-offline')?.addEventListener('click', async () => {
+    videoSectionMode = 'offline';
+    document.getElementById('vid-tab-offline')?.classList.add('active');
+    document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-rb103')?.classList.remove('active');
+    closeSubjectPage();
+    await refreshOfflineDownloads();
     renderCurrentCatalog();
   });
 
@@ -878,6 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renderCurrentCatalog();
+  refreshOfflineDownloads();
   syncBatchLive(103, {
     onUpdate: (u) => {
       batch103State = u;

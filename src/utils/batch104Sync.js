@@ -193,6 +193,58 @@ export async function fetchFreshVdoCipherOtp(recId, { isBatch103 = false } = {})
   throw err;
 }
 
+export async function fetchOfflineVdoCipherOtp(recId, { isBatch103 = false } = {}) {
+  if (!recId) throw new Error('Missing video ID');
+  const endpoints = isBatch103
+    ? [
+        `/batch_cms/videos/${recId}/generate_videocipher_offline/`,
+        `/cms/videos/${recId}/generate_videocipher_offline/`
+      ]
+    : [
+        `/cms/videos/${recId}/generate_videocipher_offline/`,
+        `/batch_cms/videos/${recId}/generate_videocipher_offline/`
+      ];
+
+  let lastStatus = 0;
+  for (const ep of endpoints) {
+    try {
+      const bust = `${ep}${ep.includes('?') ? '&' : '?'}_ts=${Date.now()}`;
+      let res = await fetchWithAutoAuth(bust, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
+      });
+      if (res && res.status === 405) {
+        res = await fetchWithAutoAuth(bust, {
+          method: 'POST',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache, no-store' },
+          body: JSON.stringify({})
+        });
+      }
+      if (!res) {
+        lastStatus = 401;
+        continue;
+      }
+      lastStatus = res.status;
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.otp && data.playbackInfo) {
+        return {
+          otp: data.otp,
+          playbackInfo: data.playbackInfo,
+          sourceEndpoint: ep
+        };
+      }
+    } catch {}
+  }
+
+  const err = new Error(lastStatus === 401 || lastStatus === 403
+    ? 'Session expired — please sign in again to download.'
+    : 'Offline download not enabled for this lecture on NNL server.');
+  err.status = lastStatus;
+  throw err;
+}
+
 async function fetchAllBatchPaginated(path, maxPages = 15) {
   const results = [];
   let url = path;
