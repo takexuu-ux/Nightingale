@@ -1,15 +1,17 @@
 // Nightingale Categorized Practice Tests, Question Bank & Batch 104 CBT Controller
 import { PRACTICE_TEST_SERIES, QBANK_SUBJECTS, TESTS_CATALOG_TOTALS } from './data/allTestsCatalog.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth } from './utils/batch104Sync.js';
+import { IS_HINGLISH_APK } from './config/appMode.js';
 
-const ALLOWED_SAPPHIRE_BATCHES = [
-  'Red Sapphire (Hinglish)',
-  'Red Sapphire (English)'
-];
+const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
+  ? ['Red Sapphire (Hinglish)']
+  : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
-let activeBatch = localStorage.getItem('nnl_active_batch');
+let activeBatch = IS_HINGLISH_APK
+  ? 'Red Sapphire (Hinglish)'
+  : localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
-  activeBatch = (activeBatch && activeBatch.toUpperCase().includes('ENGLISH'))
+  activeBatch = (activeBatch && !IS_HINGLISH_APK && activeBatch.toUpperCase().includes('ENGLISH'))
     ? 'Red Sapphire (English)'
     : 'Red Sapphire (Hinglish)';
   localStorage.setItem('nnl_active_batch', activeBatch);
@@ -23,9 +25,11 @@ let currentSection = urlParams.get('section') === 'rb104'
 let currentOpenItem = null; // { kind: 'series' | 'qbank' | 'rb104', data }
 let currentSubFilter = 'ALL';
 let searchQuery = '';
-let activeRbBatchId = Number(urlParams.get('batch')) === 104
-  ? 104
-  : (Number(urlParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch));
+let activeRbBatchId = IS_HINGLISH_APK
+  ? 103
+  : (Number(urlParams.get('batch')) === 104
+      ? 104
+      : (Number(urlParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch)));
 let batch104State = getBatchBaselineState(activeRbBatchId);
 
 // CBT Quiz Runner State
@@ -145,8 +149,16 @@ function initHeaderAndDropdown() {
   const tabLive = document.getElementById('tab-live');
   if (tabLive) tabLive.addEventListener('click', () => { window.location.href = '/'; });
 
+  const tabVideos = document.getElementById('tab-videos');
+  if (tabVideos) tabVideos.addEventListener('click', () => { window.location.href = '/all-videos.html'; });
+
   const tabNotes = document.getElementById('tab-notes');
   if (tabNotes) tabNotes.addEventListener('click', () => { window.location.href = '/notes.html'; });
+
+  if (IS_HINGLISH_APK) {
+    const rb104Btn = document.getElementById('rb-tests-lang-104');
+    if (rb104Btn && rb104Btn.parentElement) rb104Btn.parentElement.style.display = 'none';
+  }
 
   const refetchBtn = document.getElementById('tests-refetch-btn');
   if (refetchBtn) {

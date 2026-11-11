@@ -3,6 +3,8 @@
 
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
+import { getBatchBaselineState, syncBatchLive } from './utils/batch104Sync.js';
+import { IS_HINGLISH_APK } from './config/appMode.js';
 
 const API_BASE = '/api';
 
@@ -30,11 +32,16 @@ function findMatchingNotePdf(subtopicId, lectureTitle) {
   return null;
 }
 
-// Allowed Sapphire Batches (Strictly Hinglish Only)
-const ALLOWED_SAPPHIRE_BATCHES = [
-  'Red Sapphire Batch (Hinglish)',
-  'Blue Sapphire Batch (Hinglish)'
-];
+// Allowed Sapphire Batches (Locked to Red Sapphire Hinglish in APK flavor)
+const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
+  ? ['Red Sapphire Batch (Hinglish)']
+  : [
+      'Red Sapphire Batch (Hinglish)',
+      'Blue Sapphire Batch (Hinglish)'
+    ];
+
+let videoSectionMode = 'rb103'; // 'rb103' (Batch 103 Hinglish live recordings) | 'plan77' (C+ Plan 77 library)
+let batch103VideoState = getBatchBaselineState(103);
 
 // Fetch with timeout helper — prevents stalled network requests
 function fetchWithTimeout(url, options = {}, ms = 12000) {
@@ -43,7 +50,9 @@ function fetchWithTimeout(url, options = {}, ms = 12000) {
   return fetch(url, { ...options, signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
-let activeBatch = localStorage.getItem('nnl_active_batch');
+let activeBatch = IS_HINGLISH_APK
+  ? 'Red Sapphire Batch (Hinglish)'
+  : localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
   activeBatch = 'Red Sapphire Batch (Hinglish)';
   localStorage.setItem('nnl_active_batch', activeBatch);
@@ -178,6 +187,20 @@ function initBatchDropdown() {
 }
 
 async function loadRecordings() {
+  // Always render Batch 103 Hinglish Live Class Videos cleanly when in rb103 mode
+  if (videoSectionMode === 'rb103') {
+    renderBatch103VideosCatalog();
+    syncBatchLive(103, {
+      onUpdate: (updated) => {
+        batch103VideoState = updated;
+        if (videoSectionMode === 'rb103' && !currentlyOpenSubject) {
+          renderBatch103VideosCatalog();
+        }
+      }
+    });
+    return;
+  }
+
   if (classListContainer) {
     classListContainer.innerHTML = `
       <div class="full-loader" style="grid-column: 1 / -1; background: rgba(10, 11, 16, 0.15); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 3rem; text-align: center;">
@@ -351,6 +374,10 @@ function renderSubjectCatalog(subjectResults) {
   if (statSubjectsEl) statSubjectsEl.textContent = activeSubjects.length;
   if (statLecturesEl) statLecturesEl.textContent = totalLectures;
   if (statsEl) statsEl.style.display = 'flex';
+  if (videoSectionMode === 'plan77') {
+    const p77CountEl = document.getElementById('vid-count-plan77');
+    if (p77CountEl) p77CountEl.textContent = totalLectures;
+  }
 
   if (activeSubjects.length === 0) {
     classListContainer.innerHTML = `
@@ -699,11 +726,63 @@ function fallbackToDirectVideo(recording) {
   }
 }
 
-// Bind back button
-const btnBackDashboard = document.getElementById('btn-back-dashboard');
-if (btnBackDashboard) {
-  btnBackDashboard.addEventListener('click', () => {
-    window.location.href = '/';
+function renderBatch103VideosCatalog() {
+  const subjects = batch103VideoState?.subjects || [];
+  const results = subjects
+    .map(sub => {
+      const vids = (sub.videos || []).map((v, idx) => ({
+        id: v.id,
+        title: v.title,
+        topic: v.topic,
+        instructor: v.instructor || sub.faculty || 'NNL Faculty',
+        thumbnails: v.thumb ? [{ url: v.thumb }] : [],
+        duration: v.duration || '',
+        date: v.date || '',
+        video_cipher_id: v.video_cipher_id || '',
+        videoUrl: v.videoUrl || '',
+        notePdfUrl: v.notePdfUrl || '',
+        notePdfTitle: v.notePdfTitle || ''
+      }));
+      return { subject: { id: sub.id, title: sub.title }, videos: vids };
+    })
+    .filter(sr => sr.videos.length > 0);
+
+  const totalVids = results.reduce((a, r) => a + r.videos.length, 0);
+  const rbEl = document.getElementById('vid-count-rb103');
+  if (rbEl) rbEl.textContent = totalVids;
+
+  currentRecordings = results.flatMap(r => r.videos);
+  cachedSubjectResults = results;
+  renderSubjectCatalog(results);
+}
+
+// Top navigation & section tabs wiring
+document.getElementById('tab-live')?.addEventListener('click', () => { window.location.href = '/'; });
+document.getElementById('tab-notes')?.addEventListener('click', () => { window.location.href = '/notes.html'; });
+document.getElementById('tab-tests')?.addEventListener('click', () => { window.location.href = '/tests.html'; });
+
+document.getElementById('vid-tab-rb103')?.addEventListener('click', () => {
+  videoSectionMode = 'rb103';
+  document.getElementById('vid-tab-rb103')?.classList.add('active');
+  document.getElementById('vid-tab-plan77')?.classList.remove('active');
+  closeSubjectPage();
+  loadRecordings();
+});
+
+document.getElementById('vid-tab-plan77')?.addEventListener('click', () => {
+  videoSectionMode = 'plan77';
+  document.getElementById('vid-tab-plan77')?.classList.add('active');
+  document.getElementById('vid-tab-rb103')?.classList.remove('active');
+  closeSubjectPage();
+  loadRecordings();
+});
+
+const videosRefetchBtn = document.getElementById('videos-refetch-btn');
+if (videosRefetchBtn) {
+  videosRefetchBtn.addEventListener('click', () => {
+    videosRefetchBtn.classList.add('spinning');
+    Promise.resolve(videoSectionMode === 'rb103' ? syncBatchLive(103, { force: true }).then(u => { batch103VideoState = u; renderBatch103VideosCatalog(); }) : loadRecordings())
+      .finally(() => setTimeout(() => videosRefetchBtn.classList.remove('spinning'), 600));
   });
 }
 

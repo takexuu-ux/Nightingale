@@ -7722,3 +7722,29 @@ body.tests-theme-page .notes-search-wrapper {
   color: #f8fafc;
 }
 
+@media (max-width: 780px) {
+  .app-header {
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0.5rem 0.75rem !important;
+    height: auto !important;
+  }
+  .header-nav-tabs {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .header-nav-tabs .nav-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+  .header-nav-tabs .nav-tab {
+    white-space: nowrap;
+    padding: 0.4rem 0.62rem !important;
+    font-size: 0.68rem !important;
+  }
+}
+
+

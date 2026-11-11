@@ -1,3 +1,5 @@
+import { IS_HINGLISH_APK } from './config/appMode.js';
+
 // NNL ONE Web Client App Logic
 
 // Safe remote logging helper for backend visibility during development
@@ -4206,6 +4208,14 @@ if (tabNotes) {
   });
 }
 
+const tabVideos = document.getElementById('tab-videos');
+if (tabVideos) {
+  tabVideos.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = '/all-videos.html';
+  });
+}
+
 if (tabTests) {
   tabTests.addEventListener('click', (e) => {
     e.preventDefault();
@@ -4401,11 +4411,10 @@ function initTweaksPanel() {
   }
 }
 
-// ── Explicit Sapphire Batches (Red Sapphire English & Hinglish) ──
-const ALLOWED_SAPPHIRE_BATCHES = [
-  'Red Sapphire (Hinglish)',
-  'Red Sapphire (English)'
-];
+// ── Explicit Sapphire Batches (Locked to Hinglish in APK flavor) ──
+const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
+  ? ['Red Sapphire (Hinglish)']
+  : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
 async function fetchAndSyncUserBatches() {
   renderBatchSelector();

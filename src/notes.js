@@ -6,13 +6,13 @@ import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js
 import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName } from './utils/batch104Sync.js';
+import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
 
 const API_BASE = '/api';
 
-const ALLOWED_SAPPHIRE_BATCHES = [
-  'Red Sapphire (Hinglish)',
-  'Red Sapphire (English)'
-];
+const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
+  ? ['Red Sapphire (Hinglish)']
+  : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
 const SCHEDULE_SUBJECT = {
   id: 'red-sapphire-schedule',
@@ -64,9 +64,11 @@ async function fetchAllPaginated(path, headers, maxPages = 20) {
   return results;
 }
 
-let activeBatch = localStorage.getItem('nnl_active_batch');
+let activeBatch = IS_HINGLISH_APK
+  ? 'Red Sapphire (Hinglish)'
+  : localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
-  if (activeBatch && activeBatch.toUpperCase().includes('ENGLISH')) {
+  if (activeBatch && !IS_HINGLISH_APK && activeBatch.toUpperCase().includes('ENGLISH')) {
     activeBatch = 'Red Sapphire (English)';
   } else {
     activeBatch = 'Red Sapphire (Hinglish)';
@@ -85,9 +87,11 @@ let searchQuery = '';
 
 const initialParams = new URLSearchParams(window.location.search);
 let currentSectionMode = initialParams.get('section') === 'rb104' ? 'rb104' : 'master';
-let activeRbBatchId = Number(initialParams.get('batch')) === 104
-  ? 104
-  : (Number(initialParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch));
+let activeRbBatchId = IS_HINGLISH_APK
+  ? 103
+  : (Number(initialParams.get('batch')) === 104
+      ? 104
+      : (Number(initialParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch)));
 let batch104State = getBatchBaselineState(activeRbBatchId);
 
 // Complete Verified Subjects (Available immediately in Open Access AND Signed-In Mode — 1,319 PDFs)
@@ -256,11 +260,23 @@ function initUserHeader() {
     });
   }
 
+  const tabVideos = document.getElementById('tab-videos');
+  if (tabVideos) {
+    tabVideos.addEventListener('click', () => {
+      window.location.href = '/all-videos.html';
+    });
+  }
+
   const tabTests = document.getElementById('tab-tests');
   if (tabTests) {
     tabTests.addEventListener('click', () => {
       window.location.href = '/tests.html';
     });
+  }
+
+  if (IS_HINGLISH_APK) {
+    const rb104LangBtn = document.getElementById('rb-lang-104');
+    if (rb104LangBtn && rb104LangBtn.parentElement) rb104LangBtn.parentElement.style.display = 'none';
   }
 
   if (notesRefetchBtn) {
@@ -1311,11 +1327,7 @@ function openPdfModal(title, url, downloadName = '') {
   }
 
   if (pdfModalIframe) {
-    // Append fit-width & clean toolbar hint so PDFs fill the full reader cleanly
-    const viewerUrl = url.toLowerCase().includes('.pdf') && !url.includes('#')
-      ? `${url}#view=FitH&toolbar=1&navpanes=0`
-      : url;
-    pdfModalIframe.src = viewerUrl;
+    pdfModalIframe.src = getPdfPreviewSrc(url);
   }
 
   pdfModal.classList.remove('hide');

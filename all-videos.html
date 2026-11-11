@@ -439,23 +439,62 @@
         <span class="logo-text">NIGHTINGALE</span>
       </div>
 
-      <div class="header-nav" style="display: flex; gap: 0.75rem; align-items: center;">
-        <!-- Strict Sapphire Batch Selector (Hinglish Only) -->
-        <div class="batch-dropdown-container">
-          <button id="header-batch-btn" class="nav-btn">
-            <span>BATCH: <strong id="current-batch-label">Red Sapphire Batch (Hinglish)</strong></span>
-            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-left: 6px; display: inline-block; vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+      <nav class="header-nav-tabs">
+        <div class="nav-tabs" style="margin: 0 !important;">
+          <button id="tab-live" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+            </svg>
+            <span>LIVE CLASSES</span>
           </button>
-          <div id="header-batch-dropdown" class="header-batch-dropdown hide">
-            <button class="dropdown-item active" data-batch="Red Sapphire Batch (Hinglish)">Red Sapphire Batch (Hinglish)</button>
-            <button class="dropdown-item" data-batch="Blue Sapphire Batch (Hinglish)">Blue Sapphire Batch (Hinglish)</button>
-          </div>
+
+          <button id="tab-videos" class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>VIDEOS</span>
+          </button>
+
+          <button id="tab-notes" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>NOTES &amp; PDFs</span>
+          </button>
+
+          <button id="tab-tests" class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span>PRACTICE TESTS</span>
+          </button>
         </div>
 
-        <button id="btn-back-dashboard" class="nav-btn" style="color:#fff;border-color:rgba(255,255,255,0.15);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;gap:0.4rem;">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-          <span>Dashboard</span>
+        <button id="videos-refetch-btn" class="nav-tab-refresh-btn" title="Refresh Videos">
+          <svg class="refresh-gyro-icon" viewBox="0 0 24 24" fill="none">
+            <circle class="gyro-core" cx="12" cy="12" r="1.3" fill="currentColor" />
+            <path class="gyro-arc-1" d="M12 4a8 8 0 0 1 8 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+            <path class="gyro-arc-2" d="M12 20a8 8 0 0 1-8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
         </button>
+      </nav>
+
+      <div class="header-right-actions">
+        <div class="batch-dropdown-container">
+          <button id="header-batch-btn" class="nav-btn">
+            <span id="current-batch-label">Red Sapphire (Hinglish)</span>
+            <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-left: 5px; display: inline-block; vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+          </button>
+          <div id="header-batch-dropdown" class="header-batch-dropdown hide">
+            <button class="dropdown-item active" data-batch="Red Sapphire Batch (Hinglish)">Red Sapphire (Hinglish)</button>
+            <button class="dropdown-item" data-batch="Blue Sapphire Batch (Hinglish)">Blue Sapphire (Hinglish)</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -478,6 +517,20 @@
               <span class="cp-stat-lbl">Lectures</span>
             </div>
           </div>
+        </div>
+
+        <!-- Section Switcher: Batch 103 Live Class Recordings vs Plan 77 Conceptual Videos -->
+        <div class="section-mode-tabs" style="margin-bottom: 1.5rem;">
+          <button id="vid-tab-rb103" class="section-mode-tab active" data-mode="rb103">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49"/></svg>
+            <span>Red Sapphire (Hinglish) — Live Class Videos</span>
+            <span id="vid-count-rb103" class="section-mode-count">52</span>
+          </button>
+          <button id="vid-tab-plan77" class="section-mode-tab" data-mode="plan77">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Conceptual Video Library (Plan 77)</span>
+            <span id="vid-count-plan77" class="section-mode-count">—</span>
+          </button>
         </div>
 
         <!-- Subjects Grid (Clicking opens dedicated page, never expands an accordion!) -->

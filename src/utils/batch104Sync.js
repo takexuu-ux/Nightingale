@@ -159,6 +159,29 @@ function normalizeTopicNotes(topic, baseSubTitle, batchId) {
   return notes;
 }
 
+function normalizeTopicVideos(topic, baseSubTitle, topicNotes) {
+  if (!Array.isArray(topic.video)) return [];
+  const topicTitle = topic.title || baseSubTitle;
+  const dateStr = (topic.date || topic.created || '').slice(0, 10);
+  const firstNote = Array.isArray(topicNotes) && topicNotes.length > 0 ? topicNotes[0] : null;
+
+  return topic.video
+    .filter(v => v && v.id)
+    .map(v => ({
+      id: v.id,
+      title: (v.title || topicTitle).trim(),
+      topic: topicTitle,
+      instructor: v.faculty?.name || 'NNL Faculty',
+      video_cipher_id: v.video_cipher_id || '',
+      videoUrl: v.video_url || v.url || '',
+      duration: v.duration ? `${Math.round(v.duration / 60)} mins` : '',
+      date: dateStr || (v.schedule_start_time || v.created || '').slice(0, 10),
+      thumb: v.thumbnails?.[1]?.url || v.thumbnails?.[0]?.url || '',
+      notePdfUrl: firstNote?.url || '',
+      notePdfTitle: firstNote?.title || ''
+    }));
+}
+
 function normalizeTopicTests(topic, baseSubTitle) {
   if (!Array.isArray(topic.test)) return [];
   const topicTitle = topic.title || baseSubTitle;
@@ -187,6 +210,7 @@ function mergeSubjectLists(baselineSubjects, liveSubjects) {
     byId.set(String(s.id), {
       ...s,
       faculty: guessFaculty(s.title, s.faculty),
+      videos: [...(s.videos || [])],
       notes: [...(s.notes || [])],
       tests: [...(s.tests || []).map(t => ({ ...t, isBatchTest: true, source: 'batch_cms' }))]
     });
@@ -200,24 +224,32 @@ function mergeSubjectLists(baselineSubjects, liveSubjects) {
       return;
     }
 
+    const vidMap = new Map();
+    [...existing.videos, ...(live.videos || [])].forEach(v => {
+      const k = String(v.id);
+      if (k && !vidMap.has(k)) vidMap.set(k, v);
+    });
+
     const noteMap = new Map();
-    [...existing.notes, ...live.notes].forEach(n => {
+    [...existing.notes, ...(live.notes || [])].forEach(n => {
       const k = (n.url || n.id || n.title).toLowerCase();
       if (k && !noteMap.has(k)) noteMap.set(k, n);
     });
 
     const testMap = new Map();
-    [...existing.tests, ...live.tests].forEach(t => {
+    [...existing.tests, ...(live.tests || [])].forEach(t => {
       const k = String(t.id);
       if (k && !testMap.has(k)) testMap.set(k, t);
     });
 
+    const mergedVideos = Array.from(vidMap.values());
     byId.set(key, {
       ...existing,
       title: live.title || existing.title,
       faculty: guessFaculty(live.title || existing.title, live.faculty || existing.faculty),
       topicCount: Math.max(existing.topicCount || 0, live.topicCount || 0),
-      videoCount: Math.max(existing.videoCount || 0, live.videoCount || 0),
+      videoCount: Math.max(existing.videoCount || 0, live.videoCount || 0, mergedVideos.length),
+      videos: mergedVideos,
       notes: Array.from(noteMap.values()),
       tests: Array.from(testMap.values())
     });
@@ -316,24 +348,27 @@ export async function syncBatchLive(batchId = 104, { force = false, onUpdate } =
         const chunk = rawSubjects.slice(i, i + chunkSize);
         const results = await Promise.allSettled(chunk.map(async subj => {
           const topics = await fetchAllBatchPaginated(`/batch_cms/topic/?subject=${subj.id}&page_size=100`);
+          const videos = [];
           const notes = [];
           const tests = [];
-          let videoCount = 0;
           const cleanTitle = cleanSubjectTitle(subj.title);
 
           topics.forEach(top => {
-            if (Array.isArray(top.video)) videoCount += top.video.length;
-            notes.push(...normalizeTopicNotes(top, cleanTitle, id));
+            const topNotes = normalizeTopicNotes(top, cleanTitle, id);
+            notes.push(...topNotes);
+            videos.push(...normalizeTopicVideos(top, cleanTitle, topNotes));
             tests.push(...normalizeTopicTests(top, cleanTitle));
           });
 
+          const firstFaculty = videos.find(v => v.instructor && v.instructor !== 'NNL Faculty')?.instructor || '';
           return {
             id: String(subj.id),
             title: cleanTitle,
             rawTitle: subj.title,
-            faculty: guessFaculty(cleanTitle, ''),
+            faculty: guessFaculty(cleanTitle, firstFaculty),
             topicCount: topics.length,
-            videoCount,
+            videoCount: videos.length,
+            videos,
             notes,
             tests
           };
