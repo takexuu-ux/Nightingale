@@ -3,6 +3,87 @@
 // Zero-reinstall web bundle hot-swapping + native APK fallback when Android code changes.
 
 let initialized = false;
+let apkDownloadRunning = false;
+
+function formatMb(bytes) {
+  if (!bytes || bytes <= 0) return '0.0';
+  return (bytes / (1024 * 1024)).toFixed(1);
+}
+
+function formatSpeed(kbps) {
+  if (!kbps || kbps <= 0) return '';
+  if (kbps >= 1024) return `${(kbps / 1024).toFixed(1)} MB/s`;
+  return `${kbps} KB/s`;
+}
+
+function setButtonLabel(btn, text) {
+  if (!btn) return;
+  const sp = btn.querySelector('span');
+  if (sp) sp.textContent = text;
+  else btn.textContent = text;
+}
+
+function updateProgressUI(status, activeBtn, statusLabel) {
+  const banner = createBanner();
+  const msgEl = banner.querySelector('#apk-ota-msg');
+  const applyBtn = banner.querySelector('#apk-ota-apply-btn');
+  const progressWrap = banner.querySelector('#apk-ota-progress-wrap');
+  const progressBar = banner.querySelector('#apk-ota-progress-bar');
+  const headerBtn = document.getElementById('apk-header-update-btn');
+  const manualBtn = document.getElementById('apk-ota-manual-btn');
+  const settingsWrap = document.getElementById('apk-ota-settings-progress-wrap');
+  const settingsBar = document.getElementById('apk-ota-settings-progress-bar');
+
+  const pct = Math.max(0, Math.min(100, Number(status?.percent || 0)));
+  const dl = Number(status?.downloadedBytes || 0);
+  const total = Number(status?.totalBytes || 0);
+  const speedStr = formatSpeed(status?.speedKbps);
+
+  let labelText = 'Preparing download...';
+  let btnText = 'Downloading...';
+
+  if (status?.state === 'checking') {
+    labelText = 'Checking APK package...';
+    btnText = 'Checking...';
+  } else if (status?.state === 'downloading') {
+    const mbText = total > 0 ? `${formatMb(dl)} / ${formatMb(total)} MB` : `${formatMb(dl)} MB`;
+    labelText = `Downloading ${pct}% • ${mbText}${speedStr ? ` (${speedStr})` : ''}`;
+    btnText = total > 0 ? `${pct}% (${formatMb(dl)}/${formatMb(total)} MB)` : `${formatMb(dl)} MB...`;
+  } else if (status?.state === 'verifying') {
+    labelText = 'Verifying APK signature...';
+    btnText = 'Verifying...';
+  } else if (status?.state === 'ready') {
+    labelText = 'APK verified • Opening Android installer...';
+    btnText = 'Open Installer';
+  } else if (status?.state === 'error') {
+    labelText = `Update failed: ${status.error || 'Download error'}`;
+    btnText = 'Retry Update';
+  }
+
+  banner.style.display = 'flex';
+  if (msgEl) msgEl.textContent = labelText;
+  if (statusLabel) statusLabel.textContent = labelText;
+
+  const showBar = status?.state === 'downloading' || status?.state === 'verifying' || status?.state === 'ready';
+  if (progressWrap && progressBar) {
+    progressWrap.style.display = showBar ? 'block' : 'none';
+    progressBar.style.width = `${status?.state === 'verifying' || status?.state === 'ready' ? 100 : pct}%`;
+  }
+  if (settingsWrap && settingsBar) {
+    settingsWrap.style.display = showBar ? 'block' : 'none';
+    settingsBar.style.width = `${status?.state === 'verifying' || status?.state === 'ready' ? 100 : pct}%`;
+  }
+
+  const isBusy = status?.state === 'checking' || status?.state === 'downloading' || status?.state === 'verifying';
+  [applyBtn, manualBtn, activeBtn].filter(Boolean).forEach((b) => {
+    b.disabled = isBusy;
+    setButtonLabel(b, btnText);
+  });
+  if (headerBtn) {
+    headerBtn.disabled = isBusy;
+    setButtonLabel(headerBtn, status?.state === 'downloading' ? `${pct}%` : (status?.state === 'ready' ? 'Install' : btnText));
+  }
+}
 
 function createBanner() {
   let banner = document.getElementById('apk-ota-banner');
@@ -17,27 +98,35 @@ function createBanner() {
     'transform:translateX(-50%)',
     'z-index:11000',
     'display:none',
-    'align-items:center',
-    'gap:10px',
-    'padding:10px 14px',
+    'flex-direction:column',
+    'gap:8px',
+    'padding:11px 14px',
     'border-radius:14px',
-    'background:linear-gradient(135deg, rgba(24,30,56,0.96), rgba(45,25,64,0.96))',
+    'background:linear-gradient(135deg, rgba(24,30,56,0.97), rgba(45,25,64,0.97))',
     'border:1px solid rgba(167,139,250,0.45)',
     'box-shadow:0 14px 36px rgba(0,0,0,0.65)',
     'color:#f8fafc',
     'font-family:Outfit,sans-serif',
     'font-size:13px',
+    'min-width:260px',
     'max-width:92vw'
   ].join(';');
 
   banner.innerHTML = `
-    <span id="apk-ota-msg" style="font-weight:600;white-space:nowrap;">Update ready</span>
-    <button id="apk-ota-apply-btn" style="padding:6px 12px;border-radius:10px;border:1px solid rgba(196,181,253,0.5);background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">
-      Update Now
-    </button>
-    <button id="apk-ota-dismiss-btn" aria-label="Dismiss" style="padding:4px 7px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-    </button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <span id="apk-ota-msg" style="font-weight:600;line-height:1.25;">Update ready</span>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button id="apk-ota-apply-btn" style="padding:6px 12px;border-radius:10px;border:1px solid rgba(196,181,253,0.5);background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">
+          Update Now
+        </button>
+        <button id="apk-ota-dismiss-btn" aria-label="Dismiss" style="padding:4px 7px;border-radius:8px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="apk-ota-progress-wrap" style="display:none;width:100%;height:6px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;">
+      <div id="apk-ota-progress-bar" style="width:0%;height:100%;border-radius:999px;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width 180ms ease;"></div>
+    </div>
   `;
 
   document.body.appendChild(banner);
@@ -48,41 +137,77 @@ function createBanner() {
 }
 
 async function applyUpdate(isNative, applyBtn, statusLabel) {
-  const setBtnText = (txt) => {
-    if (!applyBtn) return;
-    const sp = applyBtn.querySelector('span');
-    if (sp) sp.textContent = txt;
-    else applyBtn.textContent = txt;
-  };
-  if (applyBtn) {
-    applyBtn.disabled = true;
-    setBtnText(isNative ? 'Downloading APK...' : 'Updating...');
-  }
-  if (statusLabel) {
-    statusLabel.textContent = isNative ? 'Downloading installer...' : 'Applying live update...';
+  if (!isNative) {
+    if (applyBtn) {
+      applyBtn.disabled = true;
+      setButtonLabel(applyBtn, 'Updating...');
+    }
+    if (statusLabel) statusLabel.textContent = 'Applying live update...';
+    try {
+      const res = await fetch('/__ota/apply', { method: 'POST' });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Update failed');
+      setButtonLabel(applyBtn, 'Reloading...');
+      setTimeout(() => window.location.reload(), 300);
+    } catch (err) {
+      if (statusLabel) statusLabel.textContent = `Update failed: ${err.message}`;
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        setButtonLabel(applyBtn, 'Retry Update');
+      }
+    }
+    return;
   }
 
+  if (apkDownloadRunning) return;
+  apkDownloadRunning = true;
+
   try {
-    const endpoint = isNative ? '/__ota/install-apk' : '/__ota/apply';
-    const res = await fetch(endpoint, { method: 'POST' });
-    const json = await res.json();
-    if (json.ok) {
-      if (!isNative) {
-        setBtnText('Reloading...');
-        setTimeout(() => window.location.reload(), 300);
-      } else if (applyBtn) {
-        setBtnText('Installer Opened');
-        applyBtn.disabled = false;
+    // Fast path: if verified APK is already ready on disk, open installer immediately
+    const preCheck = await fetch(`/__ota/apk-progress?t=${Date.now()}`);
+    if (preCheck.ok) {
+      const st = await preCheck.json();
+      if (st.ready) {
+        updateProgressUI(st, applyBtn, statusLabel);
+        await fetch('/__ota/launch-installer', { method: 'POST' });
+        apkDownloadRunning = false;
+        return;
       }
-    } else {
-      throw new Error(json.error || 'Update failed');
+    }
+
+    const startRes = await fetch('/__ota/start-apk-download', { method: 'POST' });
+    if (startRes.status === 404) {
+      // Legacy APK fallback (v1.0.7 / v1.0.8)
+      updateProgressUI({ state: 'downloading', percent: 0, downloadedBytes: 0, totalBytes: 0 }, applyBtn, statusLabel);
+      const legacyRes = await fetch('/__ota/install-apk', { method: 'POST' });
+      const legacyJson = await legacyRes.json();
+      if (!legacyJson.ok) throw new Error(legacyJson.error || 'Update failed');
+      updateProgressUI({ state: 'ready', percent: 100 }, applyBtn, statusLabel);
+      apkDownloadRunning = false;
+      return;
+    }
+
+    const startJson = await startRes.json();
+    updateProgressUI(startJson, applyBtn, statusLabel);
+
+    while (true) {
+      await new Promise((r) => setTimeout(r, 250));
+      const pRes = await fetch(`/__ota/apk-progress?t=${Date.now()}`);
+      if (!pRes.ok) throw new Error(`Progress HTTP ${pRes.status}`);
+      const status = await pRes.json();
+      updateProgressUI(status, applyBtn, statusLabel);
+
+      if (status.state === 'ready') {
+        break;
+      }
+      if (status.state === 'error') {
+        throw new Error(status.error || 'APK download failed');
+      }
     }
   } catch (err) {
-    if (statusLabel) statusLabel.textContent = `Update failed: ${err.message}`;
-    if (applyBtn) {
-      applyBtn.disabled = false;
-      setBtnText('Retry Update');
-    }
+    updateProgressUI({ state: 'error', error: err.message }, applyBtn, statusLabel);
+  } finally {
+    apkDownloadRunning = false;
   }
 }
 
@@ -99,6 +224,9 @@ function attachUpdateTriggers(checkFn) {
     box.innerHTML = `
       <div class="tweaks-label" style="font-size:0.68rem;color:#c4b5fd;font-weight:700;margin-bottom:0.35rem;text-transform:uppercase;letter-spacing:0.06em;">App Live Update</div>
       <div id="apk-ota-ver-label" style="font-size:0.74rem;color:#cbd5e1;margin-bottom:0.45rem;">Checking version...</div>
+      <div id="apk-ota-settings-progress-wrap" style="display:none;width:100%;height:5px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;margin-bottom:0.5rem;">
+        <div id="apk-ota-settings-progress-bar" style="width:0%;height:100%;border-radius:999px;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width 180ms ease;"></div>
+      </div>
       <button id="apk-ota-manual-btn" class="btn-note-view" style="width:100%;justify-content:center;padding:0.48rem 0.8rem;font-size:0.76rem;border-radius:10px;cursor:pointer;display:flex;align-items:center;">
         Check for Update
       </button>
