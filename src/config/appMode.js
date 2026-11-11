@@ -1,3 +1,5 @@
+import { initApkOtaUpdater } from '../utils/otaUpdater.js';
+
 // Runtime & Build-Flavor Configuration
 // Normal website keeps both Hinglish & English selectable;
 // Hinglish APK build (--mode hinglish-apk) locks strictly to Red Sapphire (Hinglish).
@@ -16,3 +18,8 @@ export function getPdfPreviewSrc(rawPdfUrl) {
   }
   return `${rawPdfUrl}#view=FitH&toolbar=1&navpanes=0`;
 }
+
+if (IS_HINGLISH_APK) {
+  initApkOtaUpdater();
+}
+
