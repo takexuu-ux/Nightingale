@@ -1,36 +1,43 @@
 // Red Sapphire Hinglish APK — Scratch Minimal UI Shell & Liquid Motion Engine
 import './apk-ui.css';
 
-const THEME_KEY = 'nnl_apk_theme';
-
-export function getApkTheme() {
+function detectSystemDark() {
   try {
-    return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+    if (typeof window.__NNL_SYSTEM_DARK__ === 'boolean') {
+      return window.__NNL_SYSTEM_DARK__;
+    }
+    if (window.AndroidThemeBridge && typeof window.AndroidThemeBridge.isSystemDark === 'function') {
+      return Boolean(window.AndroidThemeBridge.isSystemDark());
+    }
+  } catch {}
+  try {
+    return Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   } catch {
-    return 'light';
+    return false;
   }
 }
 
-export function applyApkTheme(theme) {
-  const mode = theme === 'dark' ? 'dark' : 'light';
+export function applySystemTheme(isDark) {
+  const mode = isDark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', mode);
   try {
-    localStorage.setItem(THEME_KEY, mode);
-  } catch {}
-  try {
     if (window.AndroidThemeBridge && typeof window.AndroidThemeBridge.setDarkMode === 'function') {
-      window.AndroidThemeBridge.setDarkMode(mode === 'dark');
+      window.AndroidThemeBridge.setDarkMode(isDark);
     }
   } catch {}
-  document.querySelectorAll('.apk-theme-opt').forEach((btn) => {
-    btn.classList.toggle('active', btn.getAttribute('data-theme-opt') === mode);
-  });
 }
 
-// Apply immediately before paint
-applyApkTheme(getApkTheme());
+window.__nnlApplySystemTheme = applySystemTheme;
+applySystemTheme(detectSystemDark());
 
-const NIGHTINGALE_MARK_SVG = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="11.5" r="3.2" fill="#E9DFFF"/></svg>';
+try {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq && typeof mq.addEventListener === 'function') {
+    mq.addEventListener('change', (e) => applySystemTheme(Boolean(e.matches)));
+  }
+} catch {}
+
+const NIGHTINGALE_MARK_SVG = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="11.5" r="3.2" fill="#DBEAFE"/></svg>';
 
 const NAV_ICONS = {
   live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>',
@@ -114,28 +121,16 @@ function buildSettingsSheet() {
   const backdrop = document.createElement('div');
   backdrop.id = 'apk-settings-sheet';
   backdrop.className = 'apk-sheet-backdrop hide';
-  const curTheme = getApkTheme();
-  const phone = localStorage.getItem('nnl_phone') || 'Red Sapphire Hinglish';
+  const phone = localStorage.getItem('nnl_phone') || 'Nightingale';
 
   backdrop.innerHTML = `
     <div class="apk-sheet-card" role="dialog" aria-label="Settings">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
         <div>
-          <div style="font-size:16px;font-weight:800;color:var(--text-primary);"><span class="apk-editorial-serif">App</span> Settings</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text-primary);">Settings</div>
           <div style="font-size:12px;color:var(--text-secondary);">${phone}</div>
         </div>
         <button id="apk-settings-close-btn" class="apk-icon-btn" aria-label="Close">${NAV_ICONS.close}</button>
-      </div>
-
-      <div class="apk-sheet-row">
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Appearance</div>
-          <div style="font-size:11.5px;color:var(--text-secondary);">Light Lavender or Plum Dark</div>
-        </div>
-        <div class="apk-pill-switch">
-          <button class="apk-pill-opt apk-theme-opt ${curTheme === 'light' ? 'active' : ''}" data-theme-opt="light">Light</button>
-          <button class="apk-pill-opt apk-theme-opt ${curTheme === 'dark' ? 'active' : ''}" data-theme-opt="dark">Dark</button>
-        </div>
       </div>
 
       <div id="apk-sheet-ota-slot"></div>
@@ -153,9 +148,6 @@ function buildSettingsSheet() {
   });
   backdrop.querySelector('#apk-settings-close-btn')?.addEventListener('click', () => {
     backdrop.classList.add('hide');
-  });
-  backdrop.querySelectorAll('.apk-theme-opt').forEach((btn) => {
-    btn.addEventListener('click', () => applyApkTheme(btn.getAttribute('data-theme-opt')));
   });
   backdrop.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
     const legacyLogout = document.getElementById('logout-btn');
@@ -305,36 +297,17 @@ function normalizeHeaderAndChrome() {
   if (authEl) {
     new MutationObserver(syncAuthMode).observe(authEl, { attributes: true, attributeFilter: ['class'] });
 
-    // Top bar above Login (Batch badge + Light/Dark toggle)
-    const appMain = document.getElementById('app');
-    if (appMain && !document.getElementById('apk-auth-topbar')) {
-      const curTheme = getApkTheme();
-      const topbar = document.createElement('div');
-      topbar.id = 'apk-auth-topbar';
-      topbar.className = 'apk-auth-topbar';
-      topbar.innerHTML = `
-        <span class="apk-auth-batch-pill"><span class="apk-auth-batch-dot"></span>Red Sapphire · Hinglish</span>
-        <div class="apk-pill-switch">
-          <button type="button" class="apk-pill-opt apk-theme-opt ${curTheme === 'light' ? 'active' : ''}" data-theme-opt="light">Light</button>
-          <button type="button" class="apk-pill-opt apk-theme-opt ${curTheme === 'dark' ? 'active' : ''}" data-theme-opt="dark">Dark</button>
-        </div>
-      `;
-      topbar.querySelectorAll('.apk-theme-opt').forEach((btn) => {
-        btn.addEventListener('click', () => applyApkTheme(btn.getAttribute('data-theme-opt')));
-      });
-      appMain.insertBefore(topbar, appMain.firstChild);
-    }
-
-    // Tablet Split Brand Showcase next to Login Card
+    // Clean Showcase with inline [Logo] Nightingale (no Red Sapphire Hinglish, no Study Room, no theme toggle)
     const wrapper = authEl.closest('.auth-hero-wrapper');
     if (wrapper && !document.getElementById('apk-auth-showcase')) {
       const showcase = document.createElement('div');
       showcase.id = 'apk-auth-showcase';
       showcase.className = 'apk-auth-showcase';
       showcase.innerHTML = `
-        <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
-        <h1 class="apk-showcase-title apk-brand-gradient-text">Nightingale</h1>
-        <p class="apk-showcase-sub"><span class="apk-editorial-serif">Study</span> Room</p>
+        <div class="apk-brand-inline-row">
+          <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
+          <h1 class="apk-showcase-title apk-brand-gradient-text">Nightingale</h1>
+        </div>
         <div class="apk-showcase-pills">
           <span class="apk-showcase-pill">${NAV_ICONS.live}Live</span>
           <span class="apk-showcase-pill">${NAV_ICONS.videos}Lectures</span>
@@ -344,20 +317,6 @@ function normalizeHeaderAndChrome() {
       wrapper.insertBefore(showcase, authEl);
     }
 
-    // Turn #auth-screen header into crisp step prompt instead of raw NIGHTINGALE + blue quote
-    const brandTitle = authEl.querySelector('.brand-title');
-    if (brandTitle) {
-      brandTitle.textContent = 'Sign in';
-      brandTitle.removeAttribute('data-text');
-    }
-    const brandSub = authEl.querySelector('.brand-subtitle');
-    if (brandSub) {
-      brandSub.textContent = 'Enter your registered 10-digit number';
-    }
-    const phoneLabel = authEl.querySelector('label[for="phone-input"]');
-    if (phoneLabel) {
-      phoneLabel.textContent = 'Mobile Number';
-    }
     const phoneInput = document.getElementById('phone-input');
     if (phoneInput) {
       phoneInput.placeholder = '10-digit number';
