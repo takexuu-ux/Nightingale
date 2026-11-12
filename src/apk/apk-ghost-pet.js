@@ -1,214 +1,190 @@
-// Cute Tiny Pixel-Art Ghost Pet for Nightingale Hinglish APK
-// Roams softly across the viewport, sits on top of UI cards, reacts to hovers, clicks, drags & taps.
+// Adorable Chibi Nurse Ghost Pet for Nightingale Hinglish APK
+// Soft pastel-lavender ghost wearing a crisp high-contrast white nurse coat, stethoscope & cap.
+// Roams softly, sits atop cards, reacts vividly on hovers, clicks, taps, drags & card interactions.
 
 const STORAGE_KEY = 'nnl_apk_ghost_pet_enabled';
 
 const EMOTIONS = {
-  idle: { blush: true, mouth: 'tiny', eyes: 'normal', prop: '' },
-  happy: { blush: true, mouth: 'smile', eyes: 'happy', prop: '' },
-  curious: { blush: false, mouth: 'oh', eyes: 'wide', prop: 'question' },
-  excited: { blush: true, mouth: 'open', eyes: 'star', prop: 'sparkle' },
-  love: { blush: true, mouth: 'smile', eyes: 'heart', prop: 'heart' },
-  sleepy: { blush: false, mouth: 'flat', eyes: 'sleepy', prop: 'zzz' },
-  shy: { blush: true, mouth: 'wavy', eyes: 'shy', prop: 'blush' },
-  spook: { blush: false, mouth: 'boo', eyes: 'wide', prop: 'boo' },
-  proud: { blush: true, mouth: 'smirk', eyes: 'shades', prop: 'sparkle' }
+  idle:    { blush: true,  mouth: 'tiny',  eyes: 'normal', bubble: '' },
+  happy:   { blush: true,  mouth: 'smile', eyes: 'happy',  bubble: 'Hi!' },
+  love:    { blush: true,  mouth: 'smile', eyes: 'heart',  bubble: '♥' },
+  excited: { blush: true,  mouth: 'open',  eyes: 'star',   bubble: 'Yay! ★' },
+  curious: { blush: false, mouth: 'oh',    eyes: 'wide',   bubble: 'Hmm?' },
+  spook:   { blush: false, mouth: 'boo',   eyes: 'wide',   bubble: 'Boo!' },
+  sleepy:  { blush: false, mouth: 'flat',  eyes: 'sleepy', bubble: 'zZz' },
+  shy:     { blush: true,  mouth: 'wavy',  eyes: 'shy',    bubble: '> <' },
+  proud:   { blush: true,  mouth: 'smirk', eyes: 'shades', bubble: 'Pro ★' },
+  care:    { blush: true,  mouth: 'smile', eyes: 'wink',   bubble: '+ Care' }
 };
 
-function renderGhostPixelSvg(emotionName = 'idle', { blink = false, sitting = false, frame = 0 } = {}) {
+function renderNurseGhostSvg(emotionName = 'idle', { blink = false, sitting = false, frame = 0 } = {}) {
   const emo = EMOTIONS[emotionName] || EMOTIONS.idle;
-  const waveShift = sitting ? 0 : (frame % 2);
   const eyeStyle = blink ? 'happy' : emo.eyes;
+  const uid = 'ng';
 
-  // 16x18 pixel grid rendered with crispEdges: cute ghost wearing a crisp white nurse coat + cap
-  let eyesSvg = '';
-  if (eyeStyle === 'normal') {
-    eyesSvg = `
-      <rect x="5" y="6" width="2" height="2" fill="#2E1A5B"/>
-      <rect x="9" y="6" width="2" height="2" fill="#2E1A5B"/>
-      <rect x="5" y="6" width="1" height="1" fill="#FFFFFF" opacity="0.9"/>
-      <rect x="9" y="6" width="1" height="1" fill="#FFFFFF" opacity="0.9"/>
+  let eyesMarkup = '';
+  if (eyeStyle === 'normal' || eyeStyle === 'wink') {
+    const rightEye = eyeStyle === 'wink'
+      ? `<path d="M36 25c1.8-2.4 5.2-2.4 7 0" stroke="#2D1B5E" stroke-width="2.6" stroke-linecap="round" fill="none"/>`
+      : `<ellipse cx="39.5" cy="24.5" rx="3.1" ry="3.7" fill="#2D1B5E"/>
+         <circle cx="38.4" cy="23.1" r="1.25" fill="#FFFFFF"/>
+         <circle cx="40.6" cy="25.6" r="0.65" fill="#EDE9FE"/>`;
+    eyesMarkup = `
+      <ellipse cx="24.5" cy="24.5" rx="3.1" ry="3.7" fill="#2D1B5E"/>
+      <circle cx="23.4" cy="23.1" r="1.25" fill="#FFFFFF"/>
+      <circle cx="25.6" cy="25.6" r="0.65" fill="#EDE9FE"/>
+      ${rightEye}
     `;
   } else if (eyeStyle === 'wide') {
-    eyesSvg = `
-      <rect x="4" y="5" width="3" height="3" fill="#2E1A5B"/>
-      <rect x="9" y="5" width="3" height="3" fill="#2E1A5B"/>
-      <rect x="5" y="6" width="1" height="1" fill="#FFFFFF"/>
-      <rect x="10" y="6" width="1" height="1" fill="#FFFFFF"/>
+    eyesMarkup = `
+      <circle cx="24.5" cy="24.5" r="4.1" fill="#2D1B5E"/>
+      <circle cx="39.5" cy="24.5" r="4.1" fill="#2D1B5E"/>
+      <circle cx="23.2" cy="22.8" r="1.6" fill="#FFFFFF"/>
+      <circle cx="38.2" cy="22.8" r="1.6" fill="#FFFFFF"/>
+      <circle cx="25.8" cy="26.0" r="0.8" fill="#C4B5FD"/>
+      <circle cx="40.8" cy="26.0" r="0.8" fill="#C4B5FD"/>
     `;
   } else if (eyeStyle === 'happy') {
-    eyesSvg = `
-      <rect x="4" y="7" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="5" y="6" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="6" y="7" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="9" y="7" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="10" y="6" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="11" y="7" width="1" height="1" fill="#2E1A5B"/>
+    eyesMarkup = `
+      <path d="M20.5 25.5c2-3 6-3 8 0" stroke="#2D1B5E" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <path d="M35.5 25.5c2-3 6-3 8 0" stroke="#2D1B5E" stroke-width="2.6" stroke-linecap="round" fill="none"/>
     `;
   } else if (eyeStyle === 'sleepy') {
-    eyesSvg = `
-      <rect x="4" y="7" width="3" height="1" fill="#4C1D95"/>
-      <rect x="9" y="7" width="3" height="1" fill="#4C1D95"/>
+    eyesMarkup = `
+      <path d="M20.5 25c2 2.2 6 2.2 8 0" stroke="#4B308F" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+      <path d="M35.5 25c2 2.2 6 2.2 8 0" stroke="#4B308F" stroke-width="2.3" stroke-linecap="round" fill="none"/>
     `;
   } else if (eyeStyle === 'shy') {
-    eyesSvg = `
-      <rect x="4" y="6" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="5" y="7" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="4" y="8" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="11" y="6" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="10" y="7" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="11" y="8" width="1" height="1" fill="#2E1A5B"/>
+    eyesMarkup = `
+      <path d="M21 22l5 2.6-5 2.6" stroke="#2D1B5E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M43 22l-5 2.6 5 2.6" stroke="#2D1B5E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     `;
   } else if (eyeStyle === 'heart') {
-    eyesSvg = `
-      <rect x="4" y="6" width="1" height="1" fill="#F43F5E"/>
-      <rect x="6" y="6" width="1" height="1" fill="#F43F5E"/>
-      <rect x="4" y="7" width="3" height="1" fill="#F43F5E"/>
-      <rect x="5" y="8" width="1" height="1" fill="#F43F5E"/>
-      <rect x="9" y="6" width="1" height="1" fill="#F43F5E"/>
-      <rect x="11" y="6" width="1" height="1" fill="#F43F5E"/>
-      <rect x="9" y="7" width="3" height="1" fill="#F43F5E"/>
-      <rect x="10" y="8" width="1" height="1" fill="#F43F5E"/>
+    eyesMarkup = `
+      <path d="M24.5 28.5s-4.5-2.8-4.5-5.3c0-1.4 1.1-2.4 2.3-2.4.9 0 1.7.5 2.2 1.3.5-.8 1.3-1.3 2.2-1.3 1.2 0 2.3 1 2.3 2.4 0 2.5-4.5 5.3-4.5 5.3Z" fill="#F43F5E"/>
+      <path d="M39.5 28.5s-4.5-2.8-4.5-5.3c0-1.4 1.1-2.4 2.3-2.4.9 0 1.7.5 2.2 1.3.5-.8 1.3-1.3 2.2-1.3 1.2 0 2.3 1 2.3 2.4 0 2.5-4.5 5.3-4.5 5.3Z" fill="#F43F5E"/>
     `;
   } else if (eyeStyle === 'star') {
-    eyesSvg = `
-      <rect x="5" y="5" width="1" height="3" fill="#6D28D9"/>
-      <rect x="4" y="6" width="3" height="1" fill="#6D28D9"/>
-      <rect x="10" y="5" width="1" height="3" fill="#6D28D9"/>
-      <rect x="9" y="6" width="3" height="1" fill="#6D28D9"/>
-      <rect x="5" y="6" width="1" height="1" fill="#F59E0B"/>
-      <rect x="10" y="6" width="1" height="1" fill="#F59E0B"/>
+    eyesMarkup = `
+      <path d="M24.5 19.5l1.3 3.2 3.4.3-2.6 2.2.8 3.3-2.9-1.8-2.9 1.8.8-3.3-2.6-2.2 3.4-.3Z" fill="#F59E0B" stroke="#7C2D12" stroke-width="0.7"/>
+      <path d="M39.5 19.5l1.3 3.2 3.4.3-2.6 2.2.8 3.3-2.9-1.8-2.9 1.8.8-3.3-2.6-2.2 3.4-.3Z" fill="#F59E0B" stroke="#7C2D12" stroke-width="0.7"/>
     `;
   } else if (eyeStyle === 'shades') {
-    eyesSvg = `
-      <rect x="3" y="6" width="10" height="1" fill="#3B2378"/>
-      <rect x="4" y="6" width="3" height="2" fill="#3B2378"/>
-      <rect x="9" y="6" width="3" height="2" fill="#3B2378"/>
-      <rect x="4" y="6" width="1" height="1" fill="#A78BFA"/>
-      <rect x="9" y="6" width="1" height="1" fill="#A78BFA"/>
+    eyesMarkup = `
+      <rect x="18" y="21.5" width="11.5" height="6.5" rx="2.4" fill="#3B2378" stroke="#1E1042" stroke-width="1.2"/>
+      <rect x="34.5" y="21.5" width="11.5" height="6.5" rx="2.4" fill="#3B2378" stroke="#1E1042" stroke-width="1.2"/>
+      <line x1="29.5" y1="24" x2="34.5" y2="24" stroke="#1E1042" stroke-width="1.6"/>
+      <path d="M20.5 23.2l3 3.2M37 23.2l3 3.2" stroke="#DDD6FE" stroke-width="1.3" stroke-linecap="round"/>
     `;
   }
 
-  let mouthSvg = '';
+  let mouthMarkup = '';
   if (emo.mouth === 'smile' || emo.mouth === 'smirk') {
-    mouthSvg = `<rect x="7" y="9" width="2" height="1" fill="#2E1A5B"/>`;
+    mouthMarkup = `<path d="M29 30.2c1.8 2 4.2 2 6 0" stroke="#2D1B5E" stroke-width="2" stroke-linecap="round" fill="none"/>`;
   } else if (emo.mouth === 'oh' || emo.mouth === 'boo') {
-    mouthSvg = `<rect x="7" y="9" width="2" height="2" fill="#4C1D95"/>`;
+    mouthMarkup = `<ellipse cx="32" cy="31.2" rx="2.4" ry="3" fill="#4B308F"/><ellipse cx="32" cy="32" rx="1.2" ry="1.1" fill="#FB7185"/>`;
   } else if (emo.mouth === 'open') {
-    mouthSvg = `
-      <rect x="6" y="9" width="4" height="1" fill="#2E1A5B"/>
-      <rect x="7" y="10" width="2" height="1" fill="#FB7185"/>
-    `;
+    mouthMarkup = `<path d="M28 29.8h8c-.3 3-2 4.4-4 4.4s-3.7-1.4-4-4.4Z" fill="#2D1B5E"/><path d="M30 32.3c1.2-.8 2.8-.8 4 0-.4.9-1.2 1.4-2 1.4s-1.6-.5-2-1.4Z" fill="#FB7185"/>`;
   } else if (emo.mouth === 'wavy') {
-    mouthSvg = `
-      <rect x="6" y="9" width="1" height="1" fill="#2E1A5B"/>
-      <rect x="7" y="10" width="2" height="1" fill="#2E1A5B"/>
-      <rect x="9" y="9" width="1" height="1" fill="#2E1A5B"/>
-    `;
+    mouthMarkup = `<path d="M28.5 31c1-1.2 2-1.2 3 0s2 1.2 3 0" stroke="#2D1B5E" stroke-width="1.9" stroke-linecap="round" fill="none"/>`;
   } else if (emo.mouth === 'flat') {
-    mouthSvg = `<rect x="7" y="9" width="2" height="1" fill="#6D5E96"/>`;
+    mouthMarkup = `<line x1="29.5" y1="31" x2="34.5" y2="31" stroke="#4B308F" stroke-width="1.8" stroke-linecap="round"/>`;
   } else {
-    mouthSvg = `<rect x="7" y="9" width="1" height="1" fill="#4C1D95"/>`;
+    mouthMarkup = `<path d="M30.4 30.4c1 1.1 2.2 1.1 3.2 0" stroke="#2D1B5E" stroke-width="1.8" stroke-linecap="round" fill="none"/>`;
   }
 
-  const blushSvg = emo.blush
-    ? `<rect x="3" y="8" width="2" height="1" fill="#FDA4AF" opacity="0.92"/>
-       <rect x="11" y="8" width="2" height="1" fill="#FDA4AF" opacity="0.92"/>`
+  const blushMarkup = emo.blush
+    ? `<ellipse cx="19.5" cy="29.2" rx="3.4" ry="1.8" fill="#FDA4AF" opacity="0.88"/>
+       <ellipse cx="44.5" cy="29.2" rx="3.4" ry="1.8" fill="#FDA4AF" opacity="0.88"/>`
     : '';
 
-  const armsSvg = emotionName === 'spook' || emotionName === 'excited'
-    ? `<rect x="1" y="10" width="1" height="2" fill="#FFFFFF"/>
-       <rect x="14" y="10" width="1" height="2" fill="#FFFFFF"/>
-       <rect x="1" y="10" width="1" height="1" fill="#DDD6FE"/>
-       <rect x="14" y="10" width="1" height="1" fill="#DDD6FE"/>`
-    : `<rect x="1" y="11" width="1" height="3" fill="#FFFFFF"/>
-       <rect x="14" y="11" width="1" height="3" fill="#FFFFFF"/>
-       <rect x="1" y="14" width="1" height="1" fill="#E9D5FF"/>
-       <rect x="14" y="14" width="1" height="1" fill="#E9D5FF"/>`;
+  const raisedArms = emotionName === 'excited' || emotionName === 'spook' || emotionName === 'love';
+  const leftArm = raisedArms
+    ? `<path d="M16 37c-5-2-8-7-6-10 2-2.5 5 0 7 4" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+       <circle cx="10.2" cy="27.2" r="2.6" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`
+    : `<path d="M16 37c-4.5 2-6.5 6.5-5 9.5 1.3 2.5 4.5 1.8 6-1" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+       <circle cx="12.2" cy="46.2" r="2.4" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`;
 
-  // Floating/sitting ghost tail below coat (y=16..17)
-  const skirtSvg = sitting
-    ? `<rect x="3" y="16" width="10" height="1" fill="#E2DAFA"/>
-       <rect x="4" y="17" width="8" height="1" fill="#C4B5FD"/>`
-    : (waveShift === 0
-      ? `<rect x="2" y="16" width="3" height="2" fill="#EDE9FE"/>
-         <rect x="6" y="16" width="4" height="2" fill="#EDE9FE"/>
-         <rect x="11" y="16" width="3" height="2" fill="#EDE9FE"/>`
-      : `<rect x="3" y="16" width="3" height="2" fill="#EDE9FE"/>
-         <rect x="7" y="16" width="3" height="2" fill="#EDE9FE"/>
-         <rect x="11" y="16" width="2" height="2" fill="#EDE9FE"/>`);
+  const rightArm = raisedArms
+    ? `<path d="M48 37c5-2 8-7 6-10-2-2.5-5 0-7 4" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+       <circle cx="53.8" cy="27.2" r="2.6" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`
+    : `<path d="M48 37c4.5 2 6.5 6.5 5 9.5-1.3 2.5-4.5 1.8-6-1" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+       <circle cx="51.8" cy="46.2" r="2.4" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`;
+
+  const tailShift = sitting ? 0 : (frame % 2 === 0 ? -1.4 : 1.4);
 
   return `
-    <svg viewBox="0 0 16 18" shape-rendering="crispEdges" width="38" height="43" aria-hidden="true">
-      <!-- White Nurse Cap -->
-      <rect x="5" y="0" width="6" height="2" fill="#FFFFFF"/>
-      <rect x="5" y="0" width="6" height="1" fill="#DDD6FE" opacity="0.6"/>
-      <rect x="4" y="1" width="8" height="1" fill="#FFFFFF"/>
-      <rect x="7" y="0" width="2" height="2" fill="#EF4444" opacity="0.88"/>
-      <rect x="6" y="1" width="4" height="1" fill="#EF4444" opacity="0.88"/>
-      <rect x="7" y="1" width="2" height="1" fill="#EF4444"/>
+    <svg viewBox="0 0 64 74" width="60" height="70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="${uid}Body" x1="16" y1="10" x2="48" y2="66" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#E5DFFF"/>
+          <stop offset="52%" stop-color="#C8B9FA"/>
+          <stop offset="100%" stop-color="#A792F4"/>
+        </linearGradient>
+        <linearGradient id="${uid}Coat" x1="16" y1="34" x2="48" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="100%" stop-color="#F1F5F9"/>
+        </linearGradient>
+      </defs>
 
-      <!-- Soft outline & ghost aura -->
-      <rect x="4" y="2" width="8" height="1" fill="#7C5CE0" opacity="0.4"/>
-      <rect x="2" y="3" width="12" height="13" fill="#7C5CE0" opacity="0.22"/>
+      <!-- Ghost Body & Flowing Tail (Soft Lavender-Periwinkle so the pure White Coat clearly pops!) -->
+      <path d="M16 32c0-10.8 7.2-19 16-19s16 8.2 16 19v24.5c0 2.5-2.6 4.2-4.6 2.8-1.9-1.3-3.9-1.2-5.4.4-1.8 1.9-4.2 1.9-6 0-1.5-1.6-3.5-1.7-5.4-.4-2 1.4-4.6-.3-4.6-2.8V32Z"
+            transform="translate(${tailShift * 0.25}, 0)"
+            fill="url(#${uid}Body)" stroke="#4B308F" stroke-width="2" stroke-linejoin="round"/>
 
-      <!-- Soft Ghost Head (pearl lavender tint so white nurse coat clearly stands out) -->
-      <rect x="4" y="2" width="8" height="2" fill="#F5F3FF"/>
-      <rect x="3" y="3" width="10" height="7" fill="#F5F3FF"/>
-      <rect x="2" y="4" width="12" height="6" fill="#F5F3FF"/>
-      <rect x="3" y="4" width="1" height="5" fill="#EDE9FE"/>
-      <rect x="12" y="4" width="1" height="6" fill="#DDD6FE"/>
+      <!-- Crisp White Nurse Cap -->
+      <g transform="translate(0, -1)">
+        <path d="M21 15.5l2.8-8.2c.4-1.1 1.5-1.8 2.7-1.8h11c1.2 0 2.3.7 2.7 1.8L43 15.5c-3.5 1.4-18.5 1.4-22 0Z"
+              fill="#FFFFFF" stroke="#4B308F" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M21.5 14.2c5.5 1.1 15.5 1.1 21 0" stroke="#CBD5E1" stroke-width="1.3"/>
+        <path d="M32 8.2v4.6M29.7 10.5h4.6" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+      </g>
 
-      <!-- White Nurse Coat Body (y=10..15) -->
-      <rect x="2" y="10" width="12" height="6" fill="#FFFFFF"/>
-      <!-- Coat border / lapel shading -->
-      <rect x="2" y="10" width="1" height="6" fill="#CBD5E1" opacity="0.55"/>
-      <rect x="13" y="10" width="1" height="6" fill="#CBD5E1" opacity="0.55"/>
-      <rect x="2" y="15" width="12" height="1" fill="#CBD5E1" opacity="0.6"/>
-      <!-- Inner violet scrubs V-neck -->
-      <rect x="6" y="10" width="4" height="2" fill="#7C5CE0"/>
-      <rect x="7" y="12" width="2" height="2" fill="#7C5CE0"/>
-      <!-- Crisp coat lapel fold & buttons -->
-      <rect x="5" y="10" width="1" height="2" fill="#CBD5E1"/>
-      <rect x="10" y="10" width="1" height="2" fill="#CBD5E1"/>
-      <rect x="6" y="12" width="1" height="2" fill="#E2E8F0"/>
-      <rect x="9" y="12" width="1" height="2" fill="#E2E8F0"/>
-      <rect x="7" y="14" width="2" height="1" fill="#94A3B8"/>
-      <!-- Coat chest pocket + tiny medical cross & stethoscope tube -->
-      <rect x="10" y="13" width="2" height="2" fill="#E2E8F0"/>
-      <rect x="10" y="13" width="1" height="1" fill="#FB7185"/>
-      <rect x="4" y="10" width="1" height="3" fill="#4C1D95" opacity="0.72"/>
-      <rect x="4" y="13" width="1" height="1" fill="#94A3B8"/>
+      <!-- Face Features -->
+      ${blushMarkup}
+      ${eyesMarkup}
+      ${mouthMarkup}
 
-      ${armsSvg}
-      ${skirtSvg}
-      ${blushSvg}
-      ${eyesSvg}
-      ${mouthSvg}
+      <!-- Crisp High-Contrast Pure White Nurse Coat (wraps torso over purple scrubs) -->
+      <g>
+        <!-- Inner Violet Scrub Top V-Neck -->
+        <path d="M25.5 34.5h13L32 45.5l-6.5-11Z" fill="#6D48C7"/>
+        <!-- White Coat Torso -->
+        <path d="M16 36.2c2.8-1.5 6.4-2 9.5-1.7L32 45.5l6.5-11c3.1-.3 6.7.2 9.5 1.7v18.2c0 1.4-1.1 2.4-2.5 2.4H33.5v-10h-3v10H18.5c-1.4 0-2.5-1-2.5-2.4V36.2Z"
+              fill="url(#${uid}Coat)" stroke="#4B308F" stroke-width="1.9" stroke-linejoin="round"/>
+        <!-- Folded White Coat Lapels -->
+        <path d="M25.5 34.5l6.5 11-5.2-1.8-2.8-5.4 1.5-3.8ZM38.5 34.5L32 45.5l5.2-1.8 2.8-5.4-1.5-3.8Z"
+              fill="#E8ECF4" stroke="#4B308F" stroke-width="1.2" stroke-linejoin="round"/>
+        <!-- Coat Center Seam & Buttons -->
+        <line x1="32" y1="45.5" x2="32" y2="56.8" stroke="#94A3B8" stroke-width="1.3"/>
+        <circle cx="32" cy="49.2" r="1.25" fill="#5B3EA8"/>
+        <circle cx="32" cy="53.4" r="1.25" fill="#5B3EA8"/>
+
+        <!-- Chest Pocket + Nurse Red Cross Badge -->
+        <rect x="37" y="45" width="7" height="6.2" rx="1.4" fill="#F1F5F9" stroke="#64748B" stroke-width="1"/>
+        <path d="M40.5 46.6v3M39 48.1h3" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round"/>
+
+        <!-- Silver & Plum Stethoscope draped around coat collar -->
+        <path d="M23.2 34.8c-1.2 4.8.4 9.5 3.6 10.6M40.8 34.8c1.2 4.8-.4 9.5-3.6 10.6"
+              stroke="#3B2378" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+        <circle cx="26.8" cy="45.8" r="2.2" fill="#E2E8F0" stroke="#3B2378" stroke-width="1.3"/>
+      </g>
+
+      <!-- Animated White Coat Sleeves + Lavender Ghost Hands -->
+      ${leftArm}
+      ${rightArm}
     </svg>
   `;
 }
 
 function renderBubbleHtml(emotionName) {
-  if (emotionName === 'love') {
-    return `<span class="apk-ghost-bubble is-love">&#9829;</span>`;
-  }
-  if (emotionName === 'spook') {
-    return `<span class="apk-ghost-bubble">boo!</span>`;
-  }
-  if (emotionName === 'sleepy') {
-    return `<span class="apk-ghost-bubble is-zzz">zZ</span>`;
-  }
-  if (emotionName === 'curious') {
-    return `<span class="apk-ghost-bubble">?</span>`;
-  }
-  if (emotionName === 'excited' || emotionName === 'proud') {
-    return `<span class="apk-ghost-bubble is-star">&#10022;</span>`;
-  }
-  if (emotionName === 'shy') {
-    return `<span class="apk-ghost-bubble is-love">///</span>`;
-  }
-  return '';
+  const text = EMOTIONS[emotionName]?.bubble;
+  if (!text) return '';
+  let cls = 'apk-ghost-bubble';
+  if (emotionName === 'love' || emotionName === 'shy') cls += ' is-love';
+  else if (emotionName === 'sleepy') cls += ' is-zzz';
+  else if (emotionName === 'excited' || emotionName === 'proud') cls += ' is-star';
+  return `<span class="${cls}">${text}</span>`;
 }
 
 export function isGhostPetEnabled() {
@@ -235,34 +211,145 @@ export function initGhostPet() {
   root.id = 'apk-ghost-pet';
   root.setAttribute('role', 'button');
   root.setAttribute('tabindex', '0');
-  root.setAttribute('aria-label', 'Playful pixel ghost pet');
+  root.setAttribute('aria-label', 'Playful nurse ghost buddy');
   root.style.display = isGhostPetEnabled() ? 'flex' : 'none';
 
   root.innerHTML = `
     <div class="apk-ghost-prop" aria-hidden="true"></div>
-    <div class="apk-ghost-sprite">${renderGhostPixelSvg('idle')}</div>
+    <div class="apk-ghost-bursts" aria-hidden="true"></div>
+    <div class="apk-ghost-sprite">${renderNurseGhostSvg('idle')}</div>
     <div class="apk-ghost-shadow" aria-hidden="true"></div>
   `;
   document.body.appendChild(root);
 
   const spriteEl = root.querySelector('.apk-ghost-sprite');
   const propEl = root.querySelector('.apk-ghost-prop');
+  const burstsEl = root.querySelector('.apk-ghost-bursts');
   const shadowEl = root.querySelector('.apk-ghost-shadow');
 
-  let x = Math.max(24, window.innerWidth - 88);
-  let y = Math.max(88, Math.round(window.innerHeight * 0.24));
+  const getViewportClamp = (val, min, max) => Math.max(min, Math.min(max, val));
+
+  const getCuratedSpots = () => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const spots = [];
+
+    const isElemVisible = (el) => {
+      if (!el || !el.isConnected) return false;
+      const st = window.getComputedStyle(el);
+      if (st.display === 'none' || st.visibility === 'hidden' || parseFloat(st.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 8 && r.height > 8 && r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw;
+    };
+
+    // 1. Beside Live Classes / Page Title
+    const titleEl = Array.from(document.querySelectorAll('#apk-live-topbar .apk-editorial-title, .notes-hero-title, .tests-hero-title, .page-hero-title')).find(isElemVisible);
+    if (titleEl) {
+      spots.push({
+        id: 'beside-live-title',
+        sitting: false,
+        facing: -1,
+        compute: () => {
+          if (!isElemVisible(titleEl)) return null;
+          const r = titleEl.getBoundingClientRect();
+          let textRight = r.right;
+          try {
+            const firstText = Array.from(titleEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+            if (firstText) {
+              const range = document.createRange();
+              range.selectNodeContents(firstText);
+              const tr = range.getBoundingClientRect();
+              if (tr.width > 8) textRight = tr.right;
+            }
+          } catch (_) {}
+          const batchEl = document.querySelector('.apk-batch-pill-btn');
+          let maxRight = vw - 70;
+          if (batchEl && isElemVisible(batchEl)) {
+            const br = batchEl.getBoundingClientRect();
+            if (Math.abs(br.top - r.top) < 48) {
+              maxRight = Math.min(maxRight, br.left - 66);
+            }
+          }
+          const px = getViewportClamp(textRight + 6, Math.max(12, r.left), Math.max(16, maxRight));
+          const py = getViewportClamp(r.top + r.height / 2 - 38, 6, vh - 86);
+          return { x: px, y: py, facing: -1, sitting: false };
+        }
+      });
+    }
+
+    // 2. Below Our Logo (sidebar logo on tablet/landscape OR auth logo badge on login)
+    const logoEl = Array.from(document.querySelectorAll('.header-logo, #auth-screen:not(.hide) .apk-brand-inline-row .apk-logo-badge')).find(isElemVisible);
+    if (logoEl) {
+      spots.push({
+        id: 'below-logo',
+        sitting: false,
+        facing: 1,
+        compute: () => {
+          if (!isElemVisible(logoEl)) return null;
+          const r = logoEl.getBoundingClientRect();
+          const px = getViewportClamp(r.left + r.width / 2 - 31, 6, vw - 70);
+          const py = getViewportClamp(r.bottom + 6, 8, vh - 86);
+          return { x: px, y: py, facing: 1, sitting: false };
+        }
+      });
+    }
+
+    // 3. Beside Batch Selection
+    const batchEl = Array.from(document.querySelectorAll('.apk-batch-pill-btn, #header-batch-btn')).find(isElemVisible);
+    if (batchEl) {
+      spots.push({
+        id: 'beside-batch',
+        sitting: false,
+        facing: 1,
+        compute: () => {
+          if (!isElemVisible(batchEl)) return null;
+          const r = batchEl.getBoundingClientRect();
+          const preferLeft = r.left >= 74;
+          const px = preferLeft
+            ? getViewportClamp(r.left - 66, 8, vw - 70)
+            : getViewportClamp(r.right + 8, 8, vw - 70);
+          const py = getViewportClamp(r.top + r.height / 2 - 40, 6, vh - 86);
+          return { x: px, y: py, facing: preferLeft ? 1 : -1, sitting: false };
+        }
+      });
+    }
+
+    // 4. On Top of Live Button (#tab-live)
+    const liveBtn = document.getElementById('tab-live');
+    if (isElemVisible(liveBtn)) {
+      spots.push({
+        id: 'top-live-btn',
+        sitting: true,
+        facing: 1,
+        compute: () => {
+          if (!isElemVisible(liveBtn)) return null;
+          const r = liveBtn.getBoundingClientRect();
+          const px = getViewportClamp(r.left + r.width / 2 - 31, 6, vw - 70);
+          const py = getViewportClamp(r.top - 54, 6, vh - 82);
+          return { x: px, y: py, facing: 1, sitting: true };
+        }
+      });
+    }
+
+    return spots;
+  };
+
+  let x = Math.max(16, Math.round(window.innerWidth * 0.16));
+  let y = 76;
   let targetX = x;
   let targetY = y;
-  let perchedCard = null;
-  let perchOffsetRatio = 0.82; // Near card top-right or top-left ledge
-  let facing = -1;
-  let emotion = 'idle';
-  let emotionUntil = 0;
+  let activeSpot = null;
+  let spotSitting = false;
+  let facing = 1;
+  let preferredFacing = 1;
+  let emotion = 'happy';
+  let emotionUntil = performance.now() + 2600;
+  let cycleIdx = 0;
   let pokeCount = 0;
   let lastPokeAt = 0;
+  let lastSpookAt = 0;
   let blinkActive = false;
   let walkFrame = 0;
-  let lastMoveTime = performance.now();
   let isDragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
@@ -271,55 +358,68 @@ export function initGhostPet() {
   let didDragMove = false;
   let lastRenderKey = '';
 
-  const setEmotion = (next, durationMs = 2400) => {
+  const spawnParticleBurst = (symbol = '♥', color = '#EC4899') => {
+    if (!burstsEl) return;
+    for (let i = 0; i < 4; i++) {
+      const p = document.createElement('span');
+      p.className = 'apk-ghost-burst-item';
+      p.textContent = i % 2 === 0 ? symbol : '✦';
+      p.style.color = color;
+      p.style.setProperty('--gx', `${(Math.random() - 0.5) * 64}px`);
+      p.style.setProperty('--gy', `${-22 - Math.random() * 34}px`);
+      burstsEl.appendChild(p);
+      setTimeout(() => p.remove(), 800);
+    }
+  };
+
+  const setEmotion = (next, durationMs = 2600, burst = false) => {
     emotion = next;
     emotionUntil = durationMs > 0 ? performance.now() + durationMs : 0;
-  };
-
-  const getCandidateCards = () => {
-    const selectors = [
-      '.class-card:not(.hide)',
-      '.subject-card:not(.hide)',
-      '.note-doc-card:not(.hide)',
-      '.sd-lecture-card:not(.hide)',
-      '.apk-schedule-banner',
-      '#auth-screen:not(.hide)'
-    ];
-    const vh = window.innerHeight;
-    const vw = window.innerWidth;
-    const nodes = Array.from(document.querySelectorAll(selectors.join(',')));
-    return nodes.filter(el => {
-      const r = el.getBoundingClientRect();
-      return r.width > 120 && r.height > 44 && r.top > 48 && r.top < vh - 96 && r.left >= 0 && r.right <= vw + 20;
-    });
-  };
-
-  const pickNextTarget = (preferredCard = null) => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const cards = getCandidateCards();
-
-    if (preferredCard && preferredCard.isConnected) {
-      const r = preferredCard.getBoundingClientRect();
-      if (r.top > 42 && r.top < vh - 80) {
-        perchedCard = preferredCard;
-        perchOffsetRatio = 0.14 + Math.random() * 0.72;
-        return;
-      }
+    lastRenderKey = '';
+    if (burst) {
+      if (next === 'love' || next === 'shy') spawnParticleBurst('♥', '#E11D48');
+      else if (next === 'excited' || next === 'proud') spawnParticleBurst('★', '#F59E0B');
+      else if (next === 'care') spawnParticleBurst('+', '#EF4444');
+      else spawnParticleBurst('✦', '#7C5CE0');
     }
+  };
 
-    if (cards.length > 0 && Math.random() < 0.78) {
-      perchedCard = cards[Math.floor(Math.random() * Math.min(cards.length, 10))];
-      perchOffsetRatio = Math.random() < 0.5 ? (0.10 + Math.random() * 0.18) : (0.72 + Math.random() * 0.18);
+  const applySpot = (spot, immediate = false) => {
+    if (!spot) return false;
+    const pos = spot.compute();
+    if (!pos) return false;
+    activeSpot = spot;
+    targetX = pos.x;
+    targetY = pos.y;
+    preferredFacing = pos.facing;
+    spotSitting = Boolean(pos.sitting);
+    if (immediate) {
+      x = pos.x;
+      y = pos.y;
+      facing = pos.facing;
+    }
+    return true;
+  };
+
+  const pickNextTarget = (preferredSpotId = null, immediate = false) => {
+    const spots = getCuratedSpots();
+    if (spots.length === 0) {
+      activeSpot = null;
       return;
     }
 
-    perchedCard = null;
-    targetX = 28 + Math.random() * Math.max(60, vw - 96);
-    targetY = 64 + Math.random() * Math.max(80, vh - 190);
+    if (preferredSpotId) {
+      const matched = spots.find(s => s.id === preferredSpotId);
+      if (matched && applySpot(matched, immediate)) return;
+    }
+
+    const others = activeSpot && spots.length > 1
+      ? spots.filter(s => s.id !== activeSpot.id)
+      : spots;
+    const chosen = others[Math.floor(Math.random() * others.length)];
+    applySpot(chosen, immediate);
   };
 
-  // Reaction cycles when tapped/clicked
   const reactToTap = () => {
     const now = performance.now();
     if (now - lastPokeAt < 1800) pokeCount++;
@@ -327,55 +427,73 @@ export function initGhostPet() {
     lastPokeAt = now;
 
     if (pokeCount >= 4) {
-      setEmotion('shy', 2600);
-      root.classList.remove('is-hop');
-      void root.offsetWidth;
-      root.classList.add('is-hop');
-      return;
+      pokeCount = 0;
+      setEmotion('shy', 2800, true);
+    } else {
+      const tapCycle = ['love', 'excited', 'care', 'happy', 'spook', 'proud', 'curious'];
+      const chosen = tapCycle[cycleIdx % tapCycle.length];
+      cycleIdx++;
+      setEmotion(chosen, 2800, true);
+      if (Math.random() < 0.38) pickNextTarget();
     }
 
-    const cycle = ['love', 'excited', 'spook', 'happy', 'proud', 'curious'];
-    const chosen = cycle[Math.floor(Math.random() * cycle.length)];
-    setEmotion(chosen, 2600);
     root.classList.remove('is-hop');
     void root.offsetWidth;
     root.classList.add('is-hop');
-
-    if (chosen === 'excited' && Math.random() < 0.65) {
-      pickNextTarget();
-    }
   };
 
-  // Hover & click around the page
-  root.addEventListener('mouseenter', () => {
-    if (!isDragging && emotion === 'idle') setEmotion('happy', 1800);
+  root.addEventListener('pointerenter', () => {
+    if (!isDragging) {
+      setEmotion('happy', 2200, true);
+    }
   });
 
-  document.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('#apk-ghost-pet')) return;
-    if (!isGhostPetEnabled()) return;
-    const card = e.target.closest('.class-card, .subject-card, .note-doc-card, .sd-lecture-card');
-    if (card && Math.random() < 0.45) {
-      setEmotion('excited', 1600);
-      if (Math.random() < 0.5) pickNextTarget(card);
-    }
-  }, { passive: true });
-
-  document.addEventListener('mouseover', (e) => {
+  // Fast-scroll scare reaction ('spook' -> EEK!)
+  const scrollTrackMap = new WeakMap();
+  const handleFastScroll = (e) => {
     if (!isGhostPetEnabled() || isDragging) return;
-    const card = e.target.closest('.class-card, .subject-card, .note-doc-card, .sd-lecture-card');
-    if (card && card !== perchedCard && Math.random() < 0.25) {
-      pickNextTarget(card);
-      setEmotion('curious', 1500);
+    const scroller = (e.target === document || e.target === window)
+      ? (document.scrollingElement || document.documentElement)
+      : e.target;
+    if (!scroller || typeof scroller.scrollTop !== 'number') return;
+
+    const now = performance.now();
+    const curTop = (scroller === document.scrollingElement || scroller === document.documentElement)
+      ? (window.scrollY || scroller.scrollTop || 0)
+      : scroller.scrollTop;
+    const prev = scrollTrackMap.get(scroller);
+    scrollTrackMap.set(scroller, { top: curTop, at: now });
+    if (!prev) return;
+
+    const dt = Math.max(8, now - prev.at);
+    const delta = Math.abs(curTop - prev.top);
+    const velocity = delta / dt;
+
+    if ((delta > 42 && velocity > 0.85) || velocity > 1.35) {
+      if (now - lastSpookAt > 1100) {
+        lastSpookAt = now;
+        setEmotion('spook', 2400, true);
+        root.classList.remove('is-hop');
+        void root.offsetWidth;
+        root.classList.add('is-hop');
+      }
+    }
+  };
+  window.addEventListener('scroll', handleFastScroll, { capture: true, passive: true });
+
+  document.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('#apk-ghost-pet') || !isGhostPetEnabled()) return;
+    if (e.target.closest('#tab-live')) {
+      setEmotion('excited', 1800, true);
+    } else if (e.target.closest('.apk-batch-pill-btn, #header-batch-btn')) {
+      setEmotion('curious', 1800, true);
     }
   }, { passive: true });
 
-  // Pointer drag / tap support (works on both Android touch and mouse)
   root.addEventListener('pointerdown', (e) => {
     e.stopPropagation();
     isDragging = true;
     didDragMove = false;
-    perchedCard = null;
     dragStartX = e.clientX;
     dragStartY = e.clientY;
     dragOriginX = x;
@@ -389,12 +507,12 @@ export function initGhostPet() {
     const dx = e.clientX - dragStartX;
     const dy = e.clientY - dragStartY;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) didDragMove = true;
-    x = Math.max(8, Math.min(window.innerWidth - 48, dragOriginX + dx));
-    y = Math.max(12, Math.min(window.innerHeight - 64, dragOriginY + dy));
+    x = Math.max(8, Math.min(window.innerWidth - 68, dragOriginX + dx));
+    y = Math.max(12, Math.min(window.innerHeight - 86, dragOriginY + dy));
     targetX = x;
     targetY = y;
     if (Math.abs(dx) > 2) facing = dx >= 0 ? 1 : -1;
-    setEmotion('shy', 0);
+    if (emotion !== 'shy') setEmotion('shy', 0);
   });
 
   const endDrag = () => {
@@ -403,52 +521,55 @@ export function initGhostPet() {
     if (!didDragMove) {
       reactToTap();
     } else {
-      // Snap onto nearest card under drop point if close
-      const cards = getCandidateCards();
-      const nearest = cards.find(c => {
-        const r = c.getBoundingClientRect();
-        return x >= r.left - 24 && x <= r.right + 24 && Math.abs(y - (r.top - 30)) < 68;
-      });
-      if (nearest) {
-        const r = nearest.getBoundingClientRect();
-        perchedCard = nearest;
-        perchOffsetRatio = Math.max(0.08, Math.min(0.92, (x - r.left) / Math.max(1, r.width)));
-        setEmotion('happy', 1800);
+      const spots = getCuratedSpots();
+      let bestSpot = null;
+      let bestDist = Infinity;
+      for (const s of spots) {
+        const pos = s.compute();
+        if (!pos) continue;
+        const d = Math.hypot(pos.x - x, pos.y - y);
+        if (d < bestDist) {
+          bestDist = d;
+          bestSpot = s;
+        }
+      }
+      if (bestSpot) {
+        applySpot(bestSpot);
+        setEmotion('happy', 2400, true);
       } else {
-        setEmotion('proud', 1600);
+        setEmotion('proud', 2400, true);
       }
     }
   };
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
 
-  // Periodic roam, blink, and sleepy timers
   setInterval(() => {
     if (!isGhostPetEnabled() || isDragging) return;
-    if (Math.random() < 0.72) {
+    if (Math.random() < 0.78) {
       blinkActive = true;
-      setTimeout(() => { blinkActive = false; }, 140);
+      setTimeout(() => { blinkActive = false; }, 160);
     }
-  }, 3400);
+  }, 3200);
 
   setInterval(() => {
     if (!isGhostPetEnabled() || isDragging) return;
-    if (Math.random() < 0.65) {
+    if (Math.random() < 0.36) {
       pickNextTarget();
-    } else if (perchedCard) {
-      // Fall asleep gently while perched on a card
-      setEmotion(Math.random() < 0.55 ? 'sleepy' : 'happy', 3200);
+      setEmotion(Math.random() < 0.5 ? 'curious' : 'care', 2600);
+    } else {
+      const ambient = ['sleepy', 'happy', 'love', 'care'];
+      setEmotion(ambient[Math.floor(Math.random() * ambient.length)], 3800);
     }
-  }, 7500);
+  }, 16000);
 
-  // Initial perch onto first visible card after short settle
-  setTimeout(() => pickNextTarget(), 900);
+  setTimeout(() => pickNextTarget('top-live-btn', true), 450);
 
   const tick = (now) => {
     if (isGhostPetEnabled()) {
       const quizOpen = document.querySelector('#quiz-viewer:not(.hide), #pdf-modal:not(.hide), #recording-viewer:not(.hide)');
       if (quizOpen) {
-        root.style.opacity = '0.28';
+        root.style.opacity = '0.24';
         root.style.pointerEvents = 'none';
       } else {
         root.style.opacity = '1';
@@ -456,14 +577,14 @@ export function initGhostPet() {
       }
 
       if (!isDragging) {
-        if (perchedCard && perchedCard.isConnected) {
-          const r = perchedCard.getBoundingClientRect();
-          if (r.top < 36 || r.top > window.innerHeight - 64) {
-            pickNextTarget();
-          } else {
-            targetX = Math.max(14, Math.min(window.innerWidth - 54, r.left + r.width * perchOffsetRatio - 19));
-            targetY = Math.max(14, r.top - 32);
-          }
+        const synced = activeSpot && activeSpot.compute();
+        if (synced) {
+          targetX = synced.x;
+          targetY = synced.y;
+          preferredFacing = synced.facing;
+          spotSitting = Boolean(synced.sitting);
+        } else {
+          pickNextTarget();
         }
 
         const dx = targetX - x;
@@ -471,10 +592,11 @@ export function initGhostPet() {
         const dist = Math.hypot(dx, dy);
 
         if (dist > 1.5) {
-          x += dx * 0.065;
-          y += dy * 0.065;
-          if (Math.abs(dx) > 0.6) facing = dx > 0 ? 1 : -1;
-          lastMoveTime = now;
+          x += dx * 0.024;
+          y += dy * 0.024;
+          if (Math.abs(dx) > 0.8) facing = dx >= 0 ? 1 : -1;
+        } else {
+          facing = preferredFacing;
         }
       }
 
@@ -484,19 +606,19 @@ export function initGhostPet() {
       }
 
       const isMoving = isDragging || Math.hypot(targetX - x, targetY - y) > 4;
-      const isSitting = !isMoving && Boolean(perchedCard && perchedCard.isConnected);
-      const bob = isDragging ? 0 : (isSitting ? Math.sin(now * 0.004) * 1.4 : Math.sin(now * 0.007) * 3.8);
+      const isSitting = !isMoving && spotSitting;
+      const bob = isDragging ? 0 : (isSitting ? Math.sin(now * 0.0028) * 1.1 : Math.sin(now * 0.0036) * 2.2);
 
-      walkFrame = Math.floor(now / 220) % 2;
+      walkFrame = Math.floor(now / 260) % 2;
       root.style.transform = `translate3d(${x.toFixed(1)}px, ${(y + bob).toFixed(1)}px, 0)`;
       spriteEl.style.transform = `scaleX(${facing})`;
       shadowEl.style.transform = `scale(${isSitting ? 1 : 0.78})`;
-      shadowEl.style.opacity = isSitting ? '0.24' : '0.14';
+      shadowEl.style.opacity = isSitting ? '0.26' : '0.15';
 
       const renderKey = `${emotion}|${blinkActive ? 1 : 0}|${isSitting ? 1 : 0}|${isMoving ? walkFrame : 0}`;
       if (renderKey !== lastRenderKey) {
         lastRenderKey = renderKey;
-        spriteEl.innerHTML = renderGhostPixelSvg(emotion, { blink: blinkActive, sitting: isSitting, frame: walkFrame });
+        spriteEl.innerHTML = renderNurseGhostSvg(emotion, { blink: blinkActive, sitting: isSitting, frame: walkFrame });
         propEl.innerHTML = renderBubbleHtml(emotion);
       }
     }

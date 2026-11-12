@@ -1,5 +1,6 @@
 // Red Sapphire Hinglish APK — Scratch Minimal UI Shell & Liquid Motion Engine
 import './apk-ui.css';
+import botanicalImgUrl from './botanical-heart-lungs.png';
 import { initGhostPet, isGhostPetEnabled, setGhostPetEnabled } from './apk-ghost-pet.js';
 
 function detectSystemDark() {
@@ -532,118 +533,13 @@ function normalizeHeaderAndChrome() {
       sendOtpSpan.textContent = 'Get OTP';
     }
 
-    // Transparent Botanical Anatomical Lungs, Heart, Ribs & Violet Blossoms on right side
+    // Transparent Botanical Anatomical Lungs, Heart & Flowers Artwork on right side
     if (wrapper && !document.getElementById('apk-auth-botanical')) {
       const bot = document.createElement('div');
       bot.id = 'apk-auth-botanical';
       bot.className = 'apk-auth-botanical';
-      bot.setAttribute('role', 'img');
-      bot.setAttribute('aria-label', 'Botanical Heart and Lungs illustration');
       bot.innerHTML = `
-        <svg viewBox="0 0 360 390" fill="none" xmlns="http://www.w3.org/2000/svg" class="apk-botanical-svg">
-          <defs>
-            <linearGradient id="nnlStemGrad" x1="180" y1="30" x2="180" y2="360" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.72"/>
-              <stop offset="100%" stop-color="#5B3EA8" stop-opacity="0.88"/>
-            </linearGradient>
-            <linearGradient id="nnlHeartGrad" x1="145" y1="150" x2="225" y2="265" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.34"/>
-              <stop offset="55%" stop-color="#7C5CE0" stop-opacity="0.22"/>
-              <stop offset="100%" stop-color="#F472B6" stop-opacity="0.28"/>
-            </linearGradient>
-            <linearGradient id="nnlLungGrad" x1="65" y1="120" x2="295" y2="290" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#C4B5FD" stop-opacity="0.22"/>
-              <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.08"/>
-            </linearGradient>
-            <linearGradient id="nnlLeafGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#6EE7B7" stop-opacity="0.82"/>
-              <stop offset="100%" stop-color="#34D399" stop-opacity="0.58"/>
-            </linearGradient>
-            <linearGradient id="nnlPetalGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#EDE9FE" stop-opacity="0.96"/>
-              <stop offset="55%" stop-color="#C4B5FD" stop-opacity="0.88"/>
-              <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/>
-            </linearGradient>
-          </defs>
-
-          <!-- Delicate Ribcage Bone Arcs (subtle medical anatomical frame) -->
-          <g class="bot-ribs" stroke="url(#nnlStemGrad)" stroke-linecap="round" opacity="0.36">
-            <path d="M180 76v228" stroke-width="2.2" stroke-dasharray="6 8"/>
-            <path d="M170 112c-46 2-82 22-86 48 16-8 46-12 78-6" stroke-width="2.4"/>
-            <path d="M190 112c46 2 82 22 86 48-16-8-46-12-78-6" stroke-width="2.4"/>
-            <path d="M168 154c-54 4-96 28-98 58 20-10 52-14 88-6" stroke-width="2.2"/>
-            <path d="M192 154c54 4 96 28 98 58-20-10-52-14-88-6" stroke-width="2.2"/>
-            <path d="M166 198c-48 8-82 32-80 60 18-10 44-14 72-8" stroke-width="1.9"/>
-            <path d="M194 198c48 8 82 32 80 60-18-10-44-14-72-8" stroke-width="1.9"/>
-          </g>
-
-          <!-- Breathing Lungs Silhouette & Bronchial Vine Branches -->
-          <g class="bot-lungs">
-            <path d="M168 118c-36 8-76 48-84 106-6 40 8 66 40 68 24 2 44-10 48-28V122c0-3-2-5-4-4Z" fill="url(#nnlLungGrad)" stroke="#7C5CE0" stroke-opacity="0.46" stroke-width="2"/>
-            <path d="M192 118c36 8 76 48 84 106 6 40-8 66-40 68-24 2-44-10-48-28V122c0-3 2-5 4-4Z" fill="url(#nnlLungGrad)" stroke="#7C5CE0" stroke-opacity="0.46" stroke-width="2"/>
-            <!-- Trachea Rings -->
-            <path d="M174 52v70M186 52v70M174 66h12M174 78h12M174 90h12M174 102h12" stroke="#6D28D9" stroke-opacity="0.52" stroke-width="2.1" stroke-linecap="round"/>
-            <!-- Bronchial Botanical Branches -->
-            <path d="M174 124c-26 14-48 38-64 78M150 144c-20 4-36 16-46 34M132 170c-16 14-24 32-26 52M152 178c-12 20-14 44-10 68" stroke="#7C5CE0" stroke-opacity="0.54" stroke-width="1.9" stroke-linecap="round"/>
-            <path d="M186 124c26 14 48 38 64 78M210 144c20 4 36 16 46 34M228 170c16 14 24 32 26 52M208 178c12 20 14 44 10 68" stroke="#7C5CE0" stroke-opacity="0.54" stroke-width="1.9" stroke-linecap="round"/>
-          </g>
-
-          <!-- Center Anatomical Heart with Coronary Floral Vine & Pulse -->
-          <g class="bot-heart">
-            <path d="M176 154c-4-20 8-34 22-36 6 12 4 24 0 34" stroke="#6D28D9" stroke-opacity="0.62" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M158 156c-12-10-26 2-26 18 0 28 24 54 50 74 28-14 52-42 52-68 0-18-14-32-30-26-10 4-16 12-20 20-6-8-14-12-26-18Z" fill="url(#nnlHeartGrad)" stroke="#5B3EA8" stroke-opacity="0.68" stroke-width="2.4" stroke-linejoin="round"/>
-            <path d="M174 188c10 16 14 34 10 54M162 206c-10 12-12 22-8 34M194 202c12 8 20 20 22 32" stroke="#EC4899" stroke-opacity="0.48" stroke-width="1.8" stroke-linecap="round"/>
-          </g>
-
-          <!-- Botanical Stems & Leaves (swaying softly) -->
-          <g class="bot-foliage">
-            <path d="M114 176c-18-14-32-12-42-2 10 12 24 14 42 2Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M98 228c-22-6-36 6-40 20 16 4 32-4 40-20Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M248 164c18-14 34-10 42 2-12 12-26 12-42-2Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M262 224c24-4 38 8 40 22-16 4-32-6-40-22Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M168 118c-24-26-22-48-6-62 14 14 18 38 6 62Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M194 116c24-22 28-44 12-58-16 12-22 34-12 58Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M148 278c-20 10-30 28-24 44 18-6 28-22 24-44Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-            <path d="M214 274c20 12 28 30 20 46-18-8-26-24-20-46Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
-          </g>
-
-          <!-- Blooming Violet & Blush Flowers -->
-          <g class="bot-flowers">
-            <!-- Top Trachea Crown Blossom -->
-            <g transform="translate(180 56)">
-              <circle cx="0" cy="-12" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="-7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="-11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="0" cy="0" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/>
-            </g>
-            <!-- Left Lung Blossom -->
-            <g transform="translate(104 196) scale(0.86)">
-              <circle cx="0" cy="-12" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="-7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="-11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="0" cy="0" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/>
-            </g>
-            <!-- Right Lung Blossom -->
-            <g transform="translate(258 188) scale(0.9)">
-              <circle cx="0" cy="-12" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="-7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="-11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
-              <circle cx="0" cy="0" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/>
-            </g>
-            <!-- Small Buds -->
-            <circle cx="136" cy="134" r="5" fill="#F9A8D4" opacity="0.88"/>
-            <circle cx="228" cy="132" r="5" fill="#F9A8D4" opacity="0.88"/>
-            <circle cx="182" cy="276" r="5.5" fill="#C4B5FD" opacity="0.9"/>
-            <circle cx="82" cy="148" r="3.6" fill="#DDD6FE" opacity="0.86"/>
-            <circle cx="282" cy="252" r="3.8" fill="#FBCFE8" opacity="0.88"/>
-          </g>
-        </svg>
+        <img src="${botanicalImgUrl}" alt="Botanical anatomical heart and lungs illustration" class="apk-botanical-img" draggable="false" />
         <div class="apk-botanical-sparks" aria-hidden="true"></div>
       `;
 
@@ -653,13 +549,13 @@ function normalizeHeaderAndChrome() {
         bot.classList.add('is-blooming');
         const sparksEl = bot.querySelector('.apk-botanical-sparks');
         if (sparksEl) {
-          for (let i = 0; i < 6; i++) {
+          for (let i = 0; i < 7; i++) {
             const p = document.createElement('span');
             p.className = 'apk-petal-spark';
-            p.style.setProperty('--dx', `${(Math.random() - 0.5) * 90}px`);
-            p.style.setProperty('--dy', `${-24 - Math.random() * 58}px`);
-            p.style.left = `${35 + Math.random() * 30}%`;
-            p.style.top = `${35 + Math.random() * 30}%`;
+            p.style.setProperty('--dx', `${(Math.random() - 0.5) * 110}px`);
+            p.style.setProperty('--dy', `${-26 - Math.random() * 64}px`);
+            p.style.left = `${30 + Math.random() * 40}%`;
+            p.style.top = `${28 + Math.random() * 44}%`;
             sparksEl.appendChild(p);
             setTimeout(() => p.remove(), 950);
           }
@@ -704,15 +600,92 @@ window.addEventListener('pageshow', () => {
   enforceAuthGuard();
 });
 
+function attachNavLiquidDropAndCards() {
+  const navTabs = document.querySelector('.header-nav-tabs .nav-tabs');
+  if (!navTabs) return;
+
+  let pill = document.getElementById('apk-nav-liquid-indicator');
+  if (!pill) {
+    pill = document.createElement('span');
+    pill.id = 'apk-nav-liquid-indicator';
+    pill.setAttribute('aria-hidden', 'true');
+    navTabs.insertBefore(pill, navTabs.firstChild);
+  }
+
+  const placePillOnTab = (tabEl, immediate = false) => {
+    if (!tabEl || tabEl.offsetWidth === 0) return;
+    if (immediate) pill.style.transition = 'none';
+    pill.style.width = `${tabEl.offsetWidth}px`;
+    pill.style.height = `${tabEl.offsetHeight}px`;
+    pill.style.transform = `translate3d(${tabEl.offsetLeft}px, ${tabEl.offsetTop}px, 0)`;
+    if (immediate) {
+      void pill.offsetWidth;
+      pill.style.transition = '';
+    }
+  };
+
+  // Start from previous tab when navigating across pages so droplet glides seamlessly
+  const activeTab = navTabs.querySelector('.nav-tab.active');
+  const prevTabId = sessionStorage.getItem('nnl_prev_nav_id');
+  const prevTab = prevTabId ? document.getElementById(prevTabId) : null;
+  if (prevTab && activeTab && prevTab !== activeTab) {
+    placePillOnTab(prevTab, true);
+    requestAnimationFrame(() => {
+      pill.classList.add('is-morphing');
+      placePillOnTab(activeTab, false);
+      setTimeout(() => pill.classList.remove('is-morphing'), 460);
+    });
+    sessionStorage.removeItem('nnl_prev_nav_id');
+  } else if (activeTab) {
+    placePillOnTab(activeTab, true);
+  }
+
+  navTabs.querySelectorAll('.nav-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const prev = navTabs.querySelector('.nav-tab.active');
+      if (prev && prev.id) sessionStorage.setItem('nnl_prev_nav_id', prev.id);
+      pill.classList.add('is-morphing');
+      requestAnimationFrame(() => {
+        const nextActive = navTabs.querySelector('.nav-tab.active') || btn;
+        placePillOnTab(nextActive, false);
+        setTimeout(() => pill.classList.remove('is-morphing'), 460);
+      });
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    const cur = navTabs.querySelector('.nav-tab.active');
+    if (cur) placePillOnTab(cur, true);
+  });
+}
+
+function animateVisibleCards(root) {
+  if (!root) return;
+  const cardSelector = '.class-card, .subject-card, .note-doc-card, .sd-lecture-card, .brochure-card, .test-card, .doc-card';
+  const cards = root.querySelectorAll(cardSelector);
+  let idx = 0;
+  cards.forEach((card) => {
+    if (!card.dataset.apkArranged) {
+      card.dataset.apkArranged = '1';
+      card.style.setProperty('--card-i', String(Math.min(idx, 12)));
+      card.classList.add('apk-card-arrange');
+      idx++;
+    }
+  });
+}
+
 function initApkShell() {
+  document.body.classList.add('apk-shell-active');
   if (!enforceAuthGuard()) return;
   normalizeHeaderAndChrome();
+  attachNavLiquidDropAndCards();
   buildSettingsSheet();
   attachWaterDropMotion();
   initGhostPet();
   stripEmojisAndShorten(document.body);
+  animateVisibleCards(document.body);
 
-  // Observe dynamic renders cleanly (for emoji stripping + short button text)
+  // Observe dynamic renders cleanly (for emoji stripping + short button text + card arrangement)
   const target = document.getElementById('app') || document.body;
   let scheduled = false;
   const mutObs = new MutationObserver(() => {
@@ -721,6 +694,14 @@ function initApkShell() {
     requestAnimationFrame(() => {
       scheduled = false;
       stripEmojisAndShorten(target);
+      animateVisibleCards(target);
+      const curActive = document.querySelector('.header-nav-tabs .nav-tab.active');
+      const pill = document.getElementById('apk-nav-liquid-indicator');
+      if (curActive && pill && pill.style.width === '') {
+        pill.style.width = `${curActive.offsetWidth}px`;
+        pill.style.height = `${curActive.offsetHeight}px`;
+        pill.style.transform = `translate3d(${curActive.offsetLeft}px, ${curActive.offsetTop}px, 0)`;
+      }
     });
   });
   mutObs.observe(target, { childList: true, subtree: true });

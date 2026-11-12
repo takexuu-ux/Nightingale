@@ -975,14 +975,14 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   background-color: transparent;
   background-image:
     linear-gradient(var(--success-bg), var(--success-bg)),
-    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.14) 0deg, rgba(16, 185, 129, 0.14) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.14) 360deg);
+    conic-gradient(from var(--otp-angle), rgba(124, 92, 224, 0.22) 0deg, rgba(16, 185, 129, 0.2) 150deg, #7C5CE0 215deg, #10B981 275deg, #34D399 325deg, #DDD6FE 352deg, rgba(124, 92, 224, 0.22) 360deg);
   background-origin: border-box;
   background-clip: padding-box, border-box;
   color: var(--success-ink);
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.34);
+  box-shadow: 0 0 22px rgba(124, 92, 224, 0.36), 0 0 12px rgba(16, 185, 129, 0.32);
   animation:
-    apkOtpOrbit 0.9s linear infinite,
-    apkOtpWave 0.55s var(--spring-bounce) calc(var(--i, 0) * 0.07s) 1;
+    apkOtpOrbit 0.85s linear infinite,
+    apkOtpWave 0.6s var(--spring-bounce) calc(var(--i, 0) * 0.08s) 1;
 }
 
 .otp-boxes-container.error-shake {
@@ -1469,18 +1469,18 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 }
 
 [data-theme="dark"] .class-card {
-  background: linear-gradient(155deg, rgba(23, 25, 36, 0.96) 0%, rgba(30, 27, 44, 0.92) 100%);
+  background: linear-gradient(148deg, #171A29 0%, #1E1A30 52%, #282144 100%);
   box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .class-card.live-card-border {
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.98) 0%, rgba(238, 253, 246, 0.92) 100%);
+  background: linear-gradient(150deg, #FFFFFF 0%, #EEFDF6 55%, #DCFCEB 100%);
   border: 1.5px solid rgba(16, 185, 129, 0.48);
   box-shadow: 0 8px 22px -6px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 [data-theme="dark"] .class-card.live-card-border {
-  background: linear-gradient(150deg, rgba(16, 46, 42, 0.92) 0%, rgba(22, 26, 38, 0.94) 100%);
+  background: linear-gradient(150deg, rgba(16, 46, 42, 0.94) 0%, rgba(22, 26, 38, 0.94) 100%);
 }
 
 .class-card > div {
@@ -1496,11 +1496,11 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   min-height: 112px;
   padding: 15px 16px;
   border-radius: 19px;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 246, 254, 0.94) 100%);
+  background: linear-gradient(148deg, #FFFFFF 0%, #FAF7FF 46%, #EDE6FD 100%);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(124, 92, 224, 0.18);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.78);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1511,7 +1511,8 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 [data-theme="dark"] .subject-card,
 [data-theme="dark"] .test-card,
 [data-theme="dark"] .doc-card {
-  background: linear-gradient(145deg, rgba(23, 30, 56, 0.92) 0%, rgba(28, 24, 50, 0.90) 100%);
+  background: linear-gradient(148deg, #171B2C 0%, #1F1B33 52%, #292246 100%);
+  border-color: rgba(167, 139, 250, 0.18);
   box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -2862,13 +2863,13 @@ body:not(.apk-is-auth) {
   }
 }
 
-/* ── Tiny Pixel-Art Ghost Pet ── */
+/* ── Chibi Nurse Ghost Pet ── */
 #apk-ghost-pet {
   position: fixed;
   left: 0;
   top: 0;
-  width: 40px;
-  height: 44px;
+  width: 62px;
+  height: 74px;
   z-index: 9400;
   display: flex;
   flex-direction: column;
@@ -2888,21 +2889,20 @@ body:not(.apk-is-auth) {
 }
 
 .apk-ghost-sprite {
-  width: 38px;
-  height: 43px;
+  width: 60px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 3px 6px rgba(91, 62, 168, 0.22));
+  filter: drop-shadow(0 6px 12px rgba(91, 62, 168, 0.24));
 }
 
 .apk-ghost-shadow {
-  width: 24px;
-  height: 4px;
+  width: 34px;
+  height: 5px;
   border-radius: 99px;
-  background: rgba(15, 23, 42, 0.24);
-  margin-top: -2px;
+  background: rgba(75, 48, 143, 0.22);
+  margin-top: -3px;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -2912,25 +2912,47 @@ body:not(.apk-is-auth) {
 
 .apk-ghost-prop {
   position: absolute;
-  top: -16px;
+  top: -22px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
   white-space: nowrap;
 }
 
+.apk-ghost-bursts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.apk-ghost-burst-item {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  animation: apkGhostBurstFloat 0.78s ease-out forwards;
+}
+
+@keyframes apkGhostBurstFloat {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+  25% { opacity: 1; transform: translate(calc(-50% + var(--gx) * 0.35), calc(var(--gy) * 0.35)) scale(1.15); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--gx)), var(--gy)) scale(0.75); }
+}
+
 .apk-ghost-bubble {
   display: inline-block;
-  padding: 2px 6px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(99, 102, 241, 0.28);
-  color: #4F46E5;
-  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid rgba(124, 92, 224, 0.34);
+  color: #4E329A;
+  font-size: 11px;
   font-weight: 800;
   line-height: 1.1;
-  box-shadow: 0 3px 10px -2px rgba(15, 23, 42, 0.16);
-  animation: apkGhostFloatProp 0.9s ease-out both;
+  box-shadow: 0 5px 14px -2px rgba(75, 48, 143, 0.24);
+  animation: apkGhostFloatProp 0.95s ease-out both;
 }
 
 .apk-ghost-bubble.is-love {
@@ -3403,4 +3425,110 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   background: var(--bg-tint);
   color: var(--accent-ink);
   width: fit-content;
+}
+
+/* ── Visible Soft Fading Card Gradients Across ALL Video / Note / Lecture Cards ── */
+.class-card,
+.note-doc-card,
+.sd-lecture-card,
+.brochure-card {
+  background: linear-gradient(148deg, #FFFFFF 0%, #FAF7FF 46%, #EDE6FD 100%) !important;
+  border-color: rgba(124, 92, 224, 0.18) !important;
+}
+
+[data-theme="dark"] .class-card,
+[data-theme="dark"] .note-doc-card,
+[data-theme="dark"] .sd-lecture-card,
+[data-theme="dark"] .brochure-card {
+  background: linear-gradient(148deg, #171B2C 0%, #1F1B33 52%, #292246 100%) !important;
+  border-color: rgba(167, 139, 250, 0.2) !important;
+}
+
+/* ── Transparent Botanical Medical PNG Artwork & Smooth Animation ── */
+.apk-botanical-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: apkBotanicalFloat 5.4s ease-in-out infinite;
+}
+
+.apk-auth-botanical.is-blooming .apk-botanical-img {
+  animation: apkBotanicalPulse 0.85s var(--spring-bounce) 1;
+}
+
+@keyframes apkBotanicalFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-7px) scale(1.018); }
+}
+
+@keyframes apkBotanicalPulse {
+  0% { transform: scale(1) rotate(0deg); }
+  40% { transform: scale(1.075) rotate(-1.5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ── Liquid Drop Indicator Morphing Between Left Sidebar / Dock Nav Buttons ── */
+.nav-tabs {
+  position: relative !important;
+}
+
+.nav-tab {
+  position: relative;
+  z-index: 2;
+}
+
+#apk-nav-liquid-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(124, 92, 224, 0.24) 0%, rgba(167, 139, 250, 0.14) 100%);
+  border: 1px solid rgba(124, 92, 224, 0.28);
+  box-shadow: 0 6px 18px -4px rgba(91, 62, 168, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  pointer-events: none;
+  z-index: 1;
+  transition:
+    transform 0.48s cubic-bezier(0.22, 1.32, 0.36, 1),
+    width 0.42s cubic-bezier(0.22, 1.32, 0.36, 1),
+    height 0.42s cubic-bezier(0.22, 1.32, 0.36, 1),
+    opacity 0.2s ease;
+  will-change: transform, width, height;
+}
+
+#apk-nav-liquid-indicator.is-morphing {
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(124, 92, 224, 0.36) 0%, rgba(147, 120, 236, 0.22) 100%);
+  box-shadow: 0 8px 24px -2px rgba(91, 62, 168, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="dark"] #apk-nav-liquid-indicator {
+  background: linear-gradient(145deg, rgba(141, 116, 229, 0.32) 0%, rgba(91, 62, 168, 0.18) 100%);
+  border-color: rgba(167, 139, 250, 0.32);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Make active tab transparent over liquid indicator so droplet visibly hosts it */
+.app-header .nav-tabs:has(#apk-nav-liquid-indicator) .nav-tab.active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ── Smooth Staggered Card Arrangement Animation ── */
+.apk-card-arrange {
+  animation: apkCardArrange 0.44s cubic-bezier(0.22, 1.15, 0.36, 1) calc(var(--card-i, 0) * 32ms) both;
+}
+
+@keyframes apkCardArrange {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

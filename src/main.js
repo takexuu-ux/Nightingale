@@ -4049,11 +4049,11 @@ otpForm.addEventListener('submit', async (e) => {
     sessionStorage.removeItem('nnl_explicit_logout');
     persistApkSession();
 
-    // Smooth animation: Hold APK revolving laser for ~2s total before merging into 1 green tick box
-    if (isApkShell && otpGlowStartedAt > 0) {
+    // Hold revolving laser animation on OTP boxes for a full 3 seconds before granting entry
+    if (otpGlowStartedAt > 0) {
       const elapsed = Date.now() - otpGlowStartedAt;
-      if (elapsed < 2000) {
-        await new Promise(r => setTimeout(r, 2000 - elapsed));
+      if (elapsed < 3000) {
+        await new Promise(r => setTimeout(r, 3000 - elapsed));
       }
     }
 
@@ -4076,8 +4076,8 @@ otpForm.addEventListener('submit', async (e) => {
     if (headerVerified) headerVerified.classList.remove('hide');
     if (singleBox) singleBox.classList.remove('hide');
 
-    // Display green tick button for 600ms, then directly login
-    await new Promise(r => setTimeout(r, 600));
+    // Display green tick button briefly, then grant entry
+    await new Promise(r => setTimeout(r, 450));
 
     // Clear inputs and transition
     clearOtpBoxes();
