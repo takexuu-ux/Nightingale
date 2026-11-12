@@ -1,6 +1,6 @@
 // Adorable Chibi Nurse Ghost Pet for Nightingale Hinglish APK
-// Soft pastel-lavender ghost wearing a crisp high-contrast white nurse coat, stethoscope & cap.
-// Roams softly, sits atop cards, reacts vividly on hovers, clicks, taps, drags & card interactions.
+// Slim pastel-lavender ghost wearing a crisp high-contrast white nurse coat & stethoscope.
+// Anchors calmly to curated UI spots and reacts vividly on taps, clicks & fast scrolls.
 
 const STORAGE_KEY = 'nnl_apk_ghost_pet_enabled';
 
@@ -10,7 +10,7 @@ const EMOTIONS = {
   love:    { blush: true,  mouth: 'smile', eyes: 'heart',  bubble: '♥' },
   excited: { blush: true,  mouth: 'open',  eyes: 'star',   bubble: 'Yay! ★' },
   curious: { blush: false, mouth: 'oh',    eyes: 'wide',   bubble: 'Hmm?' },
-  spook:   { blush: false, mouth: 'boo',   eyes: 'wide',   bubble: 'Boo!' },
+  spook:   { blush: false, mouth: 'boo',   eyes: 'wide',   bubble: 'EEK!' },
   sleepy:  { blush: false, mouth: 'flat',  eyes: 'sleepy', bubble: 'zZz' },
   shy:     { blush: true,  mouth: 'wavy',  eyes: 'shy',    bubble: '> <' },
   proud:   { blush: true,  mouth: 'smirk', eyes: 'shades', bubble: 'Pro ★' },
@@ -25,154 +25,149 @@ function renderNurseGhostSvg(emotionName = 'idle', { blink = false, sitting = fa
   let eyesMarkup = '';
   if (eyeStyle === 'normal' || eyeStyle === 'wink') {
     const rightEye = eyeStyle === 'wink'
-      ? `<path d="M36 25c1.8-2.4 5.2-2.4 7 0" stroke="#2D1B5E" stroke-width="2.6" stroke-linecap="round" fill="none"/>`
-      : `<ellipse cx="39.5" cy="24.5" rx="3.1" ry="3.7" fill="#2D1B5E"/>
-         <circle cx="38.4" cy="23.1" r="1.25" fill="#FFFFFF"/>
-         <circle cx="40.6" cy="25.6" r="0.65" fill="#EDE9FE"/>`;
+      ? `<path d="M32.6 23.6c1.5-2.1 4.4-2.1 6 0" stroke="#2D1B5E" stroke-width="2.3" stroke-linecap="round" fill="none"/>`
+      : `<ellipse cx="35.6" cy="23.2" rx="2.6" ry="3.2" fill="#2D1B5E"/>
+         <circle cx="34.7" cy="22.0" r="1.05" fill="#FFFFFF"/>
+         <circle cx="36.4" cy="24.2" r="0.55" fill="#EDE9FE"/>`;
     eyesMarkup = `
-      <ellipse cx="24.5" cy="24.5" rx="3.1" ry="3.7" fill="#2D1B5E"/>
-      <circle cx="23.4" cy="23.1" r="1.25" fill="#FFFFFF"/>
-      <circle cx="25.6" cy="25.6" r="0.65" fill="#EDE9FE"/>
+      <ellipse cx="24.4" cy="23.2" rx="2.6" ry="3.2" fill="#2D1B5E"/>
+      <circle cx="23.5" cy="22.0" r="1.05" fill="#FFFFFF"/>
+      <circle cx="25.2" cy="24.2" r="0.55" fill="#EDE9FE"/>
       ${rightEye}
     `;
   } else if (eyeStyle === 'wide') {
     eyesMarkup = `
-      <circle cx="24.5" cy="24.5" r="4.1" fill="#2D1B5E"/>
-      <circle cx="39.5" cy="24.5" r="4.1" fill="#2D1B5E"/>
-      <circle cx="23.2" cy="22.8" r="1.6" fill="#FFFFFF"/>
-      <circle cx="38.2" cy="22.8" r="1.6" fill="#FFFFFF"/>
-      <circle cx="25.8" cy="26.0" r="0.8" fill="#C4B5FD"/>
-      <circle cx="40.8" cy="26.0" r="0.8" fill="#C4B5FD"/>
+      <circle cx="24.4" cy="23.2" r="3.4" fill="#2D1B5E"/>
+      <circle cx="35.6" cy="23.2" r="3.4" fill="#2D1B5E"/>
+      <circle cx="23.3" cy="21.7" r="1.35" fill="#FFFFFF"/>
+      <circle cx="34.5" cy="21.7" r="1.35" fill="#FFFFFF"/>
+      <circle cx="25.5" cy="24.4" r="0.7" fill="#C4B5FD"/>
+      <circle cx="36.7" cy="24.4" r="0.7" fill="#C4B5FD"/>
     `;
   } else if (eyeStyle === 'happy') {
     eyesMarkup = `
-      <path d="M20.5 25.5c2-3 6-3 8 0" stroke="#2D1B5E" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-      <path d="M35.5 25.5c2-3 6-3 8 0" stroke="#2D1B5E" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <path d="M21.2 24.0c1.6-2.5 4.8-2.5 6.4 0" stroke="#2D1B5E" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+      <path d="M32.4 24.0c1.6-2.5 4.8-2.5 6.4 0" stroke="#2D1B5E" stroke-width="2.3" stroke-linecap="round" fill="none"/>
     `;
   } else if (eyeStyle === 'sleepy') {
     eyesMarkup = `
-      <path d="M20.5 25c2 2.2 6 2.2 8 0" stroke="#4B308F" stroke-width="2.3" stroke-linecap="round" fill="none"/>
-      <path d="M35.5 25c2 2.2 6 2.2 8 0" stroke="#4B308F" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+      <path d="M21.2 23.6c1.6 1.9 4.8 1.9 6.4 0" stroke="#4B308F" stroke-width="2.1" stroke-linecap="round" fill="none"/>
+      <path d="M32.4 23.6c1.6 1.9 4.8 1.9 6.4 0" stroke="#4B308F" stroke-width="2.1" stroke-linecap="round" fill="none"/>
     `;
   } else if (eyeStyle === 'shy') {
     eyesMarkup = `
-      <path d="M21 22l5 2.6-5 2.6" stroke="#2D1B5E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      <path d="M43 22l-5 2.6 5 2.6" stroke="#2D1B5E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M21.4 21.0l4.2 2.2-4.2 2.2" stroke="#2D1B5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M38.6 21.0l-4.2 2.2 4.2 2.2" stroke="#2D1B5E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     `;
   } else if (eyeStyle === 'heart') {
     eyesMarkup = `
-      <path d="M24.5 28.5s-4.5-2.8-4.5-5.3c0-1.4 1.1-2.4 2.3-2.4.9 0 1.7.5 2.2 1.3.5-.8 1.3-1.3 2.2-1.3 1.2 0 2.3 1 2.3 2.4 0 2.5-4.5 5.3-4.5 5.3Z" fill="#F43F5E"/>
-      <path d="M39.5 28.5s-4.5-2.8-4.5-5.3c0-1.4 1.1-2.4 2.3-2.4.9 0 1.7.5 2.2 1.3.5-.8 1.3-1.3 2.2-1.3 1.2 0 2.3 1 2.3 2.4 0 2.5-4.5 5.3-4.5 5.3Z" fill="#F43F5E"/>
+      <path d="M24.4 26.6s-3.8-2.3-3.8-4.5c0-1.2.9-2.0 1.9-2.0.8 0 1.5.4 1.9 1.1.4-.7 1.1-1.1 1.9-1.1 1.0 0 1.9.8 1.9 2.0 0 2.2-3.8 4.5-3.8 4.5Z" fill="#F43F5E"/>
+      <path d="M35.6 26.6s-3.8-2.3-3.8-4.5c0-1.2.9-2.0 1.9-2.0.8 0 1.5.4 1.9 1.1.4-.7 1.1-1.1 1.9-1.1 1.0 0 1.9.8 1.9 2.0 0 2.2-3.8 4.5-3.8 4.5Z" fill="#F43F5E"/>
     `;
   } else if (eyeStyle === 'star') {
     eyesMarkup = `
-      <path d="M24.5 19.5l1.3 3.2 3.4.3-2.6 2.2.8 3.3-2.9-1.8-2.9 1.8.8-3.3-2.6-2.2 3.4-.3Z" fill="#F59E0B" stroke="#7C2D12" stroke-width="0.7"/>
-      <path d="M39.5 19.5l1.3 3.2 3.4.3-2.6 2.2.8 3.3-2.9-1.8-2.9 1.8.8-3.3-2.6-2.2 3.4-.3Z" fill="#F59E0B" stroke="#7C2D12" stroke-width="0.7"/>
+      <path d="M24.4 18.8l1.1 2.7 2.9.3-2.2 1.9.7 2.8-2.5-1.5-2.5 1.5.7-2.8-2.2-1.9 2.9-.3Z" fill="#F59E0B" stroke="#7C2D12" stroke-width="0.65"/>
+      <path d="M35.6 18.8l1.1 2.7 2.9.3-2.2 1.9.7 2.8-2.5-1.5-2.5 1.5.7-2.8-2.2-1.9 2.9-.3Z" fill="#F59E0B" stroke="#7C2D12" stroke-width="0.65"/>
     `;
   } else if (eyeStyle === 'shades') {
     eyesMarkup = `
-      <rect x="18" y="21.5" width="11.5" height="6.5" rx="2.4" fill="#3B2378" stroke="#1E1042" stroke-width="1.2"/>
-      <rect x="34.5" y="21.5" width="11.5" height="6.5" rx="2.4" fill="#3B2378" stroke="#1E1042" stroke-width="1.2"/>
-      <line x1="29.5" y1="24" x2="34.5" y2="24" stroke="#1E1042" stroke-width="1.6"/>
-      <path d="M20.5 23.2l3 3.2M37 23.2l3 3.2" stroke="#DDD6FE" stroke-width="1.3" stroke-linecap="round"/>
+      <rect x="19.0" y="20.4" width="9.6" height="5.6" rx="2.1" fill="#3B2378" stroke="#1E1042" stroke-width="1.1"/>
+      <rect x="31.4" y="20.4" width="9.6" height="5.6" rx="2.1" fill="#3B2378" stroke="#1E1042" stroke-width="1.1"/>
+      <line x1="28.6" y1="22.6" x2="31.4" y2="22.6" stroke="#1E1042" stroke-width="1.5"/>
+      <path d="M21.0 21.8l2.5 2.7M33.4 21.8l2.5 2.7" stroke="#DDD6FE" stroke-width="1.2" stroke-linecap="round"/>
     `;
   }
 
   let mouthMarkup = '';
   if (emo.mouth === 'smile' || emo.mouth === 'smirk') {
-    mouthMarkup = `<path d="M29 30.2c1.8 2 4.2 2 6 0" stroke="#2D1B5E" stroke-width="2" stroke-linecap="round" fill="none"/>`;
+    mouthMarkup = `<path d="M27.4 28.4c1.5 1.7 3.7 1.7 5.2 0" stroke="#2D1B5E" stroke-width="1.85" stroke-linecap="round" fill="none"/>`;
   } else if (emo.mouth === 'oh' || emo.mouth === 'boo') {
-    mouthMarkup = `<ellipse cx="32" cy="31.2" rx="2.4" ry="3" fill="#4B308F"/><ellipse cx="32" cy="32" rx="1.2" ry="1.1" fill="#FB7185"/>`;
+    mouthMarkup = `<ellipse cx="30" cy="29.0" rx="2.0" ry="2.5" fill="#4B308F"/><ellipse cx="30" cy="29.7" rx="1.0" ry="0.95" fill="#FB7185"/>`;
   } else if (emo.mouth === 'open') {
-    mouthMarkup = `<path d="M28 29.8h8c-.3 3-2 4.4-4 4.4s-3.7-1.4-4-4.4Z" fill="#2D1B5E"/><path d="M30 32.3c1.2-.8 2.8-.8 4 0-.4.9-1.2 1.4-2 1.4s-1.6-.5-2-1.4Z" fill="#FB7185"/>`;
+    mouthMarkup = `<path d="M26.6 28.0h6.8c-.25 2.6-1.7 3.8-3.4 3.8s-3.15-1.2-3.4-3.8Z" fill="#2D1B5E"/><path d="M28.2 30.2c1.0-.7 2.6-.7 3.6 0-.35.8-1.05 1.2-1.8 1.2s-1.45-.4-1.8-1.2Z" fill="#FB7185"/>`;
   } else if (emo.mouth === 'wavy') {
-    mouthMarkup = `<path d="M28.5 31c1-1.2 2-1.2 3 0s2 1.2 3 0" stroke="#2D1B5E" stroke-width="1.9" stroke-linecap="round" fill="none"/>`;
+    mouthMarkup = `<path d="M26.8 29.0c0.9-1.1 1.7-1.1 2.6 0s1.7 1.1 2.6 0" stroke="#2D1B5E" stroke-width="1.75" stroke-linecap="round" fill="none"/>`;
   } else if (emo.mouth === 'flat') {
-    mouthMarkup = `<line x1="29.5" y1="31" x2="34.5" y2="31" stroke="#4B308F" stroke-width="1.8" stroke-linecap="round"/>`;
+    mouthMarkup = `<line x1="27.8" y1="29.0" x2="32.2" y2="29.0" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round"/>`;
   } else {
-    mouthMarkup = `<path d="M30.4 30.4c1 1.1 2.2 1.1 3.2 0" stroke="#2D1B5E" stroke-width="1.8" stroke-linecap="round" fill="none"/>`;
+    mouthMarkup = `<path d="M28.6 28.6c0.9 0.9 1.9 0.9 2.8 0" stroke="#2D1B5E" stroke-width="1.7" stroke-linecap="round" fill="none"/>`;
   }
 
   const blushMarkup = emo.blush
-    ? `<ellipse cx="19.5" cy="29.2" rx="3.4" ry="1.8" fill="#FDA4AF" opacity="0.88"/>
-       <ellipse cx="44.5" cy="29.2" rx="3.4" ry="1.8" fill="#FDA4AF" opacity="0.88"/>`
+    ? `<ellipse cx="20.6" cy="27.2" rx="2.6" ry="1.4" fill="#FDA4AF" opacity="0.88"/>
+       <ellipse cx="39.4" cy="27.2" rx="2.6" ry="1.4" fill="#FDA4AF" opacity="0.88"/>`
     : '';
 
   const raisedArms = emotionName === 'excited' || emotionName === 'spook' || emotionName === 'love';
   const leftArm = raisedArms
-    ? `<path d="M16 37c-5-2-8-7-6-10 2-2.5 5 0 7 4" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-       <circle cx="10.2" cy="27.2" r="2.6" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`
-    : `<path d="M16 37c-4.5 2-6.5 6.5-5 9.5 1.3 2.5 4.5 1.8 6-1" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-       <circle cx="12.2" cy="46.2" r="2.4" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`;
+    ? `<path d="M20.5 36.5c-4.0-1.5-6.5-5.5-5.2-8.2 1.1-2.0 3.6-.8 5.2 2.5Z" fill="#FFFFFF" stroke="#52359C" stroke-width="1.6" stroke-linejoin="round"/>
+       <circle cx="15.4" cy="28.0" r="2.2" fill="#D8D0FF" stroke="#52359C" stroke-width="1.35"/>`
+    : `<path d="M20.5 36.2c-3.5 1.8-5.0 5.6-3.8 8.0 0.9 1.8 3.2 1.2 4.3-1.4Z" fill="#FFFFFF" stroke="#52359C" stroke-width="1.6" stroke-linejoin="round"/>
+       <circle cx="17.2" cy="44.2" r="2.1" fill="#D8D0FF" stroke="#52359C" stroke-width="1.35"/>`;
 
   const rightArm = raisedArms
-    ? `<path d="M48 37c5-2 8-7 6-10-2-2.5-5 0-7 4" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-       <circle cx="53.8" cy="27.2" r="2.6" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`
-    : `<path d="M48 37c4.5 2 6.5 6.5 5 9.5-1.3 2.5-4.5 1.8-6-1" fill="#FFFFFF" stroke="#4B308F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-       <circle cx="51.8" cy="46.2" r="2.4" fill="#D6CEFF" stroke="#4B308F" stroke-width="1.4"/>`;
+    ? `<path d="M39.5 36.5c4.0-1.5 6.5-5.5 5.2-8.2-1.1-2.0-3.6-.8-5.2 2.5Z" fill="#FFFFFF" stroke="#52359C" stroke-width="1.6" stroke-linejoin="round"/>
+       <circle cx="44.6" cy="28.0" r="2.2" fill="#D8D0FF" stroke="#52359C" stroke-width="1.35"/>`
+    : `<path d="M39.5 36.2c3.5 1.8 5.0 5.6 3.8 8.0-0.9 1.8-3.2 1.2-4.3-1.4Z" fill="#FFFFFF" stroke="#52359C" stroke-width="1.6" stroke-linejoin="round"/>
+       <circle cx="42.8" cy="44.2" r="2.1" fill="#D8D0FF" stroke="#52359C" stroke-width="1.35"/>`;
 
-  const tailShift = sitting ? 0 : (frame % 2 === 0 ? -1.4 : 1.4);
+  const tailShift = sitting ? 0 : (frame % 2 === 0 ? -1.0 : 1.0);
 
   return `
-    <svg viewBox="0 0 64 74" width="60" height="70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg viewBox="0 0 60 72" width="54" height="64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
-        <linearGradient id="${uid}Body" x1="16" y1="10" x2="48" y2="66" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#E5DFFF"/>
-          <stop offset="52%" stop-color="#C8B9FA"/>
-          <stop offset="100%" stop-color="#A792F4"/>
+        <linearGradient id="${uid}Body" x1="18" y1="8" x2="42" y2="62" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#EEE9FF"/>
+          <stop offset="55%" stop-color="#D1C3FD"/>
+          <stop offset="100%" stop-color="#B09AF6"/>
         </linearGradient>
-        <linearGradient id="${uid}Coat" x1="16" y1="34" x2="48" y2="58" gradientUnits="userSpaceOnUse">
+        <linearGradient id="${uid}Coat" x1="19" y1="33" x2="41" y2="55" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#FFFFFF"/>
           <stop offset="100%" stop-color="#F1F5F9"/>
         </linearGradient>
       </defs>
 
-      <!-- Ghost Body & Flowing Tail (Soft Lavender-Periwinkle so the pure White Coat clearly pops!) -->
-      <path d="M16 32c0-10.8 7.2-19 16-19s16 8.2 16 19v24.5c0 2.5-2.6 4.2-4.6 2.8-1.9-1.3-3.9-1.2-5.4.4-1.8 1.9-4.2 1.9-6 0-1.5-1.6-3.5-1.7-5.4-.4-2 1.4-4.6-.3-4.6-2.8V32Z"
-            transform="translate(${tailShift * 0.25}, 0)"
-            fill="url(#${uid}Body)" stroke="#4B308F" stroke-width="2" stroke-linejoin="round"/>
+      <!-- Coat Sleeves behind torso so they never cut the neck line -->
+      ${leftArm}
+      ${rightArm}
 
-      <!-- Crisp White Nurse Cap -->
-      <g transform="translate(0, -1)">
-        <path d="M21 15.5l2.8-8.2c.4-1.1 1.5-1.8 2.7-1.8h11c1.2 0 2.3.7 2.7 1.8L43 15.5c-3.5 1.4-18.5 1.4-22 0Z"
-              fill="#FFFFFF" stroke="#4B308F" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="M21.5 14.2c5.5 1.1 15.5 1.1 21 0" stroke="#CBD5E1" stroke-width="1.3"/>
-        <path d="M32 8.2v4.6M29.7 10.5h4.6" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
-      </g>
+      <!-- Slim Tapered Ghost Body & Flowing Scalloped Tail (No Cap) -->
+      <path d="M18.5 23.0C18.5 14.0 23.5 8.5 30.0 8.5C36.5 8.5 41.5 14.0 41.5 23.0C41.5 27.6 40.0 30.8 39.4 33.2C40.4 38.2 40.8 47.0 40.8 56.5C40.8 59.8 38.0 61.2 36.1 59.4C34.4 57.8 32.7 58.0 31.5 60.0C30.5 61.6 29.5 61.6 28.5 60.0C27.3 58.0 25.6 57.8 23.9 59.4C22.0 61.2 19.2 59.8 19.2 56.5C19.2 47.0 19.6 38.2 20.6 33.2C20.0 30.8 18.5 27.6 18.5 23.0Z"
+            transform="translate(${tailShift * 0.25}, 0)"
+            fill="url(#${uid}Body)" stroke="#52359C" stroke-width="1.85" stroke-linejoin="round"/>
+
+      <!-- Soft Forehead Highlight -->
+      <path d="M22.2 15.8c1.7-3.0 4.6-4.5 7.4-4.6" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity="0.65"/>
 
       <!-- Face Features -->
       ${blushMarkup}
       ${eyesMarkup}
       ${mouthMarkup}
 
-      <!-- Crisp High-Contrast Pure White Nurse Coat (wraps torso over purple scrubs) -->
+      <!-- Slim Seamless White Nurse Lab Coat (Clean neck taper, zero overlap cut) -->
       <g>
-        <!-- Inner Violet Scrub Top V-Neck -->
-        <path d="M25.5 34.5h13L32 45.5l-6.5-11Z" fill="#6D48C7"/>
+        <!-- Inner Scrub Top V-Neck -->
+        <path d="M25.0 33.0h10.0L30.0 41.8L25.0 33.0Z" fill="#6D48C7"/>
         <!-- White Coat Torso -->
-        <path d="M16 36.2c2.8-1.5 6.4-2 9.5-1.7L32 45.5l6.5-11c3.1-.3 6.7.2 9.5 1.7v18.2c0 1.4-1.1 2.4-2.5 2.4H33.5v-10h-3v10H18.5c-1.4 0-2.5-1-2.5-2.4V36.2Z"
-              fill="url(#${uid}Coat)" stroke="#4B308F" stroke-width="1.9" stroke-linejoin="round"/>
-        <!-- Folded White Coat Lapels -->
-        <path d="M25.5 34.5l6.5 11-5.2-1.8-2.8-5.4 1.5-3.8ZM38.5 34.5L32 45.5l5.2-1.8 2.8-5.4-1.5-3.8Z"
-              fill="#E8ECF4" stroke="#4B308F" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M20.4 33.6C22.0 33.2 23.6 33.0 25.0 33.0L30.0 41.8L35.0 33.0C36.4 33.0 38.0 33.2 39.6 33.6C40.5 38.0 40.9 45.2 40.9 52.8C40.9 54.0 39.9 54.8 38.7 54.8H31.3V46.5H28.7V54.8H21.3C20.1 54.8 19.1 54.0 19.1 52.8C19.1 45.2 19.5 38.0 20.4 33.6Z"
+              fill="url(#${uid}Coat)" stroke="#52359C" stroke-width="1.75" stroke-linejoin="round"/>
+        <!-- Crisp Collar Lapels -->
+        <path d="M25.0 33.0L30.0 41.8L26.2 40.2L23.8 35.6L25.0 33.0ZM35.0 33.0L30.0 41.8L33.8 40.2L36.2 35.6L35.0 33.0Z"
+              fill="#E9EEF6" stroke="#52359C" stroke-width="1.05" stroke-linejoin="round"/>
         <!-- Coat Center Seam & Buttons -->
-        <line x1="32" y1="45.5" x2="32" y2="56.8" stroke="#94A3B8" stroke-width="1.3"/>
-        <circle cx="32" cy="49.2" r="1.25" fill="#5B3EA8"/>
-        <circle cx="32" cy="53.4" r="1.25" fill="#5B3EA8"/>
+        <line x1="30.0" y1="41.8" x2="30.0" y2="54.2" stroke="#94A3B8" stroke-width="1.15"/>
+        <circle cx="30.0" cy="45.0" r="1.05" fill="#5B3EA8"/>
+        <circle cx="30.0" cy="48.8" r="1.05" fill="#5B3EA8"/>
 
         <!-- Chest Pocket + Nurse Red Cross Badge -->
-        <rect x="37" y="45" width="7" height="6.2" rx="1.4" fill="#F1F5F9" stroke="#64748B" stroke-width="1"/>
-        <path d="M40.5 46.6v3M39 48.1h3" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="33.4" y="42.4" width="5.4" height="4.8" rx="1.2" fill="#F8FAFC" stroke="#64748B" stroke-width="0.9"/>
+        <path d="M36.1 43.6v2.4M34.9 44.8h2.4" stroke="#EF4444" stroke-width="1.35" stroke-linecap="round"/>
 
-        <!-- Silver & Plum Stethoscope draped around coat collar -->
-        <path d="M23.2 34.8c-1.2 4.8.4 9.5 3.6 10.6M40.8 34.8c1.2 4.8-.4 9.5-3.6 10.6"
-              stroke="#3B2378" stroke-width="1.9" stroke-linecap="round" fill="none"/>
-        <circle cx="26.8" cy="45.8" r="2.2" fill="#E2E8F0" stroke="#3B2378" stroke-width="1.3"/>
+        <!-- Symmetric Stethoscope Draped Cleanly Around Collar -->
+        <path d="M24.2 33.3C23.5 38.2 26.2 41.8 30.0 41.8C33.8 41.8 36.5 38.2 35.8 33.3"
+              stroke="#3B2378" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <circle cx="24.8" cy="42.8" r="1.85" fill="#E2E8F0" stroke="#3B2378" stroke-width="1.15"/>
       </g>
-
-      <!-- Animated White Coat Sleeves + Lavender Ghost Hands -->
-      ${leftArm}
-      ${rightArm}
     </svg>
   `;
 }
