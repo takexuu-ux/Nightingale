@@ -975,14 +975,14 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   background-color: transparent;
   background-image:
     linear-gradient(var(--success-bg), var(--success-bg)),
-    conic-gradient(from var(--otp-angle), rgba(124, 92, 224, 0.22) 0deg, rgba(16, 185, 129, 0.2) 150deg, #7C5CE0 215deg, #10B981 275deg, #34D399 325deg, #DDD6FE 352deg, rgba(124, 92, 224, 0.22) 360deg);
+    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.14) 0deg, rgba(16, 185, 129, 0.14) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.14) 360deg);
   background-origin: border-box;
   background-clip: padding-box, border-box;
   color: var(--success-ink);
-  box-shadow: 0 0 22px rgba(124, 92, 224, 0.36), 0 0 12px rgba(16, 185, 129, 0.32);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.34);
   animation:
-    apkOtpOrbit 0.85s linear infinite,
-    apkOtpWave 0.6s var(--spring-bounce) calc(var(--i, 0) * 0.08s) 1;
+    apkOtpOrbit 0.9s linear infinite,
+    apkOtpWave 0.55s var(--spring-bounce) calc(var(--i, 0) * 0.07s) 1;
 }
 
 .otp-boxes-container.error-shake {
