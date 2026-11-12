@@ -454,7 +454,8 @@ button, input, select, textarea {
 }
 
 .batch-dropdown-container,
-#header-batch-btn {
+#header-batch-btn,
+.nav-tab-refresh-btn {
   display: none !important;
 }
 
@@ -2868,8 +2869,8 @@ body:not(.apk-is-auth) {
   position: fixed;
   left: 0;
   top: 0;
-  width: 56px;
-  height: 68px;
+  width: 58px;
+  height: 56px;
   z-index: 9400;
   display: flex;
   flex-direction: column;
@@ -2889,8 +2890,8 @@ body:not(.apk-is-auth) {
 }
 
 .apk-ghost-sprite {
-  width: 54px;
-  height: 64px;
+  width: 56px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2999,21 +3000,22 @@ body:not(.apk-is-auth) {
   }
 
   .app-header {
-    left: 14px;
-    right: 14px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
     top: auto;
     bottom: max(12px, env(safe-area-inset-bottom));
-    width: auto;
-    max-width: 540px;
-    margin: 0 auto;
-    height: var(--dock-h);
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    margin: 0;
+    height: 54px;
     flex-direction: row;
-    padding: 6px 10px;
+    padding: 5px 8px;
     border-right: none;
     border: 1px solid var(--border-strong);
-    border-radius: 26px;
+    border-radius: 999px;
     box-shadow: var(--shadow-float);
-    gap: 4px;
+    gap: 6px;
   }
 
   .header-logo {
@@ -3023,41 +3025,47 @@ body:not(.apk-is-auth) {
   .header-nav-tabs {
     flex-direction: row;
     gap: 4px;
-    flex: 1;
+    flex: 0 0 auto;
+    width: auto;
   }
 
   .nav-tabs {
     flex-direction: row;
-    justify-content: space-around;
-    gap: 2px;
-    flex: 1;
+    justify-content: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    width: auto;
   }
 
   .nav-tab {
-    flex: 1;
-    width: auto;
-    min-width: 0;
-    min-height: 46px;
-    height: 46px;
+    flex: 0 0 auto;
+    width: 44px;
+    min-width: 44px;
+    min-height: 42px;
+    height: 42px;
     padding: 0;
-    border-radius: 15px;
+    border-radius: 999px;
     gap: 0;
+  }
+
+  #apk-nav-liquid-indicator {
+    border-radius: 999px;
   }
 
   .header-right-actions {
     width: auto;
     flex-direction: row;
-    gap: 4px;
-    padding-left: 4px;
+    gap: 0;
+    padding-left: 6px;
     border-left: 1px solid var(--border-hairline);
   }
 
   .nav-tab-refresh-btn,
   .nav-btn,
   .apk-icon-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
   }
 
   .main-content,
@@ -3322,10 +3330,15 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 /* ── Remade Dynamic Brochure & Timetable Workspace ── */
 .brochure-shell {
+  grid-column: 1 / -1;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.notes-empty-state {
+  grid-column: 1 / -1;
 }
 
 .brochure-hero {
@@ -3531,4 +3544,55 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* ── Pull-Down-to-Refresh Top Pill ── */
+#apk-ptr-pill {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translate3d(-50%, -64px, 0);
+  z-index: 9600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-float);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+
+#apk-ptr-pill.visible {
+  opacity: 1;
+}
+
+#apk-ptr-pill.ready {
+  background: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+}
+
+#apk-ptr-pill .apk-ptr-icon {
+  display: inline-block;
+  font-size: 13px;
+  transition: transform 0.22s ease;
+}
+
+#apk-ptr-pill.ready .apk-ptr-icon {
+  transform: rotate(180deg);
+}
+
+#apk-ptr-pill.spinning .apk-ptr-icon {
+  animation: apkPtrSpin 0.7s linear infinite;
+}
+
+@keyframes apkPtrSpin {
+  to { transform: rotate(540deg); }
 }

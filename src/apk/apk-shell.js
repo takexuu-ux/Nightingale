@@ -674,13 +674,97 @@ function animateVisibleCards(root) {
   });
 }
 
+function attachPullToRefresh() {
+  if (typeof window === 'undefined' || window.__nnlPtrAttached) return;
+  window.__nnlPtrAttached = true;
+
+  const pill = document.createElement('div');
+  pill.id = 'apk-ptr-pill';
+  pill.innerHTML = `<span class="apk-ptr-icon">↓</span><span class="apk-ptr-text">Pull to refresh</span>`;
+  document.body.appendChild(pill);
+  const textEl = pill.querySelector('.apk-ptr-text');
+
+  let startY = 0;
+  let pulling = false;
+  let pullDist = 0;
+  let refreshing = false;
+
+  const getScrollTop = () => Math.max(window.scrollY || 0, document.documentElement?.scrollTop || 0);
+  const isModalActive = () => Boolean(document.querySelector('#pdf-modal:not(.hide), #quiz-viewer:not(.hide), #recording-viewer:not(.hide), #apk-settings-sheet:not(.hide), #apk-batch-sheet:not(.hide), #auth-screen:not(.hide)'));
+
+  window.addEventListener('touchstart', (e) => {
+    if (refreshing || e.touches.length !== 1 || isModalActive() || e.target.closest('#apk-ghost-pet')) return;
+    if (getScrollTop() <= 2) {
+      startY = e.touches[0].clientY;
+      pulling = true;
+      pullDist = 0;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!pulling || refreshing) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy <= 6 || getScrollTop() > 4) {
+      if (pullDist > 0) {
+        pullDist = 0;
+        pill.classList.remove('visible', 'ready');
+        pill.style.transform = '';
+      }
+      return;
+    }
+    pullDist = Math.min(110, (dy - 6) * 0.55);
+    if (pullDist > 12) {
+      pill.classList.add('visible');
+      const ready = pullDist >= 56;
+      pill.classList.toggle('ready', ready);
+      textEl.textContent = ready ? 'Release to refresh' : 'Pull to refresh';
+      pill.style.transform = `translate3d(-50%, ${Math.round(pullDist)}px, 0)`;
+    }
+  }, { passive: true });
+
+  const endPull = () => {
+    if (!pulling) return;
+    pulling = false;
+    if (pullDist >= 56 && !refreshing) {
+      refreshing = true;
+      pill.classList.add('visible', 'ready', 'spinning');
+      textEl.textContent = 'Refreshing...';
+      pill.style.transform = `translate3d(-50%, 38px, 0)`;
+
+      const refBtn = document.getElementById('refetch-btn') ||
+        document.getElementById('videos-refetch-btn') ||
+        document.getElementById('notes-refetch-btn') ||
+        document.getElementById('tests-refetch-btn');
+      if (refBtn) {
+        refBtn.click();
+      } else {
+        window.location.reload();
+      }
+      setTimeout(() => {
+        refreshing = false;
+        pullDist = 0;
+        pill.classList.remove('visible', 'ready', 'spinning');
+        pill.style.transform = '';
+      }, 950);
+    } else {
+      pullDist = 0;
+      pill.classList.remove('visible', 'ready');
+      pill.style.transform = '';
+    }
+  };
+  window.addEventListener('touchend', endPull, { passive: true });
+  window.addEventListener('touchcancel', endPull, { passive: true });
+}
+
 function initApkShell() {
   document.body.classList.add('apk-shell-active');
   if (!enforceAuthGuard()) return;
+
   normalizeHeaderAndChrome();
   attachNavLiquidDropAndCards();
   buildSettingsSheet();
   attachWaterDropMotion();
+  attachPullToRefresh();
   initGhostPet();
   stripEmojisAndShorten(document.body);
   animateVisibleCards(document.body);
