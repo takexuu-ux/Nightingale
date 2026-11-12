@@ -2,7 +2,7 @@
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
-import { getBatchBaselineState, syncBatchLive, fetchWithAutoAuth, fetchFreshVdoCipherOtp, fetchOfflineVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
+import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, fetchFreshVdoCipherOtp, fetchOfflineVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
 
 hydrateAndroidAuthSession();
@@ -38,22 +38,20 @@ const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
   ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
   : ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)'];
 
-let activeBatch = IS_HINGLISH_APK
-  ? 'Red Sapphire (Hinglish)'
-  : localStorage.getItem('nnl_active_batch');
+let activeBatch = localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
   activeBatch = 'Red Sapphire (Hinglish)';
   localStorage.setItem('nnl_active_batch', activeBatch);
 }
 
 // State
-let videoSectionMode = 'all'; // 'all' (All Videos Subjects & Teachers) | 'rb103' (Batch 103 Hinglish Past Classes)
+let videoSectionMode = 'all'; // 'all' (All Videos Subjects & Teachers) | 'rb103' (Batch Hinglish/English Past Classes)
 let activeCategoryFilter = 'ALL';
 let searchQuery = '';
 let lectureFilterQuery = '';
 let activeTopicFilter = 'ALL';
 let currentOpenSubject = null; // { id, title, faculty, category, videoCount, isBatch103, videos }
-let batch103State = getBatchBaselineState(103);
+let batch103State = getBatchBaselineState(getBatchIdFromName(activeBatch));
 const loadedVideosBySubjectId = new Map();
 const hasNativeOfflineBridge = () =>
   typeof window !== 'undefined' &&
@@ -286,9 +284,11 @@ function initHeaderAndSettings() {
   if (avatarEl) avatarEl.textContent = phone.slice(0, 1).toUpperCase();
 
   document.getElementById('logout-btn')?.addEventListener('click', () => {
+    sessionStorage.setItem('nnl_explicit_logout', 'true');
     localStorage.removeItem('nnl_access_token');
     localStorage.removeItem('nnl_refresh_token');
-    window.location.href = '/';
+    try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
+    window.location.replace('/');
   });
 
   const toggleBtn = document.getElementById('tweak-panel-toggle-btn');
@@ -1147,8 +1147,18 @@ document.addEventListener('DOMContentLoaded', () => {
     try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
     const lbl = document.getElementById('current-batch-label');
     if (lbl) lbl.textContent = activeBatch;
+    const rbTabLabel = document.querySelector('#vid-tab-rb103 span:not(.section-mode-count)');
+    if (rbTabLabel) {
+      rbTabLabel.textContent = activeBatch === 'Red Sapphire (English)'
+        ? 'Red Sapphire Eng'
+        : activeBatch.replace(/\s*\(Hinglish\)$/i, '');
+    }
     const bid = getBatchIdFromName(activeBatch);
     batch103State = getBatchBaselineState(bid);
+    videoSectionMode = 'rb103';
+    document.getElementById('vid-tab-rb103')?.classList.add('active');
+    document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-offline')?.classList.remove('active');
     if (currentOpenSubject) closeSubjectPage();
     renderCurrentCatalog();
     syncBatchLive(bid, {

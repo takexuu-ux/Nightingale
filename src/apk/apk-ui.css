@@ -43,9 +43,9 @@
   --bg-glass: rgba(255, 255, 255, 0.84);
   --bg-glass-strong: rgba(255, 255, 255, 0.94);
 
-  --text-primary: #151123;
-  --text-secondary: #5E5973;
-  --text-muted: #8E86A6;
+  --text-primary: #2D1F4F;
+  --text-secondary: #5E557A;
+  --text-muted: #8E84AC;
 
   --accent: #5B3EA8;
   --accent-bright: #7050C9;
@@ -142,13 +142,8 @@ body {
   max-width: 100%;
   min-height: 100vh;
   overflow-x: clip;
-  background-color: #DFECFF;
-  background-image:
-    radial-gradient(64% 52% at 10% 8%, rgba(59, 130, 246, 0.24), transparent 72%),
-    radial-gradient(58% 50% at 90% 86%, rgba(56, 189, 248, 0.22), transparent 72%),
-    radial-gradient(46% 42% at 84% 14%, rgba(139, 92, 246, 0.16), transparent 70%),
-    linear-gradient(150deg, #DBEAFE 0%, #EBF3FF 48%, #F0EBFF 100%);
-  background-attachment: fixed;
+  background-color: #F8F9FC;
+  background-image: none;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -157,13 +152,20 @@ body {
   transition: background-color 0.28s var(--fluid-ease), color 0.22s var(--fluid-ease);
 }
 
+body.apk-is-auth {
+  background-color: #FAF9FF;
+  background-image: linear-gradient(160deg, #FFFFFF 0%, #FAF8FF 56%, #F3EFFD 100%);
+  background-attachment: fixed;
+}
+
 [data-theme="dark"] body {
-  background-color: #090E1C;
-  background-image:
-    radial-gradient(60% 52% at 14% 10%, rgba(56, 189, 248, 0.17), transparent 70%),
-    radial-gradient(56% 48% at 86% 90%, rgba(129, 140, 248, 0.20), transparent 72%),
-    radial-gradient(40% 34% at 82% 16%, rgba(141, 116, 229, 0.14), transparent 68%),
-    linear-gradient(155deg, #090E1C 0%, #10172D 52%, #130F24 100%);
+  background-color: #0B0D13;
+  background-image: none;
+}
+
+[data-theme="dark"] body.apk-is-auth {
+  background-color: #0D0F16;
+  background-image: linear-gradient(160deg, #0B0D13 0%, #13111E 100%);
   background-attachment: fixed;
 }
 
@@ -329,6 +331,8 @@ button, input, select, textarea {
   left: 0;
   top: 0;
   bottom: 0;
+  height: 100vh;
+  height: 100dvh;
   width: var(--rail-w);
   z-index: 8000;
   background: var(--bg-glass-strong);
@@ -339,7 +343,7 @@ button, input, select, textarea {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 8px;
+  padding: max(16px, env(safe-area-inset-top)) 8px max(18px, env(safe-area-inset-bottom));
   gap: 12px;
 }
 
@@ -559,10 +563,10 @@ main#app {
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--border-strong);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(235, 243, 255, 0.85));
+  background: var(--bg-elevated);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-card);
   color: var(--accent-ink);
   font-size: 12px;
   font-weight: 700;
@@ -572,8 +576,8 @@ main#app {
 }
 
 [data-theme="dark"] .apk-batch-pill-btn {
-  background: linear-gradient(135deg, rgba(35, 42, 72, 0.88), rgba(45, 34, 74, 0.84));
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-card);
   color: var(--accent-ink);
 }
 
@@ -687,6 +691,7 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 }
 
 .auth-hero-wrapper {
+  position: relative;
   flex: 1;
   width: 100%;
   display: flex;
@@ -695,6 +700,13 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   align-items: flex-start;
   gap: clamp(24px, 4.5vh, 48px);
   padding: clamp(8px, 2vh, 24px) 0;
+}
+
+.apk-auth-showcase,
+#auth-screen,
+.auth-container {
+  position: relative;
+  z-index: 2;
 }
 
 .apk-auth-showcase {
@@ -1194,7 +1206,10 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
 }
 
 #vid-category-filters,
-#subject-topic-filters {
+#subject-topic-filters,
+.notes-filter-bar,
+.filter-chips,
+.notes-catalog-view > div:has(> .filter-chip) {
   display: flex;
   flex-wrap: nowrap !important;
   overflow-x: auto !important;
@@ -1202,30 +1217,36 @@ body:not(.apk-is-auth) .auth-hero-wrapper {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   gap: 8px !important;
-  padding: 2px 0 6px !important;
-  margin-bottom: 12px !important;
+  padding: 2px 0 8px !important;
+  margin-bottom: 10px !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
 }
 #vid-category-filters::-webkit-scrollbar,
-#subject-topic-filters::-webkit-scrollbar { display: none; }
+#subject-topic-filters::-webkit-scrollbar,
+.notes-filter-bar::-webkit-scrollbar,
+.filter-chips::-webkit-scrollbar { display: none; }
 
 .filter-chip {
   height: 32px;
   padding: 0 13px !important;
   border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(235, 243, 255, 0.86));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--accent-ink);
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
   font-size: 12px !important;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(37, 68, 128, 0.06);
+  box-shadow: var(--shadow-card);
+}
+
+.filter-chip.active {
+  background: var(--text-primary);
+  color: var(--bg-elevated);
+  border-color: transparent;
 }
 
 [data-theme="dark"] .filter-chip {
@@ -1433,13 +1454,13 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   max-width: 100%;
   min-height: 0 !important;
   height: auto !important;
-  padding: 15px 17px !important;
-  border-radius: 20px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94) 0%, rgba(230, 241, 255, 0.90) 56%, rgba(238, 232, 255, 0.90) 100%);
-  backdrop-filter: blur(22px) saturate(1.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  padding: 14px 16px !important;
+  border-radius: 19px;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 244, 255, 0.94) 100%);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   justify-content: flex-start !important;
@@ -1448,18 +1469,18 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 }
 
 [data-theme="dark"] .class-card {
-  background: linear-gradient(145deg, rgba(24, 33, 62, 0.92) 0%, rgba(30, 24, 56, 0.90) 100%);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(155deg, rgba(23, 25, 36, 0.96) 0%, rgba(30, 27, 44, 0.92) 100%);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .class-card.live-card-border {
-  background: linear-gradient(145deg, rgba(230, 253, 243, 0.95) 0%, rgba(231, 243, 255, 0.92) 55%, rgba(239, 233, 255, 0.92) 100%);
-  border: 1.5px solid #10B981;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.98) 0%, rgba(238, 253, 246, 0.92) 100%);
+  border: 1.5px solid rgba(16, 185, 129, 0.48);
+  box-shadow: 0 8px 22px -6px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 [data-theme="dark"] .class-card.live-card-border {
-  background: linear-gradient(145deg, rgba(16, 62, 52, 0.90) 0%, rgba(23, 33, 64, 0.92) 100%);
+  background: linear-gradient(150deg, rgba(16, 46, 42, 0.92) 0%, rgba(22, 26, 38, 0.94) 100%);
 }
 
 .class-card > div {
@@ -1472,10 +1493,10 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 .doc-card {
   min-width: 0;
   max-width: 100%;
-  min-height: 118px;
-  padding: 16px 17px;
+  min-height: 112px;
+  padding: 15px 16px;
   border-radius: 19px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94) 0%, rgba(236, 244, 255, 0.88) 100%);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 246, 254, 0.94) 100%);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border: 1px solid var(--border-strong);
@@ -1632,12 +1653,12 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 .live-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 5px;
+  padding: 3px 9px;
   border-radius: 99px;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
@@ -1647,15 +1668,20 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 }
 
 .live-indicator.live-pulse {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.10));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(5, 150, 105, 0.08));
   color: var(--success-ink);
   border: 1px solid var(--success-border);
 }
 
 .live-indicator.status-upcoming {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(99, 102, 241, 0.12));
+  background: var(--bg-tint);
   color: var(--accent);
-  border: 1px solid rgba(99, 102, 241, 0.24);
+  border: 1px solid var(--border-subtle);
+}
+
+.live-indicator.status-upcoming .live-dot-glow,
+.live-indicator.status-ended .live-dot-glow {
+  display: none !important;
 }
 
 .live-indicator.status-ended {
@@ -1665,8 +1691,8 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 }
 
 .live-dot-glow {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #10B981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
@@ -1677,12 +1703,12 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 99px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-hairline);
   white-space: nowrap;
   flex-shrink: 0;
@@ -1695,35 +1721,39 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 .btn-secondary,
 .btn-zoom {
   width: 100%;
-  height: 40px;
-  padding: 0 14px;
-  border-radius: 13px;
+  padding: 0 12px;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.02em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   cursor: pointer;
   transition: transform 0.18s var(--spring-ease), filter 0.18s ease, box-shadow 0.2s ease;
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.88);
-  color: var(--accent-ink);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.08);
+  height: 32px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: linear-gradient(145deg, #F6F2FF 0%, #ECE4FD 100%);
+  color: #4E329A;
+  border: 1px solid rgba(124, 92, 224, 0.24);
+  box-shadow: 0 2px 8px -2px rgba(91, 62, 168, 0.14);
 }
 
 [data-theme="dark"] .btn-secondary {
-  background: rgba(30, 34, 48, 0.86);
-  color: #E2E8F0;
-  border-color: var(--border-subtle);
+  background: linear-gradient(145deg, rgba(124, 92, 224, 0.22) 0%, rgba(91, 62, 168, 0.14) 100%);
+  color: #DDD6FE;
+  border-color: rgba(167, 139, 250, 0.28);
 }
 
 .btn-zoom {
+  height: 38px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 800;
   background: linear-gradient(135deg, var(--accent) 0%, #6366F1 100%);
   color: #FFFFFF;
   border: none;
@@ -1746,31 +1776,22 @@ body:not(.apk-is-auth) {
   background-image: none !important;
 }
 
-/* Override legacy dark inline card styles on Medicine / Highlight cards */
+/* Keep ALL subject / video / notes cards completely uniform (zero jarring red or black mismatch) */
 .subject-card.curated-highlight {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 241, 244, 0.88) 100%) !important;
-  border-color: rgba(244, 63, 94, 0.28) !important;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 246, 254, 0.94) 100%) !important;
+  border-color: var(--border-hairline) !important;
 }
 
 [data-theme="dark"] .subject-card.curated-highlight {
-  background: linear-gradient(135deg, rgba(28, 30, 42, 0.94) 0%, rgba(44, 24, 34, 0.72) 100%) !important;
-  border-color: rgba(251, 113, 133, 0.34) !important;
+  background: linear-gradient(155deg, rgba(23, 25, 36, 0.96) 0%, rgba(28, 27, 40, 0.92) 100%) !important;
+  border-color: var(--border-hairline) !important;
 }
 
-.subject-card .subject-card-badge {
+.subject-card .subject-card-badge,
+.subject-card.curated-highlight .subject-card-badge {
   background: var(--bg-subtle) !important;
   border-color: var(--border-hairline) !important;
   color: var(--text-secondary) !important;
-}
-
-.subject-card.curated-highlight .subject-card-badge {
-  background: rgba(244, 63, 94, 0.09) !important;
-  border-color: rgba(244, 63, 94, 0.22) !important;
-  color: #E11D48 !important;
-}
-
-[data-theme="dark"] .subject-card.curated-highlight .subject-card-badge {
-  color: #FDA4AF !important;
 }
 
 /* ── Top Category Switcher Tabs: clean short pills without numbers ── */
@@ -2211,15 +2232,27 @@ body:not(.apk-is-auth) {
 }
 
 .sd-note-btn {
-  background: var(--bg-tint);
-  color: var(--accent);
-  border-color: var(--border-strong);
+  background: linear-gradient(145deg, #F4EFFD 0%, #EAE1FC 100%);
+  color: #5B3EA8;
+  border-color: rgba(124, 92, 224, 0.28);
+}
+
+[data-theme="dark"] .sd-note-btn {
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.22) 0%, rgba(109, 40, 217, 0.14) 100%);
+  color: #DDD6FE;
+  border-color: rgba(167, 139, 250, 0.3);
 }
 
 .sd-dl-btn {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-  border-color: var(--border-hairline);
+  background: linear-gradient(145deg, #F8F6FF 0%, #EFEAFE 100%);
+  color: #4E329A;
+  border-color: rgba(124, 92, 224, 0.22);
+}
+
+[data-theme="dark"] .sd-dl-btn {
+  background: linear-gradient(145deg, rgba(124, 92, 224, 0.2) 0%, rgba(91, 62, 168, 0.12) 100%);
+  color: #DDD6FE;
+  border-color: rgba(167, 139, 250, 0.25);
 }
 .sd-dl-btn.saved {
   background: var(--success-bg);
@@ -2829,24 +2862,134 @@ body:not(.apk-is-auth) {
   }
 }
 
-/* ── Compact / Mobile Floating Bottom Dock (< 768px) ── */
-@media (max-width: 767px) {
+/* ── Tiny Pixel-Art Ghost Pet ── */
+#apk-ghost-pet {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 44px;
+  z-index: 9400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: grab;
+  will-change: transform;
+  transition: opacity 0.25s ease;
+}
+
+#apk-ghost-pet:active {
+  cursor: grabbing;
+}
+
+.apk-ghost-sprite {
+  width: 38px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 6px rgba(91, 62, 168, 0.22));
+}
+
+.apk-ghost-shadow {
+  width: 24px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(15, 23, 42, 0.24);
+  margin-top: -2px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+[data-theme="dark"] .apk-ghost-shadow {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.apk-ghost-prop {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.apk-ghost-bubble {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: #4F46E5;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.1;
+  box-shadow: 0 3px 10px -2px rgba(15, 23, 42, 0.16);
+  animation: apkGhostFloatProp 0.9s ease-out both;
+}
+
+.apk-ghost-bubble.is-love {
+  color: #E11D48;
+  border-color: rgba(244, 63, 94, 0.28);
+}
+
+.apk-ghost-bubble.is-zzz {
+  color: #64748B;
+  font-size: 9px;
+}
+
+.apk-ghost-bubble.is-star {
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.30);
+}
+
+[data-theme="dark"] .apk-ghost-bubble {
+  background: rgba(22, 25, 38, 0.94);
+  color: #C7D2FE;
+}
+
+#apk-ghost-pet.is-hop .apk-ghost-sprite {
+  animation: apkGhostHop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes apkGhostHop {
+  0% { transform: translateY(0) scale(1, 1); }
+  35% { transform: translateY(-13px) scale(0.92, 1.08); }
+  70% { transform: translateY(1px) scale(1.06, 0.94); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+@keyframes apkGhostFloatProp {
+  0% { opacity: 0; transform: translateY(4px) scale(0.75); }
+  25% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0.95; transform: translateY(-4px) scale(1); }
+}
+
+/* ── Compact / Mobile + Portrait Tablet Floating Bottom Island Dock ── */
+@media (max-width: 767px), (orientation: portrait) {
   #apk-ota-banner {
     bottom: 84px !important;
   }
 
   .app-header {
-    left: 12px;
-    right: 12px;
+    left: 14px;
+    right: 14px;
     top: auto;
-    bottom: max(10px, env(safe-area-inset-bottom));
+    bottom: max(12px, env(safe-area-inset-bottom));
     width: auto;
+    max-width: 540px;
+    margin: 0 auto;
     height: var(--dock-h);
     flex-direction: row;
-    padding: 6px 8px;
+    padding: 6px 10px;
     border-right: none;
     border: 1px solid var(--border-strong);
-    border-radius: 24px;
+    border-radius: 26px;
     box-shadow: var(--shadow-float);
     gap: 4px;
   }
@@ -2922,6 +3065,14 @@ body:not(.apk-is-auth) {
     gap: 10px;
   }
 
+  @media (min-width: 680px) {
+    .class-grid,
+    .notes-subject-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+
   .sd-lecture-card {
     padding: 10px 11px;
     gap: 8px;
@@ -2953,4 +3104,303 @@ body:not(.apk-is-auth) {
     width: 100%;
     max-height: 150px;
   }
+}
+
+/* ── Violet-Purple Subtle Gradients for Card Titles & Buttons (Zero Flat Black) ── */
+.subject-card-title,
+.test-card-title,
+.doc-card-title,
+.note-doc-title,
+.class-title,
+.sd-lecture-title,
+.brochure-card-title,
+#subject-detail-title,
+#test-detail-title {
+  background-image: linear-gradient(135deg, #3D257A 0%, #5B3EA8 56%, #7C5CE0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #4B308F !important;
+}
+
+[data-theme="dark"] .subject-card-title,
+[data-theme="dark"] .test-card-title,
+[data-theme="dark"] .doc-card-title,
+[data-theme="dark"] .note-doc-title,
+[data-theme="dark"] .class-title,
+[data-theme="dark"] .sd-lecture-title,
+[data-theme="dark"] .brochure-card-title,
+[data-theme="dark"] #subject-detail-title,
+[data-theme="dark"] #test-detail-title {
+  background-image: linear-gradient(135deg, #F5F2FF 0%, #DDD6FE 56%, #C4B5FD 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #EAE4FF !important;
+}
+
+.btn-primary,
+.btn-verify-compact,
+.sd-lecture-btn,
+.btn-note-view,
+.note-doc-actions .btn-note-view,
+.note-doc-actions .btn-note-view.btn-launch-test,
+.apk-pill-opt.active,
+.section-mode-tab.active,
+.filter-chip.active {
+  background: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 58%, #9378EC 100%) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+}
+
+.btn-ghost,
+.btn-back-pill,
+#btn-back-to-subjects,
+#btn-back-subjects,
+#btn-back-tests,
+.quiz-mode-toggle-pill,
+.note-doc-actions .btn-note-download,
+.note-doc-actions .btn-note-download.btn-launch-test {
+  background: linear-gradient(145deg, #F8F5FF 0%, #EFE8FD 100%) !important;
+  color: #4E329A !important;
+  border-color: rgba(124, 92, 224, 0.24) !important;
+}
+
+[data-theme="dark"] .btn-ghost,
+[data-theme="dark"] .btn-back-pill,
+[data-theme="dark"] #btn-back-to-subjects,
+[data-theme="dark"] #btn-back-subjects,
+[data-theme="dark"] #btn-back-tests,
+[data-theme="dark"] .quiz-mode-toggle-pill,
+[data-theme="dark"] .note-doc-actions .btn-note-download,
+[data-theme="dark"] .note-doc-actions .btn-note-download.btn-launch-test {
+  background: linear-gradient(145deg, rgba(124, 92, 224, 0.22) 0%, rgba(91, 62, 168, 0.14) 100%) !important;
+  color: #DDD6FE !important;
+  border-color: rgba(167, 139, 250, 0.28) !important;
+}
+
+/* ── Transparent Interactive Botanical Medical Illustration on Login Right Side ── */
+body:not(.apk-is-auth) #apk-auth-botanical {
+  display: none !important;
+}
+
+.apk-auth-botanical {
+  position: absolute;
+  right: clamp(8px, 3.5vw, 48px);
+  top: 50%;
+  transform: translateY(-48%);
+  width: clamp(230px, 36vw, 410px);
+  aspect-ratio: 360 / 390;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  filter: drop-shadow(0 12px 28px rgba(124, 92, 224, 0.12));
+  transition: transform 0.4s var(--spring-bounce), filter 0.35s ease;
+}
+
+.apk-botanical-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.apk-auth-botanical .bot-lungs {
+  transform-origin: 180px 200px;
+  animation: apkLungBreathe 5.2s ease-in-out infinite;
+}
+
+.apk-auth-botanical .bot-heart {
+  transform-origin: 180px 198px;
+  animation: apkHeartPulse 2.6s ease-in-out infinite;
+}
+
+.apk-auth-botanical .bot-foliage,
+.apk-auth-botanical .bot-flowers {
+  transform-origin: 180px 190px;
+  animation: apkBotanicalSway 6.5s ease-in-out infinite;
+}
+
+.apk-auth-botanical:hover,
+.apk-auth-botanical.is-blooming {
+  transform: translateY(-51%) scale(1.045);
+  filter: drop-shadow(0 16px 34px rgba(124, 92, 224, 0.22));
+}
+
+.apk-auth-botanical.is-blooming .bot-heart {
+  animation: apkHeartPulse 0.72s ease-in-out 2;
+}
+
+.apk-auth-botanical.is-blooming .bot-flowers {
+  animation: apkFlowerBloom 0.9s var(--spring-bounce) 1;
+}
+
+.apk-botanical-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.apk-petal-spark {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px 2px 99px 99px;
+  background: linear-gradient(135deg, #C4B5FD, #F472B6);
+  opacity: 0;
+  animation: apkPetalFloat 0.92s ease-out forwards;
+}
+
+@keyframes apkLungBreathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.028, 1.022); }
+}
+
+@keyframes apkHeartPulse {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.055); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.035); }
+  58% { transform: scale(1); }
+}
+
+@keyframes apkBotanicalSway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.4deg); }
+}
+
+@keyframes apkFlowerBloom {
+  0% { transform: scale(1) rotate(0deg); }
+  45% { transform: scale(1.09) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes apkPetalFloat {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5) rotate(0deg); }
+  25% { opacity: 0.95; transform: translate(calc(var(--dx) * 0.25), calc(var(--dy) * 0.25)) scale(1) rotate(45deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(130deg); }
+}
+
+@media (max-width: 499px) {
+  .apk-auth-botanical {
+    top: 122px;
+    right: -6px;
+    transform: none;
+    width: 178px;
+    opacity: 0.88;
+  }
+  .apk-auth-botanical:hover,
+  .apk-auth-botanical.is-blooming {
+    transform: scale(1.05);
+  }
+}
+
+/* ── Remade Dynamic Brochure & Timetable Workspace ── */
+.brochure-shell {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.brochure-hero {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #FFFFFF 0%, #F6F2FE 100%);
+  border: 1px solid rgba(124, 92, 224, 0.2);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-theme="dark"] .brochure-hero {
+  background: linear-gradient(145deg, #181B2C 0%, #1F1B33 100%);
+  border-color: rgba(167, 139, 250, 0.22);
+}
+
+.brochure-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  width: 100%;
+}
+.brochure-tabs::-webkit-scrollbar { display: none; }
+
+.brochure-tab {
+  flex: 1 1 auto;
+  min-width: max-content;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.brochure-tab.active {
+  background: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 58%, #9378EC 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 6px 14px -4px rgba(91, 62, 168, 0.38);
+}
+
+.brochure-dynamic-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
+  gap: 12px;
+}
+
+.brochure-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #FFFFFF 0%, #F7F4FE 100%);
+  border: 1px solid rgba(124, 92, 224, 0.16);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+[data-theme="dark"] .brochure-card {
+  background: linear-gradient(145deg, #16192A 0%, #1D1A30 100%);
+  border-color: rgba(167, 139, 250, 0.2);
+}
+
+.brochure-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.brochure-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: var(--bg-tint);
+  color: var(--accent-ink);
+  width: fit-content;
 }

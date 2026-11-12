@@ -4206,6 +4206,7 @@ function handleLogout() {
     dAlert.innerHTML = '';
     dAlert.classList.add('hide');
   }
+  try { window.history.replaceState(null, '', '/'); } catch {}
   checkLoginState();
 }
 
@@ -4308,9 +4309,14 @@ if (headerLogo) {
 // ─── Nightingale Redesign Scripts ───────────────────────────────────────
 
 let activeBatch = localStorage.getItem('nnl_active_batch');
-if (!activeBatch || (activeBatch !== 'Red Sapphire (Hinglish)' && activeBatch !== 'Red Sapphire (English)')) {
+const VALID_INIT_BATCHES = ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track'];
+if (!activeBatch || !VALID_INIT_BATCHES.includes(activeBatch)) {
   if (activeBatch && activeBatch.toUpperCase().includes('ENGLISH')) {
     activeBatch = 'Red Sapphire (English)';
+  } else if (activeBatch && activeBatch.toUpperCase().includes('BLUE')) {
+    activeBatch = 'Blue Sapphire (Hinglish)';
+  } else if (activeBatch && activeBatch.toUpperCase().includes('FAST')) {
+    activeBatch = 'Fast Track';
   } else {
     activeBatch = 'Red Sapphire (Hinglish)';
   }
@@ -4567,6 +4573,13 @@ function initBatchSelection() {
       activeBatch = chosen;
       try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
       renderBatchSelector();
+      if (activeTab === 'subjects' || activeTab === 'tests' || activeTab === 'notes') {
+        renderSubjectLibrary();
+      } else if (activeTab === 'recordings') {
+        renderRecordings();
+      } else {
+        renderClasses(classesData);
+      }
     }
   };
   

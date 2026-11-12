@@ -66,12 +66,14 @@ async function fetchAllPaginated(path, headers, maxPages = 20) {
   return results;
 }
 
-let activeBatch = IS_HINGLISH_APK
-  ? 'Red Sapphire (Hinglish)'
-  : localStorage.getItem('nnl_active_batch');
+let activeBatch = localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
-  if (activeBatch && !IS_HINGLISH_APK && activeBatch.toUpperCase().includes('ENGLISH')) {
+  if (activeBatch && activeBatch.toUpperCase().includes('ENGLISH')) {
     activeBatch = 'Red Sapphire (English)';
+  } else if (activeBatch && activeBatch.toUpperCase().includes('BLUE')) {
+    activeBatch = 'Blue Sapphire (Hinglish)';
+  } else if (activeBatch && activeBatch.toUpperCase().includes('FAST')) {
+    activeBatch = 'Fast Track';
   } else {
     activeBatch = 'Red Sapphire (Hinglish)';
   }
@@ -85,15 +87,14 @@ let currentOpenSubject = null;
 let currentFilterType = 'all'; // 'all', 'handwritten', 'oncology', 'liveclass', 'revision', 'schedule'
 let currentTopicFilter = 'ALL'; // system/topic sub-filter inside subject detail view
 let currentScheduleLang = 'hinglish';
+let brochureActiveTab = 'timetable'; // 'timetable' | 'plan' | 'brochures'
 let searchQuery = '';
 
 const initialParams = new URLSearchParams(window.location.search);
 let currentSectionMode = initialParams.get('section') === 'rb104' ? 'rb104' : 'master';
-let activeRbBatchId = IS_HINGLISH_APK
-  ? 103
-  : (Number(initialParams.get('batch')) === 104
-      ? 104
-      : (Number(initialParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch)));
+let activeRbBatchId = Number(initialParams.get('batch')) === 104
+  ? 104
+  : (Number(initialParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch));
 let batch104State = getBatchBaselineState(activeRbBatchId);
 
 // Complete Verified Subjects (Available immediately in Open Access AND Signed-In Mode — 1,319 PDFs)
@@ -249,9 +250,11 @@ function initUserHeader() {
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      sessionStorage.setItem('nnl_explicit_logout', 'true');
       localStorage.removeItem('nnl_access_token');
       localStorage.removeItem('nnl_refresh_token');
-      window.location.href = '/';
+      try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
+      window.location.replace('/');
     });
   }
 
@@ -702,9 +705,9 @@ function renderBatch104Cards() {
       : `${sub.topicCount || 0} Planned Topics • Upcoming`;
 
     return `
-      <div class="subject-card ${hasContent ? 'curated-highlight' : ''}" data-rb-sub-id="${sub.id}" style="${hasContent ? 'border-color: rgba(244, 63, 94, 0.35);' : 'opacity: 0.78;'}">
+      <div class="subject-card" data-rb-sub-id="${sub.id}" style="${hasContent ? '' : 'opacity: 0.78;'}">
         <div class="subject-card-top">
-          <div class="subject-card-icon" style="${hasContent ? 'color: #fda4af; border-color: rgba(251, 113, 133, 0.35); background: rgba(244, 63, 94, 0.14);' : ''}">
+          <div class="subject-card-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               ${svgIcon}
             </svg>
@@ -924,29 +927,31 @@ function renderSubjectCards() {
     }
 
     const highlightStyle = IS_HINGLISH_APK
-      ? (isMedicine
-        ? 'border-color: rgba(244, 63, 94, 0.28);'
-        : (isSchedule ? 'border-color: rgba(16, 185, 129, 0.28);' : ''))
+      ? ''
       : (isMedicine
         ? 'border-color: rgba(255, 45, 85, 0.45); background: linear-gradient(135deg, rgba(255, 45, 85, 0.09) 0%, rgba(18, 21, 34, 0.78) 100%);'
         : (isSchedule
           ? 'border-color: rgba(0, 243, 208, 0.35); background: linear-gradient(135deg, rgba(0, 243, 208, 0.08) 0%, rgba(18, 21, 34, 0.78) 100%);'
           : ''));
 
-    const iconStyle = isMedicine
-      ? (IS_HINGLISH_APK ? 'background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.28); color: #E11D48;' : 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;')
-      : (isSchedule
-        ? 'background: rgba(0, 243, 208, 0.15); border-color: rgba(0, 243, 208, 0.35); color: #00f3d0;'
-        : '');
+    const iconStyle = IS_HINGLISH_APK
+      ? ''
+      : (isMedicine
+        ? 'background: rgba(255, 45, 85, 0.18); border-color: rgba(255, 45, 85, 0.4); color: #ff2d55;'
+        : (isSchedule
+          ? 'background: rgba(0, 243, 208, 0.15); border-color: rgba(0, 243, 208, 0.35); color: #00f3d0;'
+          : ''));
 
-    const badgeStyle = isMedicine
-      ? (IS_HINGLISH_APK ? 'background: rgba(244, 63, 94, 0.10); border-color: rgba(244, 63, 94, 0.22); color: #E11D48;' : 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;')
-      : (isSchedule
-        ? 'background: rgba(0, 243, 208, 0.14); border-color: rgba(0, 243, 208, 0.3); color: #00f3d0;'
-        : '');
+    const badgeStyle = IS_HINGLISH_APK
+      ? ''
+      : (isMedicine
+        ? 'background: rgba(255, 45, 85, 0.15); border-color: rgba(255, 45, 85, 0.3); color: #ff2d55;'
+        : (isSchedule
+          ? 'background: rgba(0, 243, 208, 0.14); border-color: rgba(0, 243, 208, 0.3); color: #00f3d0;'
+          : ''));
 
     return `
-      <div class="subject-card ${isMedicine ? 'curated-highlight' : ''}" data-sub-id="${sub.id}" style="${highlightStyle}">
+      <div class="subject-card" data-sub-id="${sub.id}" style="${highlightStyle}">
         <div class="subject-card-top">
           <div class="subject-card-icon" style="${iconStyle}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -1051,7 +1056,6 @@ function closeSubjectView() {
 function renderRedSapphireBrochureView() {
   if (!notesDocList) return;
 
-  const isEng = getCleanBatchName(activeBatch).toLowerCase().includes('english');
   const activeScheduleList = currentScheduleLang === 'english'
     ? RED_SAPPHIRE_DATA.englishSchedule
     : RED_SAPPHIRE_DATA.hinglishSchedule;
@@ -1064,7 +1068,6 @@ function renderRedSapphireBrochureView() {
       (c.start || '').toLowerCase().includes(query);
   });
 
-  // Format date helper
   const formatSlot = (startStr, endStr) => {
     try {
       const d = new Date(startStr);
@@ -1078,100 +1081,101 @@ function renderRedSapphireBrochureView() {
     }
   };
 
-  // Sort upcoming first, then most recent completed
   const sortedSchedule = [...filteredSchedule].sort((a, b) => new Date(b.start) - new Date(a.start));
 
-  const featuresHtml = RED_SAPPHIRE_DATA.features.map(f => `
-    <div style="background: ${IS_HINGLISH_APK ? 'var(--bg-elevated)' : 'rgba(14, 17, 28, 0.72)'}; border: 1px solid var(--border-hairline); border-radius: 14px; padding: 1.1rem 1.25rem;">
-      <h4 style="color: ${IS_HINGLISH_APK ? 'var(--accent)' : '#00f3d0'}; font-family: var(--font-display); font-size: 0.85rem; margin: 0 0 0.65rem 0; letter-spacing: 0.04em; text-transform: uppercase;">${f.title}</h4>
-      <ul style="margin: 0; padding-left: 1.15rem; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.55;">
-        ${f.bullets.map(b => `<li style="margin-bottom: 0.3rem;">${b}</li>`).join('')}
-      </ul>
-    </div>
-  `).join('');
-
-  const brochuresHtml = RED_SAPPHIRE_DATA.brochures.map(b => `
-    <div class="note-doc-card">
-      <div class="note-doc-info">
-        <div class="note-doc-icon" style="color: #00f3d0;">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-        </div>
-        <div class="note-doc-details">
-          <div class="note-doc-title">${b.title}</div>
-          <div class="note-doc-badges">
-            <span class="category-tag" style="background: rgba(0, 243, 208, 0.14); color: #00f3d0;">BROCHURE PDF</span>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">${b.note}</span>
+  let tabBodyHtml = '';
+  if (brochureActiveTab === 'timetable') {
+    const cards = sortedSchedule.map(c => {
+      const slot = formatSlot(c.start, c.end);
+      return `
+        <div class="brochure-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <span class="brochure-badge">${slot.isFuture ? 'UPCOMING' : 'COMPLETED'}</span>
+            <span style="font-size:11.5px;font-weight:700;color:var(--accent);">${c.faculty || 'NNL Faculty'}</span>
+          </div>
+          <h4 class="brochure-card-title">${c.title}</h4>
+          <div style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--text-secondary);">
+            <span style="font-weight:700;">${slot.datePart}</span>
+            <span>${slot.timeRange}</span>
           </div>
         </div>
-      </div>
-      <div class="note-doc-actions">
-        <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(b.title)}" data-url="${encodeURIComponent(b.url)}" data-filename="${encodeURIComponent(b.title.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf')}">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>View PDF</span>
-        </button>
-        <a href="${b.url}" target="_blank" rel="noopener noreferrer" download class="btn-note-download">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-          <span>Download</span>
-        </a>
-      </div>
-    </div>
-  `).join('');
+      `;
+    }).join('');
 
-  const timetableRowsHtml = sortedSchedule.map(c => {
-    const slot = formatSlot(c.start, c.end);
-    return `
-      <div class="note-doc-card" style="${slot.isFuture ? 'border-color: rgba(16, 185, 129, 0.35);' : ''}">
-        <div class="note-doc-info">
-          <div class="note-doc-details">
-            <div class="note-doc-title">${c.title}</div>
-            <div class="note-doc-badges">
-              ${slot.isFuture
-                ? '<span class="category-tag" style="background: rgba(16, 185, 129, 0.14); color: #059669;">UPCOMING</span>'
-                : '<span class="category-tag" style="background: var(--bg-subtle); color: var(--text-secondary);">COMPLETED</span>'}
-              <span style="font-size: 0.76rem; color: var(--text-primary); font-weight: 600;">${slot.datePart}</span>
-              <span style="font-size: 0.74rem; color: var(--text-muted);">${slot.timeRange}</span>
-              <span style="font-size: 0.74rem; color: var(--accent);">${c.faculty}</span>
-            </div>
-          </div>
+    tabBodyHtml = `
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="font-size:13px;font-weight:800;color:var(--text-secondary);">
+          ${filteredSchedule.length} Scheduled Sessions (${currentScheduleLang === 'english' ? 'English · 104' : 'Hinglish · 103'})
         </div>
+        <div style="display:flex;gap:8px;">
+          <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'hinglish' ? 'active' : ''}" data-lang="hinglish">Hinglish (${RED_SAPPHIRE_DATA.hinglishSchedule.length})</button>
+          <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'english' ? 'active' : ''}" data-lang="english">English (${RED_SAPPHIRE_DATA.englishSchedule.length})</button>
+        </div>
+      </div>
+      <div class="brochure-dynamic-grid">
+        ${cards || '<div class="notes-empty-state" style="grid-column:1/-1;"><h3 class="notes-empty-title">No Classes Matched</h3><p class="notes-empty-desc">Try clearing the search bar.</p></div>'}
       </div>
     `;
-  }).join('');
+  } else if (brochureActiveTab === 'plan') {
+    const featureCards = RED_SAPPHIRE_DATA.features.map(f => `
+      <div class="brochure-card">
+        <span class="brochure-badge">RED SAPPHIRE MLB PRO</span>
+        <h4 class="brochure-card-title">${f.title}</h4>
+        <ul style="margin:0;padding-left:16px;color:var(--text-secondary);font-size:12.5px;line-height:1.55;">
+          ${f.bullets.map(b => `<li style="margin-bottom:4px;">${b}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('');
+
+    tabBodyHtml = `<div class="brochure-dynamic-grid">${featureCards}</div>`;
+  } else {
+    const brochureCards = RED_SAPPHIRE_DATA.brochures.map(b => `
+      <div class="brochure-card">
+        <span class="brochure-badge">PROSPECTUS &amp; TOC PDF</span>
+        <h4 class="brochure-card-title">${b.title}</h4>
+        <p style="margin:0;font-size:12px;color:var(--text-secondary);">${b.note}</p>
+        <div class="note-doc-actions" style="width:100%;justify-content:flex-end;">
+          <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(b.title)}" data-url="${encodeURIComponent(b.url)}" data-filename="${encodeURIComponent(b.title.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf')}">
+            <span>View PDF</span>
+          </button>
+          <a href="${b.url}" target="_blank" rel="noopener noreferrer" download class="btn-note-download">
+            <span>Save</span>
+          </a>
+        </div>
+      </div>
+    `).join('');
+
+    tabBodyHtml = `<div class="brochure-dynamic-grid">${brochureCards}</div>`;
+  }
 
   notesDocList.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-      <div style="background: var(--bg-elevated); border: 1px solid var(--border-hairline); border-radius: 16px; padding: 1.15rem 1.35rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
-        <div>
-          <h3 style="margin: 0; font-family: var(--font-display); font-size: 1rem; color: var(--text-primary);">Red Sapphire — Official Features &amp; Syllabus Plan</h3>
-          <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Hinglish &amp; English Live Batch Features and Schedule.</p>
+    <div class="brochure-shell">
+      <div class="brochure-hero">
+        <div style="min-width:0;flex:1 1 220px;">
+          <h3 class="brochure-card-title" style="font-size:1.05rem;">Red Sapphire Plan &amp; Timetable</h3>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--text-secondary);">Hinglish (103) &amp; English (104) live schedule, MLB Pro syllabus highlights, and sibling batch PDFs.</p>
         </div>
-        <button id="btn-print-timetable" class="btn-note-view">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-          <span>Print / Save PDF</span>
+        <button id="btn-print-timetable" class="btn-note-view" style="height:36px;padding:0 14px;border-radius:12px;font-size:12px;">
+          <span>Print / Save</span>
         </button>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.9rem;">
-        ${featuresHtml}
+      <div class="brochure-tabs" role="tablist">
+        <button type="button" class="brochure-tab ${brochureActiveTab === 'timetable' ? 'active' : ''}" data-btab="timetable">Live Timetable</button>
+        <button type="button" class="brochure-tab ${brochureActiveTab === 'plan' ? 'active' : ''}" data-btab="plan">Red Sapphire Plan</button>
+        <button type="button" class="brochure-tab ${brochureActiveTab === 'brochures' ? 'active' : ''}" data-btab="brochures">Other Batch PDFs</button>
       </div>
 
-      <div>
-        <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: var(--text-primary); margin: 0.4rem 0 0.75rem 0; letter-spacing: 0.04em; text-transform: uppercase;">Official NNL Batch Brochures</h3>
-        ${brochuresHtml}
-      </div>
-
-      <div>
-        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.4rem 0 0.85rem 0;">
-          <h3 style="font-family: var(--font-display); font-size: 0.9rem; color: var(--text-primary); margin: 0; letter-spacing: 0.04em; text-transform: uppercase;">Live Class Timetable (${filteredSchedule.length} Classes)</h3>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'hinglish' ? 'active' : ''}" data-lang="hinglish">Hinglish (Batch 103 · ${RED_SAPPHIRE_DATA.hinglishSchedule.length})</button>
-            <button class="filter-chip rs-lang-btn ${currentScheduleLang === 'english' ? 'active' : ''}" data-lang="english">English (Batch 104 · ${RED_SAPPHIRE_DATA.englishSchedule.length})</button>
-          </div>
-        </div>
-        ${timetableRowsHtml}
-      </div>
+      ${tabBodyHtml}
     </div>
   `;
+
+  notesDocList.querySelectorAll('.brochure-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      brochureActiveTab = tab.getAttribute('data-btab') || 'timetable';
+      renderRedSapphireBrochureView();
+    });
+  });
 
   notesDocList.querySelectorAll('.rs-lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1180,10 +1184,7 @@ function renderRedSapphireBrochureView() {
     });
   });
 
-  const printBtn = document.getElementById('btn-print-timetable');
-  if (printBtn) {
-    printBtn.addEventListener('click', () => window.print());
-  }
+  document.getElementById('btn-print-timetable')?.addEventListener('click', () => window.print());
 
   notesDocList.querySelectorAll('.btn-preview-pdf').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1248,13 +1249,13 @@ function renderSubjectNotesList() {
     return true;
   });
 
-  // Topic pill bar (shown when subject has multiple systems/topics like Medicine's 15 groups)
+  // Topic pill bar (1-line scrollable horizontally across iOS/Android)
   const topicBarHtml = topicsList.length > 1 ? `
-    <div style="display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1.25rem; padding: 0.85rem 1rem; background: rgba(12, 15, 25, 0.6); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px;">
-      <button class="filter-chip topic-pill-btn ${currentTopicFilter === 'ALL' ? 'active' : ''}" data-topic="ALL" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;">All Topics (${notes.length})</button>
+    <div class="test-filter-strip">
+      <button class="filter-chip topic-pill-btn ${currentTopicFilter === 'ALL' ? 'active' : ''}" data-topic="ALL">All (${notes.length})</button>
       ${topicsList.map(t => {
         const cnt = notes.filter(x => (x.topic || 'General').trim() === t).length;
-        return `<button class="filter-chip topic-pill-btn ${currentTopicFilter === t ? 'active' : ''}" data-topic="${t.replace(/"/g, '&quot;')}" style="font-size: 0.72rem; padding: 0.35rem 0.75rem;">${t} (${cnt})</button>`;
+        return `<button class="filter-chip topic-pill-btn ${currentTopicFilter === t ? 'active' : ''}" data-topic="${t.replace(/"/g, '&quot;')}">${t} (${cnt})</button>`;
       }).join('')}
     </div>
   ` : '';
@@ -1521,10 +1522,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.__nnlSelectBatch = (chosen) => {
     activeBatch = chosen;
     try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
+    const clean = getCleanBatchName(activeBatch);
     const lbl = document.getElementById('current-batch-label');
-    if (lbl) lbl.textContent = getCleanBatchName(activeBatch);
-    if (statBatchName) statBatchName.textContent = getCleanBatchName(activeBatch);
-    setRbBatchId(getBatchIdFromName(activeBatch), true);
+    if (lbl) lbl.textContent = clean;
+    if (statBatchName) statBatchName.textContent = clean;
+    const rbTabLabel = document.querySelector('#sec-tab-rb104 span:not(.section-mode-count)');
+    if (rbTabLabel) rbTabLabel.textContent = clean === 'Red Sapphire (English)' ? 'Red Sapphire Eng' : clean.replace(/\s*\(Hinglish\)$/i, '');
+    setRbBatchId(getBatchIdFromName(activeBatch), false);
   };
 
   if (new URLSearchParams(window.location.search).get('openBrochure') === '1') {

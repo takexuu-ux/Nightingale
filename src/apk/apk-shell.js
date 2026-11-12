@@ -1,5 +1,6 @@
 // Red Sapphire Hinglish APK — Scratch Minimal UI Shell & Liquid Motion Engine
 import './apk-ui.css';
+import { initGhostPet, isGhostPetEnabled, setGhostPetEnabled } from './apk-ghost-pet.js';
 
 function detectSystemDark() {
   try {
@@ -150,6 +151,7 @@ function buildSettingsSheet() {
     backdrop.classList.add('hide');
   });
   backdrop.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
+    sessionStorage.setItem('nnl_explicit_logout', 'true');
     const legacyLogout = document.getElementById('logout-btn');
     if (legacyLogout) {
       legacyLogout.click();
@@ -157,8 +159,9 @@ function buildSettingsSheet() {
       localStorage.removeItem('nnl_access_token');
       localStorage.removeItem('nnl_refresh_token');
       try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
-      window.location.href = '/';
+      window.location.replace('/');
     }
+    backdrop.classList.add('hide');
   });
 
   // Adopt #apk-ota-settings-box from old hidden widget whenever injected by otaUpdater.js
@@ -283,26 +286,25 @@ function normalizeHeaderAndChrome() {
 
     const overlay = document.createElement('div');
     overlay.id = 'apk-batch-sheet';
-    overlay.className = 'apk-settings-overlay';
+    overlay.className = 'apk-sheet-backdrop';
     overlay.innerHTML = `
-      <div class="apk-settings-sheet" role="dialog" aria-modal="true" aria-label="Switch Batch">
-        <div class="apk-sheet-grabber"></div>
-        <div class="apk-sheet-header">
+      <div class="apk-sheet-card" role="dialog" aria-modal="true" aria-label="Switch Batch">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
           <div>
-            <h3 class="apk-sheet-title">Switch Batch</h3>
-            <p class="apk-sheet-sub">Select your active classroom track</p>
+            <div style="font-size:16px;font-weight:800;color:var(--text-primary);">Switch Batch</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Select your active classroom track</div>
           </div>
-          <button type="button" class="apk-sheet-close" aria-label="Close">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <button type="button" class="apk-icon-btn apk-sheet-close" aria-label="Close">
+            ${NAV_ICONS.close}
           </button>
         </div>
-        <div class="apk-batch-options-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0 8px;">
+        <div class="apk-batch-options-list" style="display:flex;flex-direction:column;gap:8px;padding:2px 0;">
           ${APK_BATCH_CHOICES.map(b => {
             const isSel = b.value === active;
             return `
-              <button type="button" class="apk-batch-option ${isSel ? 'is-selected' : ''}" data-batch-value="${b.value}">
+              <button type="button" class="apk-batch-option ${isSel ? 'active' : ''}" data-batch-value="${b.value}">
                 <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                  <span style="font-weight:800;font-size:14px;">${b.label}</span>
+                  <span style="font-weight:800;font-size:13.5px;">${b.label}</span>
                   <span style="font-size:11.5px;opacity:0.72;font-weight:600;">${b.sub}</span>
                 </div>
                 <span class="apk-batch-check" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;">
@@ -365,34 +367,63 @@ function normalizeHeaderAndChrome() {
 
     new MutationObserver(() => {
       const sheet = document.getElementById('apk-settings-sheet');
-      if (!sheet || sheet.querySelector('#apk-open-brochure-row')) return;
+      if (!sheet) return;
       const anchor = sheet.querySelector('#apk-sheet-logout-btn') || sheet.querySelector('.apk-settings-list');
       if (!anchor || !anchor.parentElement) return;
-      const row = document.createElement('button');
-      row.id = 'apk-open-brochure-row';
-      row.type = 'button';
-      row.className = 'apk-batch-option';
-      row.style.cssText = 'width:100%;margin:8px 0 10px;';
-      row.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-          <span style="font-weight:800;font-size:13.5px;">Red Sapphire Brochure</span>
-          <span style="font-size:11.5px;opacity:0.72;font-weight:600;">Batch syllabus, plans &amp; timetable PDFs</span>
-        </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      `;
-      anchor.parentElement.insertBefore(row, anchor);
+
+      if (!sheet.querySelector('#apk-open-brochure-row')) {
+        const row = document.createElement('button');
+        row.id = 'apk-open-brochure-row';
+        row.type = 'button';
+        row.className = 'apk-batch-option';
+        row.style.cssText = 'width:100%;margin:8px 0 8px;';
+        row.innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <span style="font-weight:800;font-size:13.5px;">Red Sapphire Brochure</span>
+            <span style="font-size:11.5px;opacity:0.72;font-weight:600;">Batch syllabus, plans &amp; timetable PDFs</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        `;
+        anchor.parentElement.insertBefore(row, anchor);
+      }
+
+      if (!sheet.querySelector('#apk-ghost-toggle-row')) {
+        const gRow = document.createElement('button');
+        gRow.id = 'apk-ghost-toggle-row';
+        gRow.type = 'button';
+        gRow.className = 'apk-batch-option';
+        gRow.style.cssText = 'width:100%;margin:0 0 10px;';
+        const syncGhostLabel = () => {
+          const on = isGhostPetEnabled();
+          gRow.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+              <span style="font-weight:800;font-size:13.5px;">Pixel Ghost Pet</span>
+              <span style="font-size:11.5px;opacity:0.72;font-weight:600;">Tiny pixel buddy that sits &amp; plays on cards</span>
+            </div>
+            <span style="font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:${on ? 'var(--accent)' : 'var(--bg-subtle)'};color:${on ? '#fff' : 'var(--text-secondary)'};">${on ? 'ON' : 'OFF'}</span>
+          `;
+        };
+        syncGhostLabel();
+        gRow.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          setGhostPetEnabled(!isGhostPetEnabled());
+          syncGhostLabel();
+        });
+        anchor.parentElement.insertBefore(gRow, anchor);
+      }
     }).observe(document.body, { childList: true, subtree: true });
   }
 
-  // Shorten verbose top category switcher tab labels & hide number clutter
+  // Shorten verbose top category switcher tab labels & keep batch tab synced
+  const activeBatchShort = getBatchShortText(getActiveBatchValue());
   const shortTabLabels = {
     'sec-tab-master': 'Library',
-    'sec-tab-rb104': 'Red Sapphire',
+    'sec-tab-rb104': activeBatchShort,
     'test-tab-series': 'Test Series',
     'test-tab-qbank': 'Q-Bank',
-    'test-tab-rb104': 'Red Sapphire',
+    'test-tab-rb104': activeBatchShort,
     'vid-tab-all': 'All Subjects',
-    'vid-tab-rb103': 'Red Sapphire'
+    'vid-tab-rb103': activeBatchShort
   };
   Object.entries(shortTabLabels).forEach(([tabId, shortText]) => {
     const tabEl = document.getElementById(tabId);
@@ -500,13 +531,185 @@ function normalizeHeaderAndChrome() {
     if (sendOtpSpan) {
       sendOtpSpan.textContent = 'Get OTP';
     }
+
+    // Transparent Botanical Anatomical Lungs, Heart, Ribs & Violet Blossoms on right side
+    if (wrapper && !document.getElementById('apk-auth-botanical')) {
+      const bot = document.createElement('div');
+      bot.id = 'apk-auth-botanical';
+      bot.className = 'apk-auth-botanical';
+      bot.setAttribute('role', 'img');
+      bot.setAttribute('aria-label', 'Botanical Heart and Lungs illustration');
+      bot.innerHTML = `
+        <svg viewBox="0 0 360 390" fill="none" xmlns="http://www.w3.org/2000/svg" class="apk-botanical-svg">
+          <defs>
+            <linearGradient id="nnlStemGrad" x1="180" y1="30" x2="180" y2="360" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.72"/>
+              <stop offset="100%" stop-color="#5B3EA8" stop-opacity="0.88"/>
+            </linearGradient>
+            <linearGradient id="nnlHeartGrad" x1="145" y1="150" x2="225" y2="265" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.34"/>
+              <stop offset="55%" stop-color="#7C5CE0" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#F472B6" stop-opacity="0.28"/>
+            </linearGradient>
+            <linearGradient id="nnlLungGrad" x1="65" y1="120" x2="295" y2="290" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#C4B5FD" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.08"/>
+            </linearGradient>
+            <linearGradient id="nnlLeafGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6EE7B7" stop-opacity="0.82"/>
+              <stop offset="100%" stop-color="#34D399" stop-opacity="0.58"/>
+            </linearGradient>
+            <linearGradient id="nnlPetalGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#EDE9FE" stop-opacity="0.96"/>
+              <stop offset="55%" stop-color="#C4B5FD" stop-opacity="0.88"/>
+              <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.78"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Delicate Ribcage Bone Arcs (subtle medical anatomical frame) -->
+          <g class="bot-ribs" stroke="url(#nnlStemGrad)" stroke-linecap="round" opacity="0.36">
+            <path d="M180 76v228" stroke-width="2.2" stroke-dasharray="6 8"/>
+            <path d="M170 112c-46 2-82 22-86 48 16-8 46-12 78-6" stroke-width="2.4"/>
+            <path d="M190 112c46 2 82 22 86 48-16-8-46-12-78-6" stroke-width="2.4"/>
+            <path d="M168 154c-54 4-96 28-98 58 20-10 52-14 88-6" stroke-width="2.2"/>
+            <path d="M192 154c54 4 96 28 98 58-20-10-52-14-88-6" stroke-width="2.2"/>
+            <path d="M166 198c-48 8-82 32-80 60 18-10 44-14 72-8" stroke-width="1.9"/>
+            <path d="M194 198c48 8 82 32 80 60-18-10-44-14-72-8" stroke-width="1.9"/>
+          </g>
+
+          <!-- Breathing Lungs Silhouette & Bronchial Vine Branches -->
+          <g class="bot-lungs">
+            <path d="M168 118c-36 8-76 48-84 106-6 40 8 66 40 68 24 2 44-10 48-28V122c0-3-2-5-4-4Z" fill="url(#nnlLungGrad)" stroke="#7C5CE0" stroke-opacity="0.46" stroke-width="2"/>
+            <path d="M192 118c36 8 76 48 84 106 6 40-8 66-40 68-24 2-44-10-48-28V122c0-3 2-5 4-4Z" fill="url(#nnlLungGrad)" stroke="#7C5CE0" stroke-opacity="0.46" stroke-width="2"/>
+            <!-- Trachea Rings -->
+            <path d="M174 52v70M186 52v70M174 66h12M174 78h12M174 90h12M174 102h12" stroke="#6D28D9" stroke-opacity="0.52" stroke-width="2.1" stroke-linecap="round"/>
+            <!-- Bronchial Botanical Branches -->
+            <path d="M174 124c-26 14-48 38-64 78M150 144c-20 4-36 16-46 34M132 170c-16 14-24 32-26 52M152 178c-12 20-14 44-10 68" stroke="#7C5CE0" stroke-opacity="0.54" stroke-width="1.9" stroke-linecap="round"/>
+            <path d="M186 124c26 14 48 38 64 78M210 144c20 4 36 16 46 34M228 170c16 14 24 32 26 52M208 178c12 20 14 44 10 68" stroke="#7C5CE0" stroke-opacity="0.54" stroke-width="1.9" stroke-linecap="round"/>
+          </g>
+
+          <!-- Center Anatomical Heart with Coronary Floral Vine & Pulse -->
+          <g class="bot-heart">
+            <path d="M176 154c-4-20 8-34 22-36 6 12 4 24 0 34" stroke="#6D28D9" stroke-opacity="0.62" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M158 156c-12-10-26 2-26 18 0 28 24 54 50 74 28-14 52-42 52-68 0-18-14-32-30-26-10 4-16 12-20 20-6-8-14-12-26-18Z" fill="url(#nnlHeartGrad)" stroke="#5B3EA8" stroke-opacity="0.68" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M174 188c10 16 14 34 10 54M162 206c-10 12-12 22-8 34M194 202c12 8 20 20 22 32" stroke="#EC4899" stroke-opacity="0.48" stroke-width="1.8" stroke-linecap="round"/>
+          </g>
+
+          <!-- Botanical Stems & Leaves (swaying softly) -->
+          <g class="bot-foliage">
+            <path d="M114 176c-18-14-32-12-42-2 10 12 24 14 42 2Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M98 228c-22-6-36 6-40 20 16 4 32-4 40-20Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M248 164c18-14 34-10 42 2-12 12-26 12-42-2Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M262 224c24-4 38 8 40 22-16 4-32-6-40-22Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M168 118c-24-26-22-48-6-62 14 14 18 38 6 62Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M194 116c24-22 28-44 12-58-16 12-22 34-12 58Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M148 278c-20 10-30 28-24 44 18-6 28-22 24-44Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+            <path d="M214 274c20 12 28 30 20 46-18-8-26-24-20-46Z" fill="url(#nnlLeafGrad)" stroke="#10B981" stroke-opacity="0.45" stroke-width="1.4"/>
+          </g>
+
+          <!-- Blooming Violet & Blush Flowers -->
+          <g class="bot-flowers">
+            <!-- Top Trachea Crown Blossom -->
+            <g transform="translate(180 56)">
+              <circle cx="0" cy="-12" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="-7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="-11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="0" cy="0" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/>
+            </g>
+            <!-- Left Lung Blossom -->
+            <g transform="translate(104 196) scale(0.86)">
+              <circle cx="0" cy="-12" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="-7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="-11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="0" cy="0" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/>
+            </g>
+            <!-- Right Lung Blossom -->
+            <g transform="translate(258 188) scale(0.9)">
+              <circle cx="0" cy="-12" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="-7" cy="10" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="-11" cy="-3" r="8.5" fill="url(#nnlPetalGrad)"/>
+              <circle cx="0" cy="0" r="5" fill="#FDE68A" stroke="#F59E0B" stroke-width="1.4"/>
+            </g>
+            <!-- Small Buds -->
+            <circle cx="136" cy="134" r="5" fill="#F9A8D4" opacity="0.88"/>
+            <circle cx="228" cy="132" r="5" fill="#F9A8D4" opacity="0.88"/>
+            <circle cx="182" cy="276" r="5.5" fill="#C4B5FD" opacity="0.9"/>
+            <circle cx="82" cy="148" r="3.6" fill="#DDD6FE" opacity="0.86"/>
+            <circle cx="282" cy="252" r="3.8" fill="#FBCFE8" opacity="0.88"/>
+          </g>
+        </svg>
+        <div class="apk-botanical-sparks" aria-hidden="true"></div>
+      `;
+
+      const triggerBloom = () => {
+        bot.classList.remove('is-blooming');
+        void bot.offsetWidth;
+        bot.classList.add('is-blooming');
+        const sparksEl = bot.querySelector('.apk-botanical-sparks');
+        if (sparksEl) {
+          for (let i = 0; i < 6; i++) {
+            const p = document.createElement('span');
+            p.className = 'apk-petal-spark';
+            p.style.setProperty('--dx', `${(Math.random() - 0.5) * 90}px`);
+            p.style.setProperty('--dy', `${-24 - Math.random() * 58}px`);
+            p.style.left = `${35 + Math.random() * 30}%`;
+            p.style.top = `${35 + Math.random() * 30}%`;
+            sparksEl.appendChild(p);
+            setTimeout(() => p.remove(), 950);
+          }
+        }
+        setTimeout(() => bot.classList.remove('is-blooming'), 1100);
+      };
+
+      bot.addEventListener('pointerdown', triggerBloom);
+      bot.addEventListener('pointerenter', triggerBloom);
+      wrapper.appendChild(bot);
+    }
   }
 }
 
+function enforceAuthGuard() {
+  let token = localStorage.getItem('nnl_access_token');
+  if (token === 'GUEST_DEMO_TOKEN') {
+    localStorage.removeItem('nnl_access_token');
+    token = null;
+  }
+  const path = window.location.pathname || '/';
+  const isSubpage = /\/(all-videos|notes|tests)\.html$/i.test(path);
+  const explicitOut = sessionStorage.getItem('nnl_explicit_logout') === 'true';
+
+  if (isSubpage && (!token || explicitOut)) {
+    document.documentElement.style.visibility = 'hidden';
+    try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
+    window.location.replace('/');
+    return false;
+  }
+
+  if (!isSubpage && !token) {
+    document.body.classList.add('apk-is-auth');
+    document.getElementById('app-header')?.classList.add('hide');
+    document.getElementById('classroom-dashboard')?.classList.add('hide');
+    document.getElementById('auth-screen')?.classList.remove('hide');
+  }
+  return true;
+}
+
+window.addEventListener('pageshow', () => {
+  enforceAuthGuard();
+});
+
 function initApkShell() {
+  if (!enforceAuthGuard()) return;
   normalizeHeaderAndChrome();
   buildSettingsSheet();
   attachWaterDropMotion();
+  initGhostPet();
   stripEmojisAndShorten(document.body);
 
   // Observe dynamic renders cleanly (for emoji stripping + short button text)

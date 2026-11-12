@@ -7,13 +7,17 @@ const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
   ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
   : ['Red Sapphire (Hinglish)', 'Red Sapphire (English)'];
 
-let activeBatch = IS_HINGLISH_APK
-  ? 'Red Sapphire (Hinglish)'
-  : localStorage.getItem('nnl_active_batch');
+let activeBatch = localStorage.getItem('nnl_active_batch');
 if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
-  activeBatch = (activeBatch && !IS_HINGLISH_APK && activeBatch.toUpperCase().includes('ENGLISH'))
-    ? 'Red Sapphire (English)'
-    : 'Red Sapphire (Hinglish)';
+  if (activeBatch && activeBatch.toUpperCase().includes('ENGLISH')) {
+    activeBatch = 'Red Sapphire (English)';
+  } else if (activeBatch && activeBatch.toUpperCase().includes('BLUE')) {
+    activeBatch = 'Blue Sapphire (Hinglish)';
+  } else if (activeBatch && activeBatch.toUpperCase().includes('FAST')) {
+    activeBatch = 'Fast Track';
+  } else {
+    activeBatch = 'Red Sapphire (Hinglish)';
+  }
   localStorage.setItem('nnl_active_batch', activeBatch);
 }
 
@@ -25,11 +29,9 @@ let currentSection = urlParams.get('section') === 'rb104'
 let currentOpenItem = null; // { kind: 'series' | 'qbank' | 'rb104', data }
 let currentSubFilter = 'ALL';
 let searchQuery = '';
-let activeRbBatchId = IS_HINGLISH_APK
-  ? 103
-  : (Number(urlParams.get('batch')) === 104
-      ? 104
-      : (Number(urlParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch)));
+let activeRbBatchId = Number(urlParams.get('batch')) === 104
+  ? 104
+  : (Number(urlParams.get('batch')) === 103 ? 103 : getBatchIdFromName(activeBatch));
 let batch104State = getBatchBaselineState(activeRbBatchId);
 
 // CBT Quiz Runner State
@@ -182,9 +184,11 @@ function initHeaderAndDropdown() {
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      sessionStorage.setItem('nnl_explicit_logout', 'true');
       localStorage.removeItem('nnl_access_token');
       localStorage.removeItem('nnl_refresh_token');
-      window.location.href = '/';
+      try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
+      window.location.replace('/');
     });
   }
 
@@ -253,12 +257,14 @@ function updateRbToggleUi() {
   const isEng = activeRbBatchId === 104;
   if (badge) badge.textContent = isEng ? 'Batch 104 • English' : 'Batch 103 • Hinglish';
   if (b103) {
-    b103.style.background = !isEng ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.36), rgba(236, 72, 153, 0.28))' : 'transparent';
-    b103.style.borderColor = !isEng ? 'rgba(167, 139, 250, 0.45)' : 'transparent';
+    b103.style.background = !isEng ? 'linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 100%)' : 'transparent';
+    b103.style.color = !isEng ? '#FFFFFF' : 'var(--text-secondary)';
+    b103.style.borderColor = !isEng ? 'transparent' : 'var(--border-hairline)';
   }
   if (b104) {
-    b104.style.background = isEng ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.36), rgba(236, 72, 153, 0.28))' : 'transparent';
-    b104.style.borderColor = isEng ? 'rgba(167, 139, 250, 0.45)' : 'transparent';
+    b104.style.background = isEng ? 'linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 100%)' : 'transparent';
+    b104.style.color = isEng ? '#FFFFFF' : 'var(--text-secondary)';
+    b104.style.borderColor = isEng ? 'transparent' : 'var(--border-hairline)';
   }
 }
 
@@ -386,11 +392,9 @@ function renderCatalogGrid() {
 
   testsGrid.innerHTML = items.map(card => {
     const svg = getCategoryIconSvg(card.title);
-    const borderCss = card.kind === 'rb104' && card.highlight
-      ? 'border-color: rgba(244, 63, 94, 0.38);'
-      : (card.dim ? 'opacity: 0.76;' : '');
+    const borderCss = card.dim ? 'opacity: 0.76;' : '';
     return `
-      <div class="subject-card ${card.highlight ? 'curated-highlight' : ''}" data-kind="${card.kind}" data-id="${escapeHtml(card.id)}" style="${borderCss}">
+      <div class="subject-card" data-kind="${card.kind}" data-id="${escapeHtml(card.id)}" style="${borderCss}">
         <div class="subject-card-top">
           <div class="subject-card-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">${svg}</svg>
@@ -586,7 +590,7 @@ function renderTestRowHtml(t, metaSubLabel) {
   return `
     <div class="note-doc-card">
       <div class="note-doc-info">
-        <div class="note-doc-icon" style="${isBatch ? 'color:#fda4af; background:rgba(244,63,94,0.14); border-color:rgba(251,113,133,0.3);' : ''}">
+        <div class="note-doc-icon">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
@@ -1050,10 +1054,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.__nnlSelectBatch = (chosen) => {
     activeBatch = chosen;
     try { localStorage.setItem('nnl_active_batch', activeBatch); } catch {}
+    const clean = getCleanBatchName(activeBatch);
     const lbl = document.getElementById('current-batch-label');
-    if (lbl) lbl.textContent = getCleanBatchName(activeBatch);
-    if (statBatchName) statBatchName.textContent = getCleanBatchName(activeBatch);
-    setRbBatchId(getBatchIdFromName(activeBatch), true);
+    if (lbl) lbl.textContent = clean;
+    if (statBatchName) statBatchName.textContent = clean;
+    const rbTabLabel = document.querySelector('#test-tab-rb104 span:not(.section-mode-count)');
+    if (rbTabLabel) rbTabLabel.textContent = clean === 'Red Sapphire (English)' ? 'Red Sapphire Eng' : clean.replace(/\s*\(Hinglish\)$/i, '');
+    setRbBatchId(getBatchIdFromName(activeBatch), false);
   };
 
   // Support deep link from Notes page ("Attempt Test")
