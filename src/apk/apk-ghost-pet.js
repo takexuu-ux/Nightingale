@@ -5,16 +5,16 @@
 const STORAGE_KEY = 'nnl_apk_ghost_pet_enabled';
 
 const EMOTIONS = {
-  idle:    { blush: true,  mouth: 'tiny',  eyes: 'normal', bubble: '' },
-  happy:   { blush: true,  mouth: 'smile', eyes: 'happy',  bubble: 'Hi!' },
-  love:    { blush: true,  mouth: 'smile', eyes: 'heart',  bubble: '♥' },
-  excited: { blush: true,  mouth: 'open',  eyes: 'star',   bubble: 'Yay! ★' },
-  curious: { blush: false, mouth: 'oh',    eyes: 'wide',   bubble: 'Hmm?' },
-  spook:   { blush: false, mouth: 'boo',   eyes: 'wide',   bubble: 'EEK!' },
-  sleepy:  { blush: false, mouth: 'flat',  eyes: 'sleepy', bubble: 'zZz' },
-  shy:     { blush: true,  mouth: 'wavy',  eyes: 'shy',    bubble: '> <' },
-  proud:   { blush: true,  mouth: 'smirk', eyes: 'shades', bubble: 'Pro ★' },
-  care:    { blush: true,  mouth: 'smile', eyes: 'wink',   bubble: '+ Care' }
+  idle:    { blush: true,  mouth: 'tiny',  eyes: 'normal' },
+  happy:   { blush: true,  mouth: 'smile', eyes: 'happy' },
+  love:    { blush: true,  mouth: 'smile', eyes: 'heart' },
+  excited: { blush: true,  mouth: 'open',  eyes: 'star' },
+  curious: { blush: false, mouth: 'oh',    eyes: 'wide' },
+  spook:   { blush: false, mouth: 'boo',   eyes: 'wide' },
+  sleepy:  { blush: false, mouth: 'flat',  eyes: 'sleepy' },
+  shy:     { blush: true,  mouth: 'wavy',  eyes: 'shy' },
+  proud:   { blush: true,  mouth: 'smirk', eyes: 'shades' },
+  care:    { blush: true,  mouth: 'smile', eyes: 'wink' }
 };
 
 function renderNurseGhostSvg(emotionName = 'idle', { blink = false, sitting = false, frame = 0 } = {}) {
@@ -172,14 +172,8 @@ function renderNurseGhostSvg(emotionName = 'idle', { blink = false, sitting = fa
   `;
 }
 
-function renderBubbleHtml(emotionName) {
-  const text = EMOTIONS[emotionName]?.bubble;
-  if (!text) return '';
-  let cls = 'apk-ghost-bubble';
-  if (emotionName === 'love' || emotionName === 'shy') cls += ' is-love';
-  else if (emotionName === 'sleepy') cls += ' is-zzz';
-  else if (emotionName === 'excited' || emotionName === 'proud') cls += ' is-star';
-  return `<span class="${cls}">${text}</span>`;
+function renderBubbleHtml() {
+  return '';
 }
 
 export function isGhostPetEnabled() {
