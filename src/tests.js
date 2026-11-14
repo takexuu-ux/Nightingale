@@ -350,7 +350,7 @@ function renderCatalogGrid() {
       kind: 'series',
       id: s.id,
       title: s.title,
-      badge: s.badge,
+      badge: '', // Removed redundant "Core Series" text
       subtitle: s.subtitle,
       countLabel: `${s.count} Tests`,
       highlight: s.id === 'series-subject-wise' || s.id === 'series-pyq',
@@ -401,7 +401,7 @@ function renderCatalogGrid() {
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${escapeHtml(card.title)}</h3>
-            <div class="subject-card-badge"><span>${escapeHtml(card.badge)}</span></div>
+            ${card.badge ? `<div class="subject-card-badge"><span>${escapeHtml(card.badge)}</span></div>` : ''}
           </div>
         </div>
         <div class="subject-card-bottom">

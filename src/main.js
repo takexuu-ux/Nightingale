@@ -3266,13 +3266,7 @@ function renderClasses(classes) {
 function updateHeroGreeting() {
   const greetingEl = document.getElementById('apk-hero-greeting');
   if (!greetingEl) return;
-  const savedPhone = localStorage.getItem('nnl_phone') || '';
-  if (savedPhone) {
-    const masked = savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2');
-    greetingEl.textContent = `Welcome back, ${masked}`;
-  } else {
-    greetingEl.textContent = 'Welcome back, Scholar';
-  }
+  greetingEl.textContent = 'Welcome back, Scholar';
 }
 
 function renderContinueWatchingSection() {
@@ -3334,6 +3328,27 @@ window.__nnlRefreshWatchProgress = () => {
   renderContinueWatchingSection();
 };
 
+function scheduleNotificationForClass(c) {
+  try {
+    if (!window.AndroidVideoBridge || typeof window.AndroidVideoBridge.scheduleClassReminder !== 'function') return;
+    const startVal = c.start || c.startTime || '';
+    if (!startVal) return;
+    let startTimeMs = 0;
+    if (startVal.includes('T')) {
+      startTimeMs = new Date(startVal).getTime();
+    } else {
+      const dateStr = c.date || new Date().toISOString().split('T')[0];
+      startTimeMs = new Date(`${dateStr}T${startVal}`).getTime();
+    }
+    if (!isNaN(startTimeMs) && startTimeMs > Date.now()) {
+      const faculty = c.faculty ? (c.faculty.name || c.faculty.fullName || 'Faculty') : 'Faculty';
+      window.AndroidVideoBridge.scheduleClassReminder(String(c.id || Math.random()), c.title || 'Live Class', faculty, startTimeMs);
+    }
+  } catch (err) {
+    console.warn('Class reminder schedule error:', err);
+  }
+}
+
 // Helper function to create a class card element
 function createClassCard(c, isCurrentlyLive) {
   const title = c.title || c.topic || 'Live Session';
@@ -3363,7 +3378,7 @@ function createClassCard(c, isCurrentlyLive) {
     const recordingId = c.recordingId || c.recordings?.[0]?.id || '';
     if (recordingId) {
       buttonsHtml = `
-        <div style="margin-top: 1rem; width: 100%;">
+        <div style="margin-top: 0.85rem; width: 100%;">
           <button class="btn btn-primary" onclick="showCustomAlert('Recording is available on the NNL ONE app. Recording ID: ${recordingId}', 'Watch Recording')" style="width: 100%;">
             <span>Watch Recording</span>
           </button>
@@ -3371,7 +3386,7 @@ function createClassCard(c, isCurrentlyLive) {
       `;
     } else {
       buttonsHtml = `
-        <div style="margin-top: 1rem; width: 100%;">
+        <div style="margin-top: 0.85rem; width: 100%;">
           <button class="btn btn-secondary" disabled style="width: 100%;">
             <span>Recording Unavailable</span>
           </button>
@@ -3380,35 +3395,33 @@ function createClassCard(c, isCurrentlyLive) {
     }
   } else {
     if (c._hasEndedToday) {
-      // Ended: disabled button
       buttonsHtml = `
-        <div style="margin-top: 0.75rem; width: 100%;" class="zoom-action-container">
-          <button class="btn btn-secondary join-embedded-btn" disabled data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%; opacity: 0.5;">
+        <div style="margin-top: 0.85rem; width: 100%;" class="zoom-action-container">
+          <button class="btn btn-secondary join-embedded-btn" disabled data-class-id="${c.id}" style="width: 100%; opacity: 0.5;">
             <span>Class Ended</span>
           </button>
         </div>
       `;
     } else if (isCurrentlyLive) {
-      // Live: show join button
       buttonsHtml = `
-        <div style="margin-top: 0.75rem; width: 100%;" class="zoom-action-container">
+        <div style="margin-top: 0.85rem; width: 100%;" class="zoom-action-container">
           <button class="btn btn-zoom join-embedded-btn" data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
             <span>Join Live Classroom</span>
           </button>
         </div>
       `;
     } else {
-      // Upcoming: button shows date/time on click with red glow, auto-reverts after 2s
+      scheduleNotificationForClass(c);
       buttonsHtml = `
-        <div style="margin-top: 0.75rem; width: 100%;">
-          <button class="btn btn-secondary upcoming-info-btn" onclick="(function(btn){if(btn._busy)return;btn._busy=true;var sp=btn.querySelector('span');sp.textContent='${formattedTime.replace(/'/g, '\\&apos;').replace(/"/g, '&quot;')}';btn.style.outline='2px solid rgba(255,60,60,0.55)';btn.style.boxShadow='0 0 14px rgba(255,50,50,0.35)';btn.style.opacity='1';setTimeout(function(){sp.textContent='UPCOMING';btn.style.outline='';btn.style.boxShadow='';btn.style.opacity='0.65';btn._busy=false;},2000);})(this)" style="width:100%;opacity:0.65;cursor:pointer;font-size:0.78rem;letter-spacing:0.08em;transition:all 0.3s ease;">
-            <span>UPCOMING</span>
-          </button>
+        <div style="margin-top: 0.85rem; width: 100%;">
+          <div class="apk-upcoming-pill" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 14px;border-radius:12px;background:var(--bg-subtle);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:700;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Starts at ${formattedTime}</span>
+          </div>
         </div>
       `;
     }
   }
-
 
   const card = document.createElement('div');
   card.className = `glass-panel class-card ${isCurrentlyLive ? 'live-card-border' : ''}`;
@@ -3429,11 +3442,8 @@ function createClassCard(c, isCurrentlyLive) {
         <span>${instructor}</span>
       </div>
     </div>
-    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 0.5rem;">
-      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.35rem; line-height: 1.25;">${title}</h3>
-    </div>
-    <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 0.9rem; margin-bottom: 0.5rem; width: 100%;">
-      <span class="class-date-badge" style="margin-bottom: 0; font-size: 0.68rem; opacity: 0.65;">${formattedTime}</span>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 0.35rem;">
+      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.25rem; line-height: 1.3;">${title}</h3>
     </div>
     ${buttonsHtml}
   `;

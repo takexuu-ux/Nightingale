@@ -12,6 +12,11 @@ import {
 
 function detectSystemDark() {
   try {
+    const saved = localStorage.getItem('nnl_app_theme');
+    if (saved === 'dark') return true;
+    if (saved === 'light') return false;
+  } catch (_) {}
+  try {
     if (typeof window.__NNL_SYSTEM_DARK__ === 'boolean') {
       return window.__NNL_SYSTEM_DARK__;
     }
@@ -28,12 +33,28 @@ function detectSystemDark() {
 
 export function applySystemTheme(isDark) {
   const mode = isDark ? 'dark' : 'light';
+  try {
+    localStorage.setItem('nnl_app_theme', mode);
+  } catch (_) {}
   document.documentElement.setAttribute('data-theme', mode);
   try {
     if (window.AndroidThemeBridge && typeof window.AndroidThemeBridge.setDarkMode === 'function') {
       window.AndroidThemeBridge.setDarkMode(isDark);
     }
   } catch {}
+  syncThemeButtons(isDark);
+}
+
+function syncThemeButtons(isDark) {
+  if (typeof isDark !== 'boolean') {
+    isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+  const lightBtn = document.getElementById('apk-theme-light-btn');
+  const darkBtn = document.getElementById('apk-theme-dark-btn');
+  if (lightBtn && darkBtn) {
+    lightBtn.classList.toggle('active', !isDark);
+    darkBtn.classList.toggle('active', isDark);
+  }
 }
 
 window.__nnlApplySystemTheme = applySystemTheme;
@@ -144,15 +165,7 @@ function syncPetSelectionUI() {
 
   const toggleBtn = panel.querySelector('#apk-pet-toggle-btn');
   if (toggleBtn) {
-    toggleBtn.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-        <span style="font-weight:800;font-size:13.5px;">Companion Pet</span>
-        <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Playful companion sitting beside cards</span>
-      </div>
-      <span style="font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:${petEnabled ? 'var(--accent)' : 'var(--bg-subtle)'};color:${petEnabled ? '#fff' : 'var(--text-secondary)'};">
-        ${petEnabled ? 'ON' : 'OFF'}
-      </span>
-    `;
+    toggleBtn.classList.toggle('is-on', petEnabled);
   }
 
   panel.querySelectorAll('.apk-pet-card').forEach(card => {
@@ -168,21 +181,34 @@ function buildSidePanel() {
   panel.id = 'apk-side-panel';
   panel.className = 'hide';
 
-  const phone = localStorage.getItem('nnl_phone') || 'Nightingale';
   const availablePets = getAvailablePets();
 
   panel.innerHTML = `
     <div class="apk-side-backdrop" aria-hidden="true"></div>
-    <div class="apk-side-drawer" role="dialog" aria-label="Settings & Profile">
+    <div class="apk-side-drawer" role="dialog" aria-label="Settings & Menu">
       <div class="apk-side-header">
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="apk-logo-badge" style="width:34px;height:34px;border-radius:10px;">${NIGHTINGALE_MARK_SVG}</div>
           <div>
-            <div class="apk-side-title">Settings &amp; Profile</div>
-            <div style="font-size:12px;color:var(--text-secondary);">${phone}</div>
+            <div class="apk-side-title">Settings &amp; Menu</div>
           </div>
         </div>
         <button type="button" id="apk-side-close-btn" class="apk-icon-btn" aria-label="Close">${NAV_ICONS.close}</button>
+      </div>
+
+      <!-- Theme Switcher at Top -->
+      <div>
+        <div class="apk-side-section-title">Appearance</div>
+        <div class="apk-theme-switcher-bar">
+          <button type="button" id="apk-theme-light-btn" class="apk-theme-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span>Light</span>
+          </button>
+          <button type="button" id="apk-theme-dark-btn" class="apk-theme-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span>Dark</span>
+          </button>
+        </div>
       </div>
 
       <!-- Quick Action: Switch Batch -->
@@ -199,17 +225,18 @@ function buildSidePanel() {
 
       <!-- Companion Pet Selector -->
       <div>
-        <div class="apk-side-section-title">Companion Pet</div>
-        <button type="button" id="apk-pet-toggle-btn" class="apk-batch-option" style="width:100%;margin-bottom:10px;">
-          <!-- Dynamically populated in syncPetSelectionUI -->
-        </button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span class="apk-side-section-title" style="margin:0;">Companion Pet</span>
+          <button type="button" id="apk-pet-toggle-btn" class="apk-switch-btn" aria-label="Toggle Companion Pet">
+            <span class="apk-switch-thumb"></span>
+          </button>
+        </div>
         <div class="apk-pet-grid">
           ${availablePets.map(p => `
             <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
               <span class="apk-pet-card-check">✓</span>
               <div class="apk-pet-card-icon" style="background-image: url('./pets/${p.id}/spritesheet.webp');"></div>
               <span class="apk-pet-card-name">${p.name}</span>
-              <span class="apk-pet-card-tag">${p.tag}</span>
             </div>
           `).join('')}
         </div>
@@ -220,29 +247,23 @@ function buildSidePanel() {
         <div class="apk-side-section-title">Academic Resources</div>
         <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;">
           <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-            <span style="font-weight:800;font-size:13.5px;">Red Sapphire Brochure</span>
-            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Batch syllabus, plans &amp; timetable PDFs</span>
+            <span style="font-weight:800;font-size:13.5px;">Brochure &amp; Timetable</span>
+            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Batch syllabus, schedule &amp; PDFs</span>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
-      <!-- Theme Switcher -->
-      <div>
-        <div class="apk-side-section-title">Appearance</div>
-        <div style="display:flex;gap:8px;width:100%;">
-          <button type="button" id="apk-theme-light-btn" class="filter-chip" style="flex:1;justify-content:center;">Light</button>
-          <button type="button" id="apk-theme-dark-btn" class="filter-chip" style="flex:1;justify-content:center;">Dark</button>
-        </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:16px;">
+        <!-- Sign Out (Prominent full-width button right above update) -->
+        <button id="apk-sheet-logout-btn" type="button" class="apk-signout-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sign Out</span>
+        </button>
+
+        <!-- OTA & Updates slot -->
+        <div id="apk-sheet-ota-slot"></div>
       </div>
-
-      <!-- OTA & Updates -->
-      <div id="apk-sheet-ota-slot"></div>
-
-      <!-- Sign Out -->
-      <button id="apk-sheet-logout-btn" class="btn btn-ghost" style="width:100%;margin-top:auto;color:var(--danger-ink);border-color:var(--danger-border);background:var(--danger-bg);">
-        Sign Out
-      </button>
     </div>
   `;
 
@@ -274,7 +295,7 @@ function buildSidePanel() {
   // Switch Batch inside Side Panel
   panel.querySelector('#apk-side-batch-btn')?.addEventListener('click', () => {
     closeSidePanel();
-    document.querySelector('.apk-batch-pill-btn')?.click();
+    openBatchSwitcherModal();
   });
 
   // Brochure inside Side Panel
@@ -293,18 +314,17 @@ function buildSidePanel() {
 
   // Sign out
   panel.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
-    sessionStorage.setItem('nnl_explicit_logout', 'true');
-    const legacyLogout = document.getElementById('logout-btn');
-    if (legacyLogout) {
-      legacyLogout.click();
-    } else {
-      localStorage.removeItem('nnl_access_token');
-      localStorage.removeItem('nnl_refresh_token');
-      try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
-      window.location.replace('/');
-    }
-    closeSidePanel();
+    try { sessionStorage.setItem('nnl_explicit_logout', 'true'); } catch (_) {}
+    try { localStorage.removeItem('nnl_access_token'); } catch (_) {}
+    try { localStorage.removeItem('nnl_refresh_token'); } catch (_) {}
+    try { localStorage.removeItem('nnl_phone'); } catch (_) {}
+    try { localStorage.removeItem('nnl_user_phone'); } catch (_) {}
+    try { localStorage.removeItem('nnl_user_id'); } catch (_) {}
+    try { window.AndroidAuthBridge?.clearSession?.(); } catch (_) {}
+    window.location.replace('/');
   });
+
+  syncThemeButtons();
 
   // Edge Swipe Gestures (Swipe left from right edge to open; swipe right to close)
   let touchStartX = 0;
@@ -499,6 +519,22 @@ function normalizeHeaderAndChrome() {
     }
   });
 
+  // Clean 3-line Hamburger Menu Button on Top-Left of App Header
+  const appHeader = document.getElementById('app-header');
+  if (appHeader && !document.getElementById('apk-hamburger-btn')) {
+    const hamBtn = document.createElement('button');
+    hamBtn.id = 'apk-hamburger-btn';
+    hamBtn.className = 'apk-icon-btn apk-hamburger-btn';
+    hamBtn.type = 'button';
+    hamBtn.setAttribute('aria-label', 'Open Menu & Settings');
+    hamBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+    hamBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSidePanel();
+    });
+    appHeader.insertBefore(hamBtn, appHeader.firstChild);
+  }
+
   // Settings button on header rail/dock
   const rightActions = document.querySelector('.header-right-actions');
   if (rightActions && !document.getElementById('apk-settings-open-btn')) {
@@ -514,27 +550,6 @@ function normalizeHeaderAndChrome() {
     rightActions.appendChild(sBtn);
   }
 
-  // Top Page Bar side panel trigger button (accessible directly on phone topbars)
-  const attachTopMenuTrigger = () => {
-    const topbars = document.querySelectorAll('#apk-live-topbar, .notes-hero-header');
-    topbars.forEach(tb => {
-      if (!tb.querySelector('.apk-side-toggle-btn')) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'apk-icon-btn apk-side-toggle-btn';
-        btn.setAttribute('aria-label', 'Open Settings & Profile');
-        btn.innerHTML = NAV_ICONS.settings;
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openSidePanel();
-        });
-        tb.appendChild(btn);
-      }
-    });
-  };
-  attachTopMenuTrigger();
-  new MutationObserver(attachTopMenuTrigger).observe(document.body, { childList: true, subtree: true });
-
   if (!window.__nnlBatchClickBound) {
     window.__nnlBatchClickBound = true;
     document.addEventListener('click', (e) => {
@@ -545,19 +560,6 @@ function normalizeHeaderAndChrome() {
         return;
       }
     });
-  }
-
-  // Minimal Live page topbar with batch pill
-  const dash = document.getElementById('classroom-dashboard');
-  if (dash && !document.getElementById('apk-live-topbar')) {
-    const bar = document.createElement('div');
-    bar.id = 'apk-live-topbar';
-    bar.className = 'apk-page-topbar';
-    bar.innerHTML = `
-      <h1 class="apk-editorial-title">Live Classes</h1>
-      <button type="button" id="apk-batch-pill" class="apk-batch-pill-btn" aria-label="Switch Batch"></button>
-    `;
-    dash.insertBefore(bar, dash.firstChild);
   }
 
   syncBatchPills();
@@ -760,14 +762,19 @@ function animateVisibleCards(root) {
 }
 
 function attachPullToRefresh() {
-  if (document.getElementById('apk-ptr-pill')) return;
+  if (document.getElementById('apk-ptr-disc')) return;
 
-  const pill = document.createElement('div');
-  pill.id = 'apk-ptr-pill';
-  pill.innerHTML = `<span class="apk-ptr-icon">↓</span><span class="apk-ptr-text">Pull to refresh</span>`;
-  document.body.appendChild(pill);
+  const disc = document.createElement('div');
+  disc.id = 'apk-ptr-disc';
+  disc.className = 'apk-ptr-disc';
+  disc.innerHTML = `
+    <svg class="apk-ptr-spinner" viewBox="0 0 24 24" fill="none">
+      <circle class="apk-ptr-bg" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity="0.18"/>
+      <circle class="apk-ptr-arc" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="56" stroke-dashoffset="40"/>
+    </svg>
+  `;
+  document.body.appendChild(disc);
 
-  const textEl = pill.querySelector('.apk-ptr-text');
   let startY = 0;
   let pulling = false;
   let refreshing = false;
@@ -799,29 +806,32 @@ function attachPullToRefresh() {
     if (dy <= 6 || getScrollTop() > 4) {
       if (pullDist > 0) {
         pullDist = 0;
-        pill.classList.remove('visible', 'ready');
-        pill.style.transform = '';
+        disc.classList.remove('visible', 'ready');
+        disc.style.transform = '';
       }
       return;
     }
-    pullDist = Math.min(110, (dy - 6) * 0.55);
-    if (pullDist > 12) {
-      pill.classList.add('visible');
-      const ready = pullDist >= 56;
-      pill.classList.toggle('ready', ready);
-      textEl.textContent = ready ? 'Release to refresh' : 'Pull to refresh';
-      pill.style.transform = `translate3d(-50%, ${Math.round(pullDist)}px, 0)`;
+    pullDist = Math.min(85, (dy - 6) * 0.45);
+    if (pullDist > 10) {
+      disc.classList.add('visible');
+      const ready = pullDist >= 48;
+      disc.classList.toggle('ready', ready);
+      const arc = disc.querySelector('.apk-ptr-arc');
+      if (arc) {
+        const offset = Math.max(8, 56 - (pullDist / 48) * 44);
+        arc.style.strokeDashoffset = offset;
+      }
+      disc.style.transform = `translate3d(-50%, ${Math.round(pullDist)}px, 0) rotate(${Math.round(pullDist * 4)}deg)`;
     }
   }, { passive: true });
 
   const endPull = () => {
     if (!pulling) return;
     pulling = false;
-    if (pullDist >= 56 && !refreshing) {
+    if (pullDist >= 48 && !refreshing) {
       refreshing = true;
-      pill.classList.add('visible', 'ready', 'spinning');
-      textEl.textContent = 'Refreshing...';
-      pill.style.transform = `translate3d(-50%, 38px, 0)`;
+      disc.classList.add('visible', 'ready', 'spinning');
+      disc.style.transform = `translate3d(-50%, 34px, 0)`;
 
       const refBtn = document.getElementById('refetch-btn') ||
         document.getElementById('videos-refetch-btn') ||
@@ -835,13 +845,13 @@ function attachPullToRefresh() {
       setTimeout(() => {
         refreshing = false;
         pullDist = 0;
-        pill.classList.remove('visible', 'ready', 'spinning');
-        pill.style.transform = '';
-      }, 950);
+        disc.classList.remove('visible', 'ready', 'spinning');
+        disc.style.transform = '';
+      }, 700);
     } else {
       pullDist = 0;
-      pill.classList.remove('visible', 'ready');
-      pill.style.transform = '';
+      disc.classList.remove('visible', 'ready');
+      disc.style.transform = '';
     }
   };
   window.addEventListener('touchend', endPull, { passive: true });

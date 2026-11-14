@@ -9,7 +9,7 @@ const DESKTOP_APK = 'C:/Users/Rajit/Desktop/Red Sapphire Hinglish.apk';
 const GH_TOKEN = process.env.GITHUB_TOKEN || '';
 const REPO_PUSH_URL = GH_TOKEN
   ? `https://takexuu-ux:${GH_TOKEN}@github.com/takexuu-ux/Nightingale.git`
-  : 'origin';
+  : 'https://github.com/takexuu-ux/Nightingale.git';
 const OTA_TMP = 'C:/Users/Rajit/.gemini/antigravity/brain/a6e17b33-e713-4506-b729-09d2f1ca6f14/scratch/ota_stage';
 
 const args = process.argv.slice(2);

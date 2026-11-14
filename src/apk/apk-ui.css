@@ -37,6 +37,7 @@
 
 :root {
   --bg-canvas: #EBF3FF;
+  --bg-canvas-grad: radial-gradient(130% 90% at 50% 0%, #FFFFFF 0%, #F3F7FF 48%, #EBF2FD 100%);
   --bg-elevated: #FFFFFF;
   --bg-subtle: #F4F7FF;
   --bg-tint: #EFE9FF;
@@ -85,6 +86,7 @@
 
 [data-theme="dark"] {
   --bg-canvas: #0B1020;
+  --bg-canvas-grad: radial-gradient(140% 90% at 50% -10%, #171C2E 0%, #0F1322 50%, #080B15 100%);
   --bg-elevated: #161C2E;
   --bg-subtle: #1D243A;
   --bg-tint: rgba(141, 116, 229, 0.18);
@@ -142,14 +144,14 @@ body {
   max-width: 100%;
   min-height: 100vh;
   overflow-x: clip;
-  background-color: #F8F9FC;
-  background-image: none;
+  background: var(--bg-canvas-grad) !important;
+  background-attachment: fixed !important;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.28s var(--fluid-ease), color 0.22s var(--fluid-ease);
+  transition: color 0.22s var(--fluid-ease);
 }
 
 body.apk-is-auth {
@@ -2872,14 +2874,13 @@ body:not(.apk-is-auth) {
   }
 }
 
-/* ── Chibi Nurse Ghost Pet ── */
-/* ── Codex Companion Pet System (6 Pets) ── */
+/* ── Codex Companion Pet System (Compact 34px Sprite) ── */
 #apk-companion-pet {
   position: fixed;
   left: 0;
   top: 0;
-  width: 58px;
-  height: 60px;
+  width: 38px;
+  height: 42px;
   z-index: 9400;
   display: flex;
   flex-direction: column;
@@ -2899,22 +2900,22 @@ body:not(.apk-is-auth) {
 }
 
 .apk-pet-sprite {
-  width: 52px;
-  height: 56.33px;
-  background-size: 416px auto;
+  width: 34px;
+  height: 36.8px;
+  background-size: 272px auto;
   background-repeat: no-repeat;
-  background-position: calc(-1 * var(--col, 0) * 52px) calc(-1 * var(--row, 0) * 56.33px);
-  filter: drop-shadow(0 6px 14px rgba(91, 62, 168, 0.26));
+  background-position: calc(-1 * var(--col, 0) * 34px) calc(-1 * var(--row, 0) * 36.8px);
+  filter: drop-shadow(0 4px 10px rgba(91, 62, 168, 0.22));
   image-rendering: -webkit-optimize-contrast;
   transition: transform 0.12s ease;
 }
 
 .apk-pet-shadow {
-  width: 32px;
-  height: 4.5px;
+  width: 22px;
+  height: 3.5px;
   border-radius: 99px;
   background: rgba(75, 48, 143, 0.22);
-  margin-top: -3px;
+  margin-top: -2px;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -3511,55 +3512,47 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   }
 }
 
-/* ── Pull-Down-to-Refresh Top Pill ── */
-#apk-ptr-pill {
+/* ── Apple iOS Style Pull-Down-to-Refresh Activity Disc ── */
+#apk-ptr-disc {
   position: fixed;
   top: max(8px, env(safe-area-inset-top));
   left: 50%;
   transform: translate3d(-50%, -64px, 0);
   z-index: 9600;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-float);
-  color: var(--accent-ink);
-  font-size: 12px;
-  font-weight: 700;
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1.2, 0.36, 1);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  color: var(--accent);
 }
 
-#apk-ptr-pill.visible {
+#apk-ptr-disc.visible {
   opacity: 1;
 }
 
-#apk-ptr-pill.ready {
-  background: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 100%);
-  color: #FFFFFF;
-  border-color: transparent;
+#apk-ptr-disc.ready {
+  color: var(--accent-bright);
 }
 
-#apk-ptr-pill .apk-ptr-icon {
-  display: inline-block;
-  font-size: 13px;
-  transition: transform 0.22s ease;
+.apk-ptr-spinner {
+  width: 22px;
+  height: 22px;
 }
 
-#apk-ptr-pill.ready .apk-ptr-icon {
-  transform: rotate(180deg);
-}
-
-#apk-ptr-pill.spinning .apk-ptr-icon {
+#apk-ptr-disc.spinning .apk-ptr-spinner {
   animation: apkPtrSpin 0.7s linear infinite;
 }
 
 @keyframes apkPtrSpin {
-  to { transform: rotate(540deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -3593,7 +3586,9 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   position: relative;
   width: min(380px, 92vw);
   height: 100%;
-  background: var(--bg-surface);
+  background: rgba(14, 18, 30, 0.98) !important;
+  backdrop-filter: blur(36px) !important;
+  -webkit-backdrop-filter: blur(36px) !important;
   border-left: 1px solid var(--border-hairline);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.45);
   display: flex;
@@ -3603,6 +3598,10 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   overflow-y: auto;
   padding: max(16px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
   gap: 16px;
+}
+
+[data-theme="light"] .apk-side-drawer {
+  background: rgba(255, 255, 255, 0.98) !important;
 }
 
 #apk-side-panel.hide .apk-side-drawer {
@@ -3632,11 +3631,77 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   margin-bottom: 8px;
 }
 
+/* ── Theme Switcher Segmented Bar at Top of Side Panel ── */
+.apk-theme-switcher-bar {
+  display: flex;
+  background: var(--bg-subtle);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border-hairline);
+  gap: 4px;
+}
+
+.apk-theme-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apk-theme-btn.active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Companion Pet iOS Switch Toggle ── */
+.apk-switch-btn {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 99px;
+  background: var(--border-strong);
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: background-color 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.apk-switch-btn.active {
+  background: #10B981;
+}
+
+.apk-switch-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 99px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(0);
+}
+
+.apk-switch-btn.active .apk-switch-thumb {
+  transform: translateX(18px);
+}
+
 /* ── Companion Pet Grid Selector in Settings / Side Panel ── */
 .apk-pet-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   width: 100%;
 }
 
@@ -3644,8 +3709,8 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 8px;
-  border-radius: 14px;
+  padding: 8px 4px;
+  border-radius: 12px;
   background: var(--bg-elevated);
   border: 1.5px solid var(--border-hairline);
   cursor: pointer;
@@ -3665,41 +3730,38 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 .apk-pet-card-icon {
-  width: 44px;
-  height: 48px;
-  background-size: 352px auto;
+  width: 32px;
+  height: 34px;
+  background-size: 256px auto;
   background-repeat: no-repeat;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   image-rendering: -webkit-optimize-contrast;
 }
 
 .apk-pet-card-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text-primary);
   text-align: center;
-}
-
-.apk-pet-card-tag {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .apk-pet-card-check {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 16px;
-  height: 16px;
+  top: 4px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
   border-radius: 99px;
   background: var(--accent);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
   opacity: 0;
   transform: scale(0.6);
   transition: all 0.2s ease;
@@ -3710,14 +3772,92 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   transform: scale(1);
 }
 
+/* ── Full Width Red Sign Out Button ── */
+.apk-signout-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  color: #EF4444;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apk-signout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #EF4444;
+}
+
+/* ── Top-Left Hamburger Menu Button on App Header ── */
+.apk-hamburger-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-hairline) !important;
+  color: var(--text-primary) !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  margin-right: 8px !important;
+  transition: background-color 0.2s ease, transform 0.15s ease !important;
+}
+
+.apk-hamburger-btn:hover {
+  background: var(--bg-subtle) !important;
+  transform: scale(1.04) !important;
+}
+
+/* ── Complete Suppression of Dead Settings Buttons & Tweaks ── */
+#tweak-panel-toggle-btn,
+.tweak-panel-toggle-btn,
+.tweaks-toggle-btn,
+.cyber-tweaks-widget,
+#cyber-tweaks-widget,
+.apk-side-toggle-btn {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
+/* ── Dynamic Pill for Subject Card Badges (Hugging Text) ── */
+.subject-card-badge,
+.subject-card .subject-card-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  padding: 3px 10px !important;
+  border-radius: 99px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
-   TESTS RESPONSIVE MULTI-COLUMN GRID (Full Width Utilization)
+   TESTS RESPONSIVE MULTI-COLUMN GRID (Compact & Full Width Utilization)
    ═══════════════════════════════════════════════════════════════════════════ */
 .test-cards-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)) !important;
-  gap: 12px !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
   width: 100% !important;
+}
+
+@media (min-width: 680px) {
+  .test-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+  }
 }
 
 #tests-list-container.notes-doc-list,
@@ -3729,24 +3869,54 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 .test-cards-grid .note-doc-card {
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
+  align-items: center !important;
   justify-content: space-between !important;
-  height: 100% !important;
-  padding: 14px 16px !important;
-  border-radius: 18px !important;
-  gap: 12px !important;
+  height: auto !important;
+  min-height: auto !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  gap: 10px !important;
+}
+
+.test-cards-grid .note-doc-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.test-cards-grid .note-doc-title {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  line-height: 1.3 !important;
+  margin-bottom: 4px !important;
+}
+
+.test-cards-grid .note-doc-badges {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  align-items: center !important;
 }
 
 .test-cards-grid .note-doc-actions {
-  width: 100% !important;
+  width: auto !important;
   display: flex !important;
-  gap: 8px !important;
-  margin-top: auto !important;
+  flex-direction: row !important;
+  gap: 6px !important;
+  margin-top: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .test-cards-grid .note-doc-actions button {
-  flex: 1 1 0 !important;
-  justify-content: center !important;
+  flex: 0 0 auto !important;
+  padding: 6px 12px !important;
+  font-size: 11.5px !important;
+  border-radius: 99px !important;
+  height: 32px !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
