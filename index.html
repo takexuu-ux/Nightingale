@@ -12,6 +12,11 @@
             t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
           }
           document.documentElement.setAttribute('data-theme', t);
+          if (localStorage.getItem('nnl_access_token')) {
+            var s = document.createElement('style');
+            s.textContent = '#app-preloader{display:none!important;}';
+            document.head.appendChild(s);
+          }
         } catch(e) {}
       })();
     </script>
@@ -23,6 +28,9 @@
     <title>Nightingale Classroom - Premium Nursing Portal</title>
   </head>
   <body>
+    <!-- Ambient Vector Landscape Background Layer (Image 4 Aesthetic) -->
+    <div id="apk-ambient-bg"></div>
+
     <!-- Nightingale Static Background Image -->
     <div id="nightingale-bg-container" class="nightingale-bg-container">
       <div class="bg-drift-wrapper">
@@ -66,12 +74,12 @@
       <!-- Primary Top Navigation Tabs -->
       <nav class="header-nav-tabs">
         <div class="nav-tabs" style="margin: 0 !important;">
-          <button id="tab-live" class="nav-tab active">
+          <button id="tab-live" class="nav-tab active" title="Home">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="2"></circle>
-              <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
-            <span>LIVE CLASSES</span>
+            <span>HOME</span>
           </button>
 
           <button id="tab-videos" class="nav-tab" title="Open Recorded Videos">
@@ -243,6 +251,28 @@
             <img src="/botanical_heart_lungs_login_1794442142381.jpg" class="apk-home-hero-bg" alt="" aria-hidden="true" />
             <div class="apk-home-hero-content">
               <h2 id="apk-hero-greeting" class="apk-home-title">Welcome back, Scholar</h2>
+            </div>
+          </div>
+
+          <!-- Horizontal Date Selector for Lectures (Image 2 Style) -->
+          <div id="apk-date-picker-wrap" class="apk-date-picker-wrap">
+            <div id="apk-date-picker-bar" class="apk-date-picker-bar"></div>
+            <div id="apk-date-status-bar" class="apk-date-status-bar hide">
+              <span id="apk-selected-date-label" class="apk-date-heading">Lectures</span>
+              <span id="apk-selected-date-count" class="apk-date-count-pill">0</span>
+            </div>
+            <!-- Empty Lecture State with subtle gradient box (User request: "if no lectures just tell no add some gradient") -->
+            <div id="apk-date-empty-state" class="apk-date-empty-state hide">
+              <div class="apk-empty-icon-wrap">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <h4 class="apk-empty-title">No Lectures on This Date</h4>
+              <p class="apk-empty-sub">There were no live sessions or scheduled classes on this day.</p>
             </div>
           </div>
 

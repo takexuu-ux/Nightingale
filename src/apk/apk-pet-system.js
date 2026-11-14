@@ -54,10 +54,11 @@ export function setActivePetId(petId) {
 
 export function isPetEnabled() {
   try {
-    return localStorage.getItem(STORAGE_ENABLED_KEY) !== 'false';
-  } catch {
-    return true;
-  }
+    const val = localStorage.getItem(STORAGE_ENABLED_KEY);
+    if (val === 'false') return false;
+    if (val === 'true') return true;
+  } catch {}
+  return false; // Default OFF until user explicitly enables
 }
 
 export function setPetEnabled(enabled) {
@@ -65,7 +66,11 @@ export function setPetEnabled(enabled) {
     localStorage.setItem(STORAGE_ENABLED_KEY, enabled ? 'true' : 'false');
   } catch {}
   const el = document.getElementById('apk-companion-pet');
-  if (el) el.style.display = enabled ? 'flex' : 'none';
+  if (el) {
+    el.style.display = enabled ? 'flex' : 'none';
+    el.classList.toggle('hide', !enabled);
+  }
+  document.body.classList.toggle('apk-pet-disabled', !enabled);
 }
 
 export function initPetSystem() {
@@ -291,73 +296,79 @@ export function initPetSystem() {
 
   // Animation frame loop
   const tick = (now) => {
-    if (isPetEnabled()) {
-      const modalOpen = document.querySelector('#quiz-viewer:not(.hide), #pdf-modal:not(.hide), #recording-viewer:not(.hide)');
-      if (modalOpen) {
-        root.style.opacity = '0.24';
-        root.style.pointerEvents = 'none';
+    if (!isPetEnabled()) {
+      if (root.style.display !== 'none') {
+        root.style.display = 'none';
+        root.classList.add('hide');
+      }
+      requestAnimationFrame(tick);
+      return;
+    }
+
+    if (root.style.display !== 'flex') {
+      root.style.display = 'flex';
+      root.classList.remove('hide');
+    }
+
+    const modalOpen = document.querySelector('#quiz-viewer:not(.hide), #pdf-modal:not(.hide), #recording-viewer:not(.hide)');
+    if (modalOpen) {
+      root.style.opacity = '0.24';
+      root.style.pointerEvents = 'none';
+    } else {
+      root.style.opacity = '1';
+      root.style.pointerEvents = 'auto';
+    }
+
+    if (!isDragging) {
+      const synced = activeSpot && activeSpot.compute();
+      if (synced) {
+        targetX = synced.x;
+        targetY = synced.y;
+        preferredFacing = synced.facing;
+        spotSitting = Boolean(synced.sitting);
       } else {
-        root.style.opacity = '1';
-        root.style.pointerEvents = 'auto';
+        pickNextTarget();
       }
 
-      if (!isDragging) {
-        const synced = activeSpot && activeSpot.compute();
-        if (synced) {
-          targetX = synced.x;
-          targetY = synced.y;
-          preferredFacing = synced.facing;
-          spotSitting = Boolean(synced.sitting);
-        } else {
-          pickNextTarget();
-        }
+      const dx = targetX - x;
+      const dy = targetY - y;
+      const dist = Math.hypot(dx, dy);
 
-        const dx = targetX - x;
-        const dy = targetY - y;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist > 1.5) {
-          x += dx * 0.026;
-          y += dy * 0.026;
-          if (Math.abs(dx) > 0.8) facing = dx >= 0 ? 1 : -1;
-        } else {
-          facing = preferredFacing;
-        }
-      }
-
-      const isMoving = isDragging || Math.hypot(targetX - x, targetY - y) > 3.5;
-      const isSitting = !isMoving && spotSitting;
-
-      // Determine active sprite row
-      if (animRowOverrideUntil > 0 && now < animRowOverrideUntil) {
-        // keep override
+      if (dist > 1.5) {
+        x += dx * 0.026;
+        y += dy * 0.026;
+        if (Math.abs(dx) > 0.8) facing = dx >= 0 ? 1 : -1;
       } else {
-        animRowOverrideUntil = 0;
-        if (isMoving) {
-          animRow = 1; // walk/run
-        } else if (isSitting) {
-          animRow = 6; // sit/rest
-        } else {
-          animRow = 0; // idle
-        }
+        facing = preferredFacing;
       }
+    }
 
-      // Step frame column (0 to 7) at calm ~4 fps breathing rate
-      if (now - lastFrameTime > 240) {
-        lastFrameTime = now;
-        animCol = (animCol + 1) % 8;
-      }
+    const isMoving = isDragging || Math.hypot(targetX - x, targetY - y) > 3.5;
 
-      const bob = isDragging ? 0 : (isSitting ? Math.sin(now * 0.0016) * 0.8 : Math.sin(now * 0.0022) * 1.2);
+    // Determine active sprite row: continuous steady idle breathing on row 0
+    if (animRowOverrideUntil > 0 && now < animRowOverrideUntil) {
+      // keep override
+    } else {
+      animRowOverrideUntil = 0;
+      animRow = isMoving ? 1 : 0;
+    }
 
-      root.style.transform = `translate3d(${x.toFixed(1)}px, ${(y + bob).toFixed(1)}px, 0)`;
-      spriteEl.style.transform = `scaleX(${facing})`;
+    // Step frame column (0 to 7) at calm ~5 fps breathing rate
+    if (now - lastFrameTime > 200) {
+      lastFrameTime = now;
+      animCol = (animCol + 1) % 8;
       spriteEl.style.setProperty('--col', animCol);
       spriteEl.style.setProperty('--row', animRow);
-
-      shadowEl.style.transform = `scale(${isSitting ? 1.05 : 0.82})`;
-      shadowEl.style.opacity = isSitting ? '0.24' : '0.14';
     }
+
+    const bob = isDragging ? 0 : Math.sin(now * 0.002) * 0.8;
+
+    root.style.transform = `translate3d(${x.toFixed(1)}px, ${(y + bob).toFixed(1)}px, 0)`;
+    spriteEl.style.transform = `scaleX(${facing})`;
+
+    shadowEl.style.transform = `scale(${isMoving ? 0.82 : 1.05})`;
+    shadowEl.style.opacity = isMoving ? '0.14' : '0.22';
+
     requestAnimationFrame(tick);
   };
 

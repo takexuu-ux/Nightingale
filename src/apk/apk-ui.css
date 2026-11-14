@@ -36,25 +36,27 @@
 }
 
 :root {
-  --bg-canvas: #EBF3FF;
-  --bg-canvas-grad: radial-gradient(130% 90% at 50% 0%, #FFFFFF 0%, #F3F7FF 48%, #EBF2FD 100%);
+  --bg-canvas: #F6F4FD;
+  --bg-canvas-grad: linear-gradient(180deg, #FFFFFF 0%, #F5F1FD 45%, #EBE5FA 100%);
   --bg-elevated: #FFFFFF;
-  --bg-subtle: #F4F7FF;
+  --bg-subtle: #F3EEFA;
   --bg-tint: #EFE9FF;
-  --bg-glass: rgba(255, 255, 255, 0.84);
+  --bg-glass: rgba(255, 255, 255, 0.86);
   --bg-glass-strong: rgba(255, 255, 255, 0.94);
 
-  --text-primary: #2D1F4F;
-  --text-secondary: #5E557A;
+  --text-primary: #2C2448;
+  --text-secondary: #5F567F;
   --text-muted: #8E84AC;
 
-  --accent: #5B3EA8;
-  --accent-bright: #7050C9;
+  --accent: #6C4FD6;
+  --accent-bright: #8468E8;
   --accent-glow: #8D74E5;
   --accent-ink: #4E329A;
-  --accent-soft: rgba(91, 62, 168, 0.14);
-  --accent-grad: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 55%, #8D74E5 100%);
-  --accent-soft-grad: linear-gradient(145deg, rgba(91, 62, 168, 0.08), rgba(141, 116, 229, 0.04));
+  --accent-soft: rgba(108, 79, 214, 0.14);
+  --accent-grad: linear-gradient(135deg, #6C4FD6 0%, #8468E8 55%, #9D84F5 100%);
+  --accent-soft-grad: linear-gradient(145deg, rgba(108, 79, 214, 0.08), rgba(157, 132, 245, 0.04));
+  --accent-peach: #F0C69E;
+  --accent-peach-text: #2B2344;
 
   --success-bg: #ECFDF3;
   --success-ink: #067647;
@@ -65,13 +67,13 @@
   --danger-ink: #B43F37;
   --danger-border: #F1C7C7;
 
-  --border-hairline: #E2EAF7;
-  --border-subtle: #E2EAF7;
+  --border-hairline: rgba(108, 79, 214, 0.09);
+  --border-subtle: rgba(108, 79, 214, 0.14);
   --border-strong: #D1DDF5;
   --shadow-card: 0 2px 10px rgba(37, 68, 128, 0.06), 0 1px 2px rgba(21, 17, 35, 0.04);
   --shadow-soft: 0 4px 14px rgba(37, 68, 128, 0.08);
   --shadow-float: 0 14px 34px rgba(31, 49, 92, 0.12), 0 2px 8px rgba(91, 62, 168, 0.08);
-  --ripple-color: rgba(91, 62, 168, 0.16);
+  --ripple-color: rgba(108, 79, 214, 0.16);
 
   --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -85,25 +87,29 @@
 }
 
 [data-theme="dark"] {
-  --bg-canvas: #0B1020;
-  --bg-canvas-grad: radial-gradient(140% 90% at 50% -10%, #171C2E 0%, #0F1322 50%, #080B15 100%);
-  --bg-elevated: #161C2E;
-  --bg-subtle: #1D243A;
-  --bg-tint: rgba(141, 116, 229, 0.18);
-  --bg-glass: rgba(18, 24, 42, 0.84);
-  --bg-glass-strong: rgba(23, 29, 49, 0.94);
+  --bg-canvas: #2B2544;
+  --bg-canvas-grad: linear-gradient(180deg, #3A325A 0%, #292344 45%, #1D1833 100%);
+  --bg-elevated: #372E4F;
+  --bg-subtle: #2B2342;
+  --bg-tint: rgba(154, 132, 255, 0.16);
+  --bg-glass: rgba(55, 46, 79, 0.80);
+  --bg-glass-strong: rgba(55, 46, 79, 0.92);
+  --card-bg: rgba(55, 46, 79, 0.82);
+  --card-bg-hover: rgba(70, 59, 100, 0.9);
 
-  --text-primary: #F8FAFF;
-  --text-secondary: #A9B4CE;
-  --text-muted: #7984A2;
+  --text-primary: #FFFFFF;
+  --text-secondary: #C2BCDB;
+  --text-muted: #8E85A8;
 
-  --accent: #987CE9;
-  --accent-bright: #AD8DE4;
-  --accent-glow: #8D74E5;
-  --accent-ink: #C9B8FF;
-  --accent-soft: rgba(152, 124, 233, 0.22);
-  --accent-grad: linear-gradient(135deg, #6F4FC4 0%, #8D74E5 100%);
-  --accent-soft-grad: linear-gradient(145deg, rgba(141, 116, 229, 0.16), rgba(91, 62, 168, 0.06));
+  --accent: #9A84FF;
+  --accent-bright: #B3A0FF;
+  --accent-glow: #8B74FE;
+  --accent-ink: #D4C9FF;
+  --accent-soft: rgba(154, 132, 255, 0.22);
+  --accent-grad: linear-gradient(135deg, #7C5CE0 0%, #9A84FF 100%);
+  --accent-soft-grad: linear-gradient(145deg, rgba(154, 132, 255, 0.16), rgba(91, 62, 168, 0.06));
+  --accent-peach: #F0C69E;
+  --accent-peach-text: #241D35;
 
   --success-bg: rgba(18, 140, 74, 0.18);
   --success-ink: #6EE7B7;
@@ -114,9 +120,9 @@
   --danger-ink: #FCA5A5;
   --danger-border: rgba(248, 113, 113, 0.32);
 
-  --border-hairline: rgba(167, 189, 236, 0.14);
-  --border-subtle: rgba(167, 189, 236, 0.14);
-  --border-strong: rgba(167, 189, 236, 0.26);
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
   --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.32);
   --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.36);
   --shadow-float: 0 18px 40px rgba(0, 0, 0, 0.56);
@@ -144,7 +150,8 @@ body {
   max-width: 100%;
   min-height: 100vh;
   overflow-x: clip;
-  background: var(--bg-canvas-grad) !important;
+  background-color: var(--bg-canvas) !important;
+  background-image: var(--bg-canvas-grad) !important;
   background-attachment: fixed !important;
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -154,21 +161,35 @@ body {
   transition: color 0.22s var(--fluid-ease);
 }
 
-body.apk-is-auth {
-  background-color: #FAF9FF;
-  background-image: linear-gradient(160deg, #FFFFFF 0%, #FAF8FF 56%, #F3EFFD 100%);
-  background-attachment: fixed;
-}
-
 [data-theme="dark"] body {
-  background-color: #0B0D13;
-  background-image: none;
+  background-color: var(--bg-canvas) !important;
+  background-image: var(--bg-canvas-grad) !important;
+  background-attachment: fixed !important;
 }
 
-[data-theme="dark"] body.apk-is-auth {
-  background-color: #0D0F16;
-  background-image: linear-gradient(160deg, #0B0D13 0%, #13111E 100%);
-  background-attachment: fixed;
+/* Ambient Vector Landscape Background Layer (Image 4 Aesthetic) */
+#apk-ambient-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  opacity: 0.38;
+  transition: opacity 0.3s ease, background-image 0.3s ease;
+}
+
+[data-theme="dark"] #apk-ambient-bg {
+  background-image: url('/bg-dark.svg');
+  opacity: 0.42;
+}
+
+[data-theme="light"] #apk-ambient-bg {
+  background-image: url('/bg-light.svg');
+  opacity: 0.30;
 }
 
 .hide {
@@ -2874,13 +2895,21 @@ body:not(.apk-is-auth) {
   }
 }
 
-/* ── Codex Companion Pet System (Compact 34px Sprite) ── */
+/* ── Codex Companion Pet System (Guaranteed OFF & Zero Flicker) ── */
+body.apk-pet-disabled #apk-companion-pet,
+#apk-companion-pet.hide {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
 #apk-companion-pet {
   position: fixed;
   left: 0;
   top: 0;
   width: 38px;
-  height: 42px;
+  height: 44px;
   z-index: 9400;
   display: flex;
   flex-direction: column;
@@ -2900,14 +2929,15 @@ body:not(.apk-is-auth) {
 }
 
 .apk-pet-sprite {
-  width: 34px;
-  height: 36.8px;
-  background-size: 272px auto;
+  width: 36px;
+  height: 44px;
+  background-size: 288px 352px;
   background-repeat: no-repeat;
-  background-position: calc(-1 * var(--col, 0) * 34px) calc(-1 * var(--row, 0) * 36.8px);
+  background-position: calc(-1 * var(--col, 0) * 36px) calc(-1 * var(--row, 0) * 44px);
   filter: drop-shadow(0 4px 10px rgba(91, 62, 168, 0.22));
   image-rendering: -webkit-optimize-contrast;
-  transition: transform 0.12s ease;
+  will-change: transform, background-position;
+  backface-visibility: hidden;
 }
 
 .apk-pet-shadow {
@@ -2956,32 +2986,38 @@ body:not(.apk-is-auth) {
   100% { transform: translateY(0) scale(1, 1); }
 }
 
-/* ── Compact / Mobile + Portrait Tablet Floating Bottom Island Dock ── */
+/* ── Floating Bottom Island Dock with Apple Glassmorphism & Refined Curves ── */
 @media (max-width: 767px), (orientation: portrait) {
   #apk-ota-banner {
     bottom: 84px !important;
   }
 
   .app-header {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    top: auto;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    width: max-content;
-    max-width: calc(100vw - 24px);
-    margin: 0;
-    height: 54px;
-    flex-direction: row;
-    padding: 4px;
-    height: 48px;
-    border-right: none;
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
-    gap: 0;
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: auto !important;
+    bottom: max(14px, env(safe-area-inset-bottom)) !important;
+    width: max-content !important;
+    max-width: calc(100vw - 28px) !important;
+    margin: 0 !important;
+    height: 52px !important;
+    flex-direction: row !important;
+    padding: 5px 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-radius: 20px !important; /* Refined squircle, NOT 999px pill */
+    background: rgba(16, 20, 36, 0.76) !important; /* Real Glassmorphism */
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    gap: 6px !important;
+    z-index: 8500 !important;
+  }
+
+  [data-theme="light"] .app-header {
+    background: rgba(255, 255, 255, 0.82) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 14px 34px rgba(37, 68, 128, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
   }
 
   .header-logo {
@@ -2998,25 +3034,30 @@ body:not(.apk-is-auth) {
     padding: 0 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    flex-direction: row;
-    justify-content: center;
-    gap: 4px;
-    width: auto;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: auto !important;
   }
 
   .nav-tab {
-    flex: 0 0 auto;
-    width: 52px;
-    min-width: 52px;
-    min-height: 40px;
-    height: 40px;
-    padding: 0;
-    border-radius: 999px;
-    gap: 0;
+    flex: 0 0 auto !important;
+    width: 54px !important;
+    min-width: 54px !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    border-radius: 12px !important; /* Refined squircle, NOT 999px pill */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
   }
 
-  /* No double lining: right actions (settings & refresh) hidden from phone bottom dock */
-  .header-right-actions {
+  /* No options/settings or refresh in bottom dock: dock has ONLY the 4 navigation tabs */
+  .header-right-actions,
+  .nav-tab-refresh-btn,
+  .app-header .apk-hamburger-btn {
     display: none !important;
   }
 
@@ -3557,13 +3598,14 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SLIDE-OUT SIDE PANEL (Settings, Switch Batch, Pet Selector, Brochure)
+   Opens from the LEFT side with sleek compact dimensions & curved outer corners
    ═══════════════════════════════════════════════════════════════════════════ */
 #apk-side-panel {
   position: fixed;
   inset: 0;
   z-index: 9700;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start !important; /* Opens from LEFT side */
   pointer-events: auto;
   transition: opacity 0.28s ease, visibility 0.28s ease;
 }
@@ -3584,28 +3626,33 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 .apk-side-drawer {
   position: relative;
-  width: min(380px, 92vw);
+  width: min(300px, 80vw) !important; /* Compact & small */
+  max-width: 310px !important;
   height: 100%;
   background: rgba(14, 18, 30, 0.98) !important;
   backdrop-filter: blur(36px) !important;
   -webkit-backdrop-filter: blur(36px) !important;
-  border-left: 1px solid var(--border-hairline);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.45);
+  border-right: 1px solid var(--border-hairline) !important;
+  border-left: none !important;
+  border-radius: 0 24px 24px 0 !important; /* Curved outer corners */
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.45) !important;
   display: flex;
   flex-direction: column;
   transform: translate3d(0, 0, 0);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
-  padding: max(16px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
-  gap: 16px;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+  gap: 12px !important;
 }
 
 [data-theme="light"] .apk-side-drawer {
   background: rgba(255, 255, 255, 0.98) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 10px 0 34px rgba(37, 68, 128, 0.12) !important;
 }
 
 #apk-side-panel.hide .apk-side-drawer {
-  transform: translate3d(100%, 0, 0);
+  transform: translate3d(-100%, 0, 0) !important; /* Slides out to the LEFT */
 }
 
 .apk-side-header {
@@ -3617,7 +3664,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 .apk-side-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--text-primary);
 }
@@ -3795,20 +3842,25 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   border-color: #EF4444;
 }
 
-/* ── Top-Left Hamburger Menu Button on App Header ── */
+/* ── Top-Left Fixed Floating Hamburger Menu Button (NOT in bottom island) ── */
 .apk-hamburger-btn {
+  position: fixed !important;
+  top: max(14px, env(safe-area-inset-top)) !important;
+  left: 16px !important;
+  z-index: 8900 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 12px !important;
-  background: var(--bg-elevated) !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+  background: var(--bg-glass-strong) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
   border: 1px solid var(--border-hairline) !important;
   color: var(--text-primary) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18) !important;
   cursor: pointer !important;
-  flex-shrink: 0 !important;
-  margin-right: 8px !important;
   transition: background-color 0.2s ease, transform 0.15s ease !important;
 }
 
@@ -3817,7 +3869,22 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   transform: scale(1.04) !important;
 }
 
-/* ── Complete Suppression of Dead Settings Buttons & Tweaks ── */
+/* ── Smooth Page Transition (Zero Flickers or Jerks) ── */
+main#app,
+.main-content,
+.notes-page-container {
+  animation: apkFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes apkFadeIn {
+  from { opacity: 0.85; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Suppression of Dead Elements & Old Background Overlays ── */
+.nightingale-bg-container,
+#nightingale-bg-container,
+.nightingale-bg-image,
 #tweak-panel-toggle-btn,
 .tweak-panel-toggle-btn,
 .tweaks-toggle-btn,
@@ -4086,6 +4153,182 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   background: var(--bg-elevated);
   border-color: var(--accent);
   transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HORIZONTAL DATE SELECTOR BAR & EMPTY STATE (Image 2 Style)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.apk-date-picker-wrap {
+  width: 100%;
+  margin: 8px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.apk-date-picker-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.apk-date-picker-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.apk-date-pill {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 66px;
+  border-radius: 22px; /* Apple pill curve */
+  background: var(--bg-glass-strong);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 8px 0 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.apk-date-pill:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.apk-date-pill.has-lecture::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.apk-date-pill.active {
+  background: #1A152E !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  transform: scale(1.04);
+}
+
+[data-theme="light"] .apk-date-pill.active {
+  background: #2D2248 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 20px rgba(45, 34, 72, 0.24) !important;
+}
+
+.apk-date-pill.active.has-lecture::before {
+  background: #FFFFFF !important;
+}
+
+.apk-date-pill-day {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.apk-date-pill.active .apk-date-pill-day {
+  opacity: 0.95;
+}
+
+.apk-date-pill-num {
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 2px;
+  line-height: 1.1;
+}
+
+/* Date Status / Selected Day Header */
+.apk-date-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-top: 2px;
+}
+
+.apk-date-heading {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.apk-date-count-pill {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(154, 132, 255, 0.18);
+  color: var(--accent);
+  border: 1px solid rgba(154, 132, 255, 0.28);
+}
+
+/* Empty Lecture State with Subtle Glowing Gradient Box */
+.apk-date-empty-state {
+  width: 100%;
+  padding: 34px 20px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(154, 132, 255, 0.14) 0%, rgba(240, 198, 158, 0.09) 50%, rgba(55, 46, 79, 0.32) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  margin: 10px 0 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+[data-theme="light"] .apk-date-empty-state {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 241, 253, 0.85) 50%, rgba(240, 198, 158, 0.2) 100%);
+  border: 1px solid rgba(108, 79, 214, 0.14);
+  box-shadow: 0 8px 24px rgba(45, 34, 72, 0.08);
+}
+
+.apk-empty-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(154, 132, 255, 0.18);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.apk-empty-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.apk-empty-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  max-width: 290px;
+  margin: 0;
+  line-height: 1.4;
 }
 
 /* ── Continue Watching Section on Home ── */

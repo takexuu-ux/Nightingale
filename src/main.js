@@ -3042,6 +3042,115 @@ function doesClassMatchBatch(c, activeBatch) {
 }
 
 
+// Horizontal Date Selector for Lectures on Home Screen (Image 2 style)
+function renderHomeDateCalendar(poolClasses) {
+  const pickerBar = document.getElementById('apk-date-picker-bar');
+  const statusBar = document.getElementById('apk-date-status-bar');
+  const dateLabel = document.getElementById('apk-selected-date-label');
+  const dateCount = document.getElementById('apk-selected-date-count');
+  const emptyState = document.getElementById('apk-date-empty-state');
+  if (!pickerBar) return;
+
+  pickerBar.innerHTML = '';
+
+  const now = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Rolling 17-day window: past 8 days, today, next 8 days
+  const dates = [];
+  for (let i = -8; i <= 8; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + i);
+    dates.push(d);
+  }
+
+  function getClassesForDate(targetDate) {
+    const targetStr = targetDate.toDateString();
+    return poolClasses.filter(c => {
+      try {
+        const start = parseApiDate(c.start || c.startTime || '');
+        return !isNaN(start.getTime()) && start.toDateString() === targetStr;
+      } catch (e) {
+        return false;
+      }
+    }).sort((a, b) => {
+      const aT = parseApiDate(a.start || a.startTime || '').getTime();
+      const bT = parseApiDate(b.start || b.startTime || '').getTime();
+      return aT - bT;
+    });
+  }
+
+  function selectDate(targetDate, targetPill) {
+    pickerBar.querySelectorAll('.apk-date-pill').forEach(p => p.classList.remove('active'));
+    if (targetPill) targetPill.classList.add('active');
+
+    const dayClasses = getClassesForDate(targetDate);
+    const isToday = targetDate.toDateString() === now.toDateString();
+    const formattedDate = `${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
+    const fullHeading = isToday ? `Today's Lectures (${formattedDate})` : `${dayNames[targetDate.getDay()]}, ${formattedDate}`;
+
+    if (statusBar && dateLabel && dateCount) {
+      statusBar.classList.remove('hide');
+      dateLabel.textContent = fullHeading;
+      dateCount.textContent = `${dayClasses.length} ${dayClasses.length === 1 ? 'Lecture' : 'Lectures'}`;
+    }
+
+    classListContainer.innerHTML = '';
+
+    if (dayClasses.length > 0) {
+      if (emptyState) emptyState.classList.add('hide');
+      dayClasses.forEach(c => {
+        const start = parseApiDate(c.start || c.startTime || '');
+        const end = c.end || c.endTime ? parseApiDate(c.end || c.endTime) : new Date(start.getTime() + 2 * 3600000);
+        const isLiveNow = now >= start && now <= end;
+        const isStartingSoon = start > now && (start - now) <= 30 * 60 * 1000;
+        classListContainer.appendChild(createClassCard(c, isLiveNow, isStartingSoon));
+      });
+    } else {
+      if (emptyState) {
+        emptyState.classList.remove('hide');
+        const emptySub = emptyState.querySelector('.apk-empty-sub');
+        if (emptySub) {
+          emptySub.textContent = isToday 
+            ? 'No live classes scheduled for today. Select past or upcoming dates above to review lectures.' 
+            : `No lectures were scheduled on ${dayNames[targetDate.getDay()]}, ${formattedDate}.`;
+        }
+      }
+    }
+  }
+
+  let todayPill = null;
+  dates.forEach(d => {
+    const isToday = d.toDateString() === now.toDateString();
+    const dayClasses = getClassesForDate(d);
+    const hasLecture = dayClasses.length > 0;
+
+    const pill = document.createElement('div');
+    pill.className = `apk-date-pill ${isToday ? 'active' : ''} ${hasLecture ? 'has-lecture' : ''}`;
+    pill.innerHTML = `
+      <span class="apk-date-pill-day">${dayNames[d.getDay()]}</span>
+      <span class="apk-date-pill-num">${d.getDate()}</span>
+    `;
+
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectDate(d, pill);
+      pill.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+    });
+
+    if (isToday) todayPill = pill;
+    pickerBar.appendChild(pill);
+  });
+
+  if (todayPill) {
+    selectDate(now, todayPill);
+    setTimeout(() => {
+      todayPill.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }, 150);
+  }
+}
+
 // Render the class cards
 function renderClasses(classes) {
   if (activeTab === 'subjects' || activeTab === 'notes' || activeTab === 'tests') return; // Do not render classes if we are in notes/tests/subject library
@@ -3098,18 +3207,37 @@ function renderClasses(classes) {
     const pulseDot = hasLiveClass ? ' <span class="tab-live-pulse-dot"></span>' : '';
     tabLive.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="2"></circle>
-        <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      <span>LIVE CLASSES</span>${pulseDot}
+      <span>HOME</span>${pulseDot}
     `;
   }
 
-  const upcomingOrPastClasses = [];
-
   if (activeTab === 'live') {
-    // Show: currently live, scheduled for today, or starting within the next 4 hours
     const now = new Date();
+
+    // 1. Live Now Section (shows only if classes are running right now)
+    const currentlyLive = poolForLive.filter(c => {
+      const startVal = c.start || c.startTime || '';
+      const endVal = c.end || c.endTime || '';
+      if (!startVal || !endVal) return false;
+      try {
+        const start = parseApiDate(startVal);
+        const end = parseApiDate(endVal);
+        return !isNaN(start.getTime()) && !isNaN(end.getTime()) && now >= start && now <= end;
+      } catch (e) { return false; }
+    });
+
+    if (currentlyLive.length > 0) {
+      liveNowSection.classList.remove('hide');
+      currentlyLive.forEach(c => liveNowContainer.appendChild(createClassCard(c, true, false)));
+    } else {
+      liveNowSection.classList.add('hide');
+    }
+
+    // 2. Interactive Horizontal Date Selector (Image 2 style with past & future dates)
+    renderHomeDateCalendar(poolForLive);
     const soonMs = 30 * 60 * 1000;
     const futureLimitMs = 4 * 60 * 60 * 1000;
 

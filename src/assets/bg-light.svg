@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <!-- Sky Dawn / Morning Pastel Gradient -->
+    <linearGradient id="skyGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C7B8F5"/>
+      <stop offset="35%" stop-color="#DDD2FB"/>
+      <stop offset="65%" stop-color="#EBE3FD"/>
+      <stop offset="85%" stop-color="#F7EFFB"/>
+      <stop offset="100%" stop-color="#FFF8F4"/>
+    </linearGradient>
+
+    <!-- Morning Sun Halo & Glow -->
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF3E0" stop-opacity="1"/>
+      <stop offset="45%" stop-color="#FFE0B2" stop-opacity="0.85"/>
+      <stop offset="80%" stop-color="#FFD180" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FFCC80" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunCore" cx="42%" cy="40%" r="52%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#FFF5E5"/>
+      <stop offset="100%" stop-color="#FFE0B2"/>
+    </radialGradient>
+
+    <!-- Mountain Layers Gradients (Soft Lavender / Violet Mist) -->
+    <linearGradient id="mtnGradLight1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C9B8EB" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#A894D4"/>
+    </linearGradient>
+
+    <linearGradient id="mtnGradLight2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9C85C8"/>
+      <stop offset="100%" stop-color="#7F65B0"/>
+    </linearGradient>
+
+    <linearGradient id="mtnGradLight3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7B61AC"/>
+      <stop offset="100%" stop-color="#5E4491"/>
+    </linearGradient>
+
+    <linearGradient id="mtnGradLight4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#543B85"/>
+      <stop offset="100%" stop-color="#3C2569"/>
+    </linearGradient>
+
+    <linearGradient id="mtnGradLightFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#341E5D"/>
+      <stop offset="100%" stop-color="#1E0E3B"/>
+    </linearGradient>
+
+    <!-- Ambient Mist Gradient -->
+    <linearGradient id="mistGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#ECE3FC" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sky Canvas -->
+  <rect width="1080" height="1920" fill="url(#skyGradLight)"/>
+
+  <!-- Morning Sun -->
+  <circle cx="640" cy="820" r="230" fill="url(#sunGlow)"/>
+  <circle cx="640" cy="820" r="125" fill="url(#sunCore)"/>
+
+  <!-- Soft Morning Clouds / Light Bands -->
+  <path d="M0,740 Q280,720 540,750 T1080,730 L1080,820 L0,820 Z" fill="#F1E8FD" opacity="0.6"/>
+  <path d="M0,810 Q320,790 620,830 T1080,800 L1080,900 L0,900 Z" fill="#E4D6FA" opacity="0.5"/>
+
+  <!-- Mountain Layer 1 -->
+  <path d="M-20,960 L120,870 L310,930 L480,840 L690,920 L890,830 L1040,890 L1100,940 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight1)"/>
+
+  <!-- Soft Mist between Layer 1 & 2 -->
+  <rect y="860" width="1080" height="220" fill="url(#mistGradLight)"/>
+
+  <!-- Mountain Layer 2 -->
+  <path d="M-20,1060 L180,950 L420,1040 L620,930 L840,1020 L1020,950 L1100,1010 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight2)"/>
+
+  <!-- Mountain Layer 3 -->
+  <path d="M-20,1190 L140,1080 L360,1160 L590,1060 L780,1140 L970,1070 L1100,1150 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight3)"/>
+
+  <!-- Mountain Layer 4 -->
+  <path d="M-20,1340 L190,1210 L440,1310 L680,1200 L910,1290 L1100,1220 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight4)"/>
+
+  <!-- Mountain Layer 5 (Foreground) -->
+  <path d="M-20,1490 L0,1460 L180,1360 L380,1520 L610,1400 L850,1560 L1080,1410 L1100,1430 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLightFront)"/>
+
+  <!-- Ground Floor -->
+  <rect y="1720" width="1080" height="200" fill="#15082B"/>
+</svg>

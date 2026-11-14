@@ -70,6 +70,7 @@ try {
 const NIGHTINGALE_MARK_SVG = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="46" cy="11.5" r="3.2" fill="#E9DFFF"/></svg>';
 
 const NAV_ICONS = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
   live: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>',
   videos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
   notes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
@@ -254,7 +255,7 @@ function buildSidePanel() {
         </button>
       </div>
 
-      <div style="margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:16px;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
         <!-- Sign Out (Prominent full-width button right above update) -->
         <button id="apk-sheet-logout-btn" type="button" class="apk-signout-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -326,7 +327,7 @@ function buildSidePanel() {
 
   syncThemeButtons();
 
-  // Edge Swipe Gestures (Swipe left from right edge to open; swipe right to close)
+  // Edge Swipe Gestures (Swipe right from left edge to open; swipe left to close)
   let touchStartX = 0;
   let touchStartY = 0;
   window.addEventListener('touchstart', (e) => {
@@ -342,12 +343,12 @@ function buildSidePanel() {
     const dy = e.changedTouches[0].clientY - touchStartY;
     if (Math.abs(dy) > 70) return;
 
-    // Swipe left from right edge (startX > window.innerWidth - 35) opens side panel
-    if (dx < -60 && touchStartX > window.innerWidth - 45) {
+    // Swipe right from left edge (startX < 50) opens side panel
+    if (dx > 55 && touchStartX < 50) {
       openSidePanel();
     }
-    // Swipe right inside open side panel closes it
-    else if (dx > 70 && !panel.classList.contains('hide')) {
+    // Swipe left inside open side panel closes it
+    else if (dx < -60 && !panel.classList.contains('hide')) {
       closeSidePanel();
     }
   }, { passive: true });
@@ -474,9 +475,9 @@ function openBatchSwitcherModal() {
 }
 
 function normalizeHeaderAndChrome() {
-  // Replace nav tab icons + crisp 1-word labels
+  // Replace nav tab icons + crisp 1-word labels (Tab 1 is HOME)
   const tabs = [
-    { id: 'tab-live', icon: NAV_ICONS.live, label: 'Live' },
+    { id: 'tab-live', icon: NAV_ICONS.home, label: 'Home' },
     { id: 'tab-videos', icon: NAV_ICONS.videos, label: 'Videos' },
     { id: 'tab-notes', icon: NAV_ICONS.notes, label: 'Notes' },
     { id: 'tab-tests', icon: NAV_ICONS.tests, label: 'Tests' }
@@ -519,35 +520,19 @@ function normalizeHeaderAndChrome() {
     }
   });
 
-  // Clean 3-line Hamburger Menu Button on Top-Left of App Header
-  const appHeader = document.getElementById('app-header');
-  if (appHeader && !document.getElementById('apk-hamburger-btn')) {
+  // Clean 3-line Hamburger Menu Button placed at Top-Left of Screen (NOT in bottom island)
+  if (!document.getElementById('apk-hamburger-btn')) {
     const hamBtn = document.createElement('button');
     hamBtn.id = 'apk-hamburger-btn';
     hamBtn.className = 'apk-icon-btn apk-hamburger-btn';
     hamBtn.type = 'button';
     hamBtn.setAttribute('aria-label', 'Open Menu & Settings');
-    hamBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+    hamBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
     hamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       openSidePanel();
     });
-    appHeader.insertBefore(hamBtn, appHeader.firstChild);
-  }
-
-  // Settings button on header rail/dock
-  const rightActions = document.querySelector('.header-right-actions');
-  if (rightActions && !document.getElementById('apk-settings-open-btn')) {
-    const sBtn = document.createElement('button');
-    sBtn.id = 'apk-settings-open-btn';
-    sBtn.className = 'apk-icon-btn';
-    sBtn.setAttribute('aria-label', 'Settings');
-    sBtn.innerHTML = `${NAV_ICONS.settings}<span id="apk-settings-dot" class="apk-update-dot hide"></span>`;
-    sBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openSidePanel();
-    });
-    rightActions.appendChild(sBtn);
+    document.body.appendChild(hamBtn);
   }
 
   if (!window.__nnlBatchClickBound) {
@@ -860,6 +845,11 @@ function attachPullToRefresh() {
 
 function initApkShell() {
   document.body.classList.add('apk-shell-active');
+  if (!document.getElementById('apk-ambient-bg')) {
+    const amb = document.createElement('div');
+    amb.id = 'apk-ambient-bg';
+    document.body.prepend(amb);
+  }
   if (!enforceAuthGuard()) return;
 
   normalizeHeaderAndChrome();
