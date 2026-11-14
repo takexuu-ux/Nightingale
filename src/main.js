@@ -3112,12 +3112,8 @@ function renderHomeDateCalendar(poolClasses) {
       classListContainer.classList.add('hide');
       if (emptyState) {
         emptyState.classList.remove('hide');
-        const emptySub = emptyState.querySelector('.apk-empty-sub');
-        if (emptySub) {
-          emptySub.textContent = isToday 
-            ? 'No live classes scheduled for today. Select past or upcoming dates above to review lectures.' 
-            : `No lectures were scheduled on ${dayNames[targetDate.getDay()]}, ${formattedDate}.`;
-        }
+        const emptyTitle = emptyState.querySelector('.apk-empty-title');
+        if (emptyTitle) emptyTitle.textContent = 'No lectures on this date';
       }
     }
   }

@@ -83,6 +83,7 @@ const NAV_ICONS = {
   videos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
   notes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
   tests: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  saved: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
   refresh: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
   settings: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
   back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>',
@@ -244,40 +245,26 @@ function buildSidePanel() {
           ${availablePets.map(p => `
             <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
               <span class="apk-pet-card-check">✓</span>
-              <div class="apk-pet-card-icon" style="background-image: url('./pets/${p.id}/spritesheet.webp');"></div>
+              <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;">${p.svg || p.emoji}</div>
               <span class="apk-pet-card-name">${p.name}</span>
             </div>
           `).join('')}
         </div>
       </div>
 
-      <!-- Academic Resources: Saved Videos, Saved Notes & Brochure -->
+      <!-- Academic Resources: Saved Content & Brochure -->
       <div>
-        <div class="apk-side-section-title">Saved Content &amp; Offline</div>
+        <div class="apk-side-section-title">Saved Content &amp; Resources</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <!-- Saved Videos Button -->
-          <button type="button" id="apk-side-saved-videos-btn" class="apk-batch-option" style="width:100%;">
+          <!-- Single Unified Saved Button (Opens Lectures / Notes / Tests options) -->
+          <button type="button" id="apk-side-saved-hub-btn" class="apk-batch-option" style="width:100%;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;border-radius:10px;background:rgba(244,63,94,0.18);color:#F43F5E;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:32px;height:32px;border-radius:10px;background:rgba(142,116,229,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                <span style="font-weight:800;font-size:13.5px;">Saved Videos</span>
-                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Offline bookmarked video lectures</span>
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-
-          <!-- Saved Notes Button -->
-          <button type="button" id="apk-side-saved-notes-btn" class="apk-batch-option" style="width:100%;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;border-radius:10px;background:rgba(56,189,248,0.18);color:#38BDF8;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-              </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                <span style="font-weight:800;font-size:13.5px;">Saved Notes &amp; PDFs</span>
-                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Saved study notes, PDFs &amp; documents</span>
+                <span style="font-weight:800;font-size:13.5px;">Saved &amp; Offline</span>
+                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Lectures, Notes, PDFs &amp; Tests</span>
               </div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -337,32 +324,10 @@ function buildSidePanel() {
     });
   });
 
-  // Saved Videos inside Side Panel
-  panel.querySelector('#apk-side-saved-videos-btn')?.addEventListener('click', () => {
+  // Single Unified Saved & Offline Hub inside Side Panel
+  panel.querySelector('#apk-side-saved-hub-btn')?.addEventListener('click', () => {
     closeSidePanel();
-    if (window.location.pathname.includes('all-videos')) {
-      if (typeof window.__nnlSetVideoMode === 'function') {
-        window.__nnlSetVideoMode('saved');
-      } else {
-        window.location.href = '/all-videos.html?mode=saved';
-      }
-    } else {
-      window.location.href = '/all-videos.html?mode=saved';
-    }
-  });
-
-  // Saved Notes inside Side Panel
-  panel.querySelector('#apk-side-saved-notes-btn')?.addEventListener('click', () => {
-    closeSidePanel();
-    if (window.location.pathname.includes('notes')) {
-      if (typeof window.__nnlSetNotesFilter === 'function') {
-        window.__nnlSetNotesFilter('saved');
-      } else {
-        window.location.href = '/notes.html?filter=saved';
-      }
-    } else {
-      window.location.href = '/notes.html?filter=saved';
-    }
+    openSavedHubModal();
   });
 
   // Switch Batch inside Side Panel
@@ -546,19 +511,136 @@ function openBatchSwitcherModal() {
   document.body.appendChild(overlay);
 }
 
+function openSavedHubModal() {
+  const existing = document.getElementById('apk-saved-sheet');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'apk-saved-sheet';
+  overlay.className = 'apk-sheet-backdrop';
+  overlay.innerHTML = `
+    <div class="apk-sheet-card" role="dialog" aria-modal="true" aria-label="Saved & Offline Hub">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--text-primary);">Saved &amp; Offline Content</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Access all bookmarked and offline resources</div>
+        </div>
+        <button type="button" class="apk-icon-btn apk-sheet-close" aria-label="Close">
+          ${NAV_ICONS.close}
+        </button>
+      </div>
+
+      <div class="apk-saved-hub-grid" style="display:flex;flex-direction:column;gap:10px;padding:6px 0;">
+        <!-- Option 1: Saved Lectures -->
+        <button type="button" class="apk-batch-option" data-saved-target="lectures" style="width:100%;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:rgba(244,63,94,0.18);color:#F43F5E;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${NAV_ICONS.videos}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+              <span style="font-weight:800;font-size:14px;">Saved Lectures</span>
+              <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Offline and bookmarked video classes</span>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Option 2: Saved Notes & PDFs -->
+        <button type="button" class="apk-batch-option" data-saved-target="notes" style="width:100%;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:rgba(56,189,248,0.18);color:#38BDF8;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${NAV_ICONS.notes}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+              <span style="font-weight:800;font-size:14px;">Saved Notes &amp; PDFs</span>
+              <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Saved documents, hand-written notes &amp; PDFs</span>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Option 3: Saved Tests & Question Banks -->
+        <button type="button" class="apk-batch-option" data-saved-target="tests" style="width:100%;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:12px;background:rgba(142,116,229,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${NAV_ICONS.tests}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+              <span style="font-weight:800;font-size:14px;">Tests &amp; Question Banks</span>
+              <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Practice test series and question sets</span>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.closest('.apk-sheet-close')) {
+      overlay.remove();
+      return;
+    }
+    const opt = e.target.closest('[data-saved-target]');
+    if (!opt) return;
+    const target = opt.getAttribute('data-saved-target');
+    overlay.remove();
+
+    if (target === 'lectures') {
+      if (window.location.pathname.includes('all-videos')) {
+        if (typeof window.__nnlSetVideoMode === 'function') {
+          window.__nnlSetVideoMode('saved');
+        } else {
+          window.location.href = '/all-videos.html?mode=saved';
+        }
+      } else {
+        window.location.href = '/all-videos.html?mode=saved';
+      }
+    } else if (target === 'notes') {
+      if (window.location.pathname.includes('notes')) {
+        if (typeof window.__nnlSetNotesFilter === 'function') {
+          window.__nnlSetNotesFilter('saved');
+        } else {
+          window.location.href = '/notes.html?filter=saved';
+        }
+      } else {
+        window.location.href = '/notes.html?filter=saved';
+      }
+    } else if (target === 'tests') {
+      if (!window.location.pathname.includes('tests')) {
+        window.location.href = '/tests.html';
+      }
+    }
+  });
+
+  document.body.appendChild(overlay);
+}
+
 function normalizeHeaderAndChrome() {
   // Replace nav tab icons + crisp 1-word labels (Tab 1 is HOME)
   const tabs = [
     { id: 'tab-live', icon: NAV_ICONS.home, label: 'Home' },
     { id: 'tab-videos', icon: NAV_ICONS.videos, label: 'Videos' },
     { id: 'tab-notes', icon: NAV_ICONS.notes, label: 'Notes' },
-    { id: 'tab-tests', icon: NAV_ICONS.tests, label: 'Tests' }
+    { id: 'tab-tests', icon: NAV_ICONS.tests, label: 'Tests' },
+    { id: 'tab-saved', icon: NAV_ICONS.saved, label: 'Saved' }
   ];
   tabs.forEach(({ id, icon, label }) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = `${icon}<span>${label}</span>`;
   });
+
+  // Attach saved tab click listener
+  const savedTab = document.getElementById('tab-saved');
+  if (savedTab && !savedTab.__nnlBound) {
+    savedTab.__nnlBound = true;
+    savedTab.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openSavedHubModal();
+    });
+  }
 
   // Remove unused Upcoming tab in rail/dock
   const upTab = document.getElementById('tab-upcoming');
@@ -652,11 +734,28 @@ function normalizeHeaderAndChrome() {
     headerLogo.setAttribute('aria-label', 'Nightingale');
   }
 
-  // Auth Screen Layout Integration
+  // Auth Screen Layout Integration & Strict Hamburger/Side Panel Hiding
   const syncAuthMode = () => {
     const authEl = document.getElementById('auth-screen');
     const isAuth = Boolean(authEl && !authEl.classList.contains('hide'));
     document.body.classList.toggle('apk-is-auth', isAuth);
+
+    const btn = document.getElementById('apk-hamburger-btn');
+    if (btn) {
+      if (isAuth) {
+        btn.style.setProperty('display', 'none', 'important');
+      } else {
+        btn.style.removeProperty('display');
+      }
+    }
+
+    const drawer = document.getElementById('apk-side-drawer');
+    if (drawer && isAuth) {
+      drawer.style.setProperty('display', 'none', 'important');
+      closeSidePanel();
+    } else if (drawer) {
+      drawer.style.removeProperty('display');
+    }
   };
   syncAuthMode();
 
@@ -803,6 +902,13 @@ function attachNavLiquidDropAndCards() {
   }
 
   navTabs.querySelectorAll('.nav-tab').forEach((btn) => {
+    // Water droplet float on hover/pointer enter before click
+    btn.addEventListener('pointerenter', () => {
+      placePillOnTab(btn, false);
+    });
+    btn.addEventListener('pointerdown', () => {
+      placePillOnTab(btn, false);
+    });
     btn.addEventListener('click', () => {
       const prev = navTabs.querySelector('.nav-tab.active');
       if (prev && prev.id) sessionStorage.setItem('nnl_prev_nav_id', prev.id);
@@ -811,6 +917,11 @@ function attachNavLiquidDropAndCards() {
         placePillOnTab(nextActive, false);
       });
     });
+  });
+
+  navTabs.addEventListener('pointerleave', () => {
+    const cur = navTabs.querySelector('.nav-tab.active');
+    if (cur) placePillOnTab(cur, false);
   });
 
   window.addEventListener('resize', () => {
