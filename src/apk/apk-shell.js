@@ -31,18 +31,26 @@ function detectSystemDark() {
   }
 }
 
-export function applySystemTheme(isDark) {
-  const mode = isDark ? 'dark' : 'light';
+export function applySystemTheme(isDark, userInitiated = false) {
+  let mode;
   try {
-    localStorage.setItem('nnl_app_theme', mode);
-  } catch (_) {}
+    const saved = localStorage.getItem('nnl_app_theme');
+    if (!userInitiated && (saved === 'dark' || saved === 'light')) {
+      mode = saved;
+    } else {
+      mode = isDark ? 'dark' : 'light';
+      localStorage.setItem('nnl_app_theme', mode);
+    }
+  } catch (_) {
+    mode = isDark ? 'dark' : 'light';
+  }
   document.documentElement.setAttribute('data-theme', mode);
   try {
     if (window.AndroidThemeBridge && typeof window.AndroidThemeBridge.setDarkMode === 'function') {
-      window.AndroidThemeBridge.setDarkMode(isDark);
+      window.AndroidThemeBridge.setDarkMode(mode === 'dark');
     }
   } catch {}
-  syncThemeButtons(isDark);
+  syncThemeButtons(mode === 'dark');
 }
 
 function syncThemeButtons(isDark) {
@@ -243,19 +251,33 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- Academic Resources: Saved Lectures & Brochure -->
+      <!-- Academic Resources: Saved Videos, Saved Notes & Brochure -->
       <div>
-        <div class="apk-side-section-title">Academic Resources</div>
+        <div class="apk-side-section-title">Saved Content &amp; Offline</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <!-- Saved Lectures Button (User request: keep only Saved, place in side control) -->
-          <button type="button" id="apk-side-saved-btn" class="apk-batch-option" style="width:100%;">
+          <!-- Saved Videos Button -->
+          <button type="button" id="apk-side-saved-videos-btn" class="apk-batch-option" style="width:100%;">
             <div style="display:flex;align-items:center;gap:10px;">
               <div style="width:32px;height:32px;border-radius:10px;background:rgba(244,63,94,0.18);color:#F43F5E;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                <span style="font-weight:800;font-size:13.5px;">Saved Lectures</span>
-                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Saved offline video lectures</span>
+                <span style="font-weight:800;font-size:13.5px;">Saved Videos</span>
+                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Offline bookmarked video lectures</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- Saved Notes Button -->
+          <button type="button" id="apk-side-saved-notes-btn" class="apk-batch-option" style="width:100%;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:10px;background:rgba(56,189,248,0.18);color:#38BDF8;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                <span style="font-weight:800;font-size:13.5px;">Saved Notes &amp; PDFs</span>
+                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Saved study notes, PDFs &amp; documents</span>
               </div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -315,8 +337,8 @@ function buildSidePanel() {
     });
   });
 
-  // Saved Lectures inside Side Panel (User request: side control)
-  panel.querySelector('#apk-side-saved-btn')?.addEventListener('click', () => {
+  // Saved Videos inside Side Panel
+  panel.querySelector('#apk-side-saved-videos-btn')?.addEventListener('click', () => {
     closeSidePanel();
     if (window.location.pathname.includes('all-videos')) {
       if (typeof window.__nnlSetVideoMode === 'function') {
@@ -326,6 +348,20 @@ function buildSidePanel() {
       }
     } else {
       window.location.href = '/all-videos.html?mode=saved';
+    }
+  });
+
+  // Saved Notes inside Side Panel
+  panel.querySelector('#apk-side-saved-notes-btn')?.addEventListener('click', () => {
+    closeSidePanel();
+    if (window.location.pathname.includes('notes')) {
+      if (typeof window.__nnlSetNotesFilter === 'function') {
+        window.__nnlSetNotesFilter('saved');
+      } else {
+        window.location.href = '/notes.html?filter=saved';
+      }
+    } else {
+      window.location.href = '/notes.html?filter=saved';
     }
   });
 
@@ -346,8 +382,8 @@ function buildSidePanel() {
   });
 
   // Theme Toggles
-  panel.querySelector('#apk-theme-light-btn')?.addEventListener('click', () => applySystemTheme(false));
-  panel.querySelector('#apk-theme-dark-btn')?.addEventListener('click', () => applySystemTheme(true));
+  panel.querySelector('#apk-theme-light-btn')?.addEventListener('click', () => applySystemTheme(false, true));
+  panel.querySelector('#apk-theme-dark-btn')?.addEventListener('click', () => applySystemTheme(true, true));
 
   // Sign out
   panel.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
@@ -556,19 +592,32 @@ function normalizeHeaderAndChrome() {
     }
   });
 
-  // Clean 3-line Hamburger Menu Button placed at Top-Left of Screen (NOT in bottom island)
-  if (!document.getElementById('apk-hamburger-btn')) {
-    const hamBtn = document.createElement('button');
+  // Clean 3-line Hamburger Menu Button:
+  // On Tablet (>= 768px): placed neatly at the top of the Left Sidebar Rail (#app-header)
+  // On Phone (< 768px): placed at Top-Left of screen
+  let hamBtn = document.getElementById('apk-hamburger-btn');
+  if (!hamBtn) {
+    hamBtn = document.createElement('button');
     hamBtn.id = 'apk-hamburger-btn';
     hamBtn.className = 'apk-icon-btn apk-hamburger-btn';
     hamBtn.type = 'button';
     hamBtn.setAttribute('aria-label', 'Open Menu & Settings');
-    hamBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+    hamBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
     hamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       openSidePanel();
     });
-    document.body.appendChild(hamBtn);
+  }
+
+  const appHeader = document.getElementById('app-header');
+  if (window.innerWidth >= 768 && appHeader) {
+    if (hamBtn.parentElement !== appHeader) {
+      appHeader.insertBefore(hamBtn, appHeader.firstChild);
+    }
+  } else {
+    if (hamBtn.parentElement !== document.body) {
+      document.body.appendChild(hamBtn);
+    }
   }
 
   if (!window.__nnlBatchClickBound) {
