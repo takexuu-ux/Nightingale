@@ -1,0 +1,8 @@
+{
+  "id": "yuki-cream-rabbit",
+  "displayName": "兔兔",
+  "description": "A gentle creamy-white bunny companion with long pink ears and a playful expression.",
+  "spritesheetPath": "spritesheet.webp",
+  "spriteVersionNumber": 2,
+  "kind": "animal"
+}

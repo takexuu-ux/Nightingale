@@ -1,7 +1,14 @@
 // Red Sapphire Hinglish APK — Scratch Minimal UI Shell & Liquid Motion Engine
 import './apk-ui.css';
 import botanicalImgUrl from './botanical-heart-lungs.png';
-import { initGhostPet, isGhostPetEnabled, setGhostPetEnabled } from './apk-ghost-pet.js';
+import {
+  initPetSystem,
+  isPetEnabled,
+  setPetEnabled,
+  getActivePetId,
+  setActivePetId,
+  getAvailablePets
+} from './apk-pet-system.js';
 
 function detectSystemDark() {
   try {
@@ -91,7 +98,7 @@ function stripEmojisAndShorten(root) {
 }
 
 function attachWaterDropMotion() {
-  const TARGET_SELECTOR = '.class-card, .subject-card, .sd-lecture-card, .test-card, .doc-card, .nav-tab, .nav-btn, .apk-icon-btn, .section-mode-tab, .filter-chip, .btn, .sd-lecture-btn, .sd-note-btn, .sd-dl-btn, .sd-del-btn, .btn-note-view, .apk-pill-opt';
+  const TARGET_SELECTOR = '.class-card, .subject-card, .sd-lecture-card, .test-card, .doc-card, .nav-tab, .nav-btn, .apk-icon-btn, .section-mode-tab, .filter-chip, .btn, .sd-lecture-btn, .sd-note-btn, .sd-dl-btn, .sd-del-btn, .btn-note-view, .apk-pill-opt, .apk-pet-card, .continue-watching-card';
 
   document.addEventListener('pointerdown', (e) => {
     const host = e.target?.closest?.(TARGET_SELECTOR);
@@ -117,41 +124,175 @@ function attachWaterDropMotion() {
   document.addEventListener('pointercancel', releaseAll, { passive: true });
 }
 
-function buildSettingsSheet() {
-  if (document.getElementById('apk-settings-sheet')) return;
+export function openSidePanel() {
+  const panel = document.getElementById('apk-side-panel');
+  if (panel) {
+    panel.classList.remove('hide');
+    syncPetSelectionUI();
+  }
+}
 
-  const backdrop = document.createElement('div');
-  backdrop.id = 'apk-settings-sheet';
-  backdrop.className = 'apk-sheet-backdrop hide';
+export function closeSidePanel() {
+  document.getElementById('apk-side-panel')?.classList.add('hide');
+}
+
+function syncPetSelectionUI() {
+  const panel = document.getElementById('apk-side-panel');
+  if (!panel) return;
+  const activePetId = getActivePetId();
+  const petEnabled = isPetEnabled();
+
+  const toggleBtn = panel.querySelector('#apk-pet-toggle-btn');
+  if (toggleBtn) {
+    toggleBtn.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+        <span style="font-weight:800;font-size:13.5px;">Companion Pet</span>
+        <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Playful companion sitting beside cards</span>
+      </div>
+      <span style="font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:${petEnabled ? 'var(--accent)' : 'var(--bg-subtle)'};color:${petEnabled ? '#fff' : 'var(--text-secondary)'};">
+        ${petEnabled ? 'ON' : 'OFF'}
+      </span>
+    `;
+  }
+
+  panel.querySelectorAll('.apk-pet-card').forEach(card => {
+    const id = card.getAttribute('data-pet-id');
+    card.classList.toggle('active', id === activePetId && petEnabled);
+  });
+}
+
+function buildSidePanel() {
+  if (document.getElementById('apk-side-panel')) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'apk-side-panel';
+  panel.className = 'hide';
+
   const phone = localStorage.getItem('nnl_phone') || 'Nightingale';
+  const availablePets = getAvailablePets();
 
-  backdrop.innerHTML = `
-    <div class="apk-sheet-card" role="dialog" aria-label="Settings">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <div>
-          <div style="font-size:16px;font-weight:800;color:var(--text-primary);">Settings</div>
-          <div style="font-size:12px;color:var(--text-secondary);">${phone}</div>
+  panel.innerHTML = `
+    <div class="apk-side-backdrop" aria-hidden="true"></div>
+    <div class="apk-side-drawer" role="dialog" aria-label="Settings & Profile">
+      <div class="apk-side-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="apk-logo-badge" style="width:34px;height:34px;border-radius:10px;">${NIGHTINGALE_MARK_SVG}</div>
+          <div>
+            <div class="apk-side-title">Settings &amp; Profile</div>
+            <div style="font-size:12px;color:var(--text-secondary);">${phone}</div>
+          </div>
         </div>
-        <button id="apk-settings-close-btn" class="apk-icon-btn" aria-label="Close">${NAV_ICONS.close}</button>
+        <button type="button" id="apk-side-close-btn" class="apk-icon-btn" aria-label="Close">${NAV_ICONS.close}</button>
       </div>
 
+      <!-- Quick Action: Switch Batch -->
+      <div>
+        <div class="apk-side-section-title">Classroom Track</div>
+        <button type="button" id="apk-side-batch-btn" class="apk-batch-option" style="width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <span style="font-weight:800;font-size:13.5px;" id="apk-side-batch-label">Red Sapphire (Hinglish)</span>
+            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Tap to switch classroom batch</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Companion Pet Selector -->
+      <div>
+        <div class="apk-side-section-title">Companion Pet</div>
+        <button type="button" id="apk-pet-toggle-btn" class="apk-batch-option" style="width:100%;margin-bottom:10px;">
+          <!-- Dynamically populated in syncPetSelectionUI -->
+        </button>
+        <div class="apk-pet-grid">
+          ${availablePets.map(p => `
+            <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
+              <span class="apk-pet-card-check">✓</span>
+              <div class="apk-pet-card-icon" style="background-image: url('./pets/${p.id}/spritesheet.webp');"></div>
+              <span class="apk-pet-card-name">${p.name}</span>
+              <span class="apk-pet-card-tag">${p.tag}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Red Sapphire Brochure & Timetable -->
+      <div>
+        <div class="apk-side-section-title">Academic Resources</div>
+        <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <span style="font-weight:800;font-size:13.5px;">Red Sapphire Brochure</span>
+            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Batch syllabus, plans &amp; timetable PDFs</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Theme Switcher -->
+      <div>
+        <div class="apk-side-section-title">Appearance</div>
+        <div style="display:flex;gap:8px;width:100%;">
+          <button type="button" id="apk-theme-light-btn" class="filter-chip" style="flex:1;justify-content:center;">Light</button>
+          <button type="button" id="apk-theme-dark-btn" class="filter-chip" style="flex:1;justify-content:center;">Dark</button>
+        </div>
+      </div>
+
+      <!-- OTA & Updates -->
       <div id="apk-sheet-ota-slot"></div>
 
-      <button id="apk-sheet-logout-btn" class="btn btn-ghost" style="width:100%;color:var(--danger-ink);border-color:var(--danger-border);background:var(--danger-bg);">
+      <!-- Sign Out -->
+      <button id="apk-sheet-logout-btn" class="btn btn-ghost" style="width:100%;margin-top:auto;color:var(--danger-ink);border-color:var(--danger-border);background:var(--danger-bg);">
         Sign Out
       </button>
     </div>
   `;
 
-  document.body.appendChild(backdrop);
+  document.body.appendChild(panel);
 
-  backdrop.addEventListener('click', (e) => {
-    if (e.target === backdrop) backdrop.classList.add('hide');
+  // Close bindings
+  panel.querySelector('.apk-side-backdrop')?.addEventListener('click', closeSidePanel);
+  panel.querySelector('#apk-side-close-btn')?.addEventListener('click', closeSidePanel);
+
+  // Pet Toggle ON/OFF
+  panel.querySelector('#apk-pet-toggle-btn')?.addEventListener('click', () => {
+    const next = !isPetEnabled();
+    setPetEnabled(next);
+    syncPetSelectionUI();
   });
-  backdrop.querySelector('#apk-settings-close-btn')?.addEventListener('click', () => {
-    backdrop.classList.add('hide');
+
+  // Pet Choice Selection
+  panel.querySelectorAll('.apk-pet-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const petId = card.getAttribute('data-pet-id');
+      if (petId) {
+        if (!isPetEnabled()) setPetEnabled(true);
+        setActivePetId(petId);
+        syncPetSelectionUI();
+      }
+    });
   });
-  backdrop.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
+
+  // Switch Batch inside Side Panel
+  panel.querySelector('#apk-side-batch-btn')?.addEventListener('click', () => {
+    closeSidePanel();
+    document.querySelector('.apk-batch-pill-btn')?.click();
+  });
+
+  // Brochure inside Side Panel
+  panel.querySelector('#apk-side-brochure-btn')?.addEventListener('click', () => {
+    closeSidePanel();
+    if (typeof window.__nnlOpenBrochure === 'function') {
+      window.__nnlOpenBrochure();
+    } else {
+      window.location.href = '/notes.html?openBrochure=1';
+    }
+  });
+
+  // Theme Toggles
+  panel.querySelector('#apk-theme-light-btn')?.addEventListener('click', () => applySystemTheme(false));
+  panel.querySelector('#apk-theme-dark-btn')?.addEventListener('click', () => applySystemTheme(true));
+
+  // Sign out
+  panel.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
     sessionStorage.setItem('nnl_explicit_logout', 'true');
     const legacyLogout = document.getElementById('logout-btn');
     if (legacyLogout) {
@@ -162,10 +303,36 @@ function buildSettingsSheet() {
       try { window.AndroidAuthBridge?.clearSession?.(); } catch {}
       window.location.replace('/');
     }
-    backdrop.classList.add('hide');
+    closeSidePanel();
   });
 
-  // Adopt #apk-ota-settings-box from old hidden widget whenever injected by otaUpdater.js
+  // Edge Swipe Gestures (Swipe left from right edge to open; swipe right to close)
+  let touchStartX = 0;
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (e.changedTouches.length !== 1) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dy) > 70) return;
+
+    // Swipe left from right edge (startX > window.innerWidth - 35) opens side panel
+    if (dx < -60 && touchStartX > window.innerWidth - 45) {
+      openSidePanel();
+    }
+    // Swipe right inside open side panel closes it
+    else if (dx > 70 && !panel.classList.contains('hide')) {
+      closeSidePanel();
+    }
+  }, { passive: true });
+
+  // Sync OTA Box into drawer
   const adoptOtaBox = () => {
     const otaBox = document.getElementById('apk-ota-settings-box');
     const slot = document.getElementById('apk-sheet-ota-slot');
@@ -184,8 +351,106 @@ function buildSettingsSheet() {
     }
   };
   adoptOtaBox();
-  const obs = new MutationObserver(adoptOtaBox);
-  obs.observe(document.body, { childList: true, subtree: true });
+  new MutationObserver(adoptOtaBox).observe(document.body, { childList: true, subtree: true });
+
+  syncPetSelectionUI();
+}
+
+const APK_BATCH_CHOICES = [
+  { value: 'Red Sapphire (Hinglish)', label: 'Red Sapphire', sub: 'Hinglish' },
+  { value: 'Blue Sapphire (Hinglish)', label: 'Blue Sapphire', sub: 'Hinglish' },
+  { value: 'Red Sapphire (English)', label: 'Red Sapphire', sub: 'English' },
+  { value: 'Fast Track', label: 'Fast Track', sub: 'Crash Course' }
+];
+
+export function getActiveBatchValue() {
+  try {
+    const saved = localStorage.getItem('nnl_active_batch');
+    if (saved && APK_BATCH_CHOICES.some(b => b.value === saved)) return saved;
+  } catch (_) {}
+  return 'Red Sapphire (Hinglish)';
+}
+
+export function getBatchShortText(val) {
+  const found = APK_BATCH_CHOICES.find(b => b.value === val) || APK_BATCH_CHOICES[0];
+  return val === 'Red Sapphire (English)' ? 'Red Sapphire Eng' : found.label;
+}
+
+const chevronDownSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+function syncBatchPills() {
+  const active = getActiveBatchValue();
+  const shortLabel = getBatchShortText(active);
+  document.querySelectorAll('.apk-batch-pill-btn').forEach(btn => {
+    btn.dataset.batch = active;
+    btn.innerHTML = `<span>${shortLabel}</span>${chevronDownSvg}`;
+  });
+  const sideLbl = document.getElementById('apk-side-batch-label');
+  if (sideLbl) sideLbl.textContent = active;
+}
+
+function openBatchSwitcherModal() {
+  const existing = document.getElementById('apk-batch-sheet');
+  if (existing) existing.remove();
+  const active = getActiveBatchValue();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'apk-batch-sheet';
+  overlay.className = 'apk-sheet-backdrop';
+  overlay.innerHTML = `
+    <div class="apk-sheet-card" role="dialog" aria-modal="true" aria-label="Switch Batch">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--text-primary);">Switch Batch</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Select your active classroom track</div>
+        </div>
+        <button type="button" class="apk-icon-btn apk-sheet-close" aria-label="Close">
+          ${NAV_ICONS.close}
+        </button>
+      </div>
+      <div class="apk-batch-options-list" style="display:flex;flex-direction:column;gap:8px;padding:2px 0;">
+        ${APK_BATCH_CHOICES.map(b => {
+          const isSel = b.value === active;
+          return `
+            <button type="button" class="apk-batch-option ${isSel ? 'active' : ''}" data-batch-value="${b.value}">
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                <span style="font-weight:800;font-size:13.5px;">${b.label}</span>
+                <span style="font-size:11.5px;opacity:0.72;font-weight:600;">${b.sub}</span>
+              </div>
+              <span class="apk-batch-check" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;">
+                ${isSel ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+              </span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.closest('.apk-sheet-close')) {
+      overlay.remove();
+      return;
+    }
+    const opt = e.target.closest('.apk-batch-option');
+    if (!opt) return;
+    const chosen = opt.dataset.batchValue;
+    if (!chosen) return;
+    try { localStorage.setItem('nnl_active_batch', chosen); } catch (_) {}
+    syncBatchPills();
+    overlay.remove();
+    if (typeof window.__nnlSelectBatch === 'function') {
+      try { window.__nnlSelectBatch(chosen); } catch (_) {}
+    } else {
+      const sel = document.getElementById('batch-select');
+      if (sel) {
+        sel.value = chosen;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  });
+
+  document.body.appendChild(overlay);
 }
 
 function normalizeHeaderAndChrome() {
@@ -202,7 +467,7 @@ function normalizeHeaderAndChrome() {
     el.innerHTML = `${icon}<span>${label}</span>`;
   });
 
-  // Remove unused Upcoming tab in rail/dock so 4 clean tabs fit evenly on phone & tablet
+  // Remove unused Upcoming tab in rail/dock
   const upTab = document.getElementById('tab-upcoming');
   if (upTab) upTab.remove();
 
@@ -234,7 +499,7 @@ function normalizeHeaderAndChrome() {
     }
   });
 
-  // Add compact Settings gear icon inside header-right-actions
+  // Settings button on header rail/dock
   const rightActions = document.querySelector('.header-right-actions');
   if (rightActions && !document.getElementById('apk-settings-open-btn')) {
     const sBtn = document.createElement('button');
@@ -244,105 +509,31 @@ function normalizeHeaderAndChrome() {
     sBtn.innerHTML = `${NAV_ICONS.settings}<span id="apk-settings-dot" class="apk-update-dot hide"></span>`;
     sBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      document.getElementById('apk-settings-sheet')?.classList.remove('hide');
+      openSidePanel();
     });
     rightActions.appendChild(sBtn);
   }
 
-  const APK_BATCH_CHOICES = [
-    { value: 'Red Sapphire (Hinglish)', label: 'Red Sapphire', sub: 'Hinglish' },
-    { value: 'Blue Sapphire (Hinglish)', label: 'Blue Sapphire', sub: 'Hinglish' },
-    { value: 'Red Sapphire (English)', label: 'Red Sapphire', sub: 'English' },
-    { value: 'Fast Track', label: 'Fast Track', sub: 'Crash Course' }
-  ];
-
-  const getActiveBatchValue = () => {
-    try {
-      const saved = localStorage.getItem('nnl_active_batch');
-      if (saved && APK_BATCH_CHOICES.some(b => b.value === saved)) return saved;
-    } catch (_) {}
-    return 'Red Sapphire (Hinglish)';
-  };
-
-  const getBatchShortText = (val) => {
-    const found = APK_BATCH_CHOICES.find(b => b.value === val) || APK_BATCH_CHOICES[0];
-    return val === 'Red Sapphire (English)' ? 'Red Sapphire Eng' : found.label;
-  };
-
-  const chevronDownSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-
-  const syncBatchPills = () => {
-    const active = getActiveBatchValue();
-    const shortLabel = getBatchShortText(active);
-    document.querySelectorAll('.apk-batch-pill-btn').forEach(btn => {
-      btn.dataset.batch = active;
-      btn.innerHTML = `<span>${shortLabel}</span>${chevronDownSvg}`;
-    });
-  };
-
-  const openBatchSwitcherModal = () => {
-    const existing = document.getElementById('apk-batch-sheet');
-    if (existing) existing.remove();
-    const active = getActiveBatchValue();
-
-    const overlay = document.createElement('div');
-    overlay.id = 'apk-batch-sheet';
-    overlay.className = 'apk-sheet-backdrop';
-    overlay.innerHTML = `
-      <div class="apk-sheet-card" role="dialog" aria-modal="true" aria-label="Switch Batch">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <div>
-            <div style="font-size:16px;font-weight:800;color:var(--text-primary);">Switch Batch</div>
-            <div style="font-size:12px;color:var(--text-secondary);">Select your active classroom track</div>
-          </div>
-          <button type="button" class="apk-icon-btn apk-sheet-close" aria-label="Close">
-            ${NAV_ICONS.close}
-          </button>
-        </div>
-        <div class="apk-batch-options-list" style="display:flex;flex-direction:column;gap:8px;padding:2px 0;">
-          ${APK_BATCH_CHOICES.map(b => {
-            const isSel = b.value === active;
-            return `
-              <button type="button" class="apk-batch-option ${isSel ? 'active' : ''}" data-batch-value="${b.value}">
-                <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                  <span style="font-weight:800;font-size:13.5px;">${b.label}</span>
-                  <span style="font-size:11.5px;opacity:0.72;font-weight:600;">${b.sub}</span>
-                </div>
-                <span class="apk-batch-check" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;">
-                  ${isSel ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
-                </span>
-              </button>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay || e.target.closest('.apk-sheet-close')) {
-        overlay.remove();
-        return;
-      }
-      const opt = e.target.closest('.apk-batch-option');
-      if (!opt) return;
-      const chosen = opt.dataset.batchValue;
-      if (!chosen) return;
-      try { localStorage.setItem('nnl_active_batch', chosen); } catch (_) {}
-      syncBatchPills();
-      overlay.remove();
-      if (typeof window.__nnlSelectBatch === 'function') {
-        try { window.__nnlSelectBatch(chosen); } catch (_) {}
-      } else {
-        const sel = document.getElementById('batch-select');
-        if (sel) {
-          sel.value = chosen;
-          sel.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+  // Top Page Bar side panel trigger button (accessible directly on phone topbars)
+  const attachTopMenuTrigger = () => {
+    const topbars = document.querySelectorAll('#apk-live-topbar, .notes-hero-header');
+    topbars.forEach(tb => {
+      if (!tb.querySelector('.apk-side-toggle-btn')) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'apk-icon-btn apk-side-toggle-btn';
+        btn.setAttribute('aria-label', 'Open Settings & Profile');
+        btn.innerHTML = NAV_ICONS.settings;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openSidePanel();
+        });
+        tb.appendChild(btn);
       }
     });
-
-    document.body.appendChild(overlay);
   };
+  attachTopMenuTrigger();
+  new MutationObserver(attachTopMenuTrigger).observe(document.body, { childList: true, subtree: true });
 
   if (!window.__nnlBatchClickBound) {
     window.__nnlBatchClickBound = true;
@@ -353,108 +544,10 @@ function normalizeHeaderAndChrome() {
         openBatchSwitcherModal();
         return;
       }
-      const brochureBtn = e.target.closest('#apk-open-brochure-row');
-      if (brochureBtn) {
-        e.preventDefault();
-        const sheet = document.getElementById('apk-settings-sheet');
-        if (sheet) sheet.classList.add('hide');
-        if (typeof window.__nnlOpenBrochure === 'function') {
-          window.__nnlOpenBrochure();
-        } else {
-          window.location.href = '/notes.html?openBrochure=1';
-        }
-      }
     });
-
-    new MutationObserver(() => {
-      const sheet = document.getElementById('apk-settings-sheet');
-      if (!sheet) return;
-      const anchor = sheet.querySelector('#apk-sheet-logout-btn') || sheet.querySelector('.apk-settings-list');
-      if (!anchor || !anchor.parentElement) return;
-
-      if (!sheet.querySelector('#apk-open-brochure-row')) {
-        const row = document.createElement('button');
-        row.id = 'apk-open-brochure-row';
-        row.type = 'button';
-        row.className = 'apk-batch-option';
-        row.style.cssText = 'width:100%;margin:8px 0 8px;';
-        row.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-            <span style="font-weight:800;font-size:13.5px;">Red Sapphire Brochure</span>
-            <span style="font-size:11.5px;opacity:0.72;font-weight:600;">Batch syllabus, plans &amp; timetable PDFs</span>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        `;
-        anchor.parentElement.insertBefore(row, anchor);
-      }
-
-      if (!sheet.querySelector('#apk-ghost-toggle-row')) {
-        const gRow = document.createElement('button');
-        gRow.id = 'apk-ghost-toggle-row';
-        gRow.type = 'button';
-        gRow.className = 'apk-batch-option';
-        gRow.style.cssText = 'width:100%;margin:0 0 10px;';
-        const syncGhostLabel = () => {
-          const on = isGhostPetEnabled();
-          gRow.innerHTML = `
-            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-              <span style="font-weight:800;font-size:13.5px;">Pixel Ghost Pet</span>
-              <span style="font-size:11.5px;opacity:0.72;font-weight:600;">Tiny pixel buddy that sits &amp; plays on cards</span>
-            </div>
-            <span style="font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:${on ? 'var(--accent)' : 'var(--bg-subtle)'};color:${on ? '#fff' : 'var(--text-secondary)'};">${on ? 'ON' : 'OFF'}</span>
-          `;
-        };
-        syncGhostLabel();
-        gRow.addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          setGhostPetEnabled(!isGhostPetEnabled());
-          syncGhostLabel();
-        });
-        anchor.parentElement.insertBefore(gRow, anchor);
-      }
-    }).observe(document.body, { childList: true, subtree: true });
   }
 
-  // Shorten verbose top category switcher tab labels & keep batch tab synced
-  const activeBatchShort = getBatchShortText(getActiveBatchValue());
-  const shortTabLabels = {
-    'sec-tab-master': 'Library',
-    'sec-tab-rb104': activeBatchShort,
-    'test-tab-series': 'Test Series',
-    'test-tab-qbank': 'Q-Bank',
-    'test-tab-rb104': activeBatchShort,
-    'vid-tab-all': 'All Subjects',
-    'vid-tab-rb103': activeBatchShort
-  };
-  Object.entries(shortTabLabels).forEach(([tabId, shortText]) => {
-    const tabEl = document.getElementById(tabId);
-    if (!tabEl) return;
-    const sp = tabEl.querySelector('span:not(.section-mode-count)');
-    if (sp && sp.textContent.trim() !== shortText) {
-      sp.textContent = shortText;
-    }
-  });
-
-  // Clean modern single-line page titles (uniform Manrope typography)
-  const heroTitle = document.querySelector('.notes-hero-title');
-  if (heroTitle) {
-    const p = window.location.pathname;
-    if (p.includes('all-videos')) heroTitle.textContent = 'All Videos';
-    else if (p.includes('notes')) heroTitle.textContent = 'Study Notes';
-    else if (p.includes('tests')) heroTitle.textContent = 'Practice Tests';
-  }
-
-  const heroHeader = document.querySelector('.notes-hero-header');
-  if (heroHeader && !heroHeader.querySelector('.apk-batch-pill-btn')) {
-    const pillBtn = document.createElement('button');
-    pillBtn.type = 'button';
-    pillBtn.className = 'apk-batch-pill-btn';
-    const searchWrap = heroHeader.querySelector('.notes-search-wrapper');
-    if (searchWrap) heroHeader.insertBefore(pillBtn, searchWrap);
-    else heroHeader.appendChild(pillBtn);
-  }
-
-  // Minimal Live page title above classes if not already present
+  // Minimal Live page topbar with batch pill
   const dash = document.getElementById('classroom-dashboard');
   if (dash && !document.getElementById('apk-live-topbar')) {
     const bar = document.createElement('div');
@@ -469,7 +562,7 @@ function normalizeHeaderAndChrome() {
 
   syncBatchPills();
 
-  // Minimal Preloader Logo Badge + Brand Wordmark
+  // Minimal Preloader Logo Badge
   const preloaderLogo = document.querySelector('.preloader-logo');
   if (preloaderLogo && !preloaderLogo.querySelector('.apk-logo-badge')) {
     const badge = document.createElement('div');
@@ -480,14 +573,14 @@ function normalizeHeaderAndChrome() {
     if (txt) txt.textContent = 'Nightingale';
   }
 
-  // Minimal Header Rail Logo Badge (.header-logo exists across all 4 HTML pages)
+  // Header Logo
   const headerLogo = document.querySelector('.header-logo');
   if (headerLogo) {
     headerLogo.innerHTML = NIGHTINGALE_MARK_SVG;
     headerLogo.setAttribute('aria-label', 'Nightingale');
   }
 
-  // Sync auth body flag + tablet showcase + Light/Dark switch on Auth screen
+  // Auth Screen Layout Integration
   const syncAuthMode = () => {
     const authEl = document.getElementById('auth-screen');
     const isAuth = Boolean(authEl && !authEl.classList.contains('hide'));
@@ -499,7 +592,6 @@ function normalizeHeaderAndChrome() {
   if (authEl) {
     new MutationObserver(syncAuthMode).observe(authEl, { attributes: true, attributeFilter: ['class'] });
 
-    // Bare Hero Header [Logo] Nightingale + Live/Lectures/Notes pills on top
     const wrapper = authEl.closest('.auth-hero-wrapper');
     if (wrapper && !document.getElementById('apk-auth-showcase')) {
       const showcase = document.createElement('div');
@@ -533,7 +625,7 @@ function normalizeHeaderAndChrome() {
       sendOtpSpan.textContent = 'Get OTP';
     }
 
-    // Transparent Botanical Anatomical Lungs, Heart & Flowers Artwork on right side
+    // Transparent Botanical Anatomical Heart, Lungs & Flowers Artwork
     if (wrapper && !document.getElementById('apk-auth-botanical')) {
       const bot = document.createElement('div');
       bot.id = 'apk-auth-botanical';
@@ -600,6 +692,7 @@ window.addEventListener('pageshow', () => {
   enforceAuthGuard();
 });
 
+// Apple-Smooth Fluid Indicator & Card Motions
 function attachNavLiquidDropAndCards() {
   const navTabs = document.querySelector('.header-nav-tabs .nav-tabs');
   if (!navTabs) return;
@@ -624,16 +717,13 @@ function attachNavLiquidDropAndCards() {
     }
   };
 
-  // Start from previous tab when navigating across pages so droplet glides seamlessly
   const activeTab = navTabs.querySelector('.nav-tab.active');
   const prevTabId = sessionStorage.getItem('nnl_prev_nav_id');
   const prevTab = prevTabId ? document.getElementById(prevTabId) : null;
   if (prevTab && activeTab && prevTab !== activeTab) {
     placePillOnTab(prevTab, true);
     requestAnimationFrame(() => {
-      pill.classList.add('is-morphing');
       placePillOnTab(activeTab, false);
-      setTimeout(() => pill.classList.remove('is-morphing'), 460);
     });
     sessionStorage.removeItem('nnl_prev_nav_id');
   } else if (activeTab) {
@@ -644,11 +734,9 @@ function attachNavLiquidDropAndCards() {
     btn.addEventListener('click', () => {
       const prev = navTabs.querySelector('.nav-tab.active');
       if (prev && prev.id) sessionStorage.setItem('nnl_prev_nav_id', prev.id);
-      pill.classList.add('is-morphing');
       requestAnimationFrame(() => {
         const nextActive = navTabs.querySelector('.nav-tab.active') || btn;
         placePillOnTab(nextActive, false);
-        setTimeout(() => pill.classList.remove('is-morphing'), 460);
       });
     });
   });
@@ -661,40 +749,44 @@ function attachNavLiquidDropAndCards() {
 
 function animateVisibleCards(root) {
   if (!root) return;
-  const cardSelector = '.class-card, .subject-card, .note-doc-card, .sd-lecture-card, .brochure-card, .test-card, .doc-card';
+  const cardSelector = '.class-card, .subject-card, .note-doc-card, .sd-lecture-card, .brochure-card, .test-card, .doc-card, .continue-watching-card';
   const cards = root.querySelectorAll(cardSelector);
-  let idx = 0;
-  cards.forEach((card) => {
-    if (!card.dataset.apkArranged) {
-      card.dataset.apkArranged = '1';
-      card.style.setProperty('--card-i', String(Math.min(idx, 12)));
+  cards.forEach((card, idx) => {
+    if (!card.classList.contains('apk-card-arrange')) {
+      card.style.setProperty('--card-i', Math.min(idx, 16));
       card.classList.add('apk-card-arrange');
-      idx++;
     }
   });
 }
 
 function attachPullToRefresh() {
-  if (typeof window === 'undefined' || window.__nnlPtrAttached) return;
-  window.__nnlPtrAttached = true;
+  if (document.getElementById('apk-ptr-pill')) return;
 
   const pill = document.createElement('div');
   pill.id = 'apk-ptr-pill';
   pill.innerHTML = `<span class="apk-ptr-icon">↓</span><span class="apk-ptr-text">Pull to refresh</span>`;
   document.body.appendChild(pill);
-  const textEl = pill.querySelector('.apk-ptr-text');
 
+  const textEl = pill.querySelector('.apk-ptr-text');
   let startY = 0;
   let pulling = false;
-  let pullDist = 0;
   let refreshing = false;
+  let pullDist = 0;
 
-  const getScrollTop = () => Math.max(window.scrollY || 0, document.documentElement?.scrollTop || 0);
-  const isModalActive = () => Boolean(document.querySelector('#pdf-modal:not(.hide), #quiz-viewer:not(.hide), #recording-viewer:not(.hide), #apk-settings-sheet:not(.hide), #apk-batch-sheet:not(.hide), #auth-screen:not(.hide)'));
+  const getScrollTop = () => (
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0
+  );
+
+  const isModalActive = () => Boolean(
+    document.querySelector('.quiz-viewer-overlay:not(.hide), .pdf-modal-overlay:not(.hide), .recording-viewer-overlay:not(.hide), #apk-side-panel:not(.hide), #apk-batch-sheet')
+  );
 
   window.addEventListener('touchstart', (e) => {
-    if (refreshing || e.touches.length !== 1 || isModalActive() || e.target.closest('#apk-ghost-pet')) return;
-    if (getScrollTop() <= 2) {
+    if (refreshing || e.touches.length !== 1 || isModalActive() || e.target.closest('#apk-companion-pet')) return;
+    if (getScrollTop() <= 4) {
       startY = e.touches[0].clientY;
       pulling = true;
       pullDist = 0;
@@ -762,14 +854,13 @@ function initApkShell() {
 
   normalizeHeaderAndChrome();
   attachNavLiquidDropAndCards();
-  buildSettingsSheet();
+  buildSidePanel();
   attachWaterDropMotion();
   attachPullToRefresh();
-  initGhostPet();
+  initPetSystem();
   stripEmojisAndShorten(document.body);
   animateVisibleCards(document.body);
 
-  // Observe dynamic renders cleanly (for emoji stripping + short button text + card arrangement)
   const target = document.getElementById('app') || document.body;
   let scheduled = false;
   const mutObs = new MutationObserver(() => {

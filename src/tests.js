@@ -463,7 +463,7 @@ function renderGlobalSearchResults(query) {
     return;
   }
 
-  testsGrid.innerHTML = `<div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:0.65rem;">
+  testsGrid.innerHTML = `<div class="test-cards-grid" style="grid-column: 1 / -1;">
     ${matches.slice(0, 80).map(t => renderTestRowHtml(t, t.groupLabel)).join('')}
   </div>`;
   bindTestAttemptButtons(testsGrid);
@@ -567,7 +567,7 @@ function renderDetailTestsList(tests, filterField, parentItem) {
     `;
   } else {
     testsListContainer.innerHTML = rbNotesHint + filterBarHtml + `
-      <div style="display:flex; flex-direction:column; gap:0.65rem;">
+      <div class="test-cards-grid">
         ${filtered.map(t => renderTestRowHtml(t, t.topic || t.subjectGroup || '')).join('')}
       </div>
     `;

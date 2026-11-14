@@ -1,5 +1,10 @@
 import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/appMode.js';
 import { fetchFreshVdoCipherOtp } from './utils/batch104Sync.js';
+import {
+  getRecentlyWatchedLectures,
+  getLectureProgress,
+  getSavedLecturesList
+} from './services/lectureWatchService.js';
 
 // NNL ONE Web Client App Logic
 
@@ -3224,7 +3229,8 @@ function renderClasses(classes) {
       }
     }
 
-
+    updateHeroGreeting();
+    renderContinueWatchingSection();
     return;
   }
 
@@ -3252,7 +3258,81 @@ function renderClasses(classes) {
   } else {
     upcoming.forEach(c => classListContainer.appendChild(createClassCard(c, false)));
   }
+
+  updateHeroGreeting();
+  renderContinueWatchingSection();
 }
+
+function updateHeroGreeting() {
+  const greetingEl = document.getElementById('apk-hero-greeting');
+  if (!greetingEl) return;
+  const savedPhone = localStorage.getItem('nnl_phone') || '';
+  if (savedPhone) {
+    const masked = savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2');
+    greetingEl.textContent = `Welcome back, ${masked}`;
+  } else {
+    greetingEl.textContent = 'Welcome back, Scholar';
+  }
+}
+
+function renderContinueWatchingSection() {
+  const section = document.getElementById('continue-watching-section');
+  const grid = document.getElementById('continue-watching-grid');
+  const countEl = document.getElementById('continue-watching-count');
+  const heroSavedCount = document.getElementById('hero-saved-count');
+
+  if (heroSavedCount) {
+    const saved = getSavedLecturesList();
+    heroSavedCount.textContent = saved.length;
+  }
+
+  if (!section || !grid) return;
+
+  const recents = getRecentlyWatchedLectures(6);
+  if (!recents || recents.length === 0) {
+    section.classList.add('hide');
+    return;
+  }
+
+  section.classList.remove('hide');
+  if (countEl) countEl.textContent = `${recents.length} Recent`;
+
+  grid.innerHTML = recents.map(item => {
+    const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+    const isCompleted = pct >= 90;
+    return `
+      <div class="continue-watching-card" data-rec-id="${escapeHtml(String(item.id))}">
+        <div class="continue-watching-top">
+          <div class="continue-watching-title" title="${escapeHtml(item.title || 'Lecture')}">${escapeHtml(item.title || 'Lecture')}</div>
+        </div>
+        <div class="continue-watching-instructor">${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</div>
+        <div class="lecture-progress-wrap" style="margin-top:2px;">
+          <div class="lecture-progress-track">
+            <div class="lecture-progress-bar ${isCompleted ? 'is-completed' : ''}" style="width: ${pct}%"></div>
+          </div>
+          <span class="lecture-progress-text ${isCompleted ? 'is-completed' : ''}">${isCompleted ? '✓ Completed' : `${pct}% Watched`}</span>
+        </div>
+        <button class="continue-watching-resume-btn">
+          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span>Resume Lecture</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.continue-watching-card').forEach(card => {
+    card.addEventListener('click', () => {
+      window.location.href = '/all-videos.html';
+    });
+  });
+}
+
+window.addEventListener('nnl:watch-progress-updated', () => {
+  renderContinueWatchingSection();
+});
+window.__nnlRefreshWatchProgress = () => {
+  renderContinueWatchingSection();
+};
 
 // Helper function to create a class card element
 function createClassCard(c, isCurrentlyLive) {

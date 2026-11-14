@@ -763,28 +763,40 @@ textarea,
  * Running Laser Glow around borders of boxes like screenshot 
  * (Rotating/traveling border sweep animation)
  */
-.otp-boxes-container.running-glow .otp-box {
-  animation: laserBorderGlow 0.65s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--i, 0) * 0.08s) 1 !important;
+@property --otp-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
 
-@keyframes laserBorderGlow {
-  0% {
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transform: scale(1);
-  }
-  45% {
-    border-color: #ff1e38;
-    background: rgba(255, 30, 56, 0.2);
-    box-shadow: 0 0 24px rgba(255, 30, 56, 0.8), inset 0 0 10px rgba(255, 30, 56, 0.35);
-    transform: translateY(-2px) scale(1.08);
-    color: #ff4d63;
-  }
-  100% {
-    border-color: rgba(255, 30, 56, 0.5);
-    box-shadow: 0 0 12px rgba(255, 30, 56, 0.3);
-    transform: scale(1);
-  }
+/* 
+ * Revolving luminous emerald conic laser around borders of boxes
+ * 100% synchronized across Web, Tablet, and Mobile APK
+ */
+.otp-boxes-container.running-glow .otp-box {
+  border-color: transparent !important;
+  background-color: transparent !important;
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.12)),
+    conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.14) 0deg, rgba(16, 185, 129, 0.14) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.14) 360deg) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  color: #34D399 !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.42), inset 0 0 8px rgba(16, 185, 129, 0.22) !important;
+  animation:
+    apkOtpOrbit 0.9s linear infinite,
+    apkOtpWave 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--i, 0) * 0.07s) 1 !important;
+}
+
+@keyframes apkOtpOrbit {
+  from { --otp-angle: 0deg; }
+  to { --otp-angle: 360deg; }
+}
+
+@keyframes apkOtpWave {
+  0% { transform: scale(1); }
+  50% { transform: translateY(-3px) scale(1.08); }
+  100% { transform: scale(1); }
 }
 
 /* Single Box with Green Tick (Fading into 1 button/box, turning emerald green) */
@@ -6827,6 +6839,103 @@ header.app-header.hide {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
+}
+
+/* Brochure & Timetable Dynamic Grid */
+.brochure-shell {
+  width: 100%;
+  max-width: 100%;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.brochure-hero {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(20, 24, 38, 0.85), rgba(14, 18, 30, 0.9));
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.brochure-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  width: 100%;
+}
+.brochure-tabs::-webkit-scrollbar { display: none; }
+.brochure-tab {
+  flex: 1 1 auto;
+  min-width: max-content;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(18, 22, 34, 0.7);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.brochure-tab.active {
+  background: linear-gradient(135deg, #7C5CE0 0%, #9378EC 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: 0 6px 14px -4px rgba(124, 92, 224, 0.4);
+}
+.brochure-dynamic-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+.brochure-card {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(22, 26, 42, 0.82), rgba(16, 20, 32, 0.9));
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.brochure-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+.brochure-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #F8FAFC;
+}
+.brochure-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  background: rgba(124, 92, 224, 0.2);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.3);
 }
 
 .note-doc-card {

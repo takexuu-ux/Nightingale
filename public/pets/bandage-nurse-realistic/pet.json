@@ -1,0 +1,7 @@
+{
+  "id": "bandage-nurse-realistic",
+  "displayName": "Bandage Nurse",
+  "description": "A high-detail 3D figurine nurse pet with a bandaged head, cream uniform, red medical trim, platform shoes, and scalpel.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "object"
+}

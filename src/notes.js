@@ -1047,6 +1047,10 @@ async function openSubjectView(subject) {
 function closeSubjectView() {
   currentOpenSubject = null;
   currentTopicFilter = 'ALL';
+  if (notesDocList) {
+    notesDocList.style.display = '';
+    notesDocList.style.width = '';
+  }
   notesSubjectView.classList.add('hide');
   notesCatalogView.classList.remove('hide');
   renderSubjectCards();
@@ -1055,6 +1059,8 @@ function closeSubjectView() {
 // Render Red Sapphire Brochure, Plans & Full Timetable View
 function renderRedSapphireBrochureView() {
   if (!notesDocList) return;
+  notesDocList.style.display = 'block';
+  notesDocList.style.width = '100%';
 
   const activeScheduleList = currentScheduleLang === 'english'
     ? RED_SAPPHIRE_DATA.englishSchedule
@@ -1211,6 +1217,9 @@ function renderSubjectNotesList() {
     renderRedSapphireBrochureView();
     return;
   }
+
+  notesDocList.style.display = '';
+  notesDocList.style.width = '';
 
   const notes = subjectNotesMap.get(String(currentOpenSubject.id)) || [];
   const query = searchQuery.trim().toLowerCase();

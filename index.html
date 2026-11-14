@@ -227,6 +227,34 @@
             <p>Fetching scheduled classes...</p>
           </div>
 
+          <!-- Aesthetic Home Hero Header -->
+          <div id="apk-home-hero" class="apk-home-hero">
+            <img src="/botanical_heart_lungs_login_1794442142381.jpg" class="apk-home-hero-bg" alt="" aria-hidden="true" />
+            <div class="apk-home-hero-content">
+              <span class="apk-home-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                <span>NIGHTINGALE ACADEMY</span>
+              </span>
+              <h2 id="apk-hero-greeting" class="apk-home-title">Welcome back, Scholar</h2>
+              <p class="apk-home-sub">Target NORCET &amp; Nursing Officer Exams with structured Hinglish lectures, notes &amp; clinical practice tests.</p>
+              <div class="apk-home-quick-actions">
+                <a href="/all-videos.html" class="apk-home-pill-action" style="background:var(--accent);color:#fff;border-color:transparent;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  <span>Explore Lectures</span>
+                </a>
+                <a href="/all-videos.html#saved" id="hero-saved-lectures-btn" class="apk-home-pill-action">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  <span>Saved Lectures</span>
+                  <span id="hero-saved-count" style="margin-left:4px;padding:1px 6px;border-radius:99px;background:rgba(124,92,224,0.18);font-size:10.5px;font-weight:800;">0</span>
+                </a>
+                <a href="/notes.html" class="apk-home-pill-action">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>Notes &amp; PDFs</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
           <!-- Live Now Section (Shown only if live classes exist) -->
           <div id="live-now-section" class="live-now-section hide">
             <h3 class="section-title">
@@ -247,6 +275,22 @@
               <div id="tomorrow-date-label" style="font-family:var(--font-display);font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.12em;padding:0.5rem 0.25rem 0.25rem;"></div>
               <div id="upcoming-sidebar-list" class="class-grid" style="width: 100%;"></div>
             </div>
+          </div>
+
+          <!-- Continue Watching / Recently Watched Lectures Section -->
+          <div id="continue-watching-section" class="hide" style="width:100%;margin-bottom:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="live-dot-glow" style="background:#a78bfa;box-shadow:0 0 12px rgba(167,139,250,0.6);"></span>
+                <h3 class="section-title" style="margin:0;">Continue Learning</h3>
+                <span id="continue-watching-count" style="font-size:11px;font-weight:800;color:var(--accent);background:rgba(124,92,224,0.14);border:1px solid rgba(124,92,224,0.25);padding:2px 8px;border-radius:99px;">0 Recent</span>
+              </div>
+              <a href="/all-videos.html" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;">
+                <span>All Videos</span>
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+              </a>
+            </div>
+            <div id="continue-watching-grid" class="continue-watching-grid"></div>
           </div>
         </section>
 

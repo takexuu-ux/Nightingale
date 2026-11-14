@@ -4,6 +4,13 @@ import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, fetchFreshVdoCipherOtp, fetchOfflineVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
+import {
+  getLectureProgress,
+  saveLectureProgress,
+  isLectureSaved,
+  toggleSavedLecture,
+  getSavedLecturesList
+} from './services/lectureWatchService.js';
 
 hydrateAndroidAuthSession();
 
@@ -310,8 +317,11 @@ function updateTopStats() {
 
   const vidCountAll = document.getElementById('vid-count-all');
   const vidCountRb = document.getElementById('vid-count-rb103');
+  const vidCountSaved = document.getElementById('vid-count-saved');
   if (vidCountAll) vidCountAll.textContent = ALL_VIDEOS_TOTALS.videos.toLocaleString();
   if (vidCountRb) vidCountRb.textContent = rbVideos;
+  const savedLectures = getSavedLecturesList();
+  if (vidCountSaved) vidCountSaved.textContent = savedLectures.length;
 
   const statSub = document.getElementById('stat-subjects');
   const statLec = document.getElementById('stat-lectures');
@@ -319,6 +329,9 @@ function updateTopStats() {
     const items = Array.from(offlineMapByRecId.values());
     if (statSub) statSub.textContent = items.length;
     if (statLec) statLec.textContent = items.filter(x => x.completed).length;
+  } else if (videoSectionMode === 'saved') {
+    if (statSub) statSub.textContent = savedLectures.length;
+    if (statLec) statLec.textContent = savedLectures.length;
   } else if (videoSectionMode === 'rb103') {
     if (statSub) statSub.textContent = rbActiveCount;
     if (statLec) statLec.textContent = rbVideos;
@@ -425,6 +438,79 @@ function renderCurrentCatalog() {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         deleteOfflineLecture(btn.getAttribute('data-rec-id'));
+      });
+    });
+    return;
+  }
+
+  if (videoSectionMode === 'saved') {
+    const items = getSavedLecturesList()
+      .filter(it => !q || `${it.title} ${it.instructor} ${it.subject}`.toLowerCase().includes(q));
+    if (items.length === 0) {
+      classListContainer.innerHTML = `
+        <div class="notes-empty-state" style="grid-column: 1 / -1;">
+          <h3 class="notes-empty-title">No Saved Lectures Yet</h3>
+          <p class="notes-empty-desc">Tap the Bookmark/Save button on any lecture to keep it here for quick access.</p>
+        </div>
+      `;
+      return;
+    }
+
+    classListContainer.style.display = 'flex';
+    classListContainer.style.flexDirection = 'column';
+    classListContainer.style.gap = '0.75rem';
+    classListContainer.innerHTML = items.map((it, idx) => {
+      const progress = getLectureProgress(it.id);
+      return `
+        <div class="sd-lecture-card" data-saved-idx="${idx}">
+          <span class="sd-lecture-num">${String(idx + 1).padStart(2, '0')}</span>
+          ${it.thumb ? `<img src="${escapeHtml(it.thumb)}" class="sd-lecture-thumb" alt="" loading="lazy">` : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
+          <div class="sd-lecture-details">
+            <div class="sd-lecture-title">${escapeHtml(it.title)}</div>
+            <div class="sd-lecture-meta">
+              <span style="color:var(--accent);font-weight:700;">${escapeHtml(it.instructor || 'NNL Faculty')}</span>
+              ${it.subject ? `<span>•</span><span>${escapeHtml(it.subject)}</span>` : ''}
+              ${it.duration ? `<span>•</span><span>${escapeHtml(it.duration)}</span>` : ''}
+            </div>
+            ${progress && progress.percent > 0 ? `
+              <div class="lecture-progress-wrap">
+                <div class="lecture-progress-track">
+                  <div class="lecture-progress-bar ${progress.percent >= 90 ? 'is-completed' : ''}" style="width: ${progress.percent}%"></div>
+                </div>
+                <span class="lecture-progress-text ${progress.percent >= 90 ? 'is-completed' : ''}">${progress.percent >= 90 ? '✓ Completed' : `${progress.percent}% Watched`}</span>
+              </div>
+            ` : ''}
+          </div>
+          <div class="sd-lecture-actions">
+            <button class="sd-save-btn is-saved btn-unsave-saved" data-rec-id="${escapeHtml(String(it.id))}" title="Remove from Saved">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <span>Saved</span>
+            </button>
+            <button class="sd-lecture-btn btn-play-saved" data-saved-idx="${idx}">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span>Play</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    classListContainer.querySelectorAll('.btn-unsave-saved').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSavedLecture(btn.getAttribute('data-rec-id'));
+        updateTopStats();
+        renderCurrentCatalog();
+      });
+    });
+
+    classListContainer.querySelectorAll('.btn-play-saved, .sd-lecture-card[data-saved-idx]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-unsave-saved')) return;
+        const idx = parseInt(el.getAttribute('data-saved-idx'), 10);
+        if (!isNaN(idx) && items[idx]) {
+          openRecordingPlayer(items[idx]);
+        }
       });
     });
     return;
@@ -844,6 +930,9 @@ function renderSubjectLecturesList() {
         `;
       }
     }
+    const progress = getLectureProgress(rec.id);
+    const isSaved = isLectureSaved(rec.id);
+
     return `
       <div class="sd-lecture-card" data-rec-idx="${idx}">
         <span class="sd-lecture-num">${rowNum}</span>
@@ -859,8 +948,20 @@ function renderSubjectLecturesList() {
             ${rec.date ? `<span>•</span><span>${escapeHtml(rec.date)}</span>` : ''}
             ${offState && (offState.status === 'downloading' || offState.status === 'pending') && offState.totalSizeBytes > 0 ? `<span>•</span><span>${(offState.bytesDownloaded / (1024 * 1024)).toFixed(1)}/${(offState.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB</span>` : ''}
           </div>
+          ${progress && progress.percent > 0 ? `
+            <div class="lecture-progress-wrap">
+              <div class="lecture-progress-track">
+                <div class="lecture-progress-bar ${progress.percent >= 90 ? 'is-completed' : ''}" style="width: ${progress.percent}%"></div>
+              </div>
+              <span class="lecture-progress-text ${progress.percent >= 90 ? 'is-completed' : ''}">${progress.percent >= 90 ? '✓ Completed' : `${progress.percent}% Watched`}</span>
+            </div>
+          ` : ''}
         </div>
         <div class="sd-lecture-actions">
+          <button class="sd-save-btn btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture'}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span>${isSaved ? 'Saved' : 'Save'}</span>
+          </button>
           ${rec.notePdfUrl ? `
             <button class="sd-note-btn btn-open-lec-pdf" data-title="${encodeURIComponent(rec.notePdfTitle || rec.title)}" data-url="${encodeURIComponent(rec.notePdfUrl)}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -906,6 +1007,30 @@ function renderSubjectLecturesList() {
         decodeURIComponent(btn.getAttribute('data-title')),
         decodeURIComponent(btn.getAttribute('data-url'))
       );
+    });
+  });
+
+  subjectLecturesContainer.querySelectorAll('.btn-save-lecture').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-rec-idx'), 10);
+      const rec = !isNaN(idx) ? filtered[idx] : null;
+      if (!rec) return;
+      const nowSaved = toggleSavedLecture(rec.id, {
+        title: rec.title,
+        instructor: rec.instructor,
+        subject: currentOpenSubject?.title || currentOpenSubject?.name || '',
+        thumb: rec.thumb || '',
+        duration: rec.duration || '',
+        notePdfUrl: rec.notePdfUrl || '',
+        date: rec.date || ''
+      });
+      btn.classList.toggle('is-saved', nowSaved);
+      const label = btn.querySelector('span');
+      if (label) label.textContent = nowSaved ? 'Saved' : 'Save';
+      const svg = btn.querySelector('svg');
+      if (svg) svg.setAttribute('fill', nowSaved ? 'currentColor' : 'none');
+      updateTopStats();
     });
   });
 
@@ -990,6 +1115,15 @@ function openRecordingPlayer(recording) {
 
   const recId = recording.id;
   const isBatch = Boolean(currentOpenSubject?.isBatch103);
+
+  // Record initial watch progress entry
+  saveLectureProgress(recId, {
+    title: recording.title,
+    instructor: recording.instructor,
+    subject: currentOpenSubject?.title || recording.subject || '',
+    thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
+    percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
+  });
 
   const launchPlayback = async () => {
     try {
@@ -1081,6 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     videoSectionMode = 'all';
     document.getElementById('vid-tab-all')?.classList.add('active');
     document.getElementById('vid-tab-rb103')?.classList.remove('active');
+    document.getElementById('vid-tab-saved')?.classList.remove('active');
     document.getElementById('vid-tab-offline')?.classList.remove('active');
     closeSubjectPage();
     renderCurrentCatalog();
@@ -1090,6 +1225,17 @@ document.addEventListener('DOMContentLoaded', () => {
     videoSectionMode = 'rb103';
     document.getElementById('vid-tab-rb103')?.classList.add('active');
     document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-saved')?.classList.remove('active');
+    document.getElementById('vid-tab-offline')?.classList.remove('active');
+    closeSubjectPage();
+    renderCurrentCatalog();
+  });
+
+  document.getElementById('vid-tab-saved')?.addEventListener('click', () => {
+    videoSectionMode = 'saved';
+    document.getElementById('vid-tab-saved')?.classList.add('active');
+    document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-rb103')?.classList.remove('active');
     document.getElementById('vid-tab-offline')?.classList.remove('active');
     closeSubjectPage();
     renderCurrentCatalog();
@@ -1100,9 +1246,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('vid-tab-offline')?.classList.add('active');
     document.getElementById('vid-tab-all')?.classList.remove('active');
     document.getElementById('vid-tab-rb103')?.classList.remove('active');
+    document.getElementById('vid-tab-saved')?.classList.remove('active');
     closeSubjectPage();
     await refreshOfflineDownloads();
     renderCurrentCatalog();
+  });
+
+  window.addEventListener('nnl:watch-progress-updated', () => {
+    if (currentOpenSubject) {
+      renderSubjectLecturesList();
+    } else if (videoSectionMode === 'saved') {
+      renderCurrentCatalog();
+    }
+    updateTopStats();
   });
 
   videosSearchInput?.addEventListener('input', (e) => {
@@ -1132,6 +1288,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const syncBatchId = getBatchIdFromName(activeBatch);
   batch103State = getBatchBaselineState(syncBatchId);
+  if (window.location.hash === '#saved') {
+    videoSectionMode = 'saved';
+    document.getElementById('vid-tab-saved')?.classList.add('active');
+    document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-rb103')?.classList.remove('active');
+    document.getElementById('vid-tab-offline')?.classList.remove('active');
+  }
   renderCurrentCatalog();
   refreshOfflineDownloads();
   syncBatchLive(syncBatchId, {
@@ -1158,6 +1321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     videoSectionMode = 'rb103';
     document.getElementById('vid-tab-rb103')?.classList.add('active');
     document.getElementById('vid-tab-all')?.classList.remove('active');
+    document.getElementById('vid-tab-saved')?.classList.remove('active');
     document.getElementById('vid-tab-offline')?.classList.remove('active');
     if (currentOpenSubject) closeSubjectPage();
     renderCurrentCatalog();
