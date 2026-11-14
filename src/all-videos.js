@@ -51,8 +51,19 @@ if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
   localStorage.setItem('nnl_active_batch', activeBatch);
 }
 
+// Topic / Subtopic harmonic shade index helper (User request: same color for topic, different shade for other subtopics)
+function getTopicShadeIndex(topicName) {
+  if (!topicName) return 0;
+  let hash = 0;
+  for (let i = 0; i < topicName.length; i++) {
+    hash = (hash << 5) - hash + topicName.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) % 6;
+}
+
 // State
-let videoSectionMode = 'all'; // 'all' (All Videos Subjects & Teachers) | 'rb103' (Batch Hinglish/English Past Classes)
+let videoSectionMode = (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'saved') ? 'saved' : 'all';
 let activeCategoryFilter = 'ALL';
 let searchQuery = '';
 let lectureFilterQuery = '';
@@ -932,9 +943,10 @@ function renderSubjectLecturesList() {
     }
     const progress = getLectureProgress(rec.id);
     const isSaved = isLectureSaved(rec.id);
+    const shadeIdx = getTopicShadeIndex(rec.topic);
 
     return `
-      <div class="sd-lecture-card" data-rec-idx="${idx}">
+      <div class="sd-lecture-card topic-shade-${shadeIdx}" data-rec-idx="${idx}">
         <span class="sd-lecture-num">${rowNum}</span>
         ${thumb
           ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
@@ -1230,6 +1242,12 @@ document.addEventListener('DOMContentLoaded', () => {
     closeSubjectPage();
     renderCurrentCatalog();
   });
+
+  window.__nnlSetVideoMode = (mode) => {
+    videoSectionMode = mode;
+    closeSubjectPage();
+    renderCurrentCatalog();
+  };
 
   document.getElementById('vid-tab-saved')?.addEventListener('click', () => {
     videoSectionMode = 'saved';

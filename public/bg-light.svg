@@ -1,90 +1,98 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
   <defs>
-    <!-- Sky Dawn / Morning Pastel Gradient -->
+    <!-- Sky Dawn / Morning Pastel Gradient (Soft Violet to Warm Dawn) -->
     <linearGradient id="skyGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#C7B8F5"/>
-      <stop offset="35%" stop-color="#DDD2FB"/>
-      <stop offset="65%" stop-color="#EBE3FD"/>
-      <stop offset="85%" stop-color="#F7EFFB"/>
-      <stop offset="100%" stop-color="#FFF8F4"/>
+      <stop offset="0%" stop-color="#C5B4F5"/>
+      <stop offset="28%" stop-color="#D9CCFB"/>
+      <stop offset="55%" stop-color="#E8E0FD"/>
+      <stop offset="78%" stop-color="#F4EDFD"/>
+      <stop offset="100%" stop-color="#FFF5EE"/>
     </linearGradient>
 
-    <!-- Morning Sun Halo & Glow -->
-    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFF3E0" stop-opacity="1"/>
-      <stop offset="45%" stop-color="#FFE0B2" stop-opacity="0.85"/>
-      <stop offset="80%" stop-color="#FFD180" stop-opacity="0.4"/>
-      <stop offset="100%" stop-color="#FFCC80" stop-opacity="0"/>
+    <!-- Morning Sun Radiant Aura & Core -->
+    <radialGradient id="sunAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF7ED" stop-opacity="1"/>
+      <stop offset="42%" stop-color="#FDE8D3" stop-opacity="0.88"/>
+      <stop offset="75%" stop-color="#F5C296" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#E8B888" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="sunCore" cx="42%" cy="40%" r="52%">
       <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="55%" stop-color="#FFF5E5"/>
-      <stop offset="100%" stop-color="#FFE0B2"/>
+      <stop offset="50%" stop-color="#FFF9F3"/>
+      <stop offset="100%" stop-color="#FEEFD8"/>
     </radialGradient>
 
-    <!-- Mountain Layers Gradients (Soft Lavender / Violet Mist) -->
-    <linearGradient id="mtnGradLight1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#C9B8EB" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#A894D4"/>
+    <!-- Mountain Valley Layer Gradients (Pastel Iris to Muted Violet) -->
+    <linearGradient id="mtnFarLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#BFAAE6"/>
+      <stop offset="100%" stop-color="#9E85CD"/>
     </linearGradient>
 
-    <linearGradient id="mtnGradLight2" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#9C85C8"/>
-      <stop offset="100%" stop-color="#7F65B0"/>
+    <linearGradient id="mtnMidFarLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9277C4"/>
+      <stop offset="100%" stop-color="#7659A8"/>
     </linearGradient>
 
-    <linearGradient id="mtnGradLight3" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#7B61AC"/>
-      <stop offset="100%" stop-color="#5E4491"/>
+    <linearGradient id="mtnMidLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6F51A3"/>
+      <stop offset="100%" stop-color="#553888"/>
     </linearGradient>
 
-    <linearGradient id="mtnGradLight4" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#543B85"/>
-      <stop offset="100%" stop-color="#3C2569"/>
+    <linearGradient id="mtnNearLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4F3182"/>
+      <stop offset="100%" stop-color="#3A1F67"/>
     </linearGradient>
 
-    <linearGradient id="mtnGradLightFront" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#341E5D"/>
-      <stop offset="100%" stop-color="#1E0E3B"/>
+    <linearGradient id="canyonWallLeftLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3D226E"/>
+      <stop offset="50%" stop-color="#2C1652"/>
+      <stop offset="100%" stop-color="#1E0D3B"/>
     </linearGradient>
 
-    <!-- Ambient Mist Gradient -->
-    <linearGradient id="mistGradLight" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="canyonWallRightLight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#412574"/>
+      <stop offset="50%" stop-color="#2E1756"/>
+      <stop offset="100%" stop-color="#1E0D3B"/>
+    </linearGradient>
+
+    <!-- Atmospheric Horizontal Mist Gradient -->
+    <linearGradient id="hMistLight" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#ECE3FC" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#EAE1FB" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
   <!-- Sky Canvas -->
   <rect width="1080" height="1920" fill="url(#skyGradLight)"/>
 
-  <!-- Morning Sun -->
-  <circle cx="640" cy="820" r="230" fill="url(#sunGlow)"/>
-  <circle cx="640" cy="820" r="125" fill="url(#sunCore)"/>
+  <!-- Morning Sun Nestled in Valley -->
+  <circle cx="580" cy="880" r="280" fill="url(#sunAura)"/>
+  <circle cx="580" cy="880" r="155" fill="url(#sunCore)"/>
 
-  <!-- Soft Morning Clouds / Light Bands -->
-  <path d="M0,740 Q280,720 540,750 T1080,730 L1080,820 L0,820 Z" fill="#F1E8FD" opacity="0.6"/>
-  <path d="M0,810 Q320,790 620,830 T1080,800 L1080,900 L0,900 Z" fill="#E4D6FA" opacity="0.5"/>
+  <!-- Soft Atmospheric Dawn Mist Bands across Sun -->
+  <path d="M0,780 Q280,750 540,780 T1080,760 L1080,840 L0,840 Z" fill="#D6C6FB" opacity="0.35"/>
+  <path d="M0,850 Q320,830 640,860 T1080,840 L1080,930 L0,930 Z" fill="#C4B0F7" opacity="0.4"/>
 
-  <!-- Mountain Layer 1 -->
-  <path d="M-20,960 L120,870 L310,930 L480,840 L690,920 L890,830 L1040,890 L1100,940 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight1)"/>
+  <!-- Mountain Layer 1 (Far Distant Peaks) -->
+  <path d="M-20,980 L140,890 L330,950 L520,870 L720,940 L910,860 L1060,910 L1100,960 L1100,1920 L-20,1920 Z" fill="url(#mtnFarLight)"/>
+  <rect y="880" width="1080" height="180" fill="url(#hMistLight)"/>
 
-  <!-- Soft Mist between Layer 1 & 2 -->
-  <rect y="860" width="1080" height="220" fill="url(#mistGradLight)"/>
+  <!-- Mountain Layer 2 (Mid Distant Ridges) -->
+  <path d="M-20,1080 L160,970 L390,1050 L610,950 L820,1040 L1010,970 L1100,1020 L1100,1920 L-20,1920 Z" fill="url(#mtnMidFarLight)"/>
 
-  <!-- Mountain Layer 2 -->
-  <path d="M-20,1060 L180,950 L420,1040 L620,930 L840,1020 L1020,950 L1100,1010 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight2)"/>
+  <!-- Mountain Layer 3 (Descending Valley Floor) -->
+  <path d="M-20,1210 L180,1100 L410,1190 L630,1090 L840,1170 L1020,1100 L1100,1160 L1100,1920 L-20,1920 Z" fill="url(#mtnMidLight)"/>
 
-  <!-- Mountain Layer 3 -->
-  <path d="M-20,1190 L140,1080 L360,1160 L590,1060 L780,1140 L970,1070 L1100,1150 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight3)"/>
+  <!-- Mountain Layer 4 (Lower Foothills) -->
+  <path d="M-20,1360 L210,1230 L460,1330 L700,1220 L930,1310 L1100,1240 L1100,1920 L-20,1920 Z" fill="url(#mtnNearLight)"/>
 
-  <!-- Mountain Layer 4 -->
-  <path d="M-20,1340 L190,1210 L440,1310 L680,1200 L910,1290 L1100,1220 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLight4)"/>
+  <!-- Dramatic Foreground Canyon Wall - Left Peak Framing -->
+  <path d="M-20,920 L120,1060 L60,1180 L220,1300 L110,1440 L280,1540 L160,1660 L360,1780 L1100,1920 L-20,1920 Z" fill="url(#canyonWallLeftLight)"/>
 
-  <!-- Mountain Layer 5 (Foreground) -->
-  <path d="M-20,1490 L0,1460 L180,1360 L380,1520 L610,1400 L850,1560 L1080,1410 L1100,1430 L1100,1920 L-20,1920 Z" fill="url(#mtnGradLightFront)"/>
+  <!-- Dramatic Foreground Canyon Wall - Right Peak Framing -->
+  <path d="M1100,940 L960,1070 L1020,1200 L860,1320 L980,1460 L800,1570 L920,1690 L710,1810 L-20,1920 L1100,1920 Z" fill="url(#canyonWallRightLight)"/>
 
-  <!-- Ground Floor -->
-  <rect y="1720" width="1080" height="200" fill="#15082B"/>
+  <!-- Warm Ground Base -->
+  <rect y="1760" width="1080" height="160" fill="#15082A"/>
 </svg>

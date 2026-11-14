@@ -3090,16 +3090,17 @@ function renderHomeDateCalendar(poolClasses) {
     const formattedDate = `${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
     const fullHeading = isToday ? `Today's Lectures (${formattedDate})` : `${dayNames[targetDate.getDay()]}, ${formattedDate}`;
 
-    if (statusBar && dateLabel && dateCount) {
+    if (statusBar && dateLabel) {
       statusBar.classList.remove('hide');
       dateLabel.textContent = fullHeading;
-      dateCount.textContent = `${dayClasses.length} ${dayClasses.length === 1 ? 'Lecture' : 'Lectures'}`;
+      if (dateCount) dateCount.remove(); // User request: remove "0 lectures" count
     }
 
     classListContainer.innerHTML = '';
 
     if (dayClasses.length > 0) {
       if (emptyState) emptyState.classList.add('hide');
+      classListContainer.classList.remove('hide');
       dayClasses.forEach(c => {
         const start = parseApiDate(c.start || c.startTime || '');
         const end = c.end || c.endTime ? parseApiDate(c.end || c.endTime) : new Date(start.getTime() + 2 * 3600000);
@@ -3108,6 +3109,7 @@ function renderHomeDateCalendar(poolClasses) {
         classListContainer.appendChild(createClassCard(c, isLiveNow, isStartingSoon));
       });
     } else {
+      classListContainer.classList.add('hide');
       if (emptyState) {
         emptyState.classList.remove('hide');
         const emptySub = emptyState.querySelector('.apk-empty-sub');
@@ -3129,6 +3131,7 @@ function renderHomeDateCalendar(poolClasses) {
     const pill = document.createElement('div');
     pill.className = `apk-date-pill ${isToday ? 'active' : ''} ${hasLecture ? 'has-lecture' : ''}`;
     pill.innerHTML = `
+      <span class="apk-date-pill-dot"></span>
       <span class="apk-date-pill-day">${dayNames[d.getDay()]}</span>
       <span class="apk-date-pill-num">${d.getDate()}</span>
     `;
@@ -3238,6 +3241,9 @@ function renderClasses(classes) {
 
     // 2. Interactive Horizontal Date Selector (Image 2 style with past & future dates)
     renderHomeDateCalendar(poolForLive);
+    if (IS_HINGLISH_APK) {
+      return; // Handled exclusively by interactive date picker and empty state
+    }
     const soonMs = 30 * 60 * 1000;
     const futureLimitMs = 4 * 60 * 60 * 1000;
 
@@ -4034,19 +4040,49 @@ function initOtpBoxes() {
       otpGlowStartedAt = Date.now();
     }
 
-    // After border laser glow animation starts, submit form (APK keeps laser visible ~2s total before morph)
     if (otpGlowTimeout) clearTimeout(otpGlowTimeout);
     otpGlowTimeout = setTimeout(() => {
       otpForm.dispatchEvent(new Event('submit', { cancelable: true }));
     }, isApkShell ? 320 : 550);
   }
 
+  // Universal Full-OTP distributor (Handles paste, clipboard, SMS auto-fetch & multi-char autofill)
+  function fillFullOtp(text) {
+    if (!text) return;
+    const digits = String(text).replace(/\D/g, '').slice(0, 6);
+    if (!digits) return;
+
+    digits.split('').forEach((d, i) => {
+      if (boxes[i]) {
+        boxes[i].value = d;
+        boxes[i].classList.add('filled');
+      }
+    });
+
+    const fullVal = syncOtpValue();
+    const targetIdx = Math.min(digits.length, boxes.length - 1);
+    if (boxes[targetIdx]) boxes[targetIdx].focus();
+
+    if (digits.length === 6) {
+      handleCompleteOtp(fullVal);
+    }
+  }
+
+  // Expose global SMS Auto-Fetch receiver for Android Bridge & WebOTP
+  window.__nnlReceiveSmsOtp = fillFullOtp;
+
   boxes.forEach((box, index) => {
     box.style.setProperty('--i', index);
 
     box.addEventListener('input', () => {
-      const val = box.value.replace(/\D/g, '');
-      box.value = val ? val[val.length - 1] : '';
+      const raw = box.value.replace(/\D/g, '');
+      // When Android keyboard pastes or autofills, it inserts multi-char string into single box
+      if (raw.length > 1) {
+        fillFullOtp(raw);
+        return;
+      }
+
+      box.value = raw ? raw[raw.length - 1] : '';
 
       if (box.value) {
         box.classList.add('filled');
@@ -4097,30 +4133,42 @@ function initOtpBoxes() {
 
     box.addEventListener('paste', (e) => {
       e.preventDefault();
-      const pasteData = (e.clipboardData || window.clipboardData).getData('text') || '';
-      const digits = pasteData.replace(/\D/g, '').slice(0, 6);
-      if (!digits) return;
-
-      digits.split('').forEach((d, i) => {
-        if (boxes[i]) {
-          boxes[i].value = d;
-          boxes[i].classList.add('filled');
-        }
-      });
-
-      const fullOtp = syncOtpValue();
-      const targetIdx = Math.min(digits.length, boxes.length - 1);
-      boxes[targetIdx].focus();
-
-      if (digits.length === 6) {
-        handleCompleteOtp(fullOtp);
-      }
+      const pasteData = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      fillFullOtp(pasteData);
     });
 
     box.addEventListener('focus', () => {
       box.select();
     });
   });
+
+  const otpBoxContainer = document.getElementById('otp-boxes-container');
+  if (otpBoxContainer) {
+    otpBoxContainer.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      fillFullOtp(pasteData);
+    });
+  }
+
+  // Modern W3C WebOTP API: automatically catches SMS verification codes on Android
+  function startWebOtpAutoFetch() {
+    if (typeof window !== 'undefined' && 'OTPCredential' in window && navigator.credentials) {
+      try {
+        const ac = new AbortController();
+        window.__nnlOtpAbort = ac;
+        navigator.credentials.get({
+          otp: { transport: ['sms'] },
+          signal: ac.signal
+        }).then(content => {
+          if (content && content.code) {
+            fillFullOtp(content.code);
+          }
+        }).catch(() => {});
+      } catch (_) {}
+    }
+  }
+  window.__nnlStartOtpAutoFetch = startWebOtpAutoFetch;
 }
 
 function clearOtpBoxes() {
@@ -4188,6 +4236,9 @@ phoneForm.addEventListener('submit', async (e) => {
     clearOtpBoxes();
     const firstOtpBox = document.querySelector('.otp-box');
     if (firstOtpBox) firstOtpBox.focus();
+    if (typeof window.__nnlStartOtpAutoFetch === 'function') {
+      window.__nnlStartOtpAutoFetch();
+    }
 
   } catch (error) {
     console.error('Send OTP Error:', error);

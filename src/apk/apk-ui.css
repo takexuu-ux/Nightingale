@@ -36,8 +36,8 @@
 }
 
 :root {
-  --bg-canvas: #F6F4FD;
-  --bg-canvas-grad: linear-gradient(180deg, #FFFFFF 0%, #F5F1FD 45%, #EBE5FA 100%);
+  --bg-canvas: #EDE6FB;
+  --bg-canvas-grad: linear-gradient(180deg, #DDD0F8 0%, #EFE8FC 26%, rgba(246, 241, 253, 0.75) 60%, rgba(255, 255, 255, 0.45) 100%);
   --bg-elevated: #FFFFFF;
   --bg-subtle: #F3EEFA;
   --bg-tint: #EFE9FF;
@@ -87,29 +87,29 @@
 }
 
 [data-theme="dark"] {
-  --bg-canvas: #2B2544;
-  --bg-canvas-grad: linear-gradient(180deg, #3A325A 0%, #292344 45%, #1D1833 100%);
-  --bg-elevated: #372E4F;
-  --bg-subtle: #2B2342;
-  --bg-tint: rgba(154, 132, 255, 0.16);
-  --bg-glass: rgba(55, 46, 79, 0.80);
-  --bg-glass-strong: rgba(55, 46, 79, 0.92);
-  --card-bg: rgba(55, 46, 79, 0.82);
-  --card-bg-hover: rgba(70, 59, 100, 0.9);
+  --bg-canvas: #1F1938;
+  --bg-canvas-grad: linear-gradient(180deg, #2D2452 0%, #201A3B 48%, #16112C 100%);
+  --bg-elevated: #332A5A;
+  --bg-subtle: #29204A;
+  --bg-tint: rgba(142, 116, 229, 0.16);
+  --bg-glass: rgba(51, 42, 90, 0.82);
+  --bg-glass-strong: rgba(51, 42, 90, 0.94);
+  --card-bg: rgba(51, 42, 90, 0.85);
+  --card-bg-hover: rgba(65, 54, 112, 0.92);
 
   --text-primary: #FFFFFF;
-  --text-secondary: #C2BCDB;
-  --text-muted: #8E85A8;
+  --text-secondary: #C7BFE2;
+  --text-muted: #8C81AF;
 
-  --accent: #9A84FF;
-  --accent-bright: #B3A0FF;
-  --accent-glow: #8B74FE;
-  --accent-ink: #D4C9FF;
-  --accent-soft: rgba(154, 132, 255, 0.22);
-  --accent-grad: linear-gradient(135deg, #7C5CE0 0%, #9A84FF 100%);
-  --accent-soft-grad: linear-gradient(145deg, rgba(154, 132, 255, 0.16), rgba(91, 62, 168, 0.06));
-  --accent-peach: #F0C69E;
-  --accent-peach-text: #241D35;
+  --accent: #8E74E5;
+  --accent-bright: #A58EFF;
+  --accent-glow: #9578FF;
+  --accent-ink: #DDD5FE;
+  --accent-soft: rgba(142, 116, 229, 0.22);
+  --accent-grad: linear-gradient(135deg, #7552E3 0%, #9578FF 100%);
+  --accent-soft-grad: linear-gradient(145deg, rgba(142, 116, 229, 0.18), rgba(245, 194, 150, 0.08));
+  --accent-peach: #F5C296;
+  --accent-peach-text: #221A3B;
 
   --success-bg: rgba(18, 140, 74, 0.18);
   --success-ink: #6EE7B7;
@@ -121,12 +121,12 @@
   --danger-border: rgba(248, 113, 113, 0.32);
 
   --border-hairline: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.22);
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.32);
-  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.36);
-  --shadow-float: 0 18px 40px rgba(0, 0, 0, 0.56);
-  --ripple-color: rgba(173, 141, 228, 0.24);
+  --border-subtle: rgba(255, 255, 255, 0.13);
+  --border-strong: rgba(255, 255, 255, 0.24);
+  --shadow-card: 0 4px 16px rgba(14, 10, 26, 0.35);
+  --shadow-soft: 0 6px 18px rgba(14, 10, 26, 0.40);
+  --shadow-float: 0 18px 40px rgba(10, 7, 20, 0.58);
+  --ripple-color: rgba(142, 116, 229, 0.24);
 }
 
 *, *::before, *::after {
@@ -174,22 +174,29 @@ body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
-  opacity: 0.38;
   transition: opacity 0.3s ease, background-image 0.3s ease;
 }
 
 [data-theme="dark"] #apk-ambient-bg {
-  background-image: url('/bg-dark.svg');
-  opacity: 0.42;
+  background-image: url('bg-dark.svg');
+  opacity: 0.52;
 }
 
 [data-theme="light"] #apk-ambient-bg {
-  background-image: url('/bg-light.svg');
-  opacity: 0.30;
+  background-image: url('bg-light.svg');
+  opacity: 0.42;
+}
+
+main#app,
+.main-content,
+.auth-container,
+.apk-home-feed {
+  position: relative;
+  z-index: 1;
 }
 
 .hide {
@@ -527,12 +534,12 @@ button, input, select, textarea {
   box-shadow: 0 0 0 2px var(--bg-elevated);
 }
 
-/* ── Main App Container (Fits Tablet & Mobile 100%) ── */
+/* ── Main App Container (Fits Tablet & Mobile 100% with Zero Empty Sidebar) ── */
 .main-content,
 main#app {
   width: 100%;
   max-width: 100%;
-  padding: 20px 24px 36px calc(var(--rail-w) + 24px) !important;
+  padding: max(16px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) calc(var(--dock-h) + 28px) max(18px, env(safe-area-inset-left)) !important;
   margin: 0 !important;
   min-height: 100vh;
 }
@@ -1473,6 +1480,15 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   white-space: nowrap;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CATEGORY-SPECIFIC CORNER GRADIENTS (User request: corner gradient on all cards)
+   - Lectures: Sapphire / Iris corner gradient
+   - Subjects: Unified Emerald / Teal corner gradient
+   - Notes: Azure / Sky Blue corner gradient
+   - Tests & Exams: Sunset Amber / Coral Gold corner gradient
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Lectures (Sapphire / Royal Iris) */
 .class-card {
   min-width: 0;
   max-width: 100%;
@@ -1480,31 +1496,37 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   height: auto !important;
   padding: 14px 16px !important;
   border-radius: 19px;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 244, 255, 0.94) 100%);
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  border: 1px solid var(--border-hairline);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.22) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(255, 255, 255, 0.96) 0%, rgba(246, 242, 254, 0.88) 100%) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(124, 58, 237, 0.18) !important;
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   justify-content: flex-start !important;
   gap: 8px !important;
   cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="dark"] .class-card {
-  background: linear-gradient(148deg, #171A29 0%, #1E1A30 52%, #282144 100%);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: radial-gradient(circle at 100% 0%, rgba(147, 51, 234, 0.28) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(46, 38, 73, 0.88) 0%, rgba(32, 26, 52, 0.94) 100%) !important;
+  border: 1px solid rgba(147, 51, 234, 0.24) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
 .class-card.live-card-border {
-  background: linear-gradient(150deg, #FFFFFF 0%, #EEFDF6 55%, #DCFCEB 100%);
-  border: 1.5px solid rgba(16, 185, 129, 0.48);
-  box-shadow: 0 8px 22px -6px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.35) 0%, transparent 64%),
+              linear-gradient(150deg, #FFFFFF 0%, #EEFDF6 55%, #DCFCEB 100%) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.48) !important;
+  box-shadow: 0 8px 22px -6px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.85) !important;
 }
 
 [data-theme="dark"] .class-card.live-card-border {
-  background: linear-gradient(150deg, rgba(16, 46, 42, 0.94) 0%, rgba(22, 26, 38, 0.94) 100%);
+  background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.4) 0%, transparent 64%),
+              linear-gradient(150deg, rgba(16, 46, 42, 0.94) 0%, rgba(22, 26, 38, 0.94) 100%) !important;
 }
 
 .class-card > div {
@@ -1512,32 +1534,90 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   margin-bottom: 0 !important;
 }
 
-.subject-card,
-.test-card,
+/* 2. All Subjects (Unified Emerald / Teal Jade Family) */
+.subject-card {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 112px;
+  padding: 15px 16px;
+  border-radius: 19px;
+  background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.22) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.88) 100%) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.22) !important;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .subject-card {
+  background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.28) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(30, 48, 44, 0.88) 0%, rgba(20, 34, 30, 0.94) 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.26) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* 3. Notes & PDFs (Cobalt Azure / Sky Blue Family) */
+.notes-card,
 .doc-card {
   min-width: 0;
   max-width: 100%;
   min-height: 112px;
   padding: 15px 16px;
   border-radius: 19px;
-  background: linear-gradient(148deg, #FFFFFF 0%, #FAF7FF 46%, #EDE6FD 100%);
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border: 1px solid rgba(124, 92, 224, 0.18);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  background: radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.22) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 249, 255, 0.88) 100%) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(14, 165, 233, 0.20) !important;
+  box-shadow: 0 4px 18px rgba(14, 165, 233, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 12px;
   cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-[data-theme="dark"] .subject-card,
-[data-theme="dark"] .test-card,
+[data-theme="dark"] .notes-card,
 [data-theme="dark"] .doc-card {
-  background: linear-gradient(148deg, #171B2C 0%, #1F1B33 52%, #292246 100%);
-  border-color: rgba(167, 139, 250, 0.18);
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.28) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(26, 42, 64, 0.88) 0%, rgba(18, 28, 46, 0.94) 100%) !important;
+  border: 1px solid rgba(14, 165, 233, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* 4. Tests & Exams (Sunset Amber / Coral Gold Family) */
+.test-card {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 112px;
+  padding: 15px 16px;
+  border-radius: 19px;
+  background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.22) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(255, 255, 255, 0.96) 0%, rgba(254, 243, 199, 0.88) 100%) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.22) !important;
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .test-card {
+  background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.28) 0%, transparent 64%),
+              linear-gradient(155deg, rgba(54, 42, 28, 0.88) 0%, rgba(36, 28, 18, 0.94) 100%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.26) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
 .class-card:hover,
@@ -2986,81 +3066,101 @@ body.apk-pet-disabled #apk-companion-pet,
   100% { transform: translateY(0) scale(1, 1); }
 }
 
-/* ── Floating Bottom Island Dock with Apple Glassmorphism & Refined Curves ── */
-@media (max-width: 767px), (orientation: portrait) {
-  #apk-ota-banner {
-    bottom: 84px !important;
-  }
+/* ── Floating Bottom Island Dock with Apple Glassmorphism & Refined Curves (Universal: Phone & Tablet) ── */
+#apk-ota-banner {
+  bottom: 84px !important;
+}
 
-  .app-header {
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    top: auto !important;
-    bottom: max(14px, env(safe-area-inset-bottom)) !important;
-    width: max-content !important;
-    max-width: calc(100vw - 28px) !important;
-    margin: 0 !important;
-    height: 52px !important;
-    flex-direction: row !important;
-    padding: 5px 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    border-radius: 20px !important; /* Refined squircle, NOT 999px pill */
-    background: rgba(16, 20, 36, 0.76) !important; /* Real Glassmorphism */
-    backdrop-filter: blur(28px) saturate(190%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-    gap: 6px !important;
-    z-index: 8500 !important;
-  }
+.app-header {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  top: auto !important;
+  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  width: max-content !important;
+  max-width: calc(100vw - 28px) !important;
+  margin: 0 !important;
+  height: 52px !important;
+  flex-direction: row !important;
+  padding: 5px 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 20px !important; /* Refined squircle, NOT 999px pill */
+  background: rgba(16, 20, 36, 0.76) !important; /* Real Glassmorphism */
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  gap: 6px !important;
+  z-index: 8500 !important;
+}
 
-  [data-theme="light"] .app-header {
-    background: rgba(255, 255, 255, 0.82) !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    box-shadow: 0 14px 34px rgba(37, 68, 128, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
-  }
+[data-theme="light"] .app-header {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 14px 34px rgba(37, 68, 128, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
 
-  .header-logo {
-    display: none !important;
-  }
+.header-logo {
+  display: none !important;
+}
 
-  .app-header .header-nav-tabs,
-  .app-header .header-nav-tabs .nav-tabs {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    flex-direction: row !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    width: auto !important;
-  }
+.app-header .header-nav-tabs,
+.app-header .header-nav-tabs .nav-tabs {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important;
+}
 
-  .nav-tab {
-    flex: 0 0 auto !important;
-    width: 54px !important;
-    min-width: 54px !important;
-    min-height: 42px !important;
-    height: 42px !important;
-    padding: 0 !important;
-    border-radius: 12px !important; /* Refined squircle, NOT 999px pill */
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0 !important;
-  }
+.nav-tab {
+  flex: 0 0 auto !important;
+  width: 54px !important;
+  min-width: 54px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  border-radius: 12px !important; /* Refined squircle */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  background: transparent !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
 
-  /* No options/settings or refresh in bottom dock: dock has ONLY the 4 navigation tabs */
-  .header-right-actions,
-  .nav-tab-refresh-btn,
-  .app-header .apk-hamburger-btn {
-    display: none !important;
-  }
+/* Nav Tab Icons with Distinct Luminous Colors (User request: buttons have no color and look bad) */
+#tab-live svg { stroke: #A78BFA !important; }
+#tab-videos svg { stroke: #FB7185 !important; }
+#tab-notes svg { stroke: #38BDF8 !important; }
+#tab-tests svg { stroke: #34D399 !important; }
 
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.9) 0%, rgba(168, 85, 247, 0.9) 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.06);
+}
+.nav-tab.active svg {
+  stroke: #FFFFFF !important;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)) !important;
+}
+
+/* No options/settings or refresh in bottom dock: dock has ONLY the 4 navigation tabs */
+.header-right-actions,
+.nav-tab-refresh-btn,
+.app-header .apk-hamburger-btn {
+  display: none !important;
+}
+
+@media (max-width: 680px) {
   .nav-tab-refresh-btn,
   .nav-btn,
   .apk-icon-btn {
@@ -3096,14 +3196,6 @@ body.apk-pet-disabled #apk-companion-pet,
     gap: 10px;
   }
 
-  @media (min-width: 680px) {
-    .class-grid,
-    .notes-subject-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-  }
-
   .sd-lecture-card {
     padding: 10px 11px;
     gap: 8px;
@@ -3134,6 +3226,14 @@ body.apk-pet-disabled #apk-companion-pet,
   .quiz-sidebar {
     width: 100%;
     max-height: 150px;
+  }
+}
+
+@media (min-width: 681px) {
+  .class-grid,
+  .notes-subject-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 }
 
@@ -4186,18 +4286,18 @@ main#app,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 66px;
-  border-radius: 22px; /* Apple pill curve */
+  width: 44px;
+  height: 68px;
+  border-radius: 999px; /* Exact capsule pill curve from Image 2 */
   background: var(--bg-glass-strong);
-  border: 1px solid var(--border-hairline);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   cursor: pointer;
   position: relative;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  padding: 8px 0 6px;
+  padding: 8px 0 7px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
@@ -4206,40 +4306,52 @@ main#app,
   border-color: var(--accent);
 }
 
-.apk-date-pill.has-lecture::before {
-  content: '';
-  position: absolute;
-  top: 7px;
+.apk-date-pill-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
+  margin-bottom: 4px;
+  background: transparent;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.apk-date-pill.has-lecture .apk-date-pill-dot {
   background: var(--accent);
+  opacity: 1;
+}
+
+[data-theme="dark"] .apk-date-pill.has-lecture .apk-date-pill-dot {
+  background: #F5C296; /* Warm apricot dot matching Image 1 & 2 */
+  opacity: 1;
 }
 
 .apk-date-pill.active {
-  background: #1A152E !important;
+  background: #140F26 !important;
   color: #FFFFFF !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-  transform: scale(1.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(10, 7, 20, 0.55) !important;
+  transform: scale(1.05);
 }
 
 [data-theme="light"] .apk-date-pill.active {
-  background: #2D2248 !important;
+  background: #231C3D !important;
   color: #FFFFFF !important;
-  box-shadow: 0 8px 20px rgba(45, 34, 72, 0.24) !important;
+  border: 1.5px solid rgba(35, 28, 61, 0.3) !important;
+  box-shadow: 0 8px 20px rgba(35, 28, 61, 0.25) !important;
 }
 
-.apk-date-pill.active.has-lecture::before {
+.apk-date-pill.active .apk-date-pill-dot {
   background: #FFFFFF !important;
+  opacity: 1 !important;
 }
 
 .apk-date-pill-day {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  margin-top: 4px;
   opacity: 0.8;
+  line-height: 1;
 }
 
 .apk-date-pill.active .apk-date-pill-day {
@@ -4249,7 +4361,7 @@ main#app,
 .apk-date-pill-num {
   font-size: 16px;
   font-weight: 800;
-  margin-top: 2px;
+  margin-top: 3px;
   line-height: 1.1;
 }
 

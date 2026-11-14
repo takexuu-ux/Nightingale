@@ -243,16 +243,38 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- Red Sapphire Brochure & Timetable -->
+      <!-- Academic Resources: Saved Lectures & Brochure -->
       <div>
         <div class="apk-side-section-title">Academic Resources</div>
-        <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-            <span style="font-weight:800;font-size:13.5px;">Brochure &amp; Timetable</span>
-            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Batch syllabus, schedule &amp; PDFs</span>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <!-- Saved Lectures Button (User request: keep only Saved, place in side control) -->
+          <button type="button" id="apk-side-saved-btn" class="apk-batch-option" style="width:100%;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:10px;background:rgba(244,63,94,0.18);color:#F43F5E;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                <span style="font-weight:800;font-size:13.5px;">Saved Lectures</span>
+                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Saved offline video lectures</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- Red Sapphire Brochure & Timetable -->
+          <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:10px;background:rgba(124,58,237,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                <span style="font-weight:800;font-size:13.5px;">Brochure &amp; Timetable</span>
+                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Batch syllabus, schedule &amp; PDFs</span>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -291,6 +313,20 @@ function buildSidePanel() {
         syncPetSelectionUI();
       }
     });
+  });
+
+  // Saved Lectures inside Side Panel (User request: side control)
+  panel.querySelector('#apk-side-saved-btn')?.addEventListener('click', () => {
+    closeSidePanel();
+    if (window.location.pathname.includes('all-videos')) {
+      if (typeof window.__nnlSetVideoMode === 'function') {
+        window.__nnlSetVideoMode('saved');
+      } else {
+        window.location.href = '/all-videos.html?mode=saved';
+      }
+    } else {
+      window.location.href = '/all-videos.html?mode=saved';
+    }
   });
 
   // Switch Batch inside Side Panel

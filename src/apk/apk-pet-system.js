@@ -100,50 +100,50 @@ export function initPetSystem() {
 
   const getViewportClamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
-  const getRestSpot = () => {
+  // Natural wandering spots along the bottom of the screen
+  const getRandomWanderSpot = () => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const bottomY = getViewportClamp(vh - 96, 20, vh - 70);
+    // Pick from distinct zones: left, mid-left, center, mid-right, right
+    const zones = [
+      24,
+      Math.max(30, Math.floor(vw * 0.22)),
+      Math.max(30, Math.floor(vw * 0.48)),
+      Math.max(30, Math.floor(vw * 0.72)),
+      Math.max(30, vw - 60)
+    ];
+    const targetZoneX = zones[Math.floor(Math.random() * zones.length)];
+    const finalX = getViewportClamp(targetZoneX + (Math.random() - 0.5) * 30, 20, vw - 54);
     return {
-      x: getViewportClamp(vw - 52, 16, vw - 42),
-      y: getViewportClamp(vh - 96, 16, vh - 60),
-      facing: -1,
-      sitting: true
+      x: finalX,
+      y: bottomY,
+      facing: targetZoneX > (vw / 2) ? -1 : 1
     };
   };
 
-  const initPos = getRestSpot();
+  const initPos = getRandomWanderSpot();
   let x = initPos.x;
   let y = initPos.y;
   let targetX = x;
   let targetY = y;
-  let activeSpot = { compute: getRestSpot };
-  let spotSitting = true;
-  let facing = -1;
-  let preferredFacing = -1;
+  let facing = 1;
+  let isMoving = false;
+  let nextWanderTime = performance.now() + 6000;
 
-  const applySpot = (spot) => {
-    if (!spot) return;
-    activeSpot = spot;
-    const pos = spot.compute();
-    if (pos) {
-      targetX = pos.x;
-      targetY = pos.y;
-      preferredFacing = pos.facing;
-      spotSitting = Boolean(pos.sitting);
-    }
+  const pickNextWander = () => {
+    const spot = getRandomWanderSpot();
+    targetX = spot.x;
+    targetY = spot.y;
+    facing = targetX >= x ? 1 : -1;
+    isMoving = true;
+    nextWanderTime = performance.now() + 9000 + Math.random() * 8000;
   };
 
-  const pickNextTarget = () => {
-    applySpot({ compute: getRestSpot });
-  };
-
-  // Animation row states:
-  // 0: idle, 1: walk/run, 3: wave, 4: jump, 5: scare/fail, 6: sit/rest
+  // Animation row states: Row 0 is continuous breathing/idle; Row 1 is walk
   let animRow = 0;
   let animCol = 0;
-  let animRowOverrideUntil = 0;
   let lastFrameTime = 0;
-  let lastSpookAt = 0;
   let isDragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
@@ -151,7 +151,7 @@ export function initPetSystem() {
   let dragOriginY = 0;
   let didDragMove = false;
 
-  const spawnBurst = (symbol = '♥', color = '#EC4899') => {
+  const spawnBurst = (symbol = '♥', color = '#A78BFA') => {
     if (!burstsEl) return;
     for (let i = 0; i < 4; i++) {
       const p = document.createElement('span');
@@ -165,32 +165,20 @@ export function initPetSystem() {
     }
   };
 
-  const playSpecialAnim = (row, durationMs = 2400, burstSymbol = null, burstColor = '#7C5CE0') => {
-    animRow = row;
-    animRowOverrideUntil = durationMs > 0 ? performance.now() + durationMs : 0;
-    if (burstSymbol) spawnBurst(burstSymbol, burstColor);
-  };
-
   const reactToTap = () => {
-    // Alternate between wave (row 3) and jump (row 4)
-    const pickJump = Math.random() < 0.5;
-    const row = pickJump ? 4 : 3;
-    const sym = pickJump ? '★' : '♥';
-    const clr = pickJump ? '#F59E0B' : '#E11D48';
-    playSpecialAnim(row, 2600, sym, clr);
-
+    spawnBurst('♥', '#A78BFA');
     root.classList.remove('is-hop');
     void root.offsetWidth;
     root.classList.add('is-hop');
-
-    if (Math.random() < 0.35) {
-      setTimeout(() => pickNextTarget(), 800);
-    }
+    // After tap, occasionally start wandering
+    setTimeout(() => {
+      pickNextWander();
+    }, 600);
   };
 
   root.addEventListener('pointerenter', () => {
-    if (!isDragging && performance.now() > animRowOverrideUntil) {
-      playSpecialAnim(3, 1800, '♥', '#EC4899');
+    if (!isDragging) {
+      spawnBurst('✦', '#F0C69E');
     }
   });
 
@@ -261,38 +249,14 @@ export function initPetSystem() {
     if (!didDragMove) {
       reactToTap();
     } else {
-      const spots = getCuratedSpots();
-      let bestSpot = null;
-      let bestDist = Infinity;
-      for (const s of spots) {
-        const pos = s.compute();
-        if (!pos) continue;
-        const d = Math.hypot(pos.x - x, pos.y - y);
-        if (d < bestDist && d < 180) {
-          bestDist = d;
-          bestSpot = s;
-        }
-      }
-      if (bestSpot) {
-        applySpot(bestSpot);
-        playSpecialAnim(3, 2200, '♥', '#E11D48');
-      } else {
-        playSpecialAnim(0, 0);
-      }
+      targetX = x;
+      targetY = y;
+      isMoving = false;
+      nextWanderTime = performance.now() + 10000;
     }
   };
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
-
-  // Gentle ambient life
-  setInterval(() => {
-    if (!isPetEnabled() || isDragging) return;
-    if (Math.random() < 0.25 && performance.now() > animRowOverrideUntil) {
-      playSpecialAnim(Math.random() < 0.5 ? 3 : 0, 2400);
-    }
-  }, 18000);
-
-  setTimeout(() => pickNextTarget(), 300);
 
   // Animation frame loop
   const tick = (now) => {
@@ -319,49 +283,38 @@ export function initPetSystem() {
       root.style.pointerEvents = 'auto';
     }
 
-    if (!isDragging) {
-      const synced = activeSpot && activeSpot.compute();
-      if (synced) {
-        targetX = synced.x;
-        targetY = synced.y;
-        preferredFacing = synced.facing;
-        spotSitting = Boolean(synced.sitting);
-      } else {
-        pickNextTarget();
-      }
+    // Wandering trigger: if idle long enough, stroll to a new location
+    if (!isDragging && now > nextWanderTime) {
+      pickNextWander();
+    }
 
+    if (!isDragging) {
       const dx = targetX - x;
       const dy = targetY - y;
       const dist = Math.hypot(dx, dy);
 
-      if (dist > 1.5) {
-        x += dx * 0.026;
-        y += dy * 0.026;
-        if (Math.abs(dx) > 0.8) facing = dx >= 0 ? 1 : -1;
+      if (dist > 3.0) {
+        x += dx * 0.024;
+        y += dy * 0.024;
+        facing = dx >= 0 ? 1 : -1;
+        isMoving = true;
       } else {
-        facing = preferredFacing;
+        isMoving = false;
       }
     }
 
-    const isMoving = isDragging || Math.hypot(targetX - x, targetY - y) > 3.5;
+    // Row 1 for walking, Row 0 for resting breathing
+    animRow = (isMoving || isDragging) ? 1 : 0;
 
-    // Determine active sprite row: continuous steady idle breathing on row 0
-    if (animRowOverrideUntil > 0 && now < animRowOverrideUntil) {
-      // keep override
-    } else {
-      animRowOverrideUntil = 0;
-      animRow = isMoving ? 1 : 0;
-    }
-
-    // Step frame column (0 to 7) at calm ~5 fps breathing rate
-    if (now - lastFrameTime > 200) {
+    // Continuous 5fps animation loop
+    if (now - lastFrameTime > 190) {
       lastFrameTime = now;
       animCol = (animCol + 1) % 8;
       spriteEl.style.setProperty('--col', animCol);
       spriteEl.style.setProperty('--row', animRow);
     }
 
-    const bob = isDragging ? 0 : Math.sin(now * 0.002) * 0.8;
+    const bob = (isDragging || isMoving) ? 0 : Math.sin(now * 0.002) * 0.8;
 
     root.style.transform = `translate3d(${x.toFixed(1)}px, ${(y + bob).toFixed(1)}px, 0)`;
     spriteEl.style.transform = `scaleX(${facing})`;
