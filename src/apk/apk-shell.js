@@ -245,7 +245,9 @@ function buildSidePanel() {
           ${availablePets.map(p => `
             <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
               <span class="apk-pet-card-check">✓</span>
-              <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;">${p.svg || p.emoji}</div>
+              <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;">
+                ${p.gif ? `<img src="${p.gif}" alt="${p.name}" style="width:36px;height:48px;object-fit:contain;" draggable="false" />` : (p.svg || p.emoji)}
+              </div>
               <span class="apk-pet-card-name">${p.name}</span>
             </div>
           `).join('')}
