@@ -1370,7 +1370,6 @@ function openPdfModal(title, url, downloadName = '') {
   if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
     try {
       window.AndroidPdfBridge.openPdf(url, title || 'Class Notes PDF');
-      return;
     } catch (e) {
       console.warn('[Notes] Native PDF bridge fallback:', e);
     }

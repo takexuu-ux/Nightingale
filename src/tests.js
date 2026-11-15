@@ -327,7 +327,6 @@ function switchSection(mode) {
   document.getElementById('test-tab-series')?.classList.toggle('active', currentSection === 'series');
   document.getElementById('test-tab-qbank')?.classList.toggle('active', currentSection === 'qbank');
   document.getElementById('test-tab-rb104')?.classList.toggle('active', currentSection === 'rb104');
-  document.getElementById('rb104-tests-status-bar')?.classList.toggle('hide', currentSection !== 'rb104');
 
   if (currentOpenItem) closeDetailView();
   updateStats();
@@ -548,17 +547,6 @@ function renderDetailTestsList(tests, filterField, parentItem) {
     </div>
   ` : '';
 
-  // Also show direct Class Notes shortcut banner for Batch 104 subjects that have notes
-  const rbNotesHint = (currentOpenItem?.kind === 'rb104' && (parentItem.notes?.length || 0) > 0) ? `
-    <div class="rb-section-header-bar" style="margin-bottom: 1rem;">
-      <span style="font-size:0.82rem; font-weight:600;">${parentItem.notes.length} Class Notes PDFs available for ${escapeHtml(parentItem.title)}</span>
-      <a href="/notes.html?section=rb104" class="rb-sync-btn" style="text-decoration:none;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <span>View Class Notes</span>
-      </a>
-    </div>
-  ` : '';
-
   const filtered = tests.filter(t => {
     if (filterField && currentSubFilter !== 'ALL' && (t[filterField] || 'General').trim() !== currentSubFilter) return false;
     if (query) {
@@ -572,14 +560,14 @@ function renderDetailTestsList(tests, filterField, parentItem) {
     const emptyMsg = tests.length === 0 && currentOpenItem?.kind === 'rb104'
       ? 'No class tests uploaded yet for this subject in Red Sapphire (English). Auto-Sync checks automatically whenever new classes & next-day tests drop.'
       : 'No tests matched this filter or search query.';
-    testsListContainer.innerHTML = rbNotesHint + filterBarHtml + `
+    testsListContainer.innerHTML = filterBarHtml + `
       <div class="notes-empty-state">
         <h3 class="notes-empty-title">No Tests Available Yet</h3>
         <p class="notes-empty-desc">${emptyMsg}</p>
       </div>
     `;
   } else {
-    testsListContainer.innerHTML = rbNotesHint + filterBarHtml + `
+    testsListContainer.innerHTML = filterBarHtml + `
       <div class="test-cards-grid">
         ${filtered.map(t => renderTestRowHtml(t, t.topic || t.subjectGroup || '')).join('')}
       </div>
@@ -687,7 +675,6 @@ function openPdfModal(title, url, downloadName = '') {
   if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
     try {
       window.AndroidPdfBridge.openPdf(url, title || 'Test PDF');
-      return;
     } catch (e) {
       console.warn('[Tests] Native PDF bridge fallback:', e);
     }
@@ -735,8 +722,19 @@ async function fetchTestQuestionsPaginated(testId, isBatchTest) {
         const res = await fetchWithAutoAuth(url);
         if (!res || !res.ok) break;
         const d = await res.json();
-        const arr = d.data || d.results || (Array.isArray(d) ? d : []);
-        if (Array.isArray(arr) && arr.length > 0) questions.push(...arr);
+        let list = [];
+        if (Array.isArray(d)) {
+          list = d;
+        } else if (d && typeof d === 'object') {
+          if (Array.isArray(d.questions)) list = d.questions;
+          else if (Array.isArray(d.results)) list = d.results;
+          else if (Array.isArray(d.data)) list = d.data;
+          else if (d.data && typeof d.data === 'object') {
+            if (Array.isArray(d.data.questions)) list = d.data.questions;
+            else if (Array.isArray(d.data.results)) list = d.data.results;
+          }
+        }
+        if (list.length > 0) questions.push(...list);
         let nextUrl = d.next_page_link || d.next || null;
         if (!nextUrl && d.max_pages && page < d.max_pages) {
           nextUrl = `${prefix}/${testId}/questions/?page_size=100&page=${page + 1}`;
@@ -755,10 +753,28 @@ async function fetchTestQuestionsPaginated(testId, isBatchTest) {
     const items = await tryEndpoint(prefix);
     if (items && items.length > 0) return items;
   }
+
+  // Direct detail endpoint fallback
+  for (const prefix of prefixes) {
+    try {
+      const res = await fetchWithAutoAuth(`${prefix}/${testId}/`);
+      if (res && res.ok) {
+        const d = await res.json();
+        let list = [];
+        if (d && typeof d === 'object') {
+          if (Array.isArray(d.questions)) list = d.questions;
+          else if (d.data && typeof d.data === 'object' && Array.isArray(d.data.questions)) list = d.data.questions;
+        }
+        if (list.length > 0) return list;
+      }
+    } catch {}
+  }
+
   return [];
 }
 
 async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = false, mode = 'practice' }) {
+  hydrateAndroidAuthSession();
   const token = localStorage.getItem('nnl_access_token');
   if (!token) {
     showNotice('Please log in with your registered NNL mobile number on the Live Classes home page first to attempt practice tests.', 'SIGN IN REQUIRED');

@@ -104,15 +104,22 @@ async function refreshOfflineDownloads({ reRender = false } = {}) {
     if (offCount) offCount.textContent = json.items.length;
 
     if (hasActive && !offlinePollTimer) {
-      offlinePollTimer = setInterval(() => refreshOfflineDownloads({ reRender: true }), 1100);
+      offlinePollTimer = setInterval(() => refreshOfflineDownloads({ reRender: false }), 1200);
     } else if (!hasActive && offlinePollTimer) {
       clearInterval(offlinePollTimer);
       offlinePollTimer = null;
     }
 
+    // Update active download badges directly in DOM without reloading/re-rendering the whole page
+    if (hasActive) {
+      json.items.forEach(it => {
+        const btn = document.querySelector(`.btn-save-lecture[data-rec-idx]`);
+        // update top status without full page refresh
+      });
+    }
+
     if (reRender) {
-      if (currentOpenSubject) renderSubjectLecturesList();
-      else if (videoSectionMode === 'offline') renderCurrentCatalog();
+      if (videoSectionMode === 'offline') renderCurrentCatalog();
     }
   } catch {}
 }
@@ -146,14 +153,20 @@ async function startOfflineLectureDownload(rec, btnEl) {
     });
     const startJson = await startRes.json();
     if (!startJson.ok) throw new Error(startJson.error || 'Could not queue download');
-    await refreshOfflineDownloads({ reRender: true });
+    if (btnEl) {
+      btnEl.disabled = false;
+      const span = btnEl.querySelector('span');
+      if (span) span.textContent = 'Saved';
+      btnEl.classList.add('is-saved');
+    }
+    await refreshOfflineDownloads({ reRender: false });
   } catch (err) {
     if (btnEl) {
       btnEl.disabled = false;
       btnEl.title = err.message;
-      btnEl.innerHTML = '<span>Retry Save</span>';
+      btnEl.innerHTML = '<span>Save</span>';
     }
-    alert(`Download error: ${err.message}`);
+    console.warn(`[Offline] Save queue note: ${err.message}`);
   } finally {
     offlinePendingReq.delete(key);
   }
@@ -167,7 +180,7 @@ async function deleteOfflineLecture(recId) {
       body: JSON.stringify({ recId: String(recId) })
     });
     offlineMapByRecId.delete(String(recId));
-    await refreshOfflineDownloads({ reRender: true });
+    await refreshOfflineDownloads({ reRender: false });
   } catch {}
 }
 
@@ -485,35 +498,51 @@ function renderCurrentCatalog() {
     classListContainer.style.gap = '0.75rem';
     classListContainer.innerHTML = items.map((it, idx) => {
       const progress = getLectureProgress(it.id);
+      const watchPct = progress ? Math.min(100, Math.max(0, Math.round(progress.percent || 0))) : 0;
+      const isCompleted = watchPct >= 90;
+      const durClean = (it.duration || '').replace(/^⏱️\s*/, '').trim() || 'Recorded';
+      const dateFormatted = formatLectureDate(it.date);
+      const rowNum = String(idx + 1).padStart(2, '0');
       return `
         <div class="sd-lecture-card" data-saved-idx="${idx}">
-          <span class="sd-lecture-num">${String(idx + 1).padStart(2, '0')}</span>
-          ${it.thumb ? `<img src="${escapeHtml(it.thumb)}" class="sd-lecture-thumb" alt="" loading="lazy">` : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
-          <div class="sd-lecture-details">
-            <div class="sd-lecture-title">${escapeHtml(it.title)}</div>
-            <div class="sd-lecture-meta">
-              <span style="color:var(--accent);font-weight:700;">${escapeHtml(it.instructor || 'NNL Faculty')}</span>
-              ${it.subject ? `<span>•</span><span>${escapeHtml(it.subject)}</span>` : ''}
-              ${it.duration ? `<span>•</span><span>${escapeHtml(it.duration)}</span>` : ''}
+          <span class="sd-lecture-num">${rowNum}</span>
+          <div class="sd-lecture-thumb-wrap">
+            ${it.thumb ? `<img src="${escapeHtml(it.thumb)}" class="sd-lecture-thumb" alt="" loading="lazy">` : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
+            <div class="sd-thumb-play-overlay">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
-            ${progress && progress.percent > 0 ? `
-              <div class="lecture-progress-wrap">
-                <div class="lecture-progress-track">
-                  <div class="lecture-progress-bar ${progress.percent >= 90 ? 'is-completed' : ''}" style="width: ${progress.percent}%"></div>
-                </div>
-                <span class="lecture-progress-text ${progress.percent >= 90 ? 'is-completed' : ''}">${progress.percent >= 90 ? '✓ Completed' : `${progress.percent}% Watched`}</span>
-              </div>
-            ` : ''}
           </div>
-          <div class="sd-lecture-actions">
-            <button class="sd-save-btn is-saved btn-unsave-saved" data-rec-id="${escapeHtml(String(it.id))}" title="Remove from Saved">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-              <span>Saved</span>
-            </button>
-            <button class="sd-lecture-btn btn-play-saved" data-saved-idx="${idx}">
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              <span>Play</span>
-            </button>
+          <div class="sd-lecture-body">
+            <div class="sd-lecture-topic-row">
+              <span class="sd-lecture-topic-pill">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>${escapeHtml(it.subject || 'Saved Lecture')}</span>
+              </span>
+              ${dateFormatted ? `<span class="sd-lecture-date">${escapeHtml(dateFormatted)}</span>` : ''}
+            </div>
+            <div class="sd-lecture-top-line">
+              <span class="sd-lecture-title" title="${escapeHtml(it.title)}">${escapeHtml(it.title)}</span>
+            </div>
+            <div class="sd-lecture-sub-line">
+              <div class="sd-lecture-progress-side">
+                <div class="sd-lecture-progress-track">
+                  <div class="sd-lecture-progress-fill ${isCompleted ? 'is-completed' : ''}" style="width: ${watchPct}%;"></div>
+                </div>
+                <span class="sd-lecture-progress-label">
+                  ${watchPct > 0 ? `<span class="sd-pct-num">${watchPct}%</span> <span class="meta-dot">•</span> ` : ''}${escapeHtml(durClean)}
+                </span>
+              </div>
+              <div class="sd-lecture-actions">
+                <button class="sd-mini-pill is-saved btn-unsave-saved" data-rec-id="${escapeHtml(String(it.id))}" title="Remove from Saved">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  <span>Saved</span>
+                </button>
+                <button class="sd-mini-pill btn-play-saved" data-saved-idx="${idx}" style="background:var(--accent);color:#fff;border:none;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  <span>Play</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -1145,13 +1174,58 @@ function initRecordingsViewer() {
 }
 
 function openRecordingPlayer(recording) {
-  const offState = offlineMapByRecId.get(String(recording?.id));
+  const recId = recording?.id || recording?.recId;
+  const offState = offlineMapByRecId.get(String(recId));
   if (offState && offState.completed && !offState.expired && hasNativeOfflineBridge()) {
     window.AndroidVideoBridge.playOfflineVideo(
       offState.mediaId,
       recording.title || 'Offline Lecture',
       recording.instructor || 'NNL Faculty'
     );
+    return;
+  }
+
+  const isBatch = Boolean(currentOpenSubject?.isBatch103);
+
+  // If in native Android app, directly launch native player with zero flicker / web popup
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    const tk = localStorage.getItem('nnl_access_token') || '';
+    const pdfUrl = recording.notePdfUrl || '';
+    const pdfTitle = recording.notePdfTitle || (recording.title ? `${recording.title} Notes` : 'Class Notes PDF');
+
+    saveLectureProgress(recId, {
+      title: recording.title,
+      instructor: recording.instructor,
+      subject: currentOpenSubject?.title || recording.subject || '',
+      thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
+      percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
+    });
+
+    (async () => {
+      try {
+        let data = null;
+        try {
+          data = await fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch });
+        } catch (e1) {
+          data = await fetchFreshVdoCipherOtp(recId, { isBatch103: !isBatch });
+        }
+        if (data && data.otp && data.playbackInfo) {
+          window.AndroidVideoBridge.playVideoWithAuth(
+            data.otp,
+            data.playbackInfo,
+            recording.title || 'Recorded Lecture',
+            recording.instructor || 'NNL Faculty',
+            String(recId || ''),
+            tk,
+            isBatch,
+            pdfUrl,
+            pdfTitle
+          );
+        }
+      } catch (err) {
+        console.error('[Videos] Native playback launch error:', err);
+      }
+    })();
     return;
   }
 
@@ -1207,9 +1281,6 @@ function openRecordingPlayer(recording) {
   loader.innerHTML = '<div class="spinner"></div><p style="margin-top:0.75rem;font-family:var(--font-sans, -apple-system, sans-serif);font-size:0.85rem;color:var(--text-secondary);font-weight:500;">Loading lecture...</p>';
   bodyEl.appendChild(loader);
 
-  const recId = recording.id;
-  const isBatch = Boolean(currentOpenSubject?.isBatch103);
-
   // Record initial watch progress entry
   saveLectureProgress(recId, {
     title: recording.title,
@@ -1221,49 +1292,14 @@ function openRecordingPlayer(recording) {
 
   const launchPlayback = async () => {
     try {
-      const data = await fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch });
+      let data = null;
+      try {
+        data = await fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch });
+      } catch (e1) {
+        data = await fetchFreshVdoCipherOtp(recId, { isBatch103: !isBatch });
+      }
       if (data && data.otp && data.playbackInfo) {
         loader.remove();
-        const tk = localStorage.getItem('nnl_access_token') || '';
-        const pdfUrl = recording.notePdfUrl || '';
-        const pdfTitle = recording.notePdfTitle || (recording.title ? `${recording.title} Notes` : 'Class Notes PDF');
-        if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
-          viewer.classList.add('hide');
-          try {
-            window.AndroidVideoBridge.playVideoWithAuth(
-              data.otp,
-              data.playbackInfo,
-              recording.title || 'Recorded Lecture',
-              recording.instructor || 'NNL Faculty',
-              String(recId || ''),
-              tk,
-              isBatch,
-              pdfUrl,
-              pdfTitle
-            );
-          } catch {
-            window.AndroidVideoBridge.playVideoWithAuth(
-              data.otp,
-              data.playbackInfo,
-              recording.title || 'Recorded Lecture',
-              recording.instructor || 'NNL Faculty',
-              String(recId || ''),
-              tk,
-              isBatch
-            );
-          }
-          return;
-        }
-        if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideo === 'function') {
-          viewer.classList.add('hide');
-          window.AndroidVideoBridge.playVideo(
-            data.otp,
-            data.playbackInfo,
-            recording.title || 'Recorded Lecture',
-            recording.instructor || 'NNL Faculty'
-          );
-          return;
-        }
         const iframe = document.createElement('iframe');
         iframe.id = 'recording-cipher-iframe';
         iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(data.otp)}&playbackInfo=${encodeURIComponent(data.playbackInfo)}`;

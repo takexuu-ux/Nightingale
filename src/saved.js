@@ -65,10 +65,44 @@ pdfModal?.addEventListener('click', (e) => {
 
 // Video Playback
 function openLectureViewer(rec) {
+  if (!rec) return;
+  const recId = rec.recId || rec.id;
+  const tk = localStorage.getItem('nnl_access_token') || '';
+
+  // If in native Android app, directly play through native VdoPlayerActivity
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    (async () => {
+      try {
+        let otpData = null;
+        try {
+          otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
+        } catch {
+          otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
+        }
+        if (otpData && otpData.otp && otpData.playbackInfo) {
+          window.AndroidVideoBridge.playVideoWithAuth(
+            otpData.otp,
+            otpData.playbackInfo,
+            rec.title || 'Recorded Lecture',
+            rec.instructor || 'NNL Faculty',
+            String(recId),
+            tk,
+            true,
+            rec.notePdfUrl || '',
+            rec.notePdfTitle || ''
+          );
+        }
+      } catch (e) {
+        console.error('[Saved] Playback error:', e);
+      }
+    })();
+    return;
+  }
+
   if (!recordingViewer) return;
   activePlayingRec = rec;
   if (recordingTitle) recordingTitle.textContent = rec.title || 'Recorded Lecture';
-  if (recordingInstructor) recordingInstructor.textContent = `${rec.instructor || 'NNL Faculty'} • ${rec.subject || 'Medical Nursing'}`;
+  if (recordingInstructor) recordingInstructor.textContent = `${rec.instructor || 'NNL Faculty'} • ${rec.subject || 'Red Sapphire'}`;
 
   recordingViewer.classList.remove('hide');
   document.body.classList.add('modal-open');
@@ -90,10 +124,12 @@ async function loadLectureStream(rec) {
   const errDesc = document.getElementById('recording-error-desc');
   try {
     if (errDesc) errDesc.textContent = 'Loading lecture...';
+    const recId = rec.recId || rec.id;
     let otpData = null;
-
-    if (rec.vdoCipherId || rec.otp) {
-      otpData = await fetchFreshVdoCipherOtp(rec.vdoCipherId || rec.recId);
+    try {
+      otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
+    } catch {
+      otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
     }
 
     if (otpData && otpData.otp && otpData.playbackInfo) {
@@ -170,25 +206,35 @@ function renderSavedLectures() {
     return `
       <div class="sd-lecture-card apk-card-arrange" data-rec-id="${lec.recId}" style="--card-i: ${idx};">
         <span class="sd-lecture-num">${idx + 1}</span>
-        <img src="${thumb}" alt="${lec.title}" class="sd-lecture-thumb" loading="lazy" onerror="this.src='/nightingale.png'" />
-        <div class="sd-lecture-details">
-          <div class="sd-lecture-title" title="${lec.title}">${lec.title}</div>
-          <div class="sd-lecture-meta">
-            <span>${lec.instructor || 'NNL Faculty'}</span>
-            <span>•</span>
-            <span style="color: var(--accent); font-weight: 700;">${lec.subject || 'Red Sapphire'}</span>
-            <span>•</span>
-            <span>${duration}</span>
+        <div class="sd-lecture-thumb-wrap">
+          <img src="${thumb}" alt="${lec.title}" class="sd-lecture-thumb" loading="lazy" onerror="this.src='/nightingale.png'" />
+          <div class="sd-thumb-play-overlay">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
         </div>
-        <div class="sd-lecture-actions">
-          <button type="button" class="sd-lecture-btn btn-play-saved-rec" data-rec-id="${lec.recId}">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Play</span>
-          </button>
-          <button type="button" class="sd-del-btn btn-unsave-rec" data-rec-id="${lec.recId}" title="Remove from saved">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
+        <div class="sd-lecture-body">
+          <div class="sd-lecture-topic-row">
+            <span class="sd-lecture-topic-pill">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>${lec.subject || 'Saved Lecture'}</span>
+            </span>
+          </div>
+          <div class="sd-lecture-top-line">
+            <span class="sd-lecture-title" title="${lec.title}">${lec.title}</span>
+          </div>
+          <div class="sd-lecture-sub-line">
+            <span class="sd-lecture-progress-label">${duration}</span>
+            <div class="sd-lecture-actions">
+              <button type="button" class="sd-mini-pill btn-play-saved-rec" data-rec-id="${lec.recId}" style="background:var(--accent);color:#fff;border:none;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span>Play</span>
+              </button>
+              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${lec.recId}" title="Remove from saved">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     `;

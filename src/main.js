@@ -1,5 +1,5 @@
 import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/appMode.js';
-import { fetchFreshVdoCipherOtp } from './utils/batch104Sync.js';
+import { fetchFreshVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import {
   getRecentlyWatchedLectures,
   getLectureProgress,
@@ -3414,6 +3414,9 @@ function formatWatchTime(sec) {
 }
 
 async function resumeLecture(recId, btnEl) {
+  try {
+    hydrateAndroidAuthSession();
+  } catch (e) {}
   const map = getWatchHistory();
   const item = map[String(recId)];
   const tk = localStorage.getItem('nnl_access_token') || '';
@@ -3430,7 +3433,11 @@ async function resumeLecture(recId, btnEl) {
       try {
         data = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
       } catch (e1) {
-        data = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
+        try {
+          data = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
+        } catch (e2) {
+          console.warn('Both OTP attempts failed:', e1, e2);
+        }
       }
       if (data && data.otp && data.playbackInfo) {
         window.AndroidVideoBridge.playVideoWithAuth(

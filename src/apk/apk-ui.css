@@ -6420,3 +6420,95 @@ main#app,
 #btn-back-tests span {
   display: none !important;
 }
+
+/* ── Rich Dark Theme Search Inputs ── */
+[data-theme="dark"] .notes-search-input,
+[data-theme="dark"] .subject-lecture-search-input,
+[data-theme="dark"] #notes-search-input,
+[data-theme="dark"] #tests-search-input,
+[data-theme="dark"] #subject-lectures-search {
+  background: linear-gradient(135deg, rgba(34, 26, 62, 0.95), rgba(20, 15, 40, 0.98)) !important;
+  border: 1.5px solid rgba(167, 139, 250, 0.35) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .notes-search-input::placeholder,
+[data-theme="dark"] .subject-lecture-search-input::placeholder,
+[data-theme="dark"] #notes-search-input::placeholder,
+[data-theme="dark"] #tests-search-input::placeholder,
+[data-theme="dark"] #subject-lectures-search::placeholder {
+  color: rgba(221, 214, 254, 0.6) !important;
+}
+[data-theme="dark"] .notes-search-input:focus,
+[data-theme="dark"] .subject-lecture-search-input:focus,
+[data-theme="dark"] #notes-search-input:focus,
+[data-theme="dark"] #tests-search-input:focus,
+[data-theme="dark"] #subject-lectures-search:focus {
+  border-color: #A78BFA !important;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25), 0 6px 20px rgba(124, 92, 224, 0.3) !important;
+}
+
+/* ── Full Title and Subtopic Visibility in Video Cards ── */
+.sd-lecture-card .sd-lecture-title {
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  word-break: break-word !important;
+  line-height: 1.35 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.sd-lecture-topic-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  background: rgba(142, 116, 229, 0.15) !important;
+  border: 1px solid rgba(142, 116, 229, 0.28) !important;
+  color: var(--accent) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  max-width: none !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+}
+
+/* ── Balanced Segmented 50/50 Control for Notes Section Switcher ── */
+.notes-catalog-view .section-mode-tabs {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+  box-sizing: border-box !important;
+}
+
+.notes-catalog-view .section-mode-tab {
+  flex: 1 1 0 !important;
+  width: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  height: 38px !important;
+  border-radius: 999px !important;
+}
+
+/* ── Highest z-index for Quiz / CBT Test Overlay ── */
+.quiz-viewer-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999999 !important;
+  background: rgba(10, 8, 20, 0.90) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+.quiz-viewer-overlay.hide {
+  display: none !important;
+}
