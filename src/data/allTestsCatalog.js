@@ -7,7 +7,7 @@ export const PRACTICE_TEST_SERIES = [
     "title": "Subject-Wise Tests",
     "categoryKey": "Subject-wise Tests",
     "subtitle": "Focused subject assessments across nursing & allied subjects",
-    "badge": "Core Series",
+    "badge": "",
     "tests": [
       {
         "id": 539,

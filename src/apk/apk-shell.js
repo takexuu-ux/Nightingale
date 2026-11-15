@@ -198,7 +198,7 @@ function syncPetSelectionUI() {
     toggleBtn.classList.toggle('is-on', petEnabled);
   }
 
-  panel.querySelectorAll('.apk-pet-card').forEach(card => {
+  panel.querySelectorAll('.apk-pet-card, .apk-pet-avatar-item').forEach(card => {
     const id = card.getAttribute('data-pet-id');
     card.classList.toggle('active', id === activePetId && petEnabled);
   });
@@ -216,9 +216,10 @@ function buildSidePanel() {
   panel.innerHTML = `
     <div class="apk-side-backdrop" aria-hidden="true"></div>
     <div class="apk-side-drawer" role="dialog" aria-label="Settings & Menu">
+      <!-- Header -->
       <div class="apk-side-header">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="apk-logo-badge" style="width:34px;height:34px;border-radius:10px;">${NIGHTINGALE_MARK_SVG}</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="apk-logo-badge" style="width:36px;height:36px;border-radius:11px;">${NIGHTINGALE_MARK_SVG}</div>
           <div>
             <div class="apk-side-title">Settings &amp; Menu</div>
           </div>
@@ -226,8 +227,8 @@ function buildSidePanel() {
         <button type="button" id="apk-side-close-btn" class="apk-icon-btn" aria-label="Close">${NAV_ICONS.close}</button>
       </div>
 
-      <!-- Theme Switcher at Top -->
-      <div>
+      <!-- Appearance Card -->
+      <div class="apk-side-card">
         <div class="apk-side-section-title">Appearance</div>
         <div class="apk-theme-switcher-bar">
           <button type="button" id="apk-theme-light-btn" class="apk-theme-btn">
@@ -241,13 +242,13 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- Quick Action: Switch Batch -->
-      <div>
+      <!-- Batch Track Card -->
+      <div class="apk-side-card">
         <div class="apk-side-section-title">Batch Track</div>
-        <div class="apk-side-batch-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border-hairline);border-radius:12px;">
-          <div style="display:flex;align-items:center;gap:6px;min-width:0;">
-            <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);flex-shrink:0;">Batch:</span>
-            <span style="font-size:12px;color:var(--text-secondary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="apk-side-batch-label">Red Sapphire (Hinglish)</span>
+        <div class="apk-side-batch-row">
+          <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+            <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);flex-shrink:0;">Current:</span>
+            <span style="font-size:12.5px;color:var(--text-secondary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="apk-side-batch-label">Red Sapphire (Hinglish)</span>
           </div>
           <button type="button" id="apk-side-batch-btn" class="apk-icon-btn" aria-label="Switch Batch" style="width:32px;height:32px;border-radius:9px;flex-shrink:0;background:rgba(142,116,229,0.18);border:1px solid rgba(142,116,229,0.3);color:var(--accent);">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
@@ -255,64 +256,62 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- Companion Pet Selector -->
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <span class="apk-side-section-title" style="margin:0;">Companion Pet</span>
+      <!-- Companion Pet Card -->
+      <div class="apk-side-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span class="apk-side-section-title" style="margin:0;">Study Companion</span>
           <button type="button" id="apk-pet-toggle-btn" class="apk-switch-btn" aria-label="Toggle Companion Pet">
             <span class="apk-switch-thumb"></span>
           </button>
         </div>
-        <div class="apk-pet-grid">
+        <div class="apk-pet-row-selector">
           ${availablePets.map(p => `
-            <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
-              <span class="apk-pet-card-check">✓</span>
-              <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;">
-                ${p.svg || p.emoji}
+            <div class="apk-pet-avatar-item" data-pet-id="${p.id}" role="button" tabindex="0">
+              <div class="apk-pet-avatar-ring">
+                <div class="apk-pet-avatar-graphic">
+                  ${p.svg || p.emoji}
+                </div>
               </div>
-              <span class="apk-pet-card-name">${p.name}</span>
+              <span class="apk-pet-avatar-name">${p.name}</span>
             </div>
           `).join('')}
         </div>
       </div>
 
-      <!-- Academic Resources: Saved Content & Brochure (Icon + Title Only, Zero Subtext) -->
-      <div>
+      <!-- Academic Resources Card -->
+      <div class="apk-side-card">
         <div class="apk-side-section-title">Saved &amp; Resources</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
           <!-- Single Unified Saved Button -->
-          <button type="button" id="apk-side-saved-hub-btn" class="apk-batch-option" style="width:100%;padding:10px 12px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:30px;height:30px;border-radius:9px;background:rgba(142,116,229,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <button type="button" id="apk-side-saved-hub-btn" class="apk-resource-btn">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="apk-res-icon apk-res-icon-purple">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);">Saved Content</span>
+              <span class="apk-res-label">Saved Content</span>
             </div>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg class="apk-res-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
 
           <!-- Red Sapphire Brochure & Timetable -->
-          <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;padding:10px 12px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:30px;height:30px;border-radius:9px;background:rgba(124,58,237,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <button type="button" id="apk-side-brochure-btn" class="apk-resource-btn">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="apk-res-icon apk-res-icon-indigo">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               </div>
-              <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);">Brochure &amp; Timetable</span>
+              <span class="apk-res-label">Brochure &amp; Timetable</span>
             </div>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg class="apk-res-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
       </div>
 
       <!-- Bottom Pinned Footer: Sign Out & OTA Updates -->
-      <div style="margin-top:auto; padding-top:14px; display:flex; flex-direction:column; gap:10px;">
-        <!-- Sign Out (Prominent full-width button right above update) -->
+      <div class="apk-side-footer">
         <button id="apk-sheet-logout-btn" type="button" class="apk-signout-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           <span>Sign Out</span>
         </button>
-
-        <!-- OTA & Updates slot -->
         <div id="apk-sheet-ota-slot"></div>
       </div>
     </div>
@@ -332,7 +331,7 @@ function buildSidePanel() {
   });
 
   // Pet Choice Selection
-  panel.querySelectorAll('.apk-pet-card').forEach(card => {
+  panel.querySelectorAll('.apk-pet-card, .apk-pet-avatar-item').forEach(card => {
     card.addEventListener('click', () => {
       const petId = card.getAttribute('data-pet-id');
       if (petId) {
@@ -1097,6 +1096,23 @@ function initApkShell() {
         pill.style.width = `${curActive.offsetWidth}px`;
         pill.style.height = `${curActive.offsetHeight}px`;
         pill.style.transform = `translate3d(${curActive.offsetLeft}px, ${curActive.offsetTop}px, 0)`;
+      }
+
+      // Automated safety: If any back button or detail view is active, strictly hide Option button
+      const hasBackButton = Boolean(
+        document.querySelector('#btn-back-subjects:not(.hide), #btn-back-to-subjects:not(.hide), #btn-back-tests:not(.hide), .btn-notes-back:not(.hide)') ||
+        document.querySelector('#notes-subject-view:not(.hide), #subject-detail-view:not(.hide), #tests-detail-view:not(.hide), #quiz-viewer:not(.hide), #recording-viewer:not(.hide)') ||
+        document.body.classList.contains('apk-in-detail')
+      );
+      const ham = document.getElementById('apk-hamburger-btn');
+      if (ham) {
+        if (hasBackButton || document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
+          ham.style.setProperty('display', 'none', 'important');
+          ham.style.setProperty('visibility', 'hidden', 'important');
+        } else {
+          ham.style.removeProperty('display');
+          ham.style.removeProperty('visibility');
+        }
       }
     });
   });

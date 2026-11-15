@@ -89,7 +89,7 @@ function openLectureViewer(rec) {
 async function loadLectureStream(rec) {
   const errDesc = document.getElementById('recording-error-desc');
   try {
-    if (errDesc) errDesc.textContent = 'Securing encrypted stream...';
+    if (errDesc) errDesc.textContent = 'Loading lecture...';
     let otpData = null;
 
     if (rec.vdoCipherId || rec.otp) {

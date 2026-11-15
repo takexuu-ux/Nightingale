@@ -476,6 +476,11 @@ function openDetailView(kind, item) {
   testsDetailView.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // Strictly hide Option Button inside detail views
+  document.body.classList.add('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham) ham.style.setProperty('display', 'none', 'important');
+
   if (testDetailTitle) testDetailTitle.textContent = item.title || 'Practice Tests';
 
   let tests = [];
@@ -484,7 +489,7 @@ function openDetailView(kind, item) {
 
   if (kind === 'series') {
     tests = item.tests || [];
-    rightText = item.badge || 'Red Sapphire';
+    rightText = (item.badge && item.badge !== 'Core Series') ? item.badge : 'Red Sapphire';
     if (item.id === 'series-subject-wise') filterField = 'subjectGroup';
   } else if (kind === 'qbank') {
     tests = item.tests || [];
@@ -506,6 +511,14 @@ function closeDetailView() {
   currentSubFilter = 'ALL';
   testsDetailView.classList.add('hide');
   testsCatalogView.classList.remove('hide');
+
+  // Restore Option Button outside detail views
+  document.body.classList.remove('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham && !document.body.classList.contains('apk-side-open')) {
+    ham.style.removeProperty('display');
+  }
+
   renderCatalogGrid();
 }
 

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <!-- Minimalist Deep Pure Obsidian Gradient (Quiet & Non-Distracting) -->
+    <linearGradient id="deepDarkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#090a0d"/>
+      <stop offset="45%" stop-color="#0c0e12"/>
+      <stop offset="80%" stop-color="#101217"/>
+      <stop offset="100%" stop-color="#14171f"/>
+    </linearGradient>
+
+    <!-- Subdued Low-Contrast Minimalist Mountain Silhouette (Bottom 18% Only) -->
+    <linearGradient id="calmHorizon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1c202a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#0d0f14" stop-opacity="0.75"/>
+    </linearGradient>
+
+    <!-- Ultra-subtle base ground -->
+    <linearGradient id="groundFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#161820" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0a0b0e" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Obsidian Solid Background -->
+  <rect width="1080" height="1920" fill="url(#deepDarkGradient)"/>
+
+  <!-- Calm Minimalist Mountain Ridge in Lower 18% -->
+  <path d="M0,1580 Q240,1530 460,1565 T880,1540 Q990,1555 1080,1575 L1080,1920 L0,1920 Z" fill="url(#calmHorizon)"/>
+
+  <!-- Gentle Foreground Hill Silhouette -->
+  <path d="M0,1660 Q210,1620 490,1650 T920,1630 Q1010,1645 1080,1670 L1080,1920 L0,1920 Z" fill="url(#groundFade)"/>
+
+  <!-- Ground Base -->
+  <rect x="0" y="1790" width="1080" height="130" fill="#090a0d" opacity="0.95"/>
+</svg>

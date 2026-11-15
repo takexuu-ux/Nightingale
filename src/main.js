@@ -3237,6 +3237,8 @@ function renderClasses(classes) {
 
     // 2. Interactive Horizontal Date Selector (Image 2 style with past & future dates)
     renderHomeDateCalendar(poolForLive);
+    updateHeroGreeting();
+    renderContinueWatchingSection();
     if (IS_HINGLISH_APK) {
       return; // Handled exclusively by interactive date picker and empty state
     }
@@ -3529,6 +3531,16 @@ window.addEventListener('nnl:watch-progress-updated', () => {
 window.__nnlRefreshWatchProgress = () => {
   renderContinueWatchingSection();
 };
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(renderContinueWatchingSection, 150);
+  });
+} else {
+  setTimeout(renderContinueWatchingSection, 150);
+}
+window.addEventListener('load', () => {
+  setTimeout(renderContinueWatchingSection, 300);
+});
 
 function scheduleNotificationForClass(c) {
   try {
@@ -5355,7 +5367,7 @@ function openRecordingPlayer(recording) {
     const loader = document.createElement('div');
     loader.id = 'recording-cipher-loader';
     loader.className = 'full-loader';
-    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.5rem; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-secondary);">Securing DRM stream via VdoCipher...</p>';
+    loader.innerHTML = '<div class="spinner"></div><p style="margin-top: 0.75rem; font-family: var(--font-sans, -apple-system, sans-serif); font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Loading lecture...</p>';
     bodyEl.appendChild(loader);
     
     fetchFreshVdoCipherOtp(recId, { isBatch103: true })

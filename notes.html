@@ -180,20 +180,14 @@
         <!-- VIEW 2: Dedicated Subject Drill-down View (Hidden by default) -->
         <section id="notes-subject-view" class="notes-subject-view hide">
           <div class="notes-detail-compact-bar">
-            <div class="compact-bar-left">
-              <button id="btn-back-subjects" class="btn-notes-back">
+            <div class="subject-detail-top-line" style="display:flex;align-items:center;gap:10px;width:100%;">
+              <button id="btn-back-subjects" class="btn-notes-back" type="button" aria-label="Go Back">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
                 <span>Back</span>
               </button>
-            </div>
-
-            <div class="compact-bar-center">
-              <h2 id="subject-detail-title">Subject Title</h2>
-              <span id="subject-detail-count" class="notes-detail-pill pill-count">0 PDFs</span>
-            </div>
-
-            <div class="compact-bar-right">
-              <span id="subject-detail-teacher" class="compact-teacher-pill">
+              <h2 id="subject-detail-title" class="subject-detail-title" style="margin:0;font-size:1.15rem;font-weight:800;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;">Subject Title</h2>
+              <span id="subject-detail-count" class="notes-detail-pill pill-count" style="flex-shrink:0;">0 PDFs</span>
+              <span id="subject-detail-teacher" class="compact-teacher-pill" style="margin-left:auto;flex-shrink:0;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span id="subject-detail-teacher-name">Faculty</span>
               </span>

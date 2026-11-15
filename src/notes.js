@@ -745,6 +745,11 @@ function openBatch104SubjectView(subj) {
   notesSubjectView.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // Strictly hide Option Button inside detail views
+  document.body.classList.add('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham) ham.style.setProperty('display', 'none', 'important');
+
   if (subjectDetailTitle) subjectDetailTitle.textContent = subj.title;
   const teacherEl = document.getElementById('subject-detail-teacher-name');
   if (teacherEl) teacherEl.textContent = subj.faculty || 'NNL Faculty';
@@ -993,6 +998,11 @@ async function openSubjectView(subject) {
   notesSubjectView.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // Strictly hide Option Button inside detail views
+  document.body.classList.add('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham) ham.style.setProperty('display', 'none', 'important');
+
   // Clean center Subject Name (without parenthetical teacher) & populate Teacher Name on the right
   const rawSubTitle = subject.title || 'Subject Notes';
   const centerSubjectName = rawSubTitle.replace(/\s*\([^)]*\)\s*$/, '').trim() || rawSubTitle;
@@ -1053,6 +1063,14 @@ function closeSubjectView() {
   }
   notesSubjectView.classList.add('hide');
   notesCatalogView.classList.remove('hide');
+
+  // Restore Option Button outside detail views
+  document.body.classList.remove('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham && !document.body.classList.contains('apk-side-open')) {
+    ham.style.removeProperty('display');
+  }
+
   renderSubjectCards();
 }
 

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <!-- Ultra-Minimal Deep Obsidian Sky Gradient -->
+    <linearGradient id="minimalDarkSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#06050a"/>
+      <stop offset="35%" stop-color="#090712"/>
+      <stop offset="70%" stop-color="#0e0b1c"/>
+      <stop offset="100%" stop-color="#141026"/>
+    </linearGradient>
+
+    <!-- Delicate Distant Mountain Silhouette Gradient -->
+    <linearGradient id="mtnSoft1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#18132d" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#0f0c1d" stop-opacity="0.75"/>
+    </linearGradient>
+
+    <!-- Foreground Mountain Silhouette Gradient -->
+    <linearGradient id="mtnSoft2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#120e24" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#08060f" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Soft Ambient Fog / Mist in Valley (Low Contrast) -->
+    <linearGradient id="softMist" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#241a45" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#241a45" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#090712" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Deep Obsidian Canvas -->
+  <rect width="1080" height="1920" fill="url(#minimalDarkSky)"/>
+
+  <!-- Faint Atmospheric Mist Band -->
+  <rect x="0" y="1300" width="1080" height="620" fill="url(#softMist)"/>
+
+  <!-- Distant Soft Mountain Range in Lower 25% -->
+  <path d="M0,1540 L120,1505 Q280,1460 410,1510 T720,1475 Q890,1440 1080,1520 L1080,1920 L0,1920 Z" fill="url(#mtnSoft1)"/>
+
+  <!-- Mid Mountain Layer -->
+  <path d="M0,1610 Q180,1545 350,1590 T760,1560 Q920,1535 1080,1595 L1080,1920 L0,1920 Z" fill="url(#mtnSoft2)"/>
+
+  <!-- Base Ground Shading (Deepest Obsidian) -->
+  <rect x="0" y="1780" width="1080" height="140" fill="#07050d" opacity="0.9"/>
+</svg>

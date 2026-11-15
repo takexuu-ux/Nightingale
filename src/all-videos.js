@@ -1146,7 +1146,7 @@ function openRecordingPlayer(recording) {
   const loader = document.createElement('div');
   loader.id = 'recording-cipher-loader';
   loader.className = 'full-loader';
-  loader.innerHTML = '<div class="spinner"></div><p style="margin-top:0.75rem;font-family:var(--font-display);font-size:0.8rem;letter-spacing:0.06em;text-transform:uppercase;color:#c4b5fd;">Securing Stream via VdoCipher...</p>';
+  loader.innerHTML = '<div class="spinner"></div><p style="margin-top:0.75rem;font-family:var(--font-sans, -apple-system, sans-serif);font-size:0.85rem;color:var(--text-secondary);font-weight:500;">Loading lecture...</p>';
   bodyEl.appendChild(loader);
 
   const recId = recording.id;
