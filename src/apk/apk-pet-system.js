@@ -548,36 +548,51 @@ export function isLoginScreenActive() {
   return false;
 }
 
+let isSyncingPet = false;
+
 // Synchronize Pet Visibility: NEVER visible on login screen, and only if enabled by user
 export function syncPetVisibility() {
-  const el = document.getElementById('apk-companion-pet');
-  const onLogin = isLoginScreenActive();
-  const enabled = isPetEnabled();
+  if (isSyncingPet) return;
+  isSyncingPet = true;
+  try {
+    const el = document.getElementById('apk-companion-pet');
+    const onLogin = isLoginScreenActive();
+    const enabled = isPetEnabled();
 
-  if (onLogin) {
-    if (el) {
-      el.style.display = 'none';
-      el.classList.add('hide', 'hide-on-auth');
+    if (onLogin) {
+      if (el) {
+        el.style.display = 'none';
+        el.classList.add('hide', 'hide-on-auth');
+      }
+      if (!document.body.classList.contains('on-login-screen')) {
+        document.body.classList.add('on-login-screen');
+      }
+      return;
     }
-    document.body.classList.add('on-login-screen');
-    return;
-  }
 
-  document.body.classList.remove('on-login-screen');
-  document.body.classList.toggle('apk-pet-disabled', !enabled);
+    if (document.body.classList.contains('on-login-screen')) {
+      document.body.classList.remove('on-login-screen');
+    }
+    const shouldDisable = !enabled;
+    if (document.body.classList.contains('apk-pet-disabled') !== shouldDisable) {
+      document.body.classList.toggle('apk-pet-disabled', shouldDisable);
+    }
 
-  if (enabled) {
-    if (!el) {
-      renderPetElement();
+    if (enabled) {
+      if (!el) {
+        renderPetElement();
+      } else {
+        el.style.display = 'flex';
+        el.classList.remove('hide', 'hide-on-auth');
+      }
     } else {
-      el.style.display = 'flex';
-      el.classList.remove('hide', 'hide-on-auth');
+      if (el) {
+        el.style.display = 'none';
+        el.classList.add('hide');
+      }
     }
-  } else {
-    if (el) {
-      el.style.display = 'none';
-      el.classList.add('hide');
-    }
+  } finally {
+    isSyncingPet = false;
   }
 }
 window.__nnlSyncPetVisibility = syncPetVisibility;
@@ -765,15 +780,13 @@ export function initPetSystem() {
   if (typeof window === 'undefined' || window.__nnlPetMounted) return;
   window.__nnlPetMounted = true;
 
-  // Observe login state changes dynamically
-  const observer = new MutationObserver(() => {
-    syncPetVisibility();
-  });
-  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-
+  // Observe only auth-screen visibility changes
   const authScreen = document.getElementById('auth-screen');
   if (authScreen) {
-    observer.observe(authScreen, { attributes: true, attributeFilter: ['class', 'style'] });
+    const observer = new MutationObserver(() => {
+      syncPetVisibility();
+    });
+    observer.observe(authScreen, { attributes: true, attributeFilter: ['class'] });
   }
 
   // Initial check

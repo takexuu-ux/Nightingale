@@ -90,15 +90,15 @@ const NAV_ICONS = {
   close: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
 };
 
-const EMOJI_RE = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
-
 function stripEmojisAndShorten(root) {
   if (!root) return;
+  const emojiTestRe = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u;
+  const emojiReplaceRe = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
   let node;
   while ((node = walker.nextNode())) {
-    if (EMOJI_RE.test(node.nodeValue)) {
-      node.nodeValue = node.nodeValue.replace(EMOJI_RE, '').replace(/\s{2,}/g, ' ');
+    if (emojiTestRe.test(node.nodeValue)) {
+      node.nodeValue = node.nodeValue.replace(emojiReplaceRe, '').replace(/\s{2,}/g, ' ');
     }
   }
 
@@ -423,7 +423,7 @@ function buildSidePanel() {
     }
   };
   adoptOtaBox();
-  new MutationObserver(adoptOtaBox).observe(document.body, { childList: true, subtree: true });
+  window.__nnlAdoptOtaBox = adoptOtaBox;
 
   syncPetSelectionUI();
 }
@@ -758,7 +758,9 @@ function normalizeHeaderAndChrome() {
   const syncAuthMode = () => {
     const authEl = document.getElementById('auth-screen');
     const isAuth = Boolean(authEl && !authEl.classList.contains('hide'));
-    document.body.classList.toggle('apk-is-auth', isAuth);
+    if (document.body.classList.contains('apk-is-auth') !== isAuth) {
+      document.body.classList.toggle('apk-is-auth', isAuth);
+    }
 
     const btn = document.getElementById('apk-hamburger-btn');
     if (btn) {
@@ -1106,15 +1108,9 @@ function initApkShell() {
   stripEmojisAndShorten(document.body);
   animateVisibleCards(document.body);
 
-  const target = document.getElementById('app') || document.body;
-  let scheduled = false;
-  const mutObs = new MutationObserver(() => {
-    if (scheduled) return;
-    scheduled = true;
+  // Lightweight navigation & card state updates triggered only on user interaction (zero CPU cost, zero loops)
+  const syncUiState = () => {
     requestAnimationFrame(() => {
-      scheduled = false;
-      stripEmojisAndShorten(target);
-      animateVisibleCards(target);
       const curActive = document.querySelector('.header-nav-tabs .nav-tab.active');
       const pill = document.getElementById('apk-nav-liquid-indicator');
       if (curActive && pill && pill.style.width === '') {
@@ -1141,8 +1137,10 @@ function initApkShell() {
         }
       }
     });
-  });
-  mutObs.observe(target, { childList: true, subtree: true });
+  };
+
+  document.addEventListener('click', syncUiState, { passive: true });
+  window.addEventListener('popstate', syncUiState, { passive: true });
 }
 
 if (document.readyState === 'loading') {
