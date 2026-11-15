@@ -28,15 +28,8 @@
     <title>Nightingale — Practice Tests</title>
   </head>
   <body class="tests-theme-page">
-    <!-- Ambient Vector Landscape Background Layer (Image 4 Aesthetic) -->
+    <!-- Ambient Single Unified Background Layer -->
     <div id="apk-ambient-bg"></div>
-
-    <!-- Subtle Atmospheric Backdrop -->
-    <div id="nightingale-bg-container" class="nightingale-bg-container">
-      <div class="bg-drift-wrapper">
-        <img src="/nightingale.png?v=1790910745157" class="nightingale-bg-image" alt="" fetchpriority="high" decoding="async" draggable="false" oncontextmenu="return false;">
-      </div>
-    </div>
 
     <!-- Top Navigation Header -->
     <header id="app-header" class="app-header">
@@ -111,43 +104,23 @@
     <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
       <div class="notes-page-container">
 
-        <!-- Compact Header: "Tests" + Pills + Search Box -->
-        <section class="notes-hero-header" style="margin-bottom: 1.25rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <h1 class="notes-hero-title" style="margin: 0; font-size: 1.6rem;">Tests</h1>
-              <button id="btn-toggle-test-search" class="apk-icon-btn test-search-toggle" aria-label="Toggle Search" style="width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-              </button>
-            </div>
-
-            <div class="notes-hero-stats">
-              <div class="notes-stat-pill">
-                <strong id="stat-categories-count">—</strong>
-                <span>Categories</span>
-              </div>
-              <div class="notes-stat-pill">
-                <strong id="stat-tests-count">—</strong>
-                <span>Tests</span>
-              </div>
-              <div class="notes-stat-pill accent-pill">
-                <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
-              </div>
-            </div>
-
-            <div id="tests-search-box" class="notes-search-wrapper" style="min-width: 260px; max-width: 340px; width: 100%;">
-              <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <!-- Compact Header: "Tests" + Search Box Directly Beside Title -->
+        <section class="notes-hero-header">
+          <div class="notes-hero-bar">
+            <h1 class="notes-hero-title">Tests</h1>
+            <div id="tests-search-box" class="notes-search-wrapper">
+              <svg class="notes-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
               </svg>
               <input
                 type="text"
                 id="tests-search-input"
                 class="notes-search-input"
-                placeholder="Search tests, PYQs, or subjects..."
+                placeholder="Search tests..."
                 autocomplete="off"
               />
               <button id="tests-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
           </div>

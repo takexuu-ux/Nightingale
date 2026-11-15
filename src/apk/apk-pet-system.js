@@ -147,29 +147,33 @@ export const PET_SVGS = {
       <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
 
-      <!-- Green Stem atop Banana Cap -->
-      <rect x="23" y="3" width="2" height="4" fill="#15803D" />
-      <rect x="24" y="2" width="2" height="2" fill="#16A34A" />
+      <!-- Banana Cap Stem -->
+      <rect x="23" y="2" width="2" height="4" fill="#15803D" />
+      <rect x="24" y="1" width="2" height="2" fill="#16A34A" />
 
-      <!-- Canary Yellow Banana Hood / Cap -->
-      <path d="M14 6 h20 v7 h-20 z" fill="#EAB308" />
-      <path d="M13 9 h22 v5 h-22 z" fill="#FACC15" />
-      <rect x="10" y="14" width="5" height="14" fill="#FACC15" />
-      <rect x="33" y="14" width="5" height="14" fill="#FACC15" />
+      <!-- Crisp Geometric Banana Cap matching Nurse Cap structure -->
+      <path d="M15 6 h18 v8 h-18 z" fill="#FACC15" />
+      <path d="M13 11 h22 v3 h-22 z" fill="#EAB308" />
 
-      <!-- Cute Cat Ears poking out of the cap -->
-      <polygon points="13,10 17,4 20,10" fill="#FFFFFF" shape-rendering="auto" />
-      <polygon points="14,9 17,6 19,9" fill="#F472B6" shape-rendering="auto" />
-      <polygon points="28,10 31,4 35,10" fill="#FFFFFF" shape-rendering="auto" />
-      <polygon points="29,9 31,6 34,9" fill="#F472B6" shape-rendering="auto" />
+      <!-- Crisp Pixel Cat Ears on Cap -->
+      <rect x="15" y="3" width="4" height="4" fill="#FACC15" />
+      <rect x="16" y="4" width="2" height="2" fill="#FB7185" />
+      <rect x="29" y="3" width="4" height="4" fill="#FACC15" />
+      <rect x="30" y="4" width="2" height="2" fill="#FB7185" />
 
       <!-- Blond/Cream Hair Bangs under Cap -->
-      <rect x="15" y="14" width="18" height="4" fill="#FEF08A" />
-      <rect x="18" y="18" width="3" height="2" fill="#FEF08A" />
-      <rect x="27" y="18" width="3" height="2" fill="#FEF08A" />
+      <path d="M12 12 h24 v14 h-24 z" fill="#CA8A04" />
+      <path d="M10 16 h4 v10 h-4 z" fill="#CA8A04" />
+      <path d="M34 16 h4 v10 h-4 z" fill="#CA8A04" />
+      <path d="M14 12 h20 v4 h-20 z" fill="#FACC15" />
+      <rect x="14" y="16" width="4" height="3" fill="#FACC15" />
+      <rect x="22" y="16" width="4" height="2" fill="#FACC15" />
+      <rect x="30" y="16" width="4" height="3" fill="#FACC15" />
 
       <!-- Cute Chibi Face (Identical size & skin to Nurse) -->
-      <rect x="15" y="18" width="18" height="12" fill="#FED7AA" />
+      <rect x="14" y="18" width="20" height="12" fill="#FED7AA" />
+      <rect x="12" y="20" width="2" height="8" fill="#FED7AA" />
+      <rect x="34" y="20" width="2" height="8" fill="#FED7AA" />
 
       <!-- Big Sparkling Anime Eyes (Matching Nurse) -->
       <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
@@ -186,17 +190,17 @@ export const PET_SVGS = {
 
       <!-- Cute Cat Mouth :3 -->
       <rect x="22" y="27" width="4" height="1" fill="#E11D48" />
-      <circle cx="23" cy="28" r="0.8" fill="#E11D48" shape-rendering="auto" />
-      <circle cx="25" cy="28" r="0.8" fill="#E11D48" shape-rendering="auto" />
+      <rect x="21" y="28" width="2" height="1" fill="#E11D48" />
+      <rect x="25" y="28" width="2" height="1" fill="#E11D48" />
 
       <!-- Banana Peel Tunic Body -->
       <rect x="15" y="30" width="18" height="11" fill="#FACC15" />
       <rect x="18" y="30" width="12" height="11" fill="#FDE047" />
       <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
 
-      <!-- Tiny White Kitten Paws over collar -->
-      <ellipse cx="16" cy="33" rx="2.2" ry="2" fill="#FFFFFF" shape-rendering="auto" />
-      <ellipse cx="32" cy="33" rx="2.2" ry="2" fill="#FFFFFF" shape-rendering="auto" />
+      <!-- Tiny Kitten Paws over collar -->
+      <circle cx="14" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
+      <circle cx="34" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
 
       <!-- Bottom Tip of Banana Costume & Shoes -->
       <rect x="22" y="41" width="4" height="3" fill="#CA8A04" />
@@ -205,46 +209,45 @@ export const PET_SVGS = {
     </svg>
   `,
 
-  // 4. Muksi: Chibi anime scholar with graduation cap / doctor beret, spectacles & book, matching Nurse style
+  // 4. Muksi: Chibi anime scholar wearing a doctor / surgeon cap matching Nurse style
   'moxie': `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
       <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
 
-      <!-- Royal Violet Scholar Cap / Beret -->
-      <path d="M12 7 h24 v5 h-24 z" fill="#7C3AED" />
-      <path d="M10 10 h28 v3 h-28 z" fill="#6D28D9" />
-      <!-- Golden Cap Button & Tassel -->
-      <rect x="23" y="6" width="2" height="2" fill="#FBBF24" />
-      <path d="M25 7 q6 2 8 8" stroke="#FBBF24" stroke-width="1.2" fill="none" shape-rendering="auto" />
-      <rect x="32" y="14" width="3" height="3" fill="#F59E0B" />
+      <!-- Medical Doctor Cap matching Nurse Cap structure -->
+      <path d="M15 5 h18 v8 h-18 z" fill="#6D28D9" />
+      <path d="M13 11 h22 v3 h-22 z" fill="#5B21B6" />
 
-      <!-- Lavender Anime Hair Bangs -->
-      <path d="M12 12 h24 v14 h-24 z" fill="#312E81" />
-      <path d="M10 16 h4 v10 h-4 z" fill="#312E81" />
-      <path d="M34 16 h4 v10 h-4 z" fill="#312E81" />
-      <path d="M14 12 h20 v4 h-20 z" fill="#4338CA" />
-      <!-- Hair Bangs Details -->
-      <rect x="14" y="16" width="4" height="3" fill="#6366F1" />
-      <rect x="22" y="16" width="4" height="2" fill="#6366F1" />
-      <rect x="30" y="16" width="4" height="3" fill="#6366F1" />
+      <!-- Golden Cross Badge on Cap -->
+      <rect x="22" y="7" width="4" height="4" fill="#FBBF24" />
+      <rect x="23" y="6" width="2" height="6" fill="#FBBF24" />
 
-      <!-- Cute Chibi Face (Identical size to Nurse) -->
+      <!-- Dark Indigo Anime Hair Bangs -->
+      <path d="M12 12 h24 v14 h-24 z" fill="#1E1B4B" />
+      <path d="M10 16 h4 v10 h-4 z" fill="#1E1B4B" />
+      <path d="M34 16 h4 v10 h-4 z" fill="#1E1B4B" />
+      <path d="M14 12 h20 v4 h-20 z" fill="#312E81" />
+      <rect x="14" y="16" width="4" height="3" fill="#4338CA" />
+      <rect x="22" y="16" width="4" height="2" fill="#4338CA" />
+      <rect x="30" y="16" width="4" height="3" fill="#4338CA" />
+
+      <!-- Cute Chibi Face (Identical size & skin to Nurse) -->
       <rect x="14" y="18" width="20" height="12" fill="#FED7AA" />
       <rect x="12" y="20" width="2" height="8" fill="#FED7AA" />
       <rect x="34" y="20" width="2" height="8" fill="#FED7AA" />
 
       <!-- Round Golden Study Spectacles -->
-      <circle cx="18" cy="23" r="4" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
-      <circle cx="30" cy="23" r="4" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
-      <line x1="22" y1="23" x2="26" y2="23" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
+      <circle cx="18" cy="23" r="3.5" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
+      <circle cx="30" cy="23" r="3.5" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
+      <line x1="21.5" y1="23" x2="26.5" y2="23" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
 
       <!-- Big Sparkling Anime Eyes behind spectacles -->
-      <rect x="16" y="21" width="4" height="5" fill="#1E1B4B" />
+      <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
       <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
       <rect x="18" y="24" width="2" height="2" fill="#A78BFA" />
 
-      <rect x="28" y="21" width="4" height="5" fill="#1E1B4B" />
+      <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
       <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
       <rect x="30" y="24" width="2" height="2" fill="#A78BFA" />
 

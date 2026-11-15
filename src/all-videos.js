@@ -649,7 +649,7 @@ function extractVideosFromSubtopic(st, topicTitle, sub) {
       topic: (topicTitle || sub.title).trim(),
       instructor: vid.faculty?.name || sub.faculty || 'NNL Faculty',
       duration: durStr,
-      date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : '',
+      date: vid.schedule_start_time ? vid.schedule_start_time.split('T')[0] : (vid.publish_date ? vid.publish_date.split('T')[0] : (vid.created_at ? vid.created_at.split('T')[0] : (vid.date ? String(vid.date).split('T')[0] : ''))),
       video_cipher_id: vid.video_cipher_id || vid.vdo_cipher_id || vid.vdoCipherId || vid.cipher_id || '',
       videoUrl: vid.video_url || vid.videoUrl || vid.url || vid.download_url || findVideoUrl(vid) || '',
       thumbnails: vid.thumbnails || [],
@@ -801,6 +801,23 @@ function closeSubjectPage() {
   subjectsCatalogView?.classList.remove('hide');
 }
 
+function formatLectureDate(d) {
+  if (!d) return '';
+  try {
+    const s = String(d).split('T')[0];
+    const p = s.split('-');
+    if (p.length === 3) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const m = parseInt(p[1], 10) - 1;
+      const day = parseInt(p[2], 10);
+      if (m >= 0 && m < 12 && !isNaN(day)) return `${day} ${months[m]} ${p[0]}`;
+    }
+    return s;
+  } catch {
+    return String(d).split('T')[0];
+  }
+}
+
 function renderSubjectLecturesList() {
   if (!subjectLecturesContainer || !currentOpenSubject) return;
   const videos = currentOpenSubject.videos || [];
@@ -924,8 +941,8 @@ function renderSubjectLecturesList() {
       }
     }
     const progress = getLectureProgress(rec.id);
-    const isSaved = isLectureSaved(rec.id);
     const shadeIdx = getTopicShadeIndex(rec.topic);
+    const dateFormatted = formatLectureDate(rec.date);
 
     return `
       <div class="sd-lecture-card topic-shade-${shadeIdx}" data-rec-idx="${idx}">
@@ -934,12 +951,12 @@ function renderSubjectLecturesList() {
           ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
           : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
         <div class="sd-lecture-details">
-          <div class="sd-lecture-title" title="${escapeHtml(rec.title)}">${escapeHtml(rec.title)}</div>
+          <div class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</div>
           <div class="sd-lecture-meta">
+            ${dateFormatted ? `<span class="sd-lecture-date" style="color:var(--text-primary);font-weight:700;">📅 ${escapeHtml(dateFormatted)}</span><span>•</span>` : ''}
             <span style="color:var(--accent);font-weight:700;">${escapeHtml(rec.instructor || 'NNL Faculty')}</span>
-            ${rec.topic ? `<span>•</span><span>${escapeHtml(rec.topic)}</span>` : ''}
+            ${rec.topic && rec.topic !== rec.title ? `<span>•</span><span>${escapeHtml(rec.topic)}</span>` : ''}
             ${rec.duration ? `<span>•</span><span>${escapeHtml(rec.duration)}</span>` : ''}
-            ${rec.date ? `<span>•</span><span>${escapeHtml(rec.date)}</span>` : ''}
             ${offState && (offState.status === 'downloading' || offState.status === 'pending') && offState.totalSizeBytes > 0 ? `<span>•</span><span>${(offState.bytesDownloaded / (1024 * 1024)).toFixed(1)}/${(offState.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB</span>` : ''}
           </div>
           ${progress && progress.percent > 0 ? `
@@ -952,10 +969,6 @@ function renderSubjectLecturesList() {
           ` : ''}
         </div>
         <div class="sd-lecture-actions">
-          <button class="sd-save-btn btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture'}">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            <span>${isSaved ? 'Saved' : 'Save'}</span>
-          </button>
           ${rec.notePdfUrl ? `
             <button class="sd-note-btn btn-open-lec-pdf" data-title="${encodeURIComponent(rec.notePdfTitle || rec.title)}" data-url="${encodeURIComponent(rec.notePdfUrl)}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>

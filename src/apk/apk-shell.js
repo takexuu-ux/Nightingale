@@ -159,9 +159,15 @@ export function openSidePanel() {
   const panel = document.getElementById('apk-side-panel');
   if (panel) {
     panel.classList.remove('hide');
+    document.body.classList.add('apk-side-open');
     syncPetSelectionUI();
     const ham = document.getElementById('apk-hamburger-btn');
-    if (ham) ham.style.setProperty('display', 'none', 'important');
+    if (ham) {
+      ham.style.setProperty('display', 'none', 'important');
+      ham.style.setProperty('visibility', 'hidden', 'important');
+      ham.style.setProperty('opacity', '0', 'important');
+      ham.style.setProperty('pointer-events', 'none', 'important');
+    }
   }
 }
 
@@ -169,9 +175,13 @@ export function closeSidePanel() {
   const panel = document.getElementById('apk-side-panel');
   if (panel) {
     panel.classList.add('hide');
+    document.body.classList.remove('apk-side-open');
     const ham = document.getElementById('apk-hamburger-btn');
     if (ham && !document.body.classList.contains('apk-is-auth')) {
       ham.style.removeProperty('display');
+      ham.style.removeProperty('visibility');
+      ham.style.removeProperty('opacity');
+      ham.style.removeProperty('pointer-events');
     }
   }
 }
@@ -233,14 +243,16 @@ function buildSidePanel() {
 
       <!-- Quick Action: Switch Batch -->
       <div>
-        <div class="apk-side-section-title">Classroom Track</div>
-        <button type="button" id="apk-side-batch-btn" class="apk-batch-option" style="width:100%;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-            <span style="font-weight:800;font-size:13.5px;" id="apk-side-batch-label">Red Sapphire (Hinglish)</span>
-            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:600;">Tap to switch classroom batch</span>
+        <div class="apk-side-section-title">Batch Track</div>
+        <div class="apk-side-batch-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border-hairline);border-radius:12px;">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+            <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);flex-shrink:0;">Batch:</span>
+            <span style="font-size:12px;color:var(--text-secondary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="apk-side-batch-label">Red Sapphire (Hinglish)</span>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+          <button type="button" id="apk-side-batch-btn" class="apk-icon-btn" aria-label="Switch Batch" style="width:32px;height:32px;border-radius:9px;flex-shrink:0;background:rgba(142,116,229,0.18);border:1px solid rgba(142,116,229,0.3);color:var(--accent);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Companion Pet Selector -->
@@ -264,36 +276,30 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- Academic Resources: Saved Content & Brochure -->
+      <!-- Academic Resources: Saved Content & Brochure (Icon + Title Only, Zero Subtext) -->
       <div>
-        <div class="apk-side-section-title">Saved Content &amp; Resources</div>
+        <div class="apk-side-section-title">Saved &amp; Resources</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <!-- Single Unified Saved Button (Opens dedicated Saved Hub page directly) -->
-          <button type="button" id="apk-side-saved-hub-btn" class="apk-batch-option" style="width:100%;">
+          <!-- Single Unified Saved Button -->
+          <button type="button" id="apk-side-saved-hub-btn" class="apk-batch-option" style="width:100%;padding:10px 12px;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;border-radius:10px;background:rgba(142,116,229,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:30px;height:30px;border-radius:9px;background:rgba(142,116,229,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                <span style="font-weight:800;font-size:13.5px;">Saved Content</span>
-                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Lectures, Notes, PDFs &amp; Question Banks</span>
-              </div>
+              <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);">Saved Content</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
 
           <!-- Red Sapphire Brochure & Timetable -->
-          <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;">
+          <button type="button" id="apk-side-brochure-btn" class="apk-batch-option" style="width:100%;padding:10px 12px;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;border-radius:10px;background:rgba(124,58,237,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:30px;height:30px;border-radius:9px;background:rgba(124,58,237,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                <span style="font-weight:800;font-size:13.5px;">Brochure &amp; Timetable</span>
-                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Batch syllabus, schedule &amp; PDFs</span>
-              </div>
+              <span style="font-weight:700;font-size:13.5px;color:var(--text-primary);">Brochure &amp; Timetable</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
       </div>

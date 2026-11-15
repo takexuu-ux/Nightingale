@@ -188,15 +188,8 @@
     </style>
   </head>
   <body class="notes-theme-page">
-    <!-- Ambient Vector Landscape Background Layer (Image 4 Aesthetic) -->
+    <!-- Ambient Single Unified Background Layer -->
     <div id="apk-ambient-bg"></div>
-
-    <!-- Subtle Atmospheric Backdrop -->
-    <div id="nightingale-bg-container" class="nightingale-bg-container">
-      <div class="bg-drift-wrapper">
-        <img src="/nightingale.png?v=1790910745157" class="nightingale-bg-image" alt="" fetchpriority="high" decoding="async" draggable="false" oncontextmenu="return false;">
-      </div>
-    </div>
 
     <!-- Top Navigation Header -->
     <header id="app-header" class="app-header">
@@ -270,18 +263,12 @@
     <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
       <div class="notes-page-container">
 
-        <!-- Compact Header: "Videos" + Search Button Beside Title -->
-        <section class="notes-hero-header" style="margin-bottom: 1.25rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <h1 class="notes-hero-title" style="margin: 0; font-size: 1.6rem;">Videos</h1>
-              <button id="btn-toggle-video-search" class="apk-icon-btn video-search-toggle" aria-label="Toggle Search" style="width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-              </button>
-            </div>
-
-            <div id="videos-search-box" class="notes-search-wrapper" style="max-width: 340px; width: 100%;">
-              <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <!-- Compact Header: "Videos" + Search Box Directly Beside Title -->
+        <section class="notes-hero-header">
+          <div class="notes-hero-bar">
+            <h1 class="notes-hero-title">Videos</h1>
+            <div id="videos-search-box" class="notes-search-wrapper">
+              <svg class="notes-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
               </svg>
               <input
@@ -292,7 +279,7 @@
                 autocomplete="off"
               />
               <button id="videos-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
               </button>
             </div>
           </div>
@@ -323,24 +310,25 @@
 
         <!-- VIEW 2: Compact Subject Lectures View -->
         <section id="subject-detail-view" class="subject-detail-view hide">
+          <!-- Subject Detail Header: Row 1 Back & Teacher, Row 2 Subject Title (Full Width), Row 3 Subheading Video Count -->
           <div class="notes-detail-compact-bar">
-            <div class="compact-bar-left">
+            <div class="subject-detail-top-row">
               <button id="btn-back-to-subjects" class="btn-notes-back">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
                 <span>Back</span>
               </button>
-            </div>
 
-            <div class="compact-bar-center">
-              <h2 id="subject-detail-title">Subject Title</h2>
-              <span id="subject-detail-count" class="notes-detail-pill pill-count">0 Videos</span>
-            </div>
-
-            <div class="compact-bar-right">
               <span class="compact-teacher-pill">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span id="subject-detail-teacher">NNL Faculty</span>
               </span>
+            </div>
+
+            <div class="subject-detail-main">
+              <h2 id="subject-detail-title">Subject Title</h2>
+              <div class="subject-detail-subheading">
+                <span id="subject-detail-count" class="pill-count">0 Videos</span>
+              </div>
             </div>
           </div>
 
