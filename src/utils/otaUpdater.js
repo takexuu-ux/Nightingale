@@ -85,6 +85,20 @@ function updateProgressUI(status, activeBtn, statusLabel) {
     headerBtn.disabled = isBusy;
     setButtonLabel(headerBtn, status?.state === 'downloading' ? `${pct}%` : (status?.state === 'ready' ? 'Install' : btnText));
   }
+
+  if (status?.state === 'ready') {
+    const launchFn = async (e) => {
+      e?.stopPropagation?.();
+      try {
+        await fetch('/__ota/launch-installer', { method: 'POST' });
+      } catch (err) {
+        console.warn('[OTA] Manual launch error:', err);
+      }
+    };
+    if (applyBtn) applyBtn.onclick = launchFn;
+    if (manualBtn) manualBtn.onclick = launchFn;
+    if (headerBtn) headerBtn.onclick = launchFn;
+  }
 }
 
 function createBanner() {
@@ -181,6 +195,12 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
       updateProgressUI(status, applyBtn, statusLabel);
 
       if (status.state === 'ready') {
+        updateProgressUI(status, applyBtn, statusLabel);
+        try {
+          await fetch('/__ota/launch-installer', { method: 'POST' });
+        } catch (e) {
+          console.warn('[OTA] launch-installer error:', e);
+        }
         break;
       }
       if (status.state === 'error') {
@@ -204,17 +224,25 @@ function attachUpdateTriggers(checkFn) {
     box.innerHTML = `
       <div class="apk-ota-settings-head">
         <span class="apk-ota-settings-label">App Update</span>
-        <span id="apk-ota-ver-label">Version 1.0.21</span>
+        <span id="apk-ota-ver-label">Version 1.0.22</span>
       </div>
       <div id="apk-ota-settings-progress-wrap" style="display:none;">
         <div id="apk-ota-settings-progress-bar"></div>
       </div>
-      <button id="apk-ota-manual-btn" type="button">Check update</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+        <button id="apk-ota-manual-btn" type="button" style="flex:1;">Check update</button>
+        <button id="apk-ota-direct-apk-btn" type="button" style="flex:1;background:var(--accent,#5b3ee8);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:600;font-size:12px;cursor:pointer;">Install APK</button>
+      </div>
     `;
     panel.appendChild(box);
     box.querySelector('#apk-ota-manual-btn')?.addEventListener('click', (e) => {
       e.stopPropagation();
       checkFn(true);
+    });
+    box.querySelector('#apk-ota-direct-apk-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const verLabel = document.getElementById('apk-ota-ver-label');
+      applyUpdate(true, e.currentTarget, verLabel);
     });
   }
 

@@ -975,6 +975,13 @@ function renderSubjectLecturesList() {
     const dateFormatted = formatLectureDate(rec.date);
     const isSaved = isLectureSaved(rec.id) || Boolean(offState && offState.completed && !offState.expired);
     const isDownloading = offState && (offState.status === 'downloading' || offState.status === 'pending');
+
+    // Accurate Watch Progress from lectureWatchService & native player
+    const watchData = getLectureProgress(rec.id);
+    const watchPct = watchData ? Math.min(100, Math.max(0, Math.round(watchData.percent || 0))) : 0;
+    const isCompleted = watchPct >= 90;
+    const durClean = (rec.duration || '').replace(/^⏱️\s*/, '').trim() || 'Recorded';
+
     const saveBtnHtml = `
       <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture for Offline'}">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -1004,16 +1011,20 @@ function renderSubjectLecturesList() {
           </div>
         </div>
 
-        <!-- 3 & 4. Body: Title + Date above, Subtitle with Duration, PDF & Single Unified Save below -->
+        <!-- 3 & 4. Body: Title + Date above, Subtitle with Progress Bar & Duration right beside it, PDF & Save buttons -->
         <div class="sd-lecture-body">
           <div class="sd-lecture-top-line">
             <span class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</span>
             ${dateFormatted ? `<span class="sd-lecture-date">${escapeHtml(dateFormatted)}</span>` : ''}
           </div>
           <div class="sd-lecture-sub-line">
-            <div class="sd-lecture-meta-left">
-              <span class="sd-lecture-duration">⏱️ ${escapeHtml(rec.duration || 'Recorded')}</span>
-              ${dateFormatted ? `<span class="meta-dot">•</span><span class="sd-lecture-date-sub">${escapeHtml(dateFormatted)}</span>` : ''}
+            <div class="sd-lecture-progress-side">
+              <div class="sd-lecture-progress-track" title="${watchPct > 0 ? `${watchPct}% watched` : 'Not opened yet'}">
+                <div class="sd-lecture-progress-fill ${isCompleted ? 'is-completed' : ''}" style="width: ${watchPct}%;"></div>
+              </div>
+              <span class="sd-lecture-progress-label">
+                ${watchPct > 0 ? `<span class="sd-pct-num">${watchPct}%</span> <span class="meta-dot">•</span> ` : ''}${escapeHtml(durClean)}
+              </span>
             </div>
             <div class="sd-lecture-actions">
               ${pdfBtnHtml}
