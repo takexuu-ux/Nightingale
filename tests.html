@@ -128,22 +128,19 @@
 
         <!-- VIEW 1: Categorized Practice Tests Grid -->
         <section id="tests-catalog-view" class="notes-catalog-view">
-          <!-- Section Switcher: Test Series vs Question Bank vs Red Sapphire English Batch 104 -->
+          <!-- Section Switcher: Red Sapphire vs Test Series vs Question Bank (Clean pills without count clutter) -->
           <div class="section-mode-tabs">
-            <button id="test-tab-series" class="section-mode-tab active" data-section="series">
+            <button id="test-tab-rb104" class="section-mode-tab active" data-section="rb104">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+              <span>Red Sapphire</span>
+            </button>
+            <button id="test-tab-series" class="section-mode-tab" data-section="series">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               <span>Test Series</span>
-              <span id="test-count-series" class="section-mode-count">473</span>
             </button>
             <button id="test-tab-qbank" class="section-mode-tab" data-section="qbank">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
               <span>Question Bank</span>
-              <span id="test-count-qbank" class="section-mode-count">530</span>
-            </button>
-            <button id="test-tab-rb104" class="section-mode-tab" data-section="rb104">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
-              <span>Red Sapphire</span>
-              <span id="test-count-rb104" class="section-mode-count">—</span>
             </button>
           </div>
 
@@ -171,26 +168,22 @@
           <div id="tests-grid" class="notes-subject-grid"></div>
         </section>
 
-        <!-- VIEW 2: Category / Subject Drill-down (Compact Header Bar + Topic Pills + Test Cards) -->
+        <!-- VIEW 2: Category / Subject Drill-down (Row 1 Back & Title; Row 2 Left Count, Right Series/Faculty) -->
         <section id="tests-detail-view" class="notes-subject-view hide">
           <div class="notes-detail-compact-bar">
-            <div class="compact-bar-left">
-              <button id="btn-back-tests" class="btn-notes-back">
+            <div class="subject-detail-top-line">
+              <button id="btn-back-tests" class="btn-notes-back" type="button" aria-label="Go Back">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
                 <span>Back</span>
               </button>
+              <h2 id="test-detail-title" class="subject-detail-title">Category Title</h2>
             </div>
-
-            <div class="compact-bar-center">
-              <h2 id="test-detail-title">Category Title</h2>
-              <span id="test-detail-count" class="notes-detail-pill pill-count">0 Tests</span>
-            </div>
-
-            <div class="compact-bar-right">
-              <span class="compact-teacher-pill">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span id="test-detail-right-label">NNL Test Bank</span>
-              </span>
+            <div class="subject-detail-sub-line">
+              <span id="test-detail-count" class="subject-detail-count">0 Tests</span>
+              <div class="subject-detail-teacher-box">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span id="test-detail-right-label" class="subject-detail-teacher">NNL Test Bank</span>
+              </div>
             </div>
           </div>
 
@@ -280,6 +273,27 @@
           <button id="quiz-show-ans-btn" class="btn btn-zoom">Explain</button>
           <button id="quiz-next-btn" class="btn btn-secondary">Next</button>
           <button id="quiz-submit-btn" class="btn btn-exit" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">Submit Test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- In-App Minimal PDF Reader Modal -->
+    <div id="pdf-modal" class="pdf-modal-overlay hide">
+      <div class="pdf-modal-container">
+        <div class="pdf-modal-header">
+          <div class="pdf-modal-title" id="pdf-modal-title">Document Preview</div>
+          <div class="pdf-modal-actions">
+            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              <span>Open in New Tab</span>
+            </a>
+            <button id="pdf-modal-close-btn" class="btn-note-view" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #fff;">
+              <span>Close (ESC)</span>
+            </button>
+          </div>
+        </div>
+        <div class="pdf-modal-body">
+          <iframe id="pdf-modal-iframe" class="pdf-iframe" src="" title="PDF Viewer"></iframe>
         </div>
       </div>
     </div>

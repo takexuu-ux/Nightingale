@@ -1,7 +1,9 @@
 // Nightingale Categorized Practice Tests, Question Bank & Batch 104 CBT Controller
 import { PRACTICE_TEST_SERIES, QBANK_SUBJECTS, TESTS_CATALOG_TOTALS } from './data/allTestsCatalog.js';
-import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth } from './utils/batch104Sync.js';
-import { IS_HINGLISH_APK } from './config/appMode.js';
+import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
+import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
+
+hydrateAndroidAuthSession();
 
 const ALLOWED_SAPPHIRE_BATCHES = IS_HINGLISH_APK
   ? ['Red Sapphire (Hinglish)', 'Blue Sapphire (Hinglish)', 'Red Sapphire (English)', 'Fast Track']
@@ -22,9 +24,7 @@ if (!activeBatch || !ALLOWED_SAPPHIRE_BATCHES.includes(activeBatch)) {
 }
 
 const urlParams = new URLSearchParams(window.location.search);
-let currentSection = urlParams.get('section') === 'rb104'
-  ? 'rb104'
-  : (urlParams.get('section') === 'qbank' ? 'qbank' : 'series');
+let currentSection = urlParams.get('section') || 'rb104';
 
 let currentOpenItem = null; // { kind: 'series' | 'qbank' | 'rb104', data }
 let currentSubFilter = 'ALL';
@@ -600,6 +600,19 @@ function renderTestRowHtml(t, metaSubLabel) {
   const mins = Math.max(1, Math.round((t.duration || 1800) / 60));
   const isBatch = Boolean(t.isBatchTest || t.source === 'batch_cms');
   const qCount = t.totalQuestions || 0;
+  const pdfUrl = t.notePdfUrl || t.pdfUrl || t.url || '';
+  const pdfTitle = t.notePdfTitle || t.pdfTitle || `${t.title} PDF`;
+  const pdfBtns = pdfUrl ? `
+    <button class="btn-note-view btn-preview-pdf" data-title="${encodeURIComponent(pdfTitle)}" data-url="${encodeURIComponent(pdfUrl)}" title="View Test PDF">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>PDF</span>
+    </button>
+    <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer" download class="btn-note-download" title="Download Test PDF">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+      <span>Download</span>
+    </a>
+  ` : '';
+
   return `
     <div class="note-doc-card">
       <div class="note-doc-info">
@@ -620,6 +633,7 @@ function renderTestRowHtml(t, metaSubLabel) {
       </div>
 
       <div class="note-doc-actions">
+        ${pdfBtns}
         <button class="btn-note-view btn-launch-test"
           data-test-id="${escapeHtml(t.id)}"
           data-title="${encodeURIComponent(t.title)}"
@@ -656,38 +670,92 @@ function bindTestAttemptButtons(container) {
       loadAndStartTest({ id: testId, title, duration, isBatchTest, mode });
     });
   });
+
+  container.querySelectorAll('.btn-preview-pdf').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPdfModal(
+        decodeURIComponent(btn.getAttribute('data-title') || 'Test PDF'),
+        decodeURIComponent(btn.getAttribute('data-url') || '')
+      );
+    });
+  });
+}
+
+function openPdfModal(title, url, downloadName = '') {
+  if (!url) return;
+  if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
+    try {
+      window.AndroidPdfBridge.openPdf(url, title || 'Test PDF');
+      return;
+    } catch (e) {
+      console.warn('[Tests] Native PDF bridge fallback:', e);
+    }
+  }
+
+  const modal = document.getElementById('pdf-modal');
+  const titleEl = document.getElementById('pdf-modal-title');
+  const dlBtn = document.getElementById('pdf-modal-download-btn');
+  const iframe = document.getElementById('pdf-modal-iframe');
+  if (!modal) {
+    window.open(url, '_blank');
+    return;
+  }
+  if (titleEl) titleEl.textContent = title || 'Document Preview';
+  if (dlBtn) {
+    dlBtn.href = url;
+    if (downloadName) dlBtn.setAttribute('download', downloadName);
+  }
+  if (iframe) iframe.src = getPdfPreviewSrc(url);
+  modal.classList.remove('hide');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePdfModal() {
+  const modal = document.getElementById('pdf-modal');
+  if (!modal) return;
+  modal.classList.add('hide');
+  const iframe = document.getElementById('pdf-modal-iframe');
+  if (iframe) iframe.src = '';
+  document.body.style.overflow = '';
 }
 
 // Fetch ALL paginated questions cleanly for either batch_cms or cms tests
 async function fetchTestQuestionsPaginated(testId, isBatchTest) {
-  const primaryPrefix = isBatchTest ? '/batch_cms/test' : '/cms/test';
-  const fallbackPrefix = isBatchTest ? '/cms/test' : '/batch_cms/test';
+  const prefixes = isBatchTest
+    ? ['/batch_cms/test', '/cms/test', '/batch_cms/tests', '/cms/tests']
+    : ['/cms/test', '/batch_cms/test', '/cms/tests', '/batch_cms/tests'];
 
   async function tryEndpoint(prefix) {
     const questions = [];
     let url = `${prefix}/${testId}/questions/?page_size=100`;
     let page = 1;
     while (url && page <= 15) {
-      const res = await fetchWithAutoAuth(url);
-      if (!res || !res.ok) break;
-      const d = await res.json();
-      const arr = d.data || d.results || (Array.isArray(d) ? d : []);
-      if (Array.isArray(arr) && arr.length > 0) questions.push(...arr);
-      let nextUrl = d.next_page_link || d.next || null;
-      if (!nextUrl && d.max_pages && page < d.max_pages) {
-        nextUrl = `${prefix}/${testId}/questions/?page_size=100&page=${page + 1}`;
+      try {
+        const res = await fetchWithAutoAuth(url);
+        if (!res || !res.ok) break;
+        const d = await res.json();
+        const arr = d.data || d.results || (Array.isArray(d) ? d : []);
+        if (Array.isArray(arr) && arr.length > 0) questions.push(...arr);
+        let nextUrl = d.next_page_link || d.next || null;
+        if (!nextUrl && d.max_pages && page < d.max_pages) {
+          nextUrl = `${prefix}/${testId}/questions/?page_size=100&page=${page + 1}`;
+        }
+        url = nextUrl;
+        page++;
+      } catch (err) {
+        console.warn(`[Tests] Failed fetching from ${url}:`, err);
+        break;
       }
-      url = nextUrl;
-      page++;
     }
     return questions;
   }
 
-  let items = await tryEndpoint(primaryPrefix);
-  if (items.length === 0) {
-    items = await tryEndpoint(fallbackPrefix);
+  for (const prefix of prefixes) {
+    const items = await tryEndpoint(prefix);
+    if (items && items.length > 0) return items;
   }
-  return items;
+  return [];
 }
 
 async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = false, mode = 'practice' }) {

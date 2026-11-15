@@ -1364,8 +1364,24 @@ function bindTopicPills() {
 
 // In-App Minimal PDF Reader Modal
 function openPdfModal(title, url, downloadName = '') {
-  if (!pdfModal) return;
-  if (pdfModalTitle) pdfModalTitle.textContent = title;
+  if (!url) return;
+
+  // 1. Native Android PDF Bridge (instant system viewer intent)
+  if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
+    try {
+      window.AndroidPdfBridge.openPdf(url, title || 'Class Notes PDF');
+      return;
+    } catch (e) {
+      console.warn('[Notes] Native PDF bridge fallback:', e);
+    }
+  }
+
+  // 2. Web In-App Modal with full PDF preview & direct open fallback
+  if (!pdfModal) {
+    window.open(url, '_blank');
+    return;
+  }
+  if (pdfModalTitle) pdfModalTitle.textContent = title || 'Document Preview';
   if (pdfModalDownloadBtn) {
     pdfModalDownloadBtn.href = url;
     pdfModalDownloadBtn.setAttribute('target', '_blank');

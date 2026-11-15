@@ -134,17 +134,15 @@
 
         <!-- VIEW 1: All Subjects Catalog Grid -->
         <section id="notes-catalog-view" class="notes-catalog-view">
-          <!-- Section Switcher: Conceptual Notes vs Red Sapphire (English) Live Batch -->
+          <!-- Section Switcher: Red Sapphire vs All Notes (Clean pills without count clutter) -->
           <div class="section-mode-tabs">
-            <button id="sec-tab-master" class="section-mode-tab active" data-section="master">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-              <span>All Notes</span>
-              <span id="sec-count-master" class="section-mode-count">1,319</span>
-            </button>
-            <button id="sec-tab-rb104" class="section-mode-tab" data-section="rb104">
+            <button id="sec-tab-rb104" class="section-mode-tab active" data-section="rb104">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.83a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
               <span>Red Sapphire</span>
-              <span id="sec-count-rb104" class="section-mode-count">—</span>
+            </button>
+            <button id="sec-tab-master" class="section-mode-tab" data-section="master">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>All Notes</span>
             </button>
           </div>
 
@@ -177,20 +175,22 @@
           </div>
         </section>
 
-        <!-- VIEW 2: Dedicated Subject Drill-down View (Hidden by default) -->
+        <!-- VIEW 2: Dedicated Subject Drill-down View (Row 1 Back & Title; Row 2 Left Count, Right Teacher) -->
         <section id="notes-subject-view" class="notes-subject-view hide">
           <div class="notes-detail-compact-bar">
-            <div class="subject-detail-top-line" style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div class="subject-detail-top-line">
               <button id="btn-back-subjects" class="btn-notes-back" type="button" aria-label="Go Back">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
                 <span>Back</span>
               </button>
-              <h2 id="subject-detail-title" class="subject-detail-title" style="margin:0;font-size:1.15rem;font-weight:800;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;">Subject Title</h2>
-              <span id="subject-detail-count" class="notes-detail-pill pill-count" style="flex-shrink:0;">0 PDFs</span>
-              <span id="subject-detail-teacher" class="compact-teacher-pill" style="margin-left:auto;flex-shrink:0;">
+              <h2 id="subject-detail-title" class="subject-detail-title">Subject Title</h2>
+            </div>
+            <div class="subject-detail-sub-line">
+              <span id="subject-detail-count" class="subject-detail-count">0 PDFs</span>
+              <div class="subject-detail-teacher-box">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span id="subject-detail-teacher-name">Faculty</span>
-              </span>
+                <span id="subject-detail-teacher-name" class="subject-detail-teacher">Faculty</span>
+              </div>
             </div>
           </div>
 

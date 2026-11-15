@@ -1011,11 +1011,17 @@ function renderSubjectLecturesList() {
           </div>
         </div>
 
-        <!-- 3 & 4. Body: Title + Date above, Subtitle with Progress Bar & Duration right beside it, PDF & Save buttons -->
+        <!-- 3 & 4. Body: Row 1 Topic & Date, Row 2 Lecture Title, Row 3 Progress Bar, Duration, PDF & Save buttons -->
         <div class="sd-lecture-body">
+          <div class="sd-lecture-topic-row">
+            <span class="sd-lecture-topic-pill" title="${escapeHtml(rec.topic || currentOpenSubject?.title || 'Topic')}">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>${escapeHtml(rec.topic || currentOpenSubject?.title || 'General Topic')}</span>
+            </span>
+            ${dateFormatted ? `<span class="sd-lecture-date">${escapeHtml(dateFormatted)}</span>` : ''}
+          </div>
           <div class="sd-lecture-top-line">
             <span class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</span>
-            ${dateFormatted ? `<span class="sd-lecture-date">${escapeHtml(dateFormatted)}</span>` : ''}
           </div>
           <div class="sd-lecture-sub-line">
             <div class="sd-lecture-progress-side">
@@ -1090,8 +1096,24 @@ function renderSubjectLecturesList() {
 }
 
 function openPdfModal(title, url) {
-  if (!pdfModal) return;
-  if (pdfModalTitle) pdfModalTitle.textContent = title;
+  if (!url) return;
+
+  // 1. Native Android PDF Bridge (instant system viewer intent)
+  if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
+    try {
+      window.AndroidPdfBridge.openPdf(url, title || 'Lecture Notes PDF');
+      return;
+    } catch (e) {
+      console.warn('[Videos] Native PDF bridge fallback:', e);
+    }
+  }
+
+  // 2. Web In-App Modal with full PDF preview & direct open fallback
+  if (!pdfModal) {
+    window.open(url, '_blank');
+    return;
+  }
+  if (pdfModalTitle) pdfModalTitle.textContent = title || 'Lecture Notes PDF';
   if (pdfModalDownloadBtn) pdfModalDownloadBtn.href = url;
   if (pdfModalIframe) pdfModalIframe.src = getPdfPreviewSrc(url);
   pdfModal.classList.remove('hide');
@@ -1118,6 +1140,7 @@ function initRecordingsViewer() {
     }
     document.getElementById('recording-cipher-iframe')?.remove();
     document.getElementById('recording-cipher-loader')?.remove();
+    document.getElementById('recording-portrait-notes')?.classList.add('hide');
   });
 }
 
@@ -1142,6 +1165,30 @@ function openRecordingPlayer(recording) {
   if (!viewer) return;
   if (titleEl) titleEl.textContent = recording.title || 'Recorded Lecture';
   if (instructorEl) instructorEl.textContent = `Instructor: ${recording.instructor || 'Faculty'}`;
+
+  // Configure Portrait Notes PDF Bar if available
+  const portraitNotesEl = document.getElementById('recording-portrait-notes');
+  const rpnTitle = document.getElementById('rpn-title');
+  const rpnViewBtn = document.getElementById('rpn-view-btn');
+  const rpnDlBtn = document.getElementById('rpn-download-btn');
+
+  if (recording.notePdfUrl) {
+    const pdfTitle = recording.notePdfTitle || (recording.title ? `${recording.title} Notes` : 'Class Notes PDF');
+    if (rpnTitle) rpnTitle.textContent = pdfTitle;
+    if (rpnDlBtn) {
+      rpnDlBtn.href = recording.notePdfUrl;
+      rpnDlBtn.setAttribute('download', `${pdfTitle.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`);
+    }
+    if (rpnViewBtn) {
+      rpnViewBtn.onclick = (e) => {
+        e.preventDefault();
+        openPdfModal(pdfTitle, recording.notePdfUrl);
+      };
+    }
+    portraitNotesEl?.classList.remove('hide');
+  } else {
+    portraitNotesEl?.classList.add('hide');
+  }
 
   viewer.classList.remove('hide');
   document.getElementById('recording-cipher-iframe')?.remove();
@@ -1178,17 +1225,33 @@ function openRecordingPlayer(recording) {
       if (data && data.otp && data.playbackInfo) {
         loader.remove();
         const tk = localStorage.getItem('nnl_access_token') || '';
+        const pdfUrl = recording.notePdfUrl || '';
+        const pdfTitle = recording.notePdfTitle || (recording.title ? `${recording.title} Notes` : 'Class Notes PDF');
         if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
           viewer.classList.add('hide');
-          window.AndroidVideoBridge.playVideoWithAuth(
-            data.otp,
-            data.playbackInfo,
-            recording.title || 'Recorded Lecture',
-            recording.instructor || 'NNL Faculty',
-            String(recId || ''),
-            tk,
-            isBatch
-          );
+          try {
+            window.AndroidVideoBridge.playVideoWithAuth(
+              data.otp,
+              data.playbackInfo,
+              recording.title || 'Recorded Lecture',
+              recording.instructor || 'NNL Faculty',
+              String(recId || ''),
+              tk,
+              isBatch,
+              pdfUrl,
+              pdfTitle
+            );
+          } catch {
+            window.AndroidVideoBridge.playVideoWithAuth(
+              data.otp,
+              data.playbackInfo,
+              recording.title || 'Recorded Lecture',
+              recording.instructor || 'NNL Faculty',
+              String(recId || ''),
+              tk,
+              isBatch
+            );
+          }
           return;
         }
         if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideo === 'function') {

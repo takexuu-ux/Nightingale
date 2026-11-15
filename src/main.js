@@ -3397,7 +3397,7 @@ function renderClasses(classes) {
 function updateHeroGreeting() {
   const greetingEl = document.getElementById('apk-hero-greeting');
   if (!greetingEl) return;
-  greetingEl.textContent = 'Welcome back, Scholar';
+  greetingEl.textContent = 'Welcome, NNL ke Papa 👑';
 }
 
 function formatWatchTime(sec) {
