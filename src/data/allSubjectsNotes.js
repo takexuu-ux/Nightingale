@@ -124,11 +124,22 @@ export const ALL_MASTER_SUBJECTS = [
     "noteCount": 4
   },
   {
+    "id": "statistics",
+    "key": "statistics",
+    "apiSubjectId": 82,
+    "title": "Nursing Research & Statistics (Ms. Chitra Pandey & Dr. Mukhmohit)",
+    "shortTitle": "Research & Statistics",
+    "category": "Ms. Chitra Pandey & Dr. Mukhmohit",
+    "faculty": "Ms. Chitra Pandey & Dr. Mukhmohit",
+    "isMasterSubject": true,
+    "noteCount": 11
+  },
+  {
     "id": "82",
     "key": "management-research",
     "apiSubjectId": 82,
-    "title": "Nursing Management, Education & Research (Ms. Chitra Pandey)",
-    "shortTitle": "Management & Research",
+    "title": "Nursing Management & Education (Ms. Chitra Pandey)",
+    "shortTitle": "Management & Education",
     "category": "Ms. Chitra Pandey",
     "faculty": "Ms. Chitra Pandey",
     "isMasterSubject": true,
@@ -11678,6 +11689,118 @@ export const MASTER_NOTES_BY_SUBJECT = {
       "category": "LIVE CLASS",
       "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/6bb6f9fb-2b57-436d-b3a8-6b30a984976f.pdf",
       "downloadName": "Obstetrics_Complete_Class_notes.pdf"
+    }
+  ],
+  "statistics": [
+    {
+      "id": "stats-1",
+      "title": "Statistics Part-1",
+      "lectureTitle": "Statistics Part-1",
+      "topic": "Statistics",
+      "subtopicId": 5945,
+      "category": "REVISION",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/d5380783-f5b5-46c1-925b-7f51a411000f.pdf",
+      "downloadName": "Statistics_Part-1.pdf"
+    },
+    {
+      "id": "stats-2",
+      "title": "Statistics Part-3",
+      "lectureTitle": "Statistics Part-3",
+      "topic": "Statistics",
+      "subtopicId": 5947,
+      "category": "REVISION",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/a445cb68-354b-4fd6-934a-f2638249e944.pdf",
+      "downloadName": "Statistics_Part-3.pdf"
+    },
+    {
+      "id": "stats-biostat-1",
+      "title": "Biostatistics-1",
+      "lectureTitle": "Biostatistics-1",
+      "topic": "Nursing Research and Biostatistics",
+      "subtopicId": 5687,
+      "category": "HANDWRITTEN",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/11.%20Community%20Health%20Nursing/3.%20Nursing%20Research%20and%20Biostatistics/1.%20Biostatistics%20(Part%20I).pdf",
+      "downloadName": "Biostatistics-1.pdf"
+    },
+    {
+      "id": "stats-biostat-2",
+      "title": "Biostatistics-2",
+      "lectureTitle": "Biostatistics-2",
+      "topic": "Nursing Research and Biostatistics",
+      "subtopicId": 5688,
+      "category": "HANDWRITTEN",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/11.%20Community%20Health%20Nursing/3.%20Nursing%20Research%20and%20Biostatistics/2.%20Biostatistics%20(Part%20II).pdf",
+      "downloadName": "Biostatistics-2.pdf"
+    },
+    {
+      "id": "stats-biostat-3",
+      "title": "Biostatistics-3",
+      "lectureTitle": "Biostatistics-3",
+      "topic": "Nursing Research and Biostatistics",
+      "subtopicId": 5689,
+      "category": "HANDWRITTEN",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/11.%20Community%20Health%20Nursing/3.%20Nursing%20Research%20and%20Biostatistics/3.%20Biostatistics%20(Part%20III).pdf",
+      "downloadName": "Biostatistics-3.pdf"
+    },
+    {
+      "id": "stats-biostat-4",
+      "title": "Biostatistics-4",
+      "lectureTitle": "Biostatistics-4",
+      "topic": "Nursing Research and Biostatistics",
+      "subtopicId": 5690,
+      "category": "HANDWRITTEN",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/Handwritten-Notes/11.%20Community%20Health%20Nursing/3.%20Nursing%20Research%20and%20Biostatistics/4.%20Biostatistics%20(Part%20IV).pdf",
+      "downloadName": "Biostatistics-4.pdf"
+    },
+    {
+      "id": "stats-nrs-1",
+      "title": "Day 1 NRS",
+      "lectureTitle": "NRS Part 2",
+      "topic": "Nursing Research & Statistics Revision",
+      "subtopicId": 29871,
+      "category": "REVISION",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/7f59912f-df4c-47c1-b46e-b84806d80cc9.pdf",
+      "downloadName": "Day_1_NRS.pdf"
+    },
+    {
+      "id": "stats-live-26",
+      "title": "Day 1 Class Notes Nursing Research",
+      "lectureTitle": "Day 1 Class Notes Nursing Research",
+      "topic": "Batch 103 (Hinglish) Live",
+      "subtopicId": null,
+      "category": "LIVE CLASS",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/8d8c8240-c240-431d-8475-05651d5a8849.pdf",
+      "downloadName": "Day_1_Class_Notes_Nursing_Research.pdf"
+    },
+    {
+      "id": "stats-live-27",
+      "title": "Day 2 Class Notes Nursing Research",
+      "lectureTitle": "Day 2 Class Notes Nursing Research",
+      "topic": "Batch 103 (Hinglish) Live",
+      "subtopicId": null,
+      "category": "LIVE CLASS",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/80bb8d92-e3d5-4e62-95fe-22f13df97c2a.pdf",
+      "downloadName": "Day_2_Class_Notes_Nursing_Research.pdf"
+    },
+    {
+      "id": "stats-live-28",
+      "title": "Day 3 Class Notes Nursing Research",
+      "lectureTitle": "Day 3 Class Notes Nursing Research",
+      "topic": "Batch 103 (Hinglish) Live",
+      "subtopicId": null,
+      "category": "LIVE CLASS",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/51b41c6c-a8f9-49e3-95fc-2e0c2851f9a8.pdf",
+      "downloadName": "Day_3_Class_Notes_Nursing_Research.pdf"
+    },
+    {
+      "id": "stats-comm",
+      "title": "Communication & Utilization of Research Findings",
+      "lectureTitle": "Communication & Utilization of research",
+      "topic": "Communication & Utilization of research",
+      "subtopicId": 5949,
+      "category": "REVISION",
+      "url": "https://d22wftpsnydqiu.cloudfront.net/handwritten_notes/26afe6c3-d40e-48ae-abee-ea0fb1cb3da6.pdf",
+      "downloadName": "Communication_Utilization_of_Research_Findings.pdf"
     }
   ],
   "82": [

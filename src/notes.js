@@ -178,6 +178,9 @@ const SUBJECT_SVG = {
   pathology: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18h8M3 22h18M14 22a7 7 0 1 0-7-7M9 14l2-2M17 6l3 3-8 8-3-3 8-8zM19 4l1 1-1.5 1.5-1-1L19 4z"/>',
   nutrition: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
   biochem: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
+  statistics: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
+  statist: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
+  biostat: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
   research: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM9 12h6M9 16h4"/>',
   management: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM9 12h6M9 16h4"/>',
   timetable: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>',
@@ -916,10 +919,16 @@ function renderSubjectCards() {
     }
 
     if (!query) return true;
-    const titleMatch = (sub.title || '').toLowerCase().includes(query) || (sub.faculty || '').toLowerCase().includes(query);
+    const titleMatch = (sub.title || '').toLowerCase().includes(query) ||
+                       (sub.shortTitle || '').toLowerCase().includes(query) ||
+                       (sub.faculty || '').toLowerCase().includes(query) ||
+                       (sub.category || '').toLowerCase().includes(query) ||
+                       (sub.key || '').toLowerCase().includes(query);
     const notesMatch = notes.some(n =>
       (n.title || '').toLowerCase().includes(query) ||
-      (n.topic || '').toLowerCase().includes(query)
+      (n.topic || '').toLowerCase().includes(query) ||
+      (n.lectureTitle || '').toLowerCase().includes(query) ||
+      (n.downloadName || '').toLowerCase().includes(query)
     );
     return titleMatch || notesMatch;
   });

@@ -125,6 +125,18 @@
 
         <!-- Section 1: Saved Lectures -->
         <section id="saved-section-lectures" class="saved-content-section">
+          <!-- Device Offline Sub-filter Pills -->
+          <div class="saved-sub-filter-bar" id="saved-sub-filter-bar">
+            <button type="button" class="saved-sub-filter-pill active" data-subfilter="all">
+              <span>All Saved</span>
+              <span class="subfilter-badge" id="count-all-saved">0</span>
+            </button>
+            <button type="button" class="saved-sub-filter-pill" data-subfilter="offline">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Downloaded on this Device</span>
+              <span class="subfilter-badge" id="count-offline-saved">0</span>
+            </button>
+          </div>
           <div id="saved-lectures-container" class="subject-lectures-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
         </section>
 

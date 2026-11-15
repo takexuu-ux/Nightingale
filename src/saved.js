@@ -12,7 +12,11 @@ import { getPdfPreviewSrc } from './config/appMode.js';
 hydrateAndroidAuthSession();
 
 let activeSavedTab = 'lectures'; // 'lectures' | 'notes' | 'tests'
+let activeSubFilter = 'all'; // 'all' | 'offline'
 let searchQuery = '';
+let localOfflineMap = new Map();
+let offlinePollTimer = null;
+const offlinePendingReq = new Set();
 
 const lecturesContainer = document.getElementById('saved-lectures-container');
 const notesContainer = document.getElementById('saved-notes-container');
@@ -22,6 +26,127 @@ const searchInput = document.getElementById('saved-search-input');
 const countLecturesEl = document.getElementById('count-lectures');
 const countNotesEl = document.getElementById('count-notes');
 const countTestsEl = document.getElementById('count-tests');
+const countAllSavedEl = document.getElementById('count-all-saved');
+const countOfflineSavedEl = document.getElementById('count-offline-saved');
+
+function hasNativeOfflineBridge() {
+  return typeof window !== 'undefined' && (
+    Boolean(window.AndroidVideoBridge) ||
+    window.location.protocol === 'http:' ||
+    window.location.protocol === 'https:'
+  );
+}
+
+async function refreshLocalOffline({ reRender = false } = {}) {
+  if (!hasNativeOfflineBridge()) return;
+  try {
+    const res = await fetch(`/__offline/list?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json || !Array.isArray(json.items)) return;
+
+    localOfflineMap.clear();
+    let hasActive = false;
+    let completedCount = 0;
+
+    json.items.forEach(it => {
+      localOfflineMap.set(String(it.recId), it);
+      if (it.completed && !it.expired) completedCount++;
+      if (it.status === 'pending' || it.status === 'downloading') hasActive = true;
+    });
+
+    if (countOfflineSavedEl) countOfflineSavedEl.textContent = completedCount;
+
+    if (hasActive && !offlinePollTimer) {
+      offlinePollTimer = setInterval(() => refreshLocalOffline({ reRender: false }), 900);
+    } else if (!hasActive && offlinePollTimer) {
+      clearInterval(offlinePollTimer);
+      offlinePollTimer = null;
+    }
+
+    // Live update percentage badges directly in DOM
+    if (hasActive) {
+      json.items.forEach(it => {
+        const badge = document.querySelector(`.sd-device-offline-tag[data-rec-id="${it.recId}"]`);
+        if (badge) {
+          if (it.status === 'downloading') {
+            const pct = Math.round(it.percent || 0);
+            badge.className = 'sd-device-offline-tag is-downloading';
+            badge.innerHTML = `<svg class="sd-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> <span>Downloading ${pct}%</span>`;
+          } else if (it.completed && !it.expired) {
+            badge.className = 'sd-device-offline-tag is-downloaded';
+            badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>Downloaded on this Device</span>`;
+          }
+        }
+      });
+    }
+
+    if (reRender && activeSavedTab === 'lectures') {
+      renderSavedLectures();
+    }
+  } catch (_) {}
+}
+
+async function startOfflineLectureDownload(rec, btnEl) {
+  if (!rec || !rec.id) return;
+  const key = String(rec.id);
+  if (offlinePendingReq.has(key)) return;
+  offlinePendingReq.add(key);
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = `<span>Queuing...</span>`;
+    btnEl.classList.add('is-downloading');
+  }
+
+  try {
+    const cred = await fetchOfflineVdoCipherOtp(rec.id, { isBatch103: true }).catch(() =>
+      fetchOfflineVdoCipherOtp(rec.id, { isBatch103: false })
+    );
+    if (!cred || !cred.otp || !cred.playbackInfo) {
+      throw new Error('Could not fetch offline credentials');
+    }
+
+    const startRes = await fetch('/__offline/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recId: String(rec.id),
+        mediaId: cred.mediaId || '',
+        otp: cred.otp,
+        playbackInfo: cred.playbackInfo,
+        title: rec.title || 'Recorded Lecture',
+        instructor: rec.instructor || 'NNL Faculty',
+        subject: rec.subject || ''
+      })
+    });
+    const startJson = await startRes.json();
+    if (!startJson.ok) throw new Error(startJson.error || 'Could not queue download');
+    await refreshLocalOffline({ reRender: true });
+  } catch (err) {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.title = err.message;
+      btnEl.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Retry Download</span>`;
+      btnEl.classList.remove('is-downloading');
+    }
+    console.warn(`[Offline] Download error: ${err.message}`);
+  } finally {
+    offlinePendingReq.delete(key);
+  }
+}
+
+async function deleteOfflineMedia(recId) {
+  try {
+    await fetch('/__offline/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recId: String(recId) })
+    });
+    localOfflineMap.delete(String(recId));
+    await refreshLocalOffline({ reRender: false });
+  } catch (_) {}
+}
 
 // Recording Viewer Elements
 const recordingViewer = document.getElementById('recording-viewer');
@@ -204,21 +329,41 @@ function renderSavedLectures() {
   if (!lecturesContainer) return;
   const list = getSavedLecturesList();
   if (countLecturesEl) countLecturesEl.textContent = list.length;
+  if (countAllSavedEl) countAllSavedEl.textContent = list.length;
+
+  let completedOfflineCount = 0;
+  list.forEach(item => {
+    const recId = String(item.id || item.recId || '');
+    const off = localOfflineMap.get(recId);
+    if (off && off.completed && !off.expired) completedOfflineCount++;
+  });
+  if (countOfflineSavedEl) countOfflineSavedEl.textContent = completedOfflineCount;
 
   const q = searchQuery.trim().toLowerCase();
   const filtered = list.filter(item => {
+    const recId = String(item.id || item.recId || '');
+    const off = localOfflineMap.get(recId);
+    const isOfflineHere = Boolean(off && off.completed && !off.expired);
+
+    if (activeSubFilter === 'offline' && !isOfflineHere) return false;
+
     if (!q) return true;
     return `${item.title} ${item.instructor} ${item.subject}`.toLowerCase().includes(q);
   });
 
   if (filtered.length === 0) {
+    const emptyTitle = activeSubFilter === 'offline' ? 'No offline downloads on this device' : 'No saved lectures';
+    const emptyDesc = activeSubFilter === 'offline'
+      ? 'Lectures downloaded on other devices stay on that device. Tap "Download" on any saved lecture to watch it offline here.'
+      : 'Bookmark classes from Videos or Home to watch them offline anytime.';
+
     lecturesContainer.innerHTML = `
       <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align: center; width: 100%;">
         <div style="width: 52px; height: 52px; margin: 0 auto 0.85rem; border-radius: 16px; background: rgba(142,116,229,0.18); border: 1px solid rgba(167,139,250,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent);">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
         </div>
-        <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved lectures</p>
-        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Bookmark classes from Videos or Home to watch them offline anytime.</p>
+        <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">${emptyTitle}</p>
+        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">${emptyDesc}</p>
       </div>
     `;
     return;
@@ -228,6 +373,43 @@ function renderSavedLectures() {
     const thumb = lec.thumb || '/nightingale.png';
     const duration = formatDurationLabel(lec.duration);
     const recIdClean = String(lec.id || lec.recId || '');
+    const off = localOfflineMap.get(recIdClean);
+    const isOfflineHere = Boolean(off && off.completed && !off.expired);
+    const isDownloadingHere = Boolean(off && (off.status === 'downloading' || off.status === 'pending'));
+
+    let offlineBadgeHtml = '';
+    if (isOfflineHere) {
+      const mb = off.totalSizeBytes > 0 ? ` • ${(off.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '';
+      offlineBadgeHtml = `
+        <span class="sd-device-offline-tag is-downloaded" data-rec-id="${recIdClean}">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Downloaded on this Device${mb}</span>
+        </span>
+      `;
+    } else if (isDownloadingHere) {
+      const pct = Math.round(off.percent || 0);
+      offlineBadgeHtml = `
+        <span class="sd-device-offline-tag is-downloading" data-rec-id="${recIdClean}">
+          <svg class="sd-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+          <span>Downloading ${pct}%</span>
+        </span>
+      `;
+    } else if (hasNativeOfflineBridge()) {
+      offlineBadgeHtml = `
+        <span class="sd-device-offline-tag is-cloud" data-rec-id="${recIdClean}">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          <span>Cloud Bookmark</span>
+        </span>
+      `;
+    }
+
+    const downloadBtnHtml = (!isOfflineHere && !isDownloadingHere && hasNativeOfflineBridge()) ? `
+      <button type="button" class="sd-mini-pill btn-download-this-device" data-rec-id="${recIdClean}" title="Download to this device">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Download</span>
+      </button>
+    ` : '';
+
     return `
       <div class="sd-lecture-card apk-card-arrange" data-rec-id="${recIdClean}" style="--card-i: ${idx};">
         <span class="sd-lecture-num">${idx + 1}</span>
@@ -243,6 +425,7 @@ function renderSavedLectures() {
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span>${lec.subject || 'Saved Lecture'}</span>
             </span>
+            ${offlineBadgeHtml}
           </div>
           <div class="sd-lecture-top-line">
             <span class="sd-lecture-title" title="${lec.title}">${lec.title}</span>
@@ -250,6 +433,7 @@ function renderSavedLectures() {
           <div class="sd-lecture-sub-line">
             <span class="sd-lecture-progress-label">${duration}</span>
             <div class="sd-lecture-actions">
+              ${downloadBtnHtml}
               <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${recIdClean}" title="Remove from saved" style="padding: 6px 12px; font-size: 12px; font-weight: 600; min-height: 28px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.32); border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 <span>Remove</span>
@@ -263,10 +447,19 @@ function renderSavedLectures() {
 
   lecturesContainer.querySelectorAll('.sd-lecture-card[data-rec-id]').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (e.target.closest('.btn-unsave-rec')) return;
+      if (e.target.closest('.btn-unsave-rec') || e.target.closest('.btn-download-this-device')) return;
       const id = el.getAttribute('data-rec-id');
       const rec = list.find(r => String(r.id || r.recId) === String(id));
       if (rec) openLectureViewer(rec);
+    });
+  });
+
+  lecturesContainer.querySelectorAll('.btn-download-this-device').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-rec-id');
+      const rec = list.find(r => String(r.id || r.recId) === String(id));
+      if (rec) startOfflineLectureDownload(rec, btn);
     });
   });
 
@@ -276,6 +469,7 @@ function renderSavedLectures() {
       const id = btn.getAttribute('data-rec-id');
       if (id && id !== 'undefined' && id !== 'null') {
         toggleSavedLecture(id);
+        deleteOfflineMedia(id);
         renderSavedLectures();
       }
     });
@@ -513,7 +707,18 @@ searchInput?.addEventListener('input', (e) => {
   else if (activeSavedTab === 'tests') renderSavedTests();
 });
 
+// Sub-filter Pills (All Saved vs Downloaded on this Device)
+document.querySelectorAll('.saved-sub-filter-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.saved-sub-filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    activeSubFilter = btn.getAttribute('data-subfilter') || 'all';
+    renderSavedLectures();
+  });
+});
+
 // Initialize
 renderSavedLectures();
 renderSavedNotes();
 renderSavedTests();
+refreshLocalOffline({ reRender: true });

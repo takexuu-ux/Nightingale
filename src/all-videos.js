@@ -274,6 +274,9 @@ const SUBJECT_SVG = {
   pathology: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18h8M3 22h18M14 22a7 7 0 1 0-7-7M9 14l2-2M17 6l3 3-8 8-3-3 8-8zM19 4l1 1-1.5 1.5-1-1L19 4z"/>',
   nutrition: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
   biochem: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
+  statistics: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
+  statist: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
+  biostat: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
   research: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM9 12h6M9 16h4"/>',
   management: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM9 12h6M9 16h4"/>',
   timetable: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>',
@@ -1033,8 +1036,9 @@ function renderSubjectLecturesList() {
     const offState = offlineMapByRecId.get(String(rec.id));
     const shadeIdx = getTopicShadeIndex(rec.topic);
     const dateFormatted = formatLectureDate(rec.date);
-    const isSaved = isLectureSaved(rec.id) || Boolean(offState && offState.completed && !offState.expired);
+    const isOfflineOnThisDevice = Boolean(offState && offState.completed && !offState.expired);
     const isDownloading = offState && (offState.status === 'downloading' || offState.status === 'pending');
+    const isSaved = hasNativeOfflineBridge() ? isOfflineOnThisDevice : isLectureSaved(rec.id);
 
     // Accurate Watch Progress from lectureWatchService & native player
     const watchData = getLectureProgress(rec.id);
@@ -1042,10 +1046,14 @@ function renderSubjectLecturesList() {
     const isCompleted = watchPct >= 90;
     const durClean = (rec.duration || '').replace(/^⏱️\s*/, '').trim() || 'Recorded';
 
+    const saveBtnLabel = isDownloading
+      ? `${Math.round(offState.percent || 0)}%`
+      : (isOfflineOnThisDevice ? 'Saved' : 'Save');
+
     const saveBtnHtml = `
-      <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''} ${isDownloading ? 'is-downloading' : ''}" data-rec-idx="${idx}" data-rec-id="${rec.id}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture for Offline'}">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        <span>${isDownloading ? `${Math.round(offState.percent || 0)}%` : (isSaved ? 'Saved' : 'Save')}</span>
+      <button class="sd-mini-pill btn-save-lecture ${isOfflineOnThisDevice ? 'is-saved' : ''} ${isDownloading ? 'is-downloading' : ''}" data-rec-idx="${idx}" data-rec-id="${rec.id}" title="${isOfflineOnThisDevice ? 'Remove from Offline & Saved' : 'Download for Offline Watching'}">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="${isOfflineOnThisDevice ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span>${saveBtnLabel}</span>
       </button>
     `;
 
