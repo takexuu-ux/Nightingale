@@ -110,41 +110,25 @@
     <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
       <div class="notes-page-container">
 
-        <!-- Clean Compact Header: "Notes" + Stats + Search Box -->
-        <section class="notes-hero-header" style="align-items: center; justify-content: space-between; gap: 1.25rem; margin-bottom: 1.85rem;">
-          <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-            <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
-              <h1 class="notes-hero-title" style="margin: 0; font-size: 1.65rem;">Notes</h1>
-              <div class="notes-hero-stats">
-                <div class="notes-stat-pill">
-                  <strong id="stat-subjects-count">—</strong>
-                  <span>Subjects</span>
-                </div>
-                <div class="notes-stat-pill">
-                  <strong id="stat-notes-count">—</strong>
-                  <span>Notes</span>
-                </div>
-                <div class="notes-stat-pill accent-pill">
-                  <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
-                </div>
-              </div>
+        <!-- Compact Header: "Notes" + Dynamic Search Box Directly Beside Title on Same Row -->
+        <section class="notes-hero-header" style="margin-bottom: 1.25rem;">
+          <div class="notes-hero-bar">
+            <h1 class="notes-hero-title">Notes</h1>
+            <div id="notes-search-box" class="notes-search-wrapper">
+              <svg class="notes-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+              </svg>
+              <input 
+                type="text" 
+                id="notes-search-input" 
+                class="notes-search-input" 
+                placeholder="Search subjects or PDFs..." 
+                autocomplete="off" 
+              />
+              <button id="notes-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
             </div>
-          </div>
-
-          <div class="notes-search-wrapper" style="min-width: 280px; max-width: 440px; width: 100%;">
-            <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-            </svg>
-            <input 
-              type="text" 
-              id="notes-search-input" 
-              class="notes-search-input" 
-              placeholder="Search subjects, topics, or PDFs..." 
-              autocomplete="off" 
-            />
-            <button id="notes-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
           </div>
         </section>
 

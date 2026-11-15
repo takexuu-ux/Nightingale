@@ -2,6 +2,7 @@
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
+import { BATCH_103_SUBJECTS } from './data/batch103HinglishData.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, fetchFreshVdoCipherOtp, fetchOfflineVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
 import {
@@ -170,14 +171,44 @@ async function deleteOfflineLecture(recId) {
   } catch {}
 }
 
-// Pre-seed Medicine (73) immediately + populate matched notes PDFs
-if (PRESEEDED_VIDEOS_BY_SUBJECT['73']) {
-  const enriched = PRESEEDED_VIDEOS_BY_SUBJECT['73'].map(v => {
-    const note = findMatchingNotePdf(v.subtopicId, v.title);
-    return { ...v, notePdfUrl: note?.url || '', notePdfTitle: note?.title || '' };
-  });
-  loadedVideosBySubjectId.set('73', enriched);
+function normalizeSubjTitle(t) {
+  if (!t) return '';
+  return String(t).toLowerCase().replace(/\s*\([^)]*\)\s*$/, '').replace(/[^a-z0-9]/g, ' ').trim();
 }
+
+const loadedVideosBySubjectTitle = new Map();
+
+// Pre-seed all BATCH_103_SUBJECTS immediately (Anatomy, Pediatrics, Microbiology, etc.)
+BATCH_103_SUBJECTS.forEach(sub => {
+  if (Array.isArray(sub.videos) && sub.videos.length > 0) {
+    const enriched = sub.videos.map(v => {
+      const note = findMatchingNotePdf(v.subtopicId, v.title);
+      return {
+        ...v,
+        notePdfUrl: v.notePdfUrl || note?.url || '',
+        notePdfTitle: v.notePdfTitle || note?.title || ''
+      };
+    });
+    loadedVideosBySubjectId.set(String(sub.id), enriched);
+    const norm = normalizeSubjTitle(sub.title);
+    if (norm) loadedVideosBySubjectTitle.set(norm, enriched);
+    if (sub.rawTitle) {
+      const normRaw = normalizeSubjTitle(sub.rawTitle);
+      if (normRaw) loadedVideosBySubjectTitle.set(normRaw, enriched);
+    }
+  }
+});
+
+// Pre-seed Medicine (73) & catalog pre-seeded subjects
+Object.entries(PRESEEDED_VIDEOS_BY_SUBJECT).forEach(([sid, vids]) => {
+  if (Array.isArray(vids) && vids.length > 0) {
+    const enriched = vids.map(v => {
+      const note = findMatchingNotePdf(v.subtopicId, v.title);
+      return { ...v, notePdfUrl: v.notePdfUrl || note?.url || '', notePdfTitle: v.notePdfTitle || note?.title || '' };
+    });
+    loadedVideosBySubjectId.set(String(sid), enriched);
+  }
+});
 
 // DOM Elements
 const classListContainer = document.getElementById('class-list-container');
@@ -756,6 +787,11 @@ async function openSubjectPage(subject) {
   subjectDetailView?.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // Strictly hide Option Button inside detail views
+  document.body.classList.add('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham) ham.style.setProperty('display', 'none', 'important');
+
   const cleanTitle = (subject.title || 'Videos').replace(/\s*\([^)]*\)\s*$/, '').trim() || subject.title;
   const titleEl = document.getElementById('subject-detail-title');
   const teacherEl = document.getElementById('subject-detail-teacher');
@@ -765,31 +801,49 @@ async function openSubjectPage(subject) {
   if (teacherEl) teacherEl.textContent = subject.faculty || 'NNL Faculty';
   if (countEl) countEl.textContent = `${subject.videoCount || 0} Videos`;
 
-  if (!subject.isBatch103 && !loadedVideosBySubjectId.has(String(subject.id))) {
-    if (!localStorage.getItem('nnl_access_token')) {
-      subjectLecturesContainer.innerHTML = `
-        <div class="notes-empty-state">
-          <h3 class="notes-empty-title">Sign In Required</h3>
-          <p class="notes-empty-desc">Log in on the Live Classes home page with your registered mobile number to load and stream this subject's lectures.</p>
-          <a href="/" class="btn-note-view" style="display:inline-flex;margin-top:0.85rem;text-decoration:none;">Go to Login</a>
-        </div>
-      `;
-      if (topicFiltersBar) topicFiltersBar.style.display = 'none';
-      return;
-    }
-
-    subjectLecturesContainer.innerHTML = `
-      <div class="cp-loading" style="padding: 3.5rem 1.5rem; text-align: center;">
-        <div class="spinner"></div>
-        <p style="color:var(--text-secondary);margin-top:0.75rem;font-family:var(--font-display);font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;">Loading ${escapeHtml(cleanTitle)} lectures...</p>
-      </div>
-    `;
-    const fetched = await fetchSubjectVideosOnDemand(currentOpenSubject);
-    currentOpenSubject.videos = fetched;
-  } else if (!subject.isBatch103) {
-    currentOpenSubject.videos = loadedVideosBySubjectId.get(String(subject.id)) || [];
+  // 0ms instant load from in-memory preseeded maps or cache
+  let preloaded = loadedVideosBySubjectId.get(String(subject.id));
+  if (!preloaded || preloaded.length === 0) {
+    preloaded = loadedVideosBySubjectTitle.get(normalizeSubjTitle(subject.title));
+  }
+  if (!preloaded || preloaded.length === 0) {
+    try {
+      const cached = localStorage.getItem(SUBJECT_VIDEO_CACHE_PREFIX + subject.id);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) preloaded = parsed;
+      }
+    } catch {}
   }
 
+  if (preloaded && preloaded.length > 0) {
+    currentOpenSubject.videos = preloaded;
+    if (countEl) countEl.textContent = `${preloaded.length} Videos`;
+    renderSubjectLecturesList();
+    return;
+  }
+
+  // If not preloaded, fetch on demand
+  if (!localStorage.getItem('nnl_access_token')) {
+    subjectLecturesContainer.innerHTML = `
+      <div class="notes-empty-state">
+        <h3 class="notes-empty-title">Sign In Required</h3>
+        <p class="notes-empty-desc">Log in on the Live Classes home page with your registered mobile number to load and stream this subject's lectures.</p>
+        <a href="/" class="btn-note-view" style="display:inline-flex;margin-top:0.85rem;text-decoration:none;">Go to Login</a>
+      </div>
+    `;
+    if (topicFiltersBar) topicFiltersBar.style.display = 'none';
+    return;
+  }
+
+  subjectLecturesContainer.innerHTML = `
+    <div class="cp-loading" style="padding: 3.5rem 1.5rem; text-align: center;">
+      <div class="spinner"></div>
+      <p style="color:var(--text-secondary);margin-top:0.75rem;font-family:var(--font-display);font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;">Loading ${escapeHtml(cleanTitle)} lectures...</p>
+    </div>
+  `;
+  const fetched = await fetchSubjectVideosOnDemand(currentOpenSubject);
+  currentOpenSubject.videos = fetched;
   if (countEl) countEl.textContent = `${currentOpenSubject.videos.length} Videos`;
   renderSubjectLecturesList();
 }
@@ -799,6 +853,13 @@ function closeSubjectPage() {
   activeTopicFilter = 'ALL';
   subjectDetailView?.classList.add('hide');
   subjectsCatalogView?.classList.remove('hide');
+
+  // Restore Option Button outside detail views
+  document.body.classList.remove('apk-in-detail');
+  const ham = document.getElementById('apk-hamburger-btn');
+  if (ham && !document.body.classList.contains('apk-side-open')) {
+    ham.style.removeProperty('display');
+  }
 }
 
 function formatLectureDate(d) {
@@ -914,72 +975,75 @@ function renderSubjectLecturesList() {
     if (hasNativeOfflineBridge()) {
       if (offState && offState.completed && !offState.expired) {
         dlBtnHtml = `
-          <button class="sd-dl-btn saved btn-dl-lecture" data-rec-idx="${idx}" title="Play Offline Copy">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+          <button class="sd-mini-pill saved btn-dl-lecture" data-rec-idx="${idx}" title="Play Offline Copy">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Saved</span>
-          </button>
-          <button class="sd-del-btn btn-del-lecture" data-rec-id="${escapeHtml(String(rec.id))}" title="Delete Offline Copy">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           </button>
         `;
       } else if (offState && (offState.status === 'downloading' || offState.status === 'pending')) {
         dlBtnHtml = `
-          <button class="sd-dl-btn downloading btn-dl-lecture" data-rec-idx="${idx}" disabled>
+          <button class="sd-mini-pill btn-dl-lecture" data-rec-idx="${idx}" disabled>
             <span>${offState.percent || 0}%</span>
-          </button>
-          <button class="sd-del-btn btn-del-lecture" data-rec-id="${escapeHtml(String(rec.id))}" title="Cancel Download">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         `;
       } else {
         dlBtnHtml = `
-          <button class="sd-dl-btn btn-dl-lecture" data-rec-idx="${idx}" title="Save Lecture for Offline Viewing">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>${offState && offState.status === 'failed' ? 'Retry Save' : 'Download'}</span>
+          <button class="sd-mini-pill btn-dl-lecture" data-rec-idx="${idx}" title="Download for Offline">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Offline</span>
           </button>
         `;
       }
     }
-    const progress = getLectureProgress(rec.id);
     const shadeIdx = getTopicShadeIndex(rec.topic);
     const dateFormatted = formatLectureDate(rec.date);
+    const isSaved = isLectureSaved(rec.id);
+    const saveBtnHtml = `
+      <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture'}">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span>${isSaved ? 'Saved' : 'Save'}</span>
+      </button>
+    `;
+
+    const pdfBtnHtml = rec.notePdfUrl ? `
+      <button class="sd-mini-pill btn-open-lec-pdf" data-title="${encodeURIComponent(rec.notePdfTitle || rec.title)}" data-url="${encodeURIComponent(rec.notePdfUrl)}" title="View Class Notes PDF">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>PDF</span>
+      </button>
+    ` : '';
 
     return `
       <div class="sd-lecture-card topic-shade-${shadeIdx}" data-rec-idx="${idx}">
+        <!-- 1. Serial Number -->
         <span class="sd-lecture-num">${rowNum}</span>
-        ${thumb
-          ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
-          : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
-        <div class="sd-lecture-details">
-          <div class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</div>
-          <div class="sd-lecture-meta">
-            ${dateFormatted ? `<span class="sd-lecture-date" style="color:var(--text-primary);font-weight:700;">📅 ${escapeHtml(dateFormatted)}</span><span>•</span>` : ''}
-            <span style="color:var(--accent);font-weight:700;">${escapeHtml(rec.instructor || 'NNL Faculty')}</span>
-            ${rec.topic && rec.topic !== rec.title ? `<span>•</span><span>${escapeHtml(rec.topic)}</span>` : ''}
-            ${rec.duration ? `<span>•</span><span>${escapeHtml(rec.duration)}</span>` : ''}
-            ${offState && (offState.status === 'downloading' || offState.status === 'pending') && offState.totalSizeBytes > 0 ? `<span>•</span><span>${(offState.bytesDownloaded / (1024 * 1024)).toFixed(1)}/${(offState.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB</span>` : ''}
-          </div>
-          ${progress && progress.percent > 0 ? `
-            <div class="lecture-progress-wrap">
-              <div class="lecture-progress-track">
-                <div class="lecture-progress-bar ${progress.percent >= 90 ? 'is-completed' : ''}" style="width: ${progress.percent}%"></div>
-              </div>
-              <span class="lecture-progress-text ${progress.percent >= 90 ? 'is-completed' : ''}">${progress.percent >= 90 ? '✓ Completed' : `${progress.percent}% Watched`}</span>
-            </div>
-          ` : ''}
-        </div>
-        <div class="sd-lecture-actions">
-          ${rec.notePdfUrl ? `
-            <button class="sd-note-btn btn-open-lec-pdf" data-title="${encodeURIComponent(rec.notePdfTitle || rec.title)}" data-url="${encodeURIComponent(rec.notePdfUrl)}">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Notes PDF</span>
-            </button>
-          ` : ''}
-          ${dlBtnHtml}
-          <button class="sd-lecture-btn">
+
+        <!-- 2. Video Thumbnail -->
+        <div class="sd-lecture-thumb-wrap">
+          ${thumb
+            ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
+            : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
+          <div class="sd-thumb-play-overlay">
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            <span>Play</span>
-          </button>
+          </div>
+        </div>
+
+        <!-- 3 & 4. Body: Title + Date above, Subtitle with Duration, PDF & Save below -->
+        <div class="sd-lecture-body">
+          <div class="sd-lecture-top-line">
+            <span class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</span>
+            ${dateFormatted ? `<span class="sd-lecture-date">${escapeHtml(dateFormatted)}</span>` : ''}
+          </div>
+          <div class="sd-lecture-sub-line">
+            <div class="sd-lecture-meta-left">
+              ${rec.duration ? `<span class="sd-lecture-duration">${escapeHtml(rec.duration)}</span>` : ''}
+              ${rec.topic && rec.topic !== rec.title ? `<span class="meta-dot">•</span><span class="sd-lecture-topic">${escapeHtml(rec.topic)}</span>` : ''}
+            </div>
+            <div class="sd-lecture-actions">
+              ${pdfBtnHtml}
+              ${saveBtnHtml}
+              ${dlBtnHtml}
+            </div>
+          </div>
         </div>
       </div>
     `;
