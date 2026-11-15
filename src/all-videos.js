@@ -1373,7 +1373,14 @@ document.addEventListener('DOMContentLoaded', () => {
     || new URLSearchParams(window.location.search).get('play');
   if (autoPlayRecId) {
     sessionStorage.removeItem('nnl_auto_play_rec_id');
-    setTimeout(() => {
+    const autoPlayItemRaw = sessionStorage.getItem('nnl_auto_play_item');
+    let autoPlayItem = null;
+    try {
+      if (autoPlayItemRaw) autoPlayItem = JSON.parse(autoPlayItemRaw);
+    } catch {}
+    sessionStorage.removeItem('nnl_auto_play_item');
+
+    const tryLaunch = (attempt = 0) => {
       let found = null;
       if (batch103State?.subjects) {
         for (const s of batch103State.subjects) {
@@ -1384,14 +1391,32 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
+      if (!found && Array.isArray(ALL_VIDEO_SUBJECTS)) {
+        for (const s of ALL_VIDEO_SUBJECTS) {
+          const list = PRESEEDED_VIDEOS_BY_SUBJECT[s.id] || [];
+          found = list.find(v => String(v.id) === String(autoPlayRecId));
+          if (found) {
+            currentOpenSubject = s;
+            break;
+          }
+        }
+      }
       if (!found) {
         const savedList = getSavedLecturesList();
         found = savedList.find(v => String(v.id) === String(autoPlayRecId));
       }
+      if (!found && autoPlayItem) {
+        found = autoPlayItem;
+      }
+      if (!found && attempt < 3) {
+        setTimeout(() => tryLaunch(attempt + 1), 300);
+        return;
+      }
       if (found) {
         openRecordingPlayer(found);
       }
-    }, 450);
+    };
+    setTimeout(() => tryLaunch(0), 200);
   }
 
   window.__nnlSelectBatch = (chosen) => {

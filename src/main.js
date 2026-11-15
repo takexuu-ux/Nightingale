@@ -3087,8 +3087,7 @@ function renderHomeDateCalendar(poolClasses) {
 
     const dayClasses = getClassesForDate(targetDate);
     const isToday = targetDate.toDateString() === now.toDateString();
-    const formattedDate = `${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
-    const fullHeading = isToday ? `Today's Lectures (${formattedDate})` : `${dayNames[targetDate.getDay()]}, ${formattedDate}`;
+    const fullHeading = isToday ? "Today's Lectures" : `${dayNames[targetDate.getDay()]}`;
 
     if (statusBar && dateLabel) {
       statusBar.classList.remove('hide');
@@ -3414,13 +3413,25 @@ function formatWatchTime(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-async function resumeLecture(recId) {
+async function resumeLecture(recId, btnEl) {
   const map = getWatchHistory();
   const item = map[String(recId)];
   const tk = localStorage.getItem('nnl_access_token') || '';
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;margin-right:6px;vertical-align:middle;"></span><span>Opening...</span>';
+  }
+
+  // 1. Native Android player execution
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
     try {
-      const data = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
+      let data = null;
+      try {
+        data = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
+      } catch (e1) {
+        data = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
+      }
       if (data && data.otp && data.playbackInfo) {
         window.AndroidVideoBridge.playVideoWithAuth(
           data.otp,
@@ -3431,11 +3442,29 @@ async function resumeLecture(recId) {
           tk,
           true
         );
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = '<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span>';
+        }
         return;
       }
     } catch (err) {
       console.warn('Native video resume fallback:', err);
     }
+  }
+
+  // 2. Direct player payload for Web view
+  if (item) {
+    try {
+      sessionStorage.setItem('nnl_auto_play_item', JSON.stringify({
+        id: String(recId),
+        title: item.title || 'Recorded Lecture',
+        instructor: item.instructor || 'NNL Faculty',
+        subject: item.subject || '',
+        currentTime: item.currentTime || 0,
+        vdoCipherId: item.vdoCipherId || ''
+      }));
+    } catch {}
   }
   sessionStorage.setItem('nnl_auto_play_rec_id', String(recId));
   sessionStorage.setItem('nnl_auto_play_seek', String(item?.currentTime || 0));
@@ -3445,7 +3474,6 @@ async function resumeLecture(recId) {
 function renderContinueWatchingSection() {
   const section = document.getElementById('continue-watching-section');
   const grid = document.getElementById('continue-watching-grid');
-  const countEl = document.getElementById('continue-watching-count');
   const heroSavedCount = document.getElementById('hero-saved-count');
 
   if (heroSavedCount) {
@@ -3455,74 +3483,72 @@ function renderContinueWatchingSection() {
 
   if (!section || !grid) return;
 
-  const recents = getRecentlyWatchedLectures(4);
+  // Show strictly the single last watched lecture
+  const recents = getRecentlyWatchedLectures(1);
   if (!recents || recents.length === 0) {
-    section.classList.remove('hide');
-    if (countEl) countEl.textContent = 'Daily Track';
-    grid.innerHTML = `
-      <div class="continue-watching-card fallback-start-card" role="button" tabindex="0">
-        <div class="continue-watching-top">
-          <div class="continue-watching-title">Continue Learning • Daily Lectures</div>
-        </div>
-        <div class="continue-watching-instructor">Red Sapphire Batch • Video Lectures</div>
-        <div style="font-size:12px;color:var(--text-secondary);font-weight:600;margin-top:2px;">
-          Pick up your lessons, review key concepts & track your daily study progress
-        </div>
-        <button class="continue-watching-resume-btn" type="button">
-          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          <span>Open Batch Lectures</span>
-        </button>
-      </div>
-    `;
-    grid.querySelector('.fallback-start-card')?.addEventListener('click', () => {
-      window.location.href = 'all-videos.html';
-    });
+    section.classList.add('hide');
+    grid.innerHTML = '';
+    return;
+  }
+
+  const item = recents[0];
+  const recId = String(item.recId || item.id || '');
+  if (!recId) {
+    section.classList.add('hide');
+    grid.innerHTML = '';
     return;
   }
 
   section.classList.remove('hide');
-  if (countEl) countEl.textContent = `${recents.length} In Progress`;
 
-  grid.innerHTML = recents.map(item => {
-    const recId = String(item.recId || item.id || '');
-    const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
-    const isCompleted = pct >= 90;
-    const curTimeFormatted = formatWatchTime(item.currentTime || 0);
-    const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
-    const timeLabel = item.currentTime > 0
-      ? `▶ ${curTimeFormatted}${durFormatted ? ` / ${durFormatted}` : ''} • ${pct}% Watched`
-      : `${pct}% Watched`;
+  const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+  const isCompleted = pct >= 90;
+  const curTimeFormatted = formatWatchTime(item.currentTime || 0);
+  const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
+  const timeLabel = isCompleted
+    ? 'Completed'
+    : (item.currentTime > 5 ? `Resume from ${curTimeFormatted}${durFormatted ? ` • ${durFormatted}` : ''}` : `${pct}% Watched`);
 
-    return `
-      <div class="continue-watching-card" data-rec-id="${escapeHtml(recId)}" role="button" tabindex="0">
-        <div class="continue-watching-top">
-          <div class="continue-watching-title" title="${escapeHtml(item.title || 'Lecture')}">${escapeHtml(item.title || 'Lecture')}</div>
-        </div>
-        <div class="continue-watching-instructor">${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</div>
-        <div class="lecture-progress-wrap" style="margin-top:4px;">
-          <div class="lecture-progress-track">
-            <div class="lecture-progress-bar ${isCompleted ? 'is-completed' : ''}" style="width: ${pct}%"></div>
-          </div>
-          <span class="lecture-progress-text ${isCompleted ? 'is-completed' : ''}">${isCompleted ? '✓ Completed' : timeLabel}</span>
-        </div>
-        <button class="continue-watching-resume-btn" type="button">
-          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          <span>${isCompleted ? 'Rewatch Lecture' : (item.currentTime > 5 ? `Resume from ${curTimeFormatted}` : 'Resume Lecture')}</span>
-        </button>
+  grid.innerHTML = `
+    <div class="continue-watching-card minimal-resume-card" data-rec-id="${escapeHtml(recId)}" role="button" tabindex="0">
+      <div class="resume-card-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       </div>
-    `;
-  }).join('');
+      <div class="resume-card-body">
+        <div class="resume-card-top-row">
+          <h4 class="resume-card-title" title="${escapeHtml(item.title || 'Recorded Lecture')}">${escapeHtml(item.title || 'Recorded Lecture')}</h4>
+          <span class="lecture-progress-text ${isCompleted ? 'is-completed' : ''}" style="font-size:11px;font-weight:700;color:var(--accent);">${pct}%</span>
+        </div>
+        <div class="resume-card-meta">
+          <span>${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</span>
+          <span style="opacity:0.65;">•</span>
+          <span class="resume-card-time">${escapeHtml(timeLabel)}</span>
+        </div>
+        <div class="resume-card-progress-track">
+          <div class="resume-card-progress-fill ${isCompleted ? 'is-completed' : ''}" style="width: ${pct}%"></div>
+        </div>
+      </div>
+      <button class="continue-watching-resume-btn resume-pill-btn" type="button" aria-label="Resume Lecture">
+        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span>${isCompleted ? 'Rewatch' : 'Resume'}</span>
+      </button>
+    </div>
+  `;
 
-  grid.querySelectorAll('.continue-watching-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const recId = card.getAttribute('data-rec-id');
-      if (!recId) {
-        window.location.href = 'all-videos.html';
-        return;
-      }
-      resumeLecture(recId);
+  const card = grid.querySelector('.minimal-resume-card');
+  if (card) {
+    const btn = card.querySelector('.resume-pill-btn');
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resumeLecture(recId, btn);
     });
-  });
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resumeLecture(recId, btn);
+      });
+    }
+  }
 }
 
 window.addEventListener('nnl:watch-progress-updated', () => {
