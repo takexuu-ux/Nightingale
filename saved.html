@@ -87,11 +87,14 @@
 
         <!-- Header -->
         <section class="notes-hero-header" style="margin-bottom: 1.25rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <h1 class="notes-hero-title" style="margin: 0; font-size: 1.6rem;">Saved</h1>
+              <button id="btn-toggle-saved-search" class="apk-icon-btn saved-search-toggle" aria-label="Toggle Search" style="width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+              </button>
             </div>
-            <div class="notes-search-wrapper" style="max-width: 320px; width: 100%;">
+            <div id="saved-search-box" class="notes-search-wrapper" style="max-width: 320px; width: 100%;">
               <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
               </svg>
@@ -106,8 +109,8 @@
           </div>
         </section>
 
-        <!-- Top Segmented Mode Selector: Lectures / Notes & PDFs / Question Banks -->
-        <div class="saved-mode-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 6px; padding: 4px; border-radius: 999px; background: rgba(30, 24, 52, 0.65); border: 1px solid rgba(142, 116, 229, 0.28); margin-bottom: 1.25rem; box-sizing: border-box;">
+        <!-- Top Slideable Mode Selector: Lectures / Notes & PDFs / Question Banks -->
+        <div class="saved-mode-tabs">
           <button type="button" id="saved-tab-lectures" class="saved-mode-tab active" data-target="lectures">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
             <span>Lectures</span>

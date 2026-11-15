@@ -1,7 +1,7 @@
 // Nightingale Companion Pet System
 // 100% Pure Code-Generated Dense Pixel-Art Vector Companions
+// Matching Chibi Anime Cap & Head Aesthetic across all 4 characters
 // Zero external images, zero network requests, zero flickering, 100% clean alpha transparency.
-// Companions: Nurse, Shinchan, Banana Cat, Muksi
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
@@ -52,10 +52,9 @@ export const PET_SVGS = {
       <!-- Sweet Smile -->
       <rect x="23" y="27" width="2" height="1" fill="#E11D48" />
 
-      <!-- Medical Scrub Uniform (Soft Violet/Iris & Mint) -->
+      <!-- Medical Scrub Uniform (Soft Violet/Iris) -->
       <rect x="15" y="30" width="18" height="12" fill="#EDE9FE" />
       <rect x="18" y="30" width="12" height="12" fill="#8E74E5" />
-      <!-- Collar V-Neck -->
       <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
       
       <!-- Stethoscope draped around neck -->
@@ -142,125 +141,138 @@ export const PET_SVGS = {
     </svg>
   `,
 
-  // 3. Banana Cat: The viral crying/cute kitten poking out of a bright yellow banana peel with green stem
+  // 3. Banana Cat: Chibi anime character wearing a cute banana-hood cap with cat ears, matching Nurse/Shinchan style
   'banana-cat': `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
       <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
 
-      <!-- Green Banana Stem on Top -->
-      <rect x="23" y="4" width="3" height="4" fill="#15803D" />
-      <rect x="24" y="2" width="3" height="3" fill="#16A34A" />
+      <!-- Green Stem atop Banana Cap -->
+      <rect x="23" y="3" width="2" height="4" fill="#15803D" />
+      <rect x="24" y="2" width="2" height="2" fill="#16A34A" />
 
-      <!-- Yellow Banana Peel Top Arc -->
-      <path d="M16 8 h16 v6 h-16 z" fill="#EAB308" />
-      <path d="M14 10 h20 v6 h-20 z" fill="#FACC15" />
+      <!-- Canary Yellow Banana Hood / Cap -->
+      <path d="M14 6 h20 v7 h-20 z" fill="#EAB308" />
+      <path d="M13 9 h22 v5 h-22 z" fill="#FACC15" />
+      <rect x="10" y="14" width="5" height="14" fill="#FACC15" />
+      <rect x="33" y="14" width="5" height="14" fill="#FACC15" />
 
-      <!-- Kitten Ears poking out of banana -->
-      <polygon points="15,14 18,7 21,14" fill="#FFFFFF" shape-rendering="auto" />
-      <polygon points="16,13 18,9 20,13" fill="#F472B6" shape-rendering="auto" />
+      <!-- Cute Cat Ears poking out of the cap -->
+      <polygon points="13,10 17,4 20,10" fill="#FFFFFF" shape-rendering="auto" />
+      <polygon points="14,9 17,6 19,9" fill="#F472B6" shape-rendering="auto" />
+      <polygon points="28,10 31,4 35,10" fill="#FFFFFF" shape-rendering="auto" />
+      <polygon points="29,9 31,6 34,9" fill="#F472B6" shape-rendering="auto" />
 
-      <polygon points="27,14 30,7 33,14" fill="#FFFFFF" shape-rendering="auto" />
-      <polygon points="28,13 30,9 32,13" fill="#F472B6" shape-rendering="auto" />
+      <!-- Blond/Cream Hair Bangs under Cap -->
+      <rect x="15" y="14" width="18" height="4" fill="#FEF08A" />
+      <rect x="18" y="18" width="3" height="2" fill="#FEF08A" />
+      <rect x="27" y="18" width="3" height="2" fill="#FEF08A" />
 
-      <!-- Cat Face -->
-      <rect x="16" y="14" width="16" height="12" fill="#FFFFFF" />
-      <rect x="14" y="16" width="2" height="8" fill="#FFFFFF" />
-      <rect x="32" y="16" width="2" height="8" fill="#FFFFFF" />
+      <!-- Cute Chibi Face (Identical size & skin to Nurse) -->
+      <rect x="15" y="18" width="18" height="12" fill="#FED7AA" />
 
-      <!-- Classic Viral Big Crying / Watery Anime Eyes -->
-      <rect x="17" y="17" width="5" height="5" fill="#0284C7" />
-      <rect x="18" y="17" width="3" height="3" fill="#0C4A6E" />
-      <rect x="17" y="17" width="2" height="2" fill="#FFFFFF" />
-      <rect x="20" y="20" width="1.5" height="1.5" fill="#38BDF8" />
-      <!-- Tear drops below eyes -->
-      <rect x="18" y="22" width="1.5" height="3" fill="#67E8F9" />
+      <!-- Big Sparkling Anime Eyes (Matching Nurse) -->
+      <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
+      <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
+      <rect x="18" y="24" width="2" height="2" fill="#38BDF8" />
 
-      <rect x="26" y="17" width="5" height="5" fill="#0284C7" />
-      <rect x="27" y="17" width="3" height="3" fill="#0C4A6E" />
-      <rect x="26" y="17" width="2" height="2" fill="#FFFFFF" />
-      <rect x="29" y="20" width="1.5" height="1.5" fill="#38BDF8" />
-      <!-- Tear drops below eyes -->
-      <rect x="28" y="22" width="1.5" height="3" fill="#67E8F9" />
+      <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+      <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+      <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
 
-      <!-- Cute Pink Nose & W-mouth -->
-      <polygon points="23,22 25,22 24,23" fill="#F43F5E" shape-rendering="auto" />
-      <path d="M22 24 q2 1 2 0 q0 1 2 0" stroke="#475569" stroke-width="0.8" fill="none" shape-rendering="auto" />
+      <!-- Rosy Blush Cheeks -->
+      <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
+      <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
 
-      <!-- Tiny White Paws resting on Banana Rim -->
-      <ellipse cx="17" cy="27" rx="2.5" ry="2" fill="#FFFFFF" shape-rendering="auto" />
-      <ellipse cx="31" cy="27" rx="2.5" ry="2" fill="#FFFFFF" shape-rendering="auto" />
+      <!-- Cute Cat Mouth :3 -->
+      <rect x="22" y="27" width="4" height="1" fill="#E11D48" />
+      <circle cx="23" cy="28" r="0.8" fill="#E11D48" shape-rendering="auto" />
+      <circle cx="25" cy="28" r="0.8" fill="#E11D48" shape-rendering="auto" />
 
-      <!-- Bright Yellow Banana Body & Peel -->
-      <path d="M12 26 h24 v14 h-24 z" fill="#FACC15" />
-      <path d="M14 28 h20 v12 h-20 z" fill="#FDE047" />
-      <path d="M10 28 h4 v10 h-4 z" fill="#EAB308" />
-      <path d="M34 28 h4 v10 h-4 z" fill="#CA8A04" />
+      <!-- Banana Peel Tunic Body -->
+      <rect x="15" y="30" width="18" height="11" fill="#FACC15" />
+      <rect x="18" y="30" width="12" height="11" fill="#FDE047" />
+      <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
 
-      <!-- Bottom Tip of Banana -->
-      <rect x="22" y="40" width="4" height="4" fill="#CA8A04" />
-      <rect x="23" y="42" width="2" height="3" fill="#15803D" />
+      <!-- Tiny White Kitten Paws over collar -->
+      <ellipse cx="16" cy="33" rx="2.2" ry="2" fill="#FFFFFF" shape-rendering="auto" />
+      <ellipse cx="32" cy="33" rx="2.2" ry="2" fill="#FFFFFF" shape-rendering="auto" />
+
+      <!-- Bottom Tip of Banana Costume & Shoes -->
+      <rect x="22" y="41" width="4" height="3" fill="#CA8A04" />
+      <rect x="17" y="43" width="5" height="2" fill="#0284C7" />
+      <rect x="26" y="43" width="5" height="2" fill="#0284C7" />
     </svg>
   `,
 
-  // 4. Muksi: Adorable violet/lavender study pet mascot with spectacles, books, fluffy ears & glowing iris sparkles
+  // 4. Muksi: Chibi anime scholar with graduation cap / doctor beret, spectacles & book, matching Nurse style
   'moxie': `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
       <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
 
-      <!-- Cute Head Sprout / Antenna -->
-      <rect x="23" y="4" width="2" height="4" fill="#A78BFA" />
-      <circle cx="24" cy="3" r="2.5" fill="#F472B6" shape-rendering="auto" />
+      <!-- Royal Violet Scholar Cap / Beret -->
+      <path d="M12 7 h24 v5 h-24 z" fill="#7C3AED" />
+      <path d="M10 10 h28 v3 h-28 z" fill="#6D28D9" />
+      <!-- Golden Cap Button & Tassel -->
+      <rect x="23" y="6" width="2" height="2" fill="#FBBF24" />
+      <path d="M25 7 q6 2 8 8" stroke="#FBBF24" stroke-width="1.2" fill="none" shape-rendering="auto" />
+      <rect x="32" y="14" width="3" height="3" fill="#F59E0B" />
 
-      <!-- Fluffy Pet Ears -->
-      <polygon points="12,14 16,8 20,15" fill="#7C3AED" shape-rendering="auto" />
-      <polygon points="14,13 16,10 18,14" fill="#DDD6FE" shape-rendering="auto" />
+      <!-- Lavender Anime Hair Bangs -->
+      <path d="M12 12 h24 v14 h-24 z" fill="#312E81" />
+      <path d="M10 16 h4 v10 h-4 z" fill="#312E81" />
+      <path d="M34 16 h4 v10 h-4 z" fill="#312E81" />
+      <path d="M14 12 h20 v4 h-20 z" fill="#4338CA" />
+      <!-- Hair Bangs Details -->
+      <rect x="14" y="16" width="4" height="3" fill="#6366F1" />
+      <rect x="22" y="16" width="4" height="2" fill="#6366F1" />
+      <rect x="30" y="16" width="4" height="3" fill="#6366F1" />
 
-      <polygon points="28,15 32,8 36,14" fill="#7C3AED" shape-rendering="auto" />
-      <polygon points="30,14 32,10 34,13" fill="#DDD6FE" shape-rendering="auto" />
+      <!-- Cute Chibi Face (Identical size to Nurse) -->
+      <rect x="14" y="18" width="20" height="12" fill="#FED7AA" />
+      <rect x="12" y="20" width="2" height="8" fill="#FED7AA" />
+      <rect x="34" y="20" width="2" height="8" fill="#FED7AA" />
 
-      <!-- Round Fluffy Body (Vibrant Violet / Iris) -->
-      <rect x="14" y="12" width="20" height="18" fill="#8E74E5" />
-      <rect x="12" y="15" width="2" height="12" fill="#7C3AED" />
-      <rect x="34" y="15" width="2" height="12" fill="#7C3AED" />
-      <rect x="16" y="14" width="16" height="14" fill="#A78BFA" />
+      <!-- Round Golden Study Spectacles -->
+      <circle cx="18" cy="23" r="4" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
+      <circle cx="30" cy="23" r="4" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
+      <line x1="22" y1="23" x2="26" y2="23" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
 
-      <!-- Nerdy Golden Spectacles -->
-      <circle cx="19" cy="20" r="4.5" fill="none" stroke="#FBBF24" stroke-width="1.2" shape-rendering="auto" />
-      <circle cx="29" cy="20" r="4.5" fill="none" stroke="#FBBF24" stroke-width="1.2" shape-rendering="auto" />
-      <line x1="23.5" y1="20" x2="24.5" y2="20" stroke="#FBBF24" stroke-width="1.2" shape-rendering="auto" />
+      <!-- Big Sparkling Anime Eyes behind spectacles -->
+      <rect x="16" y="21" width="4" height="5" fill="#1E1B4B" />
+      <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
+      <rect x="18" y="24" width="2" height="2" fill="#A78BFA" />
 
-      <!-- Sparkling Big Eyes -->
-      <circle cx="19" cy="20" r="2.5" fill="#1E1B4B" shape-rendering="auto" />
-      <circle cx="18" cy="19" r="1" fill="#FFFFFF" shape-rendering="auto" />
+      <rect x="28" y="21" width="4" height="5" fill="#1E1B4B" />
+      <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+      <rect x="30" y="24" width="2" height="2" fill="#A78BFA" />
 
-      <circle cx="29" cy="20" r="2.5" fill="#1E1B4B" shape-rendering="auto" />
-      <circle cx="28" cy="19" r="1" fill="#FFFFFF" shape-rendering="auto" />
+      <!-- Rosy Blush Cheeks -->
+      <rect x="13" y="26" width="3" height="2" fill="#FB7185" />
+      <rect x="32" y="26" width="3" height="2" fill="#FB7185" />
 
-      <!-- Blush -->
-      <rect x="13" y="24" width="3" height="2" fill="#FB7185" />
-      <rect x="32" y="24" width="3" height="2" fill="#FB7185" />
+      <!-- Cheerful Smile -->
+      <rect x="23" y="27" width="2" height="1" fill="#E11D48" />
 
-      <!-- Sweet Smile -->
-      <path d="M22 25 q2 1.5 4 0" stroke="#1E1B4B" stroke-width="1" fill="none" shape-rendering="auto" />
-
-      <!-- Lower Body & Tummy -->
+      <!-- Violet Study Robe / Cardigan -->
       <rect x="15" y="30" width="18" height="12" fill="#7C3AED" />
-      <ellipse cx="24" cy="35" rx="6" ry="5" fill="#DDD6FE" shape-rendering="auto" />
+      <rect x="18" y="30" width="12" height="12" fill="#8E74E5" />
+      <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
 
-      <!-- Medical Study Book in Hands -->
-      <rect x="20" y="33" width="8" height="7" fill="#38BDF8" rx="1" shape-rendering="auto" />
-      <line x1="24" y1="33" x2="24" y2="40" stroke="#0284C7" stroke-width="0.8" shape-rendering="auto" />
-      <rect x="21" y="34" width="2" height="1.5" fill="#FFFFFF" />
+      <!-- Holding Medical Study Book -->
+      <rect x="20" y="34" width="8" height="6" fill="#38BDF8" rx="1" shape-rendering="auto" />
+      <line x1="24" y1="34" x2="24" y2="40" stroke="#0284C7" stroke-width="0.8" shape-rendering="auto" />
 
-      <!-- Tiny Paws holding book -->
-      <circle cx="18" cy="36" r="2" fill="#A78BFA" shape-rendering="auto" />
-      <circle cx="30" cy="36" r="2" fill="#A78BFA" shape-rendering="auto" />
+      <!-- Cute Hands -->
+      <circle cx="14" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
+      <circle cx="34" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
 
-      <!-- Little Feet -->
-      <rect x="17" y="42" width="4" height="3" fill="#6D28D9" rx="1" shape-rendering="auto" />
-      <rect x="27" y="42" width="4" height="3" fill="#6D28D9" rx="1" shape-rendering="auto" />
+      <!-- Pants & Shoes -->
+      <rect x="18" y="42" width="5" height="3" fill="#4338CA" />
+      <rect x="25" y="42" width="5" height="3" fill="#4338CA" />
+      <rect x="17" y="44" width="6" height="2" fill="#1E1B4B" />
+      <rect x="25" y="44" width="6" height="2" fill="#1E1B4B" />
     </svg>
   `
 };

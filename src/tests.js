@@ -965,6 +965,15 @@ function initEventBindings() {
 
   if (btnBackTests) btnBackTests.addEventListener('click', closeDetailView);
 
+  const searchToggleBtn = document.getElementById('btn-toggle-test-search');
+  const searchBox = document.getElementById('tests-search-box');
+  searchToggleBtn?.addEventListener('click', () => {
+    if (searchBox) {
+      searchBox.classList.toggle('active');
+    }
+    testsSearchInput?.focus();
+  });
+
   if (testsSearchInput) {
     testsSearchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value;

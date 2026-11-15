@@ -352,6 +352,15 @@ function switchSavedTab(target) {
   else if (target === 'tests') renderSavedTests();
 }
 
+const searchToggleBtn = document.getElementById('btn-toggle-saved-search');
+const searchBox = document.getElementById('saved-search-box');
+searchToggleBtn?.addEventListener('click', () => {
+  if (searchBox) {
+    searchBox.classList.toggle('active');
+  }
+  searchInput?.focus();
+});
+
 document.querySelectorAll('.saved-mode-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.getAttribute('data-target');

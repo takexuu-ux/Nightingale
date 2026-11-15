@@ -160,11 +160,20 @@ export function openSidePanel() {
   if (panel) {
     panel.classList.remove('hide');
     syncPetSelectionUI();
+    const ham = document.getElementById('apk-hamburger-btn');
+    if (ham) ham.style.setProperty('display', 'none', 'important');
   }
 }
 
 export function closeSidePanel() {
-  document.getElementById('apk-side-panel')?.classList.add('hide');
+  const panel = document.getElementById('apk-side-panel');
+  if (panel) {
+    panel.classList.add('hide');
+    const ham = document.getElementById('apk-hamburger-btn');
+    if (ham && !document.body.classList.contains('apk-is-auth')) {
+      ham.style.removeProperty('display');
+    }
+  }
 }
 
 function syncPetSelectionUI() {

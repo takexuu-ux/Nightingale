@@ -3996,9 +3996,9 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   top: 0;
   left: 0;
   border-radius: 999px;
-  background: linear-gradient(145deg, rgba(124, 92, 224, 0.28) 0%, rgba(167, 139, 250, 0.16) 100%);
-  border: 1px solid rgba(124, 92, 224, 0.32);
-  box-shadow: 0 4px 16px -2px rgba(91, 62, 168, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  background: linear-gradient(145deg, rgba(142, 116, 229, 0.72) 0%, rgba(124, 92, 224, 0.65) 100%) !important;
+  border: 1.5px solid rgba(196, 181, 253, 0.75) !important;
+  box-shadow: 0 4px 18px rgba(124, 92, 224, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
   pointer-events: none;
   z-index: 1;
   transition:
@@ -4009,9 +4009,9 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 [data-theme="dark"] #apk-nav-liquid-indicator {
-  background: linear-gradient(145deg, rgba(141, 116, 229, 0.32) 0%, rgba(91, 62, 168, 0.18) 100%);
-  border-color: rgba(167, 139, 250, 0.32);
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(142, 116, 229, 0.76) 0%, rgba(108, 79, 214, 0.70) 100%) !important;
+  border-color: rgba(196, 181, 253, 0.75) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
 }
 
 /* Make active tab transparent over liquid indicator so droplet visibly hosts it */
@@ -4109,66 +4109,68 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 .apk-side-drawer {
   position: relative;
-  width: min(300px, 82vw) !important; /* Compact & sleek */
-  max-width: 310px !important;
-  height: 100%;
+  width: min(280px, 82vw) !important; /* Compact, minimal & capped */
+  max-width: 285px !important;
+  height: auto !important;
+  max-height: calc(100% - 24px) !important;
+  margin: max(12px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom)) 10px !important;
   background: linear-gradient(160deg, rgba(54, 43, 92, 0.95) 0%, rgba(38, 29, 68, 0.97) 50%, rgba(26, 20, 48, 0.99) 100%) !important;
   backdrop-filter: blur(36px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(36px) saturate(180%) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-left: none !important;
-  border-radius: 0 24px 24px 0 !important; /* Curved outer corners */
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 18px !important; /* Sleek capped card shape */
   box-shadow: 12px 0 44px rgba(0, 0, 0, 0.55), inset 1px 0 0 rgba(255, 255, 255, 0.15) !important;
   display: flex;
   flex-direction: column;
   transform: translate3d(0, 0, 0);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
-  padding: max(14px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom)) !important;
-  gap: 10px !important;
+  padding: 12px !important;
+  gap: 7px !important;
 }
 
 [data-theme="light"] .apk-side-drawer {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.96) 0%, rgba(246, 240, 254, 0.94) 60%, rgba(238, 230, 252, 0.96) 100%) !important;
-  border-right: 1px solid rgba(108, 79, 214, 0.14) !important;
+  border: 1px solid rgba(108, 79, 214, 0.16) !important;
   box-shadow: 10px 0 34px rgba(45, 34, 72, 0.12) !important;
 }
 
 #apk-side-panel.hide .apk-side-drawer {
-  transform: translate3d(-100%, 0, 0) !important; /* Slides out to the LEFT */
+  transform: translate3d(-110%, 0, 0) !important; /* Slides out to the LEFT */
 }
 
 .apk-side-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 12px;
+  padding-bottom: 8px !important;
+  margin-bottom: 2px !important;
   border-bottom: 1px solid var(--border-hairline);
 }
 
 .apk-side-title {
-  font-size: 16px;
+  font-size: 14.5px !important;
   font-weight: 800;
   color: var(--text-primary);
 }
 
 .apk-side-section-title {
-  font-size: 11px;
+  font-size: 10px !important;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 4px !important;
 }
 
 /* ── Theme Switcher Segmented Bar at Top of Side Panel ── */
 .apk-theme-switcher-bar {
   display: flex;
   background: var(--bg-subtle);
-  padding: 4px;
-  border-radius: 12px;
+  padding: 3px !important;
+  border-radius: 10px !important;
   border: 1px solid var(--border-hairline);
-  gap: 4px;
+  gap: 3px !important;
 }
 
 .apk-theme-btn {
@@ -4176,13 +4178,13 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 9px;
+  gap: 5px;
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px !important;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -4197,8 +4199,8 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 /* ── Companion Pet iOS Switch Toggle ── */
 .apk-switch-btn {
   position: relative;
-  width: 44px;
-  height: 26px;
+  width: 40px !important;
+  height: 24px !important;
   border-radius: 99px;
   background: var(--border-strong);
   border: none;
@@ -4215,8 +4217,8 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 .apk-switch-thumb {
-  width: 22px;
-  height: 22px;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: 99px;
   background: #FFFFFF;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
@@ -4226,14 +4228,14 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 .apk-switch-btn.active .apk-switch-thumb,
 .apk-switch-btn.is-on .apk-switch-thumb {
-  transform: translateX(18px) !important;
+  transform: translateX(16px) !important;
 }
 
 /* ── Companion Pet Grid Selector in Settings / Side Panel: All 4 in ONE line, compact size ── */
 .apk-pet-grid {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  gap: 6px !important;
+  gap: 5px !important;
   width: 100% !important;
 }
 
@@ -4242,9 +4244,9 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 6px 3px !important;
-  height: 62px !important;
-  border-radius: 12px !important;
+  padding: 4px 2px !important;
+  height: 52px !important;
+  border-radius: 10px !important;
   background: var(--bg-elevated);
   border: 1.5px solid var(--border-hairline);
   cursor: pointer;
@@ -4254,7 +4256,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 .apk-pet-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: var(--accent);
 }
 
@@ -4265,16 +4267,16 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 .apk-pet-card-icon {
-  width: 28px !important;
-  height: 32px !important;
+  width: 26px !important;
+  height: 28px !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2px !important;
+  margin-bottom: 1px !important;
 }
 
 .apk-pet-card-name {
-  font-size: 10px !important;
+  font-size: 9.5px !important;
   font-weight: 800;
   color: var(--text-primary);
   text-align: center;
@@ -4286,17 +4288,17 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
 .apk-pet-card-check {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 14px;
-  height: 14px;
+  top: 3px;
+  right: 3px;
+  width: 12px !important;
+  height: 12px !important;
   border-radius: 99px;
   background: var(--accent);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 8px !important;
   opacity: 0;
   transform: scale(0.6);
   transition: all 0.2s ease;
@@ -4313,13 +4315,13 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border-radius: 14px;
+  gap: 6px !important;
+  padding: 8px 12px !important;
+  border-radius: 11px !important;
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.32);
   color: #EF4444;
-  font-size: 13.5px;
+  font-size: 12.5px !important;
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -4330,35 +4332,54 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   border-color: #EF4444;
 }
 
+#apk-sheet-ota-slot {
+  margin-top: 2px !important;
+  padding: 0 !important;
+}
+
+#apk-ota-settings-box {
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-hairline) !important;
+  gap: 5px !important;
+}
+
+#apk-ota-manual-btn {
+  padding: 6px 10px !important;
+  border-radius: 9px !important;
+  font-size: 11.5px !important;
+}
+
 /* ── Option / Hamburger Menu Button Styling: Signature Translucent Glass with Violet Box Peek on 2 Sides ── */
 .apk-hamburger-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 14px !important;
-  background: rgba(30, 22, 54, 0.65) !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  background: rgba(30, 22, 54, 0.72) !important;
   backdrop-filter: blur(24px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   color: var(--text-primary) !important;
   /* Dual-side signature violet peek box effect via layered box-shadow */
   box-shadow:
-    3px 3px 0 0 #8E74E5,
-    0 6px 20px rgba(124, 92, 224, 0.35),
+    2.5px 2.5px 0 0 #8E74E5,
+    0 4px 14px rgba(124, 92, 224, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  z-index: 9999 !important;
+  z-index: 8500 !important;
 }
 
 @media (max-width: 767px) {
   .apk-hamburger-btn {
     position: fixed !important;
-    top: max(14px, env(safe-area-inset-top)) !important;
-    left: 16px !important;
-    z-index: 9999 !important;
+    top: max(12px, env(safe-area-inset-top)) !important;
+    left: 14px !important;
+    z-index: 8500 !important;
     margin: 0 !important;
   }
 }
@@ -4366,32 +4387,43 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 @media (min-width: 768px) {
   .apk-hamburger-btn {
     position: static !important;
-    margin: 12px auto 6px !important;
-    z-index: 8900 !important;
+    margin: 10px auto 6px !important;
+    z-index: 8500 !important;
   }
 }
 
 [data-theme="light"] .apk-hamburger-btn {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(108, 79, 214, 0.20) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(108, 79, 214, 0.22) !important;
   color: var(--text-primary) !important;
   box-shadow:
-    3px 3px 0 0 #8E74E5,
-    0 4px 16px rgba(108, 79, 214, 0.15) !important;
+    2.5px 2.5px 0 0 #8E74E5,
+    0 3px 12px rgba(108, 79, 214, 0.18) !important;
 }
 
 .apk-hamburger-btn:hover {
-  background: rgba(56, 45, 94, 0.82) !important;
+  background: rgba(56, 45, 94, 0.88) !important;
   border-color: #8E74E5 !important;
   box-shadow:
-    4px 4px 0 0 #A78BFA,
-    0 8px 24px rgba(142, 116, 229, 0.45) !important;
+    3.5px 3.5px 0 0 #A78BFA,
+    0 6px 20px rgba(142, 116, 229, 0.45) !important;
 }
 
 .apk-hamburger-btn svg {
   stroke: var(--text-primary) !important;
-  width: 22px !important;
-  height: 22px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Hide Option Button completely whenever Side Panel is open */
+body:has(#apk-side-panel:not(.hide)) #apk-hamburger-btn,
+body:has(#apk-side-panel:not(.hide)) .apk-hamburger-btn,
+#apk-side-panel:not(.hide) ~ #apk-hamburger-btn,
+#apk-side-panel:not(.hide) ~ .apk-hamburger-btn {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* ── Solid Stable Page Layout (Zero Flickers, Zero Jerks, Zero translateY Jumps) ── */
@@ -4598,6 +4630,13 @@ main#app,
   justify-content: flex-start;
 }
 
+@media (max-width: 767px) {
+  #apk-home-hero {
+    padding-left: 50px !important; /* Clear 34px option button at left: 14px with ample spacing */
+    min-height: 38px !important;
+  }
+}
+
 .apk-home-hero-bg {
   display: none !important;
 }
@@ -4630,6 +4669,7 @@ main#app,
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HORIZONTAL DATE SELECTOR BAR & EMPTY STATE (Image 2 Style - Center Aligned)
+   Squares with curved corners matching option button style (50px x 50px)
    ═══════════════════════════════════════════════════════════════════════════ */
 .apk-date-picker-wrap {
   width: 100%;
@@ -4664,19 +4704,19 @@ main#app,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 58px !important;
-  height: 54px !important;
-  border-radius: 999px !important; /* Perfectly rounded capsule pill, zero pointy corners */
-  background: rgba(56, 45, 94, 0.45) !important;
-  border: 1px solid rgba(167, 139, 250, 0.22) !important;
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 12px !important; /* Squares with curved corners, matching option button style */
+  background: rgba(56, 45, 94, 0.55) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
   color: var(--text-secondary);
   cursor: pointer;
   position: relative;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  padding: 6px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
 }
 
 .apk-date-pill:hover {
@@ -4688,7 +4728,7 @@ main#app,
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   background: transparent;
   opacity: 0;
   transition: all 0.2s ease;
@@ -4704,13 +4744,33 @@ main#app,
   opacity: 1;
 }
 
+/* Light Theme Dates: High contrast, crisp and clearly visible */
+[data-theme="light"] .apk-date-pill {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1.5px solid rgba(142, 116, 229, 0.45) !important;
+  color: #1E1B4B !important;
+  box-shadow: 0 3px 10px rgba(108, 79, 214, 0.12) !important;
+}
+
+[data-theme="light"] .apk-date-pill .apk-date-pill-day {
+  color: #6D28D9 !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] .apk-date-pill .apk-date-pill-num {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}
+
 /* Selected Date: Vibrant Royal Violet Gradient (Never dark/black) */
 .apk-date-pill.active {
   background: linear-gradient(135deg, #9D84F7 0%, #805CEB 100%) !important;
   color: #FFFFFF !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
-  box-shadow: 0 6px 20px rgba(142, 116, 229, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
-  transform: scale(1.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(142, 116, 229, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  transform: scale(1.04);
 }
 
 [data-theme="light"] .apk-date-pill.active {
@@ -5077,10 +5137,11 @@ main#app,
   position: absolute !important;
   border-radius: 999px !important;
   background: rgba(142, 116, 229, 0.24) !important; /* Truly transparent translucent iris glow */
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1.2px solid rgba(167, 139, 250, 0.42) !important;
-  box-shadow: 0 4px 14px rgba(124, 92, 224, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background: linear-gradient(145deg, rgba(142, 116, 229, 0.72) 0%, rgba(124, 92, 224, 0.65) 100%) !important;
+  border: 1.5px solid rgba(196, 181, 253, 0.75) !important;
+  box-shadow: 0 4px 18px rgba(124, 92, 224, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
   pointer-events: none !important;
   z-index: 1 !important;
   transition: transform 0.32s cubic-bezier(0.34, 1.35, 0.64, 1),
@@ -5091,9 +5152,9 @@ main#app,
 }
 
 [data-theme="light"] #apk-nav-liquid-indicator {
-  background: rgba(142, 116, 229, 0.18) !important;
-  border: 1.2px solid rgba(108, 79, 214, 0.35) !important;
-  box-shadow: 0 4px 12px rgba(108, 79, 214, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  background: linear-gradient(145deg, rgba(142, 116, 229, 0.65) 0%, rgba(124, 92, 224, 0.58) 100%) !important;
+  border: 1.5px solid rgba(196, 181, 253, 0.75) !important;
+  box-shadow: 0 4px 14px rgba(108, 79, 214, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 .header-nav-tabs .nav-tab,
@@ -5119,12 +5180,16 @@ main#app,
   transform: translateY(-1px) scale(1.08) !important;
 }
 
-/* ── Dedicated Saved Content Page Styles ── */
+/* ── Dedicated Saved Content Page Styles: Slideable Horizontal Tabs ── */
 .saved-mode-tabs {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  flex-wrap: nowrap !important;
   width: 100% !important;
-  gap: 6px !important;
+  gap: 8px !important;
   padding: 4px !important;
   border-radius: 999px !important;
   background: rgba(30, 24, 52, 0.65) !important;
@@ -5135,22 +5200,28 @@ main#app,
   margin-bottom: 1.25rem !important;
 }
 
+.saved-mode-tabs::-webkit-scrollbar {
+  display: none !important;
+}
+
 [data-theme="light"] .saved-mode-tabs {
-  background: rgba(240, 235, 252, 0.85) !important;
-  border: 1px solid rgba(108, 79, 214, 0.2) !important;
+  background: rgba(240, 235, 252, 0.90) !important;
+  border: 1px solid rgba(108, 79, 214, 0.22) !important;
   box-shadow: 0 4px 14px rgba(45, 34, 72, 0.08) !important;
 }
 
 .saved-mode-tab {
-  height: 38px !important;
-  padding: 0 8px !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  height: 36px !important;
+  padding: 0 16px !important;
   border-radius: 999px !important;
   border: none !important;
   background: transparent !important;
   color: var(--text-secondary) !important;
   font-size: 13px !important;
   font-weight: 700 !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
@@ -5175,4 +5246,116 @@ main#app,
   border-radius: 99px !important;
   background: rgba(255, 255, 255, 0.22) !important;
   color: inherit !important;
+}
+
+/* ── Practice Tests Tabs (Test Series vs Question Bank vs Red Sapphire): Strictly 1-Line Compact Layout ── */
+.section-mode-tabs {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  padding: 4px !important;
+  border-radius: 999px !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.section-mode-tabs::-webkit-scrollbar {
+  display: none !important;
+}
+
+.section-mode-tab {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  height: 33px !important;
+  padding: 0 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+
+.section-mode-tab svg {
+  width: 13px !important;
+  height: 13px !important;
+  flex-shrink: 0 !important;
+}
+
+.section-mode-count {
+  font-size: 10px !important;
+  padding: 1px 5px !important;
+  border-radius: 99px !important;
+}
+
+/* ── Responsive Search Toggles for Videos, Tests, and Saved on Mobile ── */
+@media (max-width: 767px) {
+  /* Videos: Only ONE search button beside title; search input only when active */
+  .video-search-toggle,
+  .test-search-toggle,
+  .saved-search-toggle {
+    display: inline-flex !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(142, 116, 229, 0.18) !important;
+    border: 1px solid rgba(142, 116, 229, 0.32) !important;
+    color: var(--accent) !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+  }
+
+  #videos-search-box:not(.active),
+  #tests-search-box:not(.active),
+  #saved-search-box:not(.active) {
+    display: none !important;
+  }
+
+  #videos-search-box.active,
+  #tests-search-box.active,
+  #saved-search-box.active {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 8px !important;
+    animation: apkFadeIn 0.2s ease;
+  }
+
+  /* Keep stats clean on Tests mobile */
+  .notes-hero-stats {
+    gap: 4px !important;
+  }
+  .notes-stat-pill {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .video-search-toggle,
+  .test-search-toggle,
+  .saved-search-toggle {
+    display: none !important;
+  }
+
+  #videos-search-box,
+  #tests-search-box,
+  #saved-search-box {
+    display: flex !important;
+  }
+}
+
+@keyframes apkFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

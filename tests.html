@@ -112,9 +112,15 @@
       <div class="notes-page-container">
 
         <!-- Compact Header: "Tests" + Pills + Search Box -->
-        <section class="notes-hero-header" style="align-items: center; justify-content: space-between; gap: 1.25rem; margin-bottom: 1.5rem;">
-          <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
-            <h1 class="notes-hero-title" style="margin: 0; font-size: 1.65rem;">Tests</h1>
+        <section class="notes-hero-header" style="margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h1 class="notes-hero-title" style="margin: 0; font-size: 1.6rem;">Tests</h1>
+              <button id="btn-toggle-test-search" class="apk-icon-btn test-search-toggle" aria-label="Toggle Search" style="width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+              </button>
+            </div>
+
             <div class="notes-hero-stats">
               <div class="notes-stat-pill">
                 <strong id="stat-categories-count">—</strong>
@@ -128,22 +134,22 @@
                 <span id="stat-batch-name">Red Sapphire (Hinglish)</span>
               </div>
             </div>
-          </div>
 
-          <div class="notes-search-wrapper" style="min-width: 280px; max-width: 440px; width: 100%;">
-            <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-            </svg>
-            <input
-              type="text"
-              id="tests-search-input"
-              class="notes-search-input"
-              placeholder="Search tests, PYQs, or subjects..."
-              autocomplete="off"
-            />
-            <button id="tests-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
+            <div id="tests-search-box" class="notes-search-wrapper" style="min-width: 260px; max-width: 340px; width: 100%;">
+              <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+              </svg>
+              <input
+                type="text"
+                id="tests-search-input"
+                class="notes-search-input"
+                placeholder="Search tests, PYQs, or subjects..."
+                autocomplete="off"
+              />
+              <button id="tests-search-clear" class="notes-search-clear" title="Clear Search" aria-label="Clear search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
           </div>
         </section>
 
