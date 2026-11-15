@@ -1,4 +1,5 @@
 import http from 'http';
+import https from 'https';
 import tls from 'tls';
 import url from 'url';
 import fs from 'fs';
@@ -82,6 +83,55 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: 'Server error', message: e.message }));
       }
     }
+    return;
+  }
+
+  // Reverse proxy for upstream NNL APIs (/api/* -> https://prod-api.nnlone.com/*)
+  if (pathname.startsWith('/api/')) {
+    if (req.method === 'OPTIONS') {
+      res.statusCode = 204;
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.end();
+      return;
+    }
+
+    const subPath = (req.url || '').replace(/^\/api/, '');
+    const targetUrl = new URL(subPath, 'https://prod-api.nnlone.com');
+    const proxyHeaders = { ...req.headers };
+    delete proxyHeaders['host'];
+    proxyHeaders['origin'] = 'https://prod-api.nnlone.com';
+    proxyHeaders['referer'] = 'https://prod-api.nnlone.com/';
+
+    const apiProxyReq = https.request(
+      targetUrl,
+      {
+        method: req.method,
+        headers: proxyHeaders,
+      },
+      (apiProxyRes) => {
+        res.statusCode = apiProxyRes.statusCode;
+        for (const [key, value] of Object.entries(apiProxyRes.headers)) {
+          if (value !== undefined) res.setHeader(key, value);
+        }
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', '*');
+        apiProxyRes.pipe(res);
+      }
+    );
+
+    apiProxyReq.on('error', (err) => {
+      console.error('API Gateway proxy error:', err);
+      if (!res.headersSent) {
+        res.statusCode = 502;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'API Gateway proxy error', message: err.message }));
+      }
+    });
+
+    req.pipe(apiProxyReq);
     return;
   }
 

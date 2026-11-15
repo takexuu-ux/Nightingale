@@ -72,17 +72,18 @@ export default defineConfig(({ mode }) => ({
       transformIndexHtml: {
         order: 'pre',
         handler(html) {
-          if (mode !== 'hinglish-apk') return html;
-          const out = html
+          let out = html
             .replace(/<link[^>]*href=["']\/src\/style\.css["'][^>]*>\s*/gi, '')
             .replace(/<link[^>]*fonts\.google[^>]*>\s*/gi, '')
             .replace(/<link[^>]*fonts\.gstatic[^>]*>\s*/gi, '')
-            .replace(/<style[\s\S]*?<\/style>\s*/gi, '')
             .replace(/<div id=["']nightingale-bg-container["'][\s\S]*?<\/div>\s*/gi, '');
-          return out.replace(
-            '</head>',
-            '  <script type="module" src="/src/apk/apk-shell.js"></script>\n  </head>'
-          );
+          if (!out.includes('/src/apk/apk-shell.js')) {
+            out = out.replace(
+              '</head>',
+              '  <script type="module" src="/src/apk/apk-shell.js"></script>\n  </head>'
+            );
+          }
+          return out;
         }
       }
     },
