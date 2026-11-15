@@ -162,13 +162,14 @@ body {
 }
 
 [data-theme="dark"] body {
-  background-color: #0b0914 !important;
+  background-color: #0b0816 !important;
   background-image: none !important;
 }
 
 [data-theme="light"] body {
-  background-color: #f7f5fd !important;
+  background-color: #ffffff !important;
   background-image: none !important;
+  color: #0f172a !important;
 }
 
 /* Ambient Vector Landscape Background Layer: Strictly ONE single unified wallpaper */
@@ -188,14 +189,14 @@ body {
 
 [data-theme="dark"] #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper.jpg') !important;
-  opacity: 0.90 !important;
-  filter: brightness(1.0) contrast(1.05) !important;
+  opacity: 0.95 !important;
+  filter: brightness(0.98) contrast(1.05) !important;
 }
 
 [data-theme="light"] #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper-light.jpg') !important;
-  opacity: 0.92 !important;
-  filter: brightness(1.08) contrast(1.02) !important;
+  opacity: 1.0 !important;
+  filter: none !important;
 }
 
 main#app,
@@ -4071,16 +4072,18 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 .note-doc-card,
 .sd-lecture-card,
 .brochure-card {
-  background: linear-gradient(148deg, #FFFFFF 0%, #FAF7FF 46%, #EDE6FD 100%) !important;
-  border-color: rgba(124, 92, 224, 0.18) !important;
+  background: linear-gradient(145deg, #FFFFFF 0%, #F7F3FF 48%, #EDE6FD 100%) !important;
+  border-color: rgba(124, 92, 224, 0.22) !important;
+  box-shadow: 0 4px 18px rgba(108, 79, 214, 0.08) !important;
 }
 
 [data-theme="dark"] .class-card,
 [data-theme="dark"] .note-doc-card,
 [data-theme="dark"] .sd-lecture-card,
 [data-theme="dark"] .brochure-card {
-  background: linear-gradient(148deg, #171B2C 0%, #1F1B33 52%, #292246 100%) !important;
-  border-color: rgba(167, 139, 250, 0.2) !important;
+  background: linear-gradient(148deg, rgba(28, 22, 52, 0.94) 0%, rgba(18, 14, 34, 0.96) 60%, rgba(12, 9, 22, 0.98) 100%) !important;
+  border-color: rgba(142, 116, 229, 0.24) !important;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* ── Transparent Botanical Medical PNG Artwork & Smooth Animation ── */
@@ -4247,29 +4250,31 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   height: 100dvh !important;
   max-height: none !important;
   margin: 0 !important;
-  background: linear-gradient(160deg, rgba(32, 24, 60, 0.94) 0%, rgba(22, 16, 42, 0.96) 50%, rgba(12, 9, 24, 0.98) 100%) !important;
-  backdrop-filter: blur(36px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(180%) !important;
+  background: rgba(20, 15, 36, 0.88) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
   border: none !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 0 20px 20px 0 !important;
   box-shadow: 16px 0 48px rgba(0, 0, 0, 0.65), inset 1px 0 0 rgba(255, 255, 255, 0.15) !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: space-between !important; /* DYNAMICALLY DISTRIBUTE OVER FULL HEIGHT */
+  justify-content: flex-start !important; /* Compact natural flow, no giant gaps */
   transform: translate3d(0, 0, 0);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
   padding: max(18px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px !important;
-  gap: 12px !important; /* EQUAL GAP BETWEEN EACH CARD */
+  gap: 12px !important; /* Compact clean gap between sections */
   box-sizing: border-box !important;
 }
 
 [data-theme="light"] .apk-side-drawer {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.97) 0%, rgba(246, 240, 254, 0.95) 60%, rgba(238, 230, 252, 0.97) 100%) !important;
+  background: rgba(255, 255, 255, 0.90) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
   border: none !important;
-  border-right: 1px solid rgba(108, 79, 214, 0.18) !important;
-  box-shadow: 12px 0 36px rgba(45, 34, 72, 0.14) !important;
+  border-right: 1px solid rgba(108, 79, 214, 0.20) !important;
+  box-shadow: 12px 0 36px rgba(45, 34, 72, 0.14), inset 1px 0 0 rgba(255, 255, 255, 0.85) !important;
 }
 
 #apk-side-panel.hide .apk-side-drawer {
@@ -5667,18 +5672,68 @@ main#app,
   padding: 9px 12px !important;
   min-height: 68px !important;
   border-radius: 12px !important;
-  background: linear-gradient(135deg, rgba(24, 19, 44, 0.82), rgba(16, 12, 32, 0.9)) !important;
-  border: 1px solid rgba(167, 139, 250, 0.16) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: linear-gradient(148deg, rgba(28, 22, 52, 0.94) 0%, rgba(18, 14, 34, 0.96) 60%, rgba(12, 9, 22, 0.98) 100%) !important;
+  border: 1px solid rgba(142, 116, 229, 0.24) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
   cursor: pointer !important;
   transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease !important;
   box-sizing: border-box !important;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.45) !important;
 }
 
 [data-theme="light"] .sd-lecture-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 240, 255, 0.92)) !important;
-  border: 1px solid rgba(108, 79, 214, 0.16) !important;
+  background: linear-gradient(145deg, #FFFFFF 0%, #F7F3FF 48%, #EDE6FD 100%) !important;
+  border: 1px solid rgba(124, 92, 224, 0.22) !important;
+  box-shadow: 0 4px 16px rgba(108, 79, 214, 0.08) !important;
+}
+
+[data-theme="dark"] .sd-lecture-card {
+  background: linear-gradient(148deg, rgba(28, 22, 52, 0.94) 0%, rgba(18, 14, 34, 0.96) 60%, rgba(12, 9, 22, 0.98) 100%) !important;
+  border: 1px solid rgba(142, 116, 229, 0.24) !important;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-theme="light"] .sd-lecture-card .sd-lecture-title {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .sd-lecture-card .sd-lecture-date {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .sd-lecture-card .sd-lecture-meta-left {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .sd-mini-pill {
+  background: rgba(124, 92, 224, 0.12) !important;
+  border: 1px solid rgba(124, 92, 224, 0.28) !important;
+  color: #4C1D95 !important;
+}
+
+[data-theme="dark"] .sd-lecture-card .sd-lecture-title {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .sd-lecture-card .sd-lecture-date {
+  color: #C4B5FD !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .sd-lecture-card .sd-lecture-meta-left {
+  color: #DDD6FE !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .sd-mini-pill {
+  background: rgba(142, 116, 229, 0.18) !important;
+  border: 1px solid rgba(167, 139, 250, 0.32) !important;
+  color: #EDE9FE !important;
 }
 
 .sd-lecture-card:hover {

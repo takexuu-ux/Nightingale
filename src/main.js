@@ -3399,6 +3399,47 @@ function updateHeroGreeting() {
   greetingEl.textContent = 'Welcome back, Scholar';
 }
 
+function formatWatchTime(sec) {
+  if (!sec || isNaN(sec) || sec <= 0) return '0:00';
+  const total = Math.floor(sec);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  const h = Math.floor(m / 60);
+  if (h > 0) {
+    const remM = m % 60;
+    return `${h}:${String(remM).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+async function resumeLecture(recId) {
+  const map = getWatchHistory();
+  const item = map[String(recId)];
+  const tk = localStorage.getItem('nnl_access_token') || '';
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    try {
+      const data = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
+      if (data && data.otp && data.playbackInfo) {
+        window.AndroidVideoBridge.playVideoWithAuth(
+          data.otp,
+          data.playbackInfo,
+          item?.title || 'Recorded Lecture',
+          item?.instructor || 'NNL Faculty',
+          String(recId),
+          tk,
+          true
+        );
+        return;
+      }
+    } catch (err) {
+      console.warn('Native video resume fallback:', err);
+    }
+  }
+  sessionStorage.setItem('nnl_auto_play_rec_id', String(recId));
+  sessionStorage.setItem('nnl_auto_play_seek', String(item?.currentTime || 0));
+  window.location.href = `all-videos.html?autoPlay=${encodeURIComponent(recId)}&seek=${item?.currentTime || 0}`;
+}
+
 function renderContinueWatchingSection() {
   const section = document.getElementById('continue-watching-section');
   const grid = document.getElementById('continue-watching-grid');
@@ -3412,33 +3453,59 @@ function renderContinueWatchingSection() {
 
   if (!section || !grid) return;
 
-  const recents = getRecentlyWatchedLectures(6);
+  const recents = getRecentlyWatchedLectures(4);
   if (!recents || recents.length === 0) {
-    section.classList.add('hide');
+    section.classList.remove('hide');
+    if (countEl) countEl.textContent = 'Daily Track';
+    grid.innerHTML = `
+      <div class="continue-watching-card fallback-start-card" role="button" tabindex="0">
+        <div class="continue-watching-top">
+          <div class="continue-watching-title">Continue Learning • Daily Lectures</div>
+        </div>
+        <div class="continue-watching-instructor">Red Sapphire Batch • Video Lectures</div>
+        <div style="font-size:12px;color:var(--text-secondary);font-weight:600;margin-top:2px;">
+          Pick up your lessons, review key concepts & track your daily study progress
+        </div>
+        <button class="continue-watching-resume-btn" type="button">
+          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span>Open Batch Lectures</span>
+        </button>
+      </div>
+    `;
+    grid.querySelector('.fallback-start-card')?.addEventListener('click', () => {
+      window.location.href = 'all-videos.html';
+    });
     return;
   }
 
   section.classList.remove('hide');
-  if (countEl) countEl.textContent = `${recents.length} Recent`;
+  if (countEl) countEl.textContent = `${recents.length} In Progress`;
 
   grid.innerHTML = recents.map(item => {
+    const recId = String(item.recId || item.id || '');
     const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
     const isCompleted = pct >= 90;
+    const curTimeFormatted = formatWatchTime(item.currentTime || 0);
+    const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
+    const timeLabel = item.currentTime > 0
+      ? `▶ ${curTimeFormatted}${durFormatted ? ` / ${durFormatted}` : ''} • ${pct}% Watched`
+      : `${pct}% Watched`;
+
     return `
-      <div class="continue-watching-card" data-rec-id="${escapeHtml(String(item.id))}">
+      <div class="continue-watching-card" data-rec-id="${escapeHtml(recId)}" role="button" tabindex="0">
         <div class="continue-watching-top">
           <div class="continue-watching-title" title="${escapeHtml(item.title || 'Lecture')}">${escapeHtml(item.title || 'Lecture')}</div>
         </div>
         <div class="continue-watching-instructor">${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</div>
-        <div class="lecture-progress-wrap" style="margin-top:2px;">
+        <div class="lecture-progress-wrap" style="margin-top:4px;">
           <div class="lecture-progress-track">
             <div class="lecture-progress-bar ${isCompleted ? 'is-completed' : ''}" style="width: ${pct}%"></div>
           </div>
-          <span class="lecture-progress-text ${isCompleted ? 'is-completed' : ''}">${isCompleted ? '✓ Completed' : `${pct}% Watched`}</span>
+          <span class="lecture-progress-text ${isCompleted ? 'is-completed' : ''}">${isCompleted ? '✓ Completed' : timeLabel}</span>
         </div>
-        <button class="continue-watching-resume-btn">
+        <button class="continue-watching-resume-btn" type="button">
           <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          <span>Resume Lecture</span>
+          <span>${isCompleted ? 'Rewatch Lecture' : (item.currentTime > 5 ? `Resume from ${curTimeFormatted}` : 'Resume Lecture')}</span>
         </button>
       </div>
     `;
@@ -3446,7 +3513,12 @@ function renderContinueWatchingSection() {
 
   grid.querySelectorAll('.continue-watching-card').forEach(card => {
     card.addEventListener('click', () => {
-      window.location.href = '/all-videos.html';
+      const recId = card.getAttribute('data-rec-id');
+      if (!recId) {
+        window.location.href = 'all-videos.html';
+        return;
+      }
+      resumeLecture(recId);
     });
   });
 }

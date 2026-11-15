@@ -971,37 +971,14 @@ function renderSubjectLecturesList() {
     const rowNum = String(idx + 1).padStart(2, '0');
     const thumb = rec.thumbnails?.[0]?.url || rec.thumb || '';
     const offState = offlineMapByRecId.get(String(rec.id));
-    let dlBtnHtml = '';
-    if (hasNativeOfflineBridge()) {
-      if (offState && offState.completed && !offState.expired) {
-        dlBtnHtml = `
-          <button class="sd-mini-pill saved btn-dl-lecture" data-rec-idx="${idx}" title="Play Offline Copy">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Saved</span>
-          </button>
-        `;
-      } else if (offState && (offState.status === 'downloading' || offState.status === 'pending')) {
-        dlBtnHtml = `
-          <button class="sd-mini-pill btn-dl-lecture" data-rec-idx="${idx}" disabled>
-            <span>${offState.percent || 0}%</span>
-          </button>
-        `;
-      } else {
-        dlBtnHtml = `
-          <button class="sd-mini-pill btn-dl-lecture" data-rec-idx="${idx}" title="Download for Offline">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Offline</span>
-          </button>
-        `;
-      }
-    }
     const shadeIdx = getTopicShadeIndex(rec.topic);
     const dateFormatted = formatLectureDate(rec.date);
-    const isSaved = isLectureSaved(rec.id);
+    const isSaved = isLectureSaved(rec.id) || Boolean(offState && offState.completed && !offState.expired);
+    const isDownloading = offState && (offState.status === 'downloading' || offState.status === 'pending');
     const saveBtnHtml = `
-      <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture'}">
+      <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture for Offline'}">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        <span>${isSaved ? 'Saved' : 'Save'}</span>
+        <span>${isDownloading ? `${offState.percent || 0}%` : (isSaved ? 'Saved' : 'Save')}</span>
       </button>
     `;
 
@@ -1027,7 +1004,7 @@ function renderSubjectLecturesList() {
           </div>
         </div>
 
-        <!-- 3 & 4. Body: Title + Date above, Subtitle with Duration, PDF & Save below -->
+        <!-- 3 & 4. Body: Title + Date above, Subtitle with Duration, PDF & Single Unified Save below -->
         <div class="sd-lecture-body">
           <div class="sd-lecture-top-line">
             <span class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</span>
@@ -1041,35 +1018,12 @@ function renderSubjectLecturesList() {
             <div class="sd-lecture-actions">
               ${pdfBtnHtml}
               ${saveBtnHtml}
-              ${dlBtnHtml}
             </div>
           </div>
         </div>
       </div>
     `;
   }).join('');
-
-  subjectLecturesContainer.querySelectorAll('.btn-dl-lecture').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const idx = parseInt(btn.getAttribute('data-rec-idx'), 10);
-      const rec = !isNaN(idx) ? filtered[idx] : null;
-      if (!rec) return;
-      const st = offlineMapByRecId.get(String(rec.id));
-      if (st && st.completed && !st.expired && hasNativeOfflineBridge()) {
-        window.AndroidVideoBridge.playOfflineVideo(st.mediaId, rec.title || 'Offline Lecture', rec.instructor || 'NNL Faculty');
-        return;
-      }
-      startOfflineLectureDownload(rec, btn);
-    });
-  });
-
-  subjectLecturesContainer.querySelectorAll('.btn-del-lecture').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      deleteOfflineLecture(btn.getAttribute('data-rec-id'));
-    });
-  });
 
   subjectLecturesContainer.querySelectorAll('.btn-open-lec-pdf').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1101,6 +1055,17 @@ function renderSubjectLecturesList() {
       if (label) label.textContent = nowSaved ? 'Saved' : 'Save';
       const svg = btn.querySelector('svg');
       if (svg) svg.setAttribute('fill', nowSaved ? 'currentColor' : 'none');
+
+      // Seamless offline integration: saving also starts offline caching
+      if (nowSaved && hasNativeOfflineBridge()) {
+        const st = offlineMapByRecId.get(String(rec.id));
+        if (!st || (!st.completed && st.status !== 'downloading')) {
+          startOfflineLectureDownload(rec, btn);
+        }
+      } else if (!nowSaved && hasNativeOfflineBridge()) {
+        deleteOfflineLecture(rec.id);
+      }
+
       updateTopStats();
     });
   });
@@ -1390,6 +1355,33 @@ document.addEventListener('DOMContentLoaded', () => {
       if (videoSectionMode === 'rb103' && !currentOpenSubject) renderCurrentCatalog();
     }
   });
+
+  // Auto-resume check if redirected from Home "Continue Watching"
+  const autoPlayRecId = sessionStorage.getItem('nnl_auto_play_rec_id')
+    || new URLSearchParams(window.location.search).get('autoPlay')
+    || new URLSearchParams(window.location.search).get('play');
+  if (autoPlayRecId) {
+    sessionStorage.removeItem('nnl_auto_play_rec_id');
+    setTimeout(() => {
+      let found = null;
+      if (batch103State?.subjects) {
+        for (const s of batch103State.subjects) {
+          found = s.videos?.find(v => String(v.id) === String(autoPlayRecId));
+          if (found) {
+            currentOpenSubject = s;
+            break;
+          }
+        }
+      }
+      if (!found) {
+        const savedList = getSavedLecturesList();
+        found = savedList.find(v => String(v.id) === String(autoPlayRecId));
+      }
+      if (found) {
+        openRecordingPlayer(found);
+      }
+    }, 450);
+  }
 
   window.__nnlSelectBatch = (chosen) => {
     activeBatch = chosen;
