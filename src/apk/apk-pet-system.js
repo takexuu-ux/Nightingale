@@ -1,167 +1,338 @@
 // Nightingale Companion Pet System
-// 100% Pure Code-Generated Dense Pixel-Art Vector Companions
-// Matching Chibi Anime Cap & Head Aesthetic across all 4 characters
-// Zero external images, zero network requests, zero flickering, 100% clean alpha transparency.
+// 100% Pure Code-Generated Dense Pixel-Art Vector Companions with Dynamic Facial & Body Expressions
+// Zero external images, zero network requests, zero speech-bubble text clutter.
+// STRICT RULE: Companion Pet is NEVER shown on the Login / Authentication screen.
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
 
-// High-Density Pixel-Art SVG Companions
-export const PET_SVGS = {
-  // 1. Nurse: Chibi anime nurse with nurse cap, red cross, brunette hair, anime eyes, blush, medical scrub & stethoscope
-  'bandage-nurse-realistic': `
+// Facial expression generators for each character
+export function getPetSvg(petId, expression = 'default') {
+  if (petId === 'shinchan') {
+    return getShinchanSvg(expression);
+  }
+  if (petId === 'banana-cat') {
+    return getBananaCatSvg(expression);
+  }
+  if (petId === 'moxie') {
+    return getMoxieSvg(expression);
+  }
+  return getNurseSvg(expression);
+}
+
+function getNurseSvg(expr) {
+  let faceContent = '';
+  switch (expr) {
+    case 'happy':
+      faceContent = `
+        <path d="M16 23 Q18 20 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M28 23 Q30 20 32 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <rect x="13" y="25" width="4" height="2.5" fill="#F43F5E" />
+        <rect x="31" y="25" width="4" height="2.5" fill="#F43F5E" />
+        <path d="M22 26 Q24 29.5 26 26 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'wink':
+      faceContent = `
+        <path d="M16 23 Q18 20 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
+        <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="23" y="27" width="3" height="1.2" fill="#E11D48" />
+        <rect x="24" y="28.2" width="2" height="1" fill="#FB7185" />
+      `;
+      break;
+    case 'heart-eyes':
+      faceContent = `
+        <path d="M16 22 A 1.5 1.5 0 0 1 18 21 A 1.5 1.5 0 0 1 20 22 Q 18 25.5 18 25.5 Q 16 22 16 22 Z" fill="#EF4444" />
+        <path d="M28 22 A 1.5 1.5 0 0 1 30 21 A 1.5 1.5 0 0 1 32 22 Q 30 25.5 30 25.5 Q 28 22 28 22 Z" fill="#EF4444" />
+        <rect x="13" y="25" width="4" height="2.5" fill="#FB7185" />
+        <rect x="31" y="25" width="4" height="2.5" fill="#FB7185" />
+        <path d="M22 26 Q24 29.5 26 26 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'shocked':
+      faceContent = `
+        <circle cx="18" cy="23" r="3" fill="#0F172A" />
+        <circle cx="17.5" cy="22" r="1.1" fill="#FFFFFF" />
+        <circle cx="30" cy="23" r="3" fill="#0F172A" />
+        <circle cx="29.5" cy="22" r="1.1" fill="#FFFFFF" />
+        <ellipse cx="24" cy="27" rx="1.6" ry="2" fill="#E11D48" />
+        <path d="M13 18 Q12 21 13 22 Q14 21 13 18 Z" fill="#38BDF8" />
+      `;
+      break;
+    case 'focus':
+      faceContent = `
+        <line x1="15" y1="19" x2="20" y2="21" stroke="#451A03" stroke-width="2" stroke-linecap="round" />
+        <line x1="33" y1="19" x2="28" y2="21" stroke="#451A03" stroke-width="2" stroke-linecap="round" />
+        <rect x="16" y="21" width="4" height="4" fill="#0F172A" />
+        <rect x="18" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="28" y="21" width="4" height="4" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <line x1="22" y1="27" x2="26" y2="26" stroke="#E11D48" stroke-width="1.6" stroke-linecap="round" />
+      `;
+      break;
+    case 'sleepy':
+      faceContent = `
+        <path d="M16 23 Q18 25 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M28 23 Q30 25 32 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <line x1="23" y1="27" x2="25" y2="27" stroke="#E11D48" stroke-width="1.2" stroke-linecap="round" />
+      `;
+      break;
+    default:
+      faceContent = `
+        <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="18" y="24" width="2" height="2" fill="#38BDF8" />
+        <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
+        <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="23" y="27" width="2" height="1" fill="#E11D48" />
+      `;
+      break;
+  }
+
+  return `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-      <!-- Drop Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
-      
-      <!-- Nurse Cap -->
       <path d="M14 6 h20 v6 h-20 z" fill="#FFFFFF" />
       <path d="M13 10 h22 v3 h-22 z" fill="#F1F5F9" />
-      <!-- Red Cross on Cap -->
       <rect x="22" y="7" width="4" height="4" fill="#EF4444" />
       <rect x="23" y="6" width="2" height="6" fill="#EF4444" />
-
-      <!-- Brunette Hair Back & Bangs -->
       <path d="M12 12 h24 v14 h-24 z" fill="#451A03" />
       <path d="M10 16 h4 v10 h-4 z" fill="#451A03" />
       <path d="M34 16 h4 v10 h-4 z" fill="#451A03" />
       <path d="M14 12 h20 v4 h-20 z" fill="#78350F" />
-      <!-- Hair Bangs Details -->
       <rect x="14" y="16" width="4" height="3" fill="#78350F" />
       <rect x="22" y="16" width="4" height="2" fill="#78350F" />
       <rect x="30" y="16" width="4" height="3" fill="#78350F" />
-
-      <!-- Cute Chibi Face -->
       <rect x="14" y="18" width="20" height="12" fill="#FED7AA" />
       <rect x="12" y="20" width="2" height="8" fill="#FED7AA" />
       <rect x="34" y="20" width="2" height="8" fill="#FED7AA" />
-
-      <!-- Big Sparkling Anime Eyes -->
-      <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
-      <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
-      <rect x="18" y="24" width="2" height="2" fill="#38BDF8" />
-
-      <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
-      <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
-      <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
-
-      <!-- Rosy Blush Cheeks -->
-      <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
-      <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
-
-      <!-- Sweet Smile -->
-      <rect x="23" y="27" width="2" height="1" fill="#E11D48" />
-
-      <!-- Medical Scrub Uniform (Soft Violet/Iris) -->
+      ${faceContent}
       <rect x="15" y="30" width="18" height="12" fill="#EDE9FE" />
       <rect x="18" y="30" width="12" height="12" fill="#8E74E5" />
       <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
-      
-      <!-- Stethoscope draped around neck -->
       <path d="M19 32 v5 h2 v-5 z" fill="#38BDF8" />
       <path d="M27 32 v5 h2 v-5 z" fill="#38BDF8" />
       <circle cx="28" cy="38" r="2" fill="#94A3B8" shape-rendering="auto" />
-      
-      <!-- Pocket with Little Heart Badge -->
       <rect x="19" y="38" width="3" height="3" fill="#FFFFFF" />
       <rect x="20" y="39" width="1" height="1" fill="#EF4444" />
-
-      <!-- Cute Hands -->
       <circle cx="14" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
       <circle cx="34" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
-
-      <!-- Scrub Pants & Shoes -->
       <rect x="18" y="42" width="5" height="3" fill="#6D28D9" />
       <rect x="25" y="42" width="5" height="3" fill="#6D28D9" />
       <rect x="17" y="44" width="6" height="2" fill="#FFFFFF" />
       <rect x="25" y="44" width="6" height="2" fill="#FFFFFF" />
     </svg>
-  `,
+  `;
+}
 
-  // 2. Shinchan: Shinnosuke Nohara with bold black eyebrows, round cheeks, red shirt, yellow shorts & teal shoes
-  'shinchan': `
+function getShinchanSvg(expr) {
+  let faceContent = '';
+  switch (expr) {
+    case 'happy':
+      faceContent = `
+        <path d="M15 13 h7 v3 h-7 z" fill="#000000" />
+        <path d="M26 13 h7 v3 h-7 z" fill="#000000" />
+        <path d="M17 21 Q19.5 17 22 21" stroke="#000000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <path d="M27 21 Q29.5 17 32 21" stroke="#000000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <rect x="12" y="23" width="4" height="3" fill="#FB923C" />
+        <rect x="32" y="23" width="4" height="3" fill="#FB923C" />
+        <path d="M21 24 Q24 30 27 24 Z" fill="#E11D48" />
+        <path d="M22 26 Q24 29 26 26 Z" fill="#FB7185" />
+      `;
+      break;
+    case 'wink':
+      faceContent = `
+        <path d="M15 15 h7 v3 h-7 z" fill="#000000" />
+        <path d="M26 13 h7 v3 h-7 z" fill="#000000" />
+        <path d="M17 21 Q19.5 17 22 21" stroke="#000000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <rect x="27" y="19" width="5" height="5" fill="#000000" />
+        <rect x="28" y="20" width="2" height="2" fill="#FFFFFF" />
+        <rect x="13" y="24" width="3" height="3" fill="#FB923C" />
+        <rect x="32" y="24" width="3" height="3" fill="#FB923C" />
+        <line x1="22" y1="26" x2="27" y2="24" stroke="#E11D48" stroke-width="2.2" stroke-linecap="round" />
+      `;
+      break;
+    case 'heart-eyes':
+      faceContent = `
+        <path d="M15 14 h7 v3 h-7 z" fill="#000000" />
+        <path d="M26 14 h7 v3 h-7 z" fill="#000000" />
+        <path d="M17 21 A 1.8 1.8 0 0 1 19.5 20 A 1.8 1.8 0 0 1 22 21 Q 19.5 25.5 19.5 25.5 Q 17 21 17 21 Z" fill="#EF4444" />
+        <path d="M27 21 A 1.8 1.8 0 0 1 29.5 20 A 1.8 1.8 0 0 1 32 21 Q 29.5 25.5 29.5 25.5 Q 27 21 27 21 Z" fill="#EF4444" />
+        <rect x="12" y="23" width="4" height="3" fill="#F43F5E" />
+        <rect x="32" y="23" width="4" height="3" fill="#F43F5E" />
+        <path d="M20 24 Q24 31 28 24 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'shocked':
+      faceContent = `
+        <path d="M14 13 Q18 10 22 13" stroke="#000000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <path d="M26 13 Q30 10 34 13" stroke="#000000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <circle cx="19.5" cy="21.5" r="3.2" fill="#FFFFFF" stroke="#000000" stroke-width="1.2" />
+        <circle cx="19.5" cy="21.5" r="1.3" fill="#000000" />
+        <circle cx="29.5" cy="21.5" r="3.2" fill="#FFFFFF" stroke="#000000" stroke-width="1.2" />
+        <circle cx="29.5" cy="21.5" r="1.3" fill="#000000" />
+        <ellipse cx="24" cy="27" rx="3" ry="3.5" fill="#E11D48" />
+        <path d="M11 16 Q10 19 11 20 Q12 19 11 16 Z" fill="#38BDF8" />
+      `;
+      break;
+    case 'focus':
+      faceContent = `
+        <line x1="14" y1="15" x2="22" y2="18" stroke="#000000" stroke-width="3.2" stroke-linecap="round" />
+        <line x1="34" y1="15" x2="26" y2="18" stroke="#000000" stroke-width="3.2" stroke-linecap="round" />
+        <rect x="17" y="20" width="5" height="3" fill="#000000" />
+        <rect x="27" y="20" width="5" height="3" fill="#000000" />
+        <line x1="22" y1="26" x2="26" y2="26" stroke="#E11D48" stroke-width="2" stroke-linecap="round" />
+      `;
+      break;
+    case 'sleepy':
+      faceContent = `
+        <path d="M15 15 h7 v3 h-7 z" fill="#000000" />
+        <path d="M26 15 h7 v3 h-7 z" fill="#000000" />
+        <path d="M17 21 Q19.5 24 22 21" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round" />
+        <path d="M27 21 Q29.5 24 32 21" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round" />
+        <line x1="23" y1="26" x2="25" y2="26" stroke="#E11D48" stroke-width="1.5" stroke-linecap="round" />
+      `;
+      break;
+    default:
+      faceContent = `
+        <path d="M15 15 h7 v3 h-7 z" fill="#000000" />
+        <rect x="14" y="17" width="2" height="2" fill="#000000" />
+        <path d="M26 15 h7 v3 h-7 z" fill="#000000" />
+        <rect x="32" y="17" width="2" height="2" fill="#000000" />
+        <rect x="17" y="19" width="5" height="5" fill="#000000" />
+        <rect x="18" y="20" width="2" height="2" fill="#FFFFFF" />
+        <rect x="27" y="19" width="5" height="5" fill="#000000" />
+        <rect x="28" y="20" width="2" height="2" fill="#FFFFFF" />
+        <rect x="13" y="24" width="3" height="3" fill="#FB923C" />
+        <rect x="32" y="24" width="3" height="3" fill="#FB923C" />
+        <rect x="22" y="25" width="4" height="3" fill="#E11D48" />
+        <rect x="23" y="25" width="2" height="1" fill="#FFFFFF" />
+      `;
+      break;
+  }
+
+  return `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-      <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="13" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
-
-      <!-- Shinchan Hair Cut -->
       <path d="M14 10 h18 v8 h-18 z" fill="#0A0A0A" />
       <path d="M12 12 h4 v6 h-4 z" fill="#0A0A0A" />
       <path d="M30 12 h4 v6 h-4 z" fill="#0A0A0A" />
-
-      <!-- Head & Chubby Cheeks Shape -->
       <rect x="14" y="16" width="18" height="14" fill="#FED7AA" />
       <rect x="30" y="20" width="5" height="10" fill="#FED7AA" />
       <rect x="12" y="20" width="4" height="10" fill="#FED7AA" />
-
-      <!-- Iconic Thick Curved Eyebrows -->
-      <path d="M15 15 h7 v3 h-7 z" fill="#000000" />
-      <rect x="14" y="17" width="2" height="2" fill="#000000" />
-
-      <path d="M26 15 h7 v3 h-7 z" fill="#000000" />
-      <rect x="32" y="17" width="2" height="2" fill="#000000" />
-
-      <!-- Big Expressive Shinchan Eyes -->
-      <rect x="17" y="19" width="5" height="5" fill="#000000" />
-      <rect x="18" y="20" width="2" height="2" fill="#FFFFFF" />
-
-      <rect x="27" y="19" width="5" height="5" fill="#000000" />
-      <rect x="28" y="20" width="2" height="2" fill="#FFFFFF" />
-
-      <!-- Chubby Cheek Blush -->
-      <rect x="13" y="24" width="3" height="3" fill="#FB923C" />
-      <rect x="32" y="24" width="3" height="3" fill="#FB923C" />
-
-      <!-- Open Cheerful Mouth -->
-      <rect x="22" y="25" width="4" height="3" fill="#E11D48" />
-      <rect x="23" y="25" width="2" height="1" fill="#FFFFFF" />
-
-      <!-- Iconic Red T-Shirt -->
+      ${faceContent}
       <rect x="15" y="30" width="18" height="9" fill="#DC2626" />
       <rect x="11" y="31" width="4" height="5" fill="#DC2626" />
       <rect x="33" y="31" width="4" height="5" fill="#DC2626" />
-
-      <!-- Hands -->
       <circle cx="10" cy="35" r="2.2" fill="#FED7AA" shape-rendering="auto" />
       <circle cx="38" cy="34" r="2.2" fill="#FED7AA" shape-rendering="auto" />
-
-      <!-- Canary Yellow Shorts -->
       <rect x="16" y="39" width="16" height="4" fill="#FACC15" />
       <rect x="23" y="41" width="2" height="2" fill="#0A0A0A" />
-
-      <!-- Legs -->
       <rect x="18" y="43" width="3" height="2" fill="#FED7AA" />
       <rect x="27" y="43" width="3" height="2" fill="#FED7AA" />
-
-      <!-- White Socks & Teal Shoes -->
       <rect x="17" y="44" width="5" height="1.5" fill="#FFFFFF" />
       <rect x="26" y="44" width="5" height="1.5" fill="#FFFFFF" />
       <rect x="16" y="45" width="6" height="2" fill="#0284C7" />
       <rect x="26" y="45" width="6" height="2" fill="#0284C7" />
     </svg>
-  `,
+  `;
+}
 
-  // 3. Banana Cat: Chibi anime character wearing a cute banana-hood cap with cat ears, matching Nurse/Shinchan style
-  'banana-cat': `
+function getBananaCatSvg(expr) {
+  let faceContent = '';
+  switch (expr) {
+    case 'happy':
+      faceContent = `
+        <path d="M16 23 Q18 20 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M28 23 Q30 20 32 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <rect x="13" y="25" width="4" height="2.5" fill="#F43F5E" />
+        <rect x="31" y="25" width="4" height="2.5" fill="#F43F5E" />
+        <path d="M22 26 Q24 29.5 26 26 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'wink':
+      faceContent = `
+        <path d="M16 23 Q18 20 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
+        <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
+        <path d="M22 27 Q23.5 29 25 27 Q26.5 29 28 27" stroke="#E11D48" stroke-width="1.4" fill="none" />
+      `;
+      break;
+    case 'heart-eyes':
+      faceContent = `
+        <path d="M16 22 A 1.5 1.5 0 0 1 18 21 A 1.5 1.5 0 0 1 20 22 Q 18 25.5 18 25.5 Q 16 22 16 22 Z" fill="#EF4444" />
+        <path d="M28 22 A 1.5 1.5 0 0 1 30 21 A 1.5 1.5 0 0 1 32 22 Q 30 25.5 30 25.5 Q 28 22 28 22 Z" fill="#EF4444" />
+        <rect x="13" y="25" width="4" height="2.5" fill="#FB7185" />
+        <rect x="31" y="25" width="4" height="2.5" fill="#FB7185" />
+        <path d="M22 26 Q24 29.5 26 26 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'shocked':
+      faceContent = `
+        <circle cx="18" cy="23" r="3" fill="#0F172A" />
+        <circle cx="17.5" cy="22" r="1.1" fill="#FFFFFF" />
+        <circle cx="30" cy="23" r="3" fill="#0F172A" />
+        <circle cx="29.5" cy="22" r="1.1" fill="#FFFFFF" />
+        <ellipse cx="24" cy="27" rx="1.5" ry="2" fill="#E11D48" />
+        <path d="M13 18 Q12 21 13 22 Q14 21 13 18 Z" fill="#38BDF8" />
+      `;
+      break;
+    case 'focus':
+      faceContent = `
+        <line x1="15" y1="19" x2="20" y2="21" stroke="#CA8A04" stroke-width="2" stroke-linecap="round" />
+        <line x1="33" y1="19" x2="28" y2="21" stroke="#CA8A04" stroke-width="2" stroke-linecap="round" />
+        <rect x="16" y="21" width="4" height="4" fill="#0F172A" />
+        <rect x="18" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="28" y="21" width="4" height="4" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <line x1="22" y1="27" x2="26" y2="26" stroke="#E11D48" stroke-width="1.6" stroke-linecap="round" />
+      `;
+      break;
+    case 'sleepy':
+      faceContent = `
+        <path d="M16 23 Q18 25 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M28 23 Q30 25 32 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <line x1="23" y1="27" x2="25" y2="27" stroke="#E11D48" stroke-width="1.2" stroke-linecap="round" />
+      `;
+      break;
+    default:
+      faceContent = `
+        <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="18" y="24" width="2" height="2" fill="#38BDF8" />
+        <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
+        <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="22" y="27" width="4" height="1" fill="#E11D48" />
+        <rect x="21" y="28" width="2" height="1" fill="#E11D48" />
+        <rect x="25" y="28" width="2" height="1" fill="#E11D48" />
+      `;
+      break;
+  }
+
+  return `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-      <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
-
-      <!-- Banana Cap Stem -->
       <rect x="23" y="2" width="2" height="4" fill="#15803D" />
       <rect x="24" y="1" width="2" height="2" fill="#16A34A" />
-
-      <!-- Crisp Geometric Banana Cap matching Nurse Cap structure -->
       <path d="M15 6 h18 v8 h-18 z" fill="#FACC15" />
       <path d="M13 11 h22 v3 h-22 z" fill="#EAB308" />
-
-      <!-- Crisp Pixel Cat Ears on Cap -->
       <rect x="15" y="3" width="4" height="4" fill="#FACC15" />
       <rect x="16" y="4" width="2" height="2" fill="#FB7185" />
       <rect x="29" y="3" width="4" height="4" fill="#FACC15" />
       <rect x="30" y="4" width="2" height="2" fill="#FB7185" />
-
-      <!-- Blond/Cream Hair Bangs under Cap -->
       <path d="M12 12 h24 v14 h-24 z" fill="#CA8A04" />
       <path d="M10 16 h4 v10 h-4 z" fill="#CA8A04" />
       <path d="M34 16 h4 v10 h-4 z" fill="#CA8A04" />
@@ -169,61 +340,104 @@ export const PET_SVGS = {
       <rect x="14" y="16" width="4" height="3" fill="#FACC15" />
       <rect x="22" y="16" width="4" height="2" fill="#FACC15" />
       <rect x="30" y="16" width="4" height="3" fill="#FACC15" />
-
-      <!-- Cute Chibi Face (Identical size & skin to Nurse) -->
       <rect x="14" y="18" width="20" height="12" fill="#FED7AA" />
       <rect x="12" y="20" width="2" height="8" fill="#FED7AA" />
       <rect x="34" y="20" width="2" height="8" fill="#FED7AA" />
-
-      <!-- Big Sparkling Anime Eyes (Matching Nurse) -->
-      <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
-      <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
-      <rect x="18" y="24" width="2" height="2" fill="#38BDF8" />
-
-      <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
-      <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
-      <rect x="30" y="24" width="2" height="2" fill="#38BDF8" />
-
-      <!-- Rosy Blush Cheeks -->
-      <rect x="14" y="26" width="3" height="2" fill="#FB7185" />
-      <rect x="31" y="26" width="3" height="2" fill="#FB7185" />
-
-      <!-- Cute Cat Mouth :3 -->
-      <rect x="22" y="27" width="4" height="1" fill="#E11D48" />
-      <rect x="21" y="28" width="2" height="1" fill="#E11D48" />
-      <rect x="25" y="28" width="2" height="1" fill="#E11D48" />
-
-      <!-- Banana Peel Tunic Body -->
+      ${faceContent}
       <rect x="15" y="30" width="18" height="11" fill="#FACC15" />
       <rect x="18" y="30" width="12" height="11" fill="#FDE047" />
       <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
-
-      <!-- Tiny Kitten Paws over collar -->
       <circle cx="14" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
       <circle cx="34" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
-
-      <!-- Bottom Tip of Banana Costume & Shoes -->
       <rect x="22" y="41" width="4" height="3" fill="#CA8A04" />
       <rect x="17" y="43" width="5" height="2" fill="#0284C7" />
       <rect x="26" y="43" width="5" height="2" fill="#0284C7" />
     </svg>
-  `,
+  `;
+}
 
-  // 4. Muksi: Chibi anime scholar wearing a doctor / surgeon cap matching Nurse style
-  'moxie': `
+function getMoxieSvg(expr) {
+  let faceContent = '';
+  switch (expr) {
+    case 'happy':
+      faceContent = `
+        <path d="M16 23 Q18 20 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M28 23 Q30 20 32 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <rect x="13" y="25" width="4" height="2.5" fill="#F43F5E" />
+        <rect x="31" y="25" width="4" height="2.5" fill="#F43F5E" />
+        <path d="M22 26 Q24 29.5 26 26 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'wink':
+      faceContent = `
+        <path d="M16 23 Q18 20 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="30" y="24" width="2" height="2" fill="#A78BFA" />
+        <rect x="13" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="32" y="26" width="3" height="2" fill="#FB7185" />
+        <line x1="22" y1="27" x2="26" y2="26" stroke="#E11D48" stroke-width="1.8" stroke-linecap="round" />
+      `;
+      break;
+    case 'heart-eyes':
+      faceContent = `
+        <path d="M16 22 A 1.5 1.5 0 0 1 18 21 A 1.5 1.5 0 0 1 20 22 Q 18 25.5 18 25.5 Q 16 22 16 22 Z" fill="#EF4444" />
+        <path d="M28 22 A 1.5 1.5 0 0 1 30 21 A 1.5 1.5 0 0 1 32 22 Q 30 25.5 30 25.5 Q 28 22 28 22 Z" fill="#EF4444" />
+        <rect x="13" y="25" width="4" height="2.5" fill="#FB7185" />
+        <rect x="31" y="25" width="4" height="2.5" fill="#FB7185" />
+        <path d="M22 26 Q24 29.5 26 26 Z" fill="#E11D48" />
+      `;
+      break;
+    case 'shocked':
+      faceContent = `
+        <circle cx="18" cy="23" r="3" fill="#0F172A" />
+        <circle cx="17.5" cy="22" r="1.1" fill="#FFFFFF" />
+        <circle cx="30" cy="23" r="3" fill="#0F172A" />
+        <circle cx="29.5" cy="22" r="1.1" fill="#FFFFFF" />
+        <ellipse cx="24" cy="27" rx="1.5" ry="2" fill="#E11D48" />
+        <path d="M13 18 Q12 21 13 22 Q14 21 13 18 Z" fill="#38BDF8" />
+      `;
+      break;
+    case 'focus':
+      faceContent = `
+        <line x1="16" y1="20" x2="20" y2="24" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+        <line x1="28" y1="20" x2="32" y2="24" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+        <rect x="16" y="21" width="4" height="4" fill="#0F172A" />
+        <rect x="18" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="28" y="21" width="4" height="4" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <line x1="22" y1="27" x2="26" y2="26" stroke="#E11D48" stroke-width="1.8" stroke-linecap="round" />
+      `;
+      break;
+    case 'sleepy':
+      faceContent = `
+        <path d="M16 23 Q18 25 20 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <path d="M28 23 Q30 25 32 23" stroke="#0F172A" stroke-width="2" fill="none" stroke-linecap="round" />
+        <line x1="23" y1="27" x2="25" y2="27" stroke="#E11D48" stroke-width="1.2" stroke-linecap="round" />
+      `;
+      break;
+    default:
+      faceContent = `
+        <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="18" y="24" width="2" height="2" fill="#A78BFA" />
+        <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
+        <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
+        <rect x="30" y="24" width="2" height="2" fill="#A78BFA" />
+        <rect x="13" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="32" y="26" width="3" height="2" fill="#FB7185" />
+        <rect x="23" y="27" width="2" height="1" fill="#E11D48" />
+      `;
+      break;
+  }
+
+  return `
     <svg viewBox="0 0 48 48" width="100%" height="100%" shape-rendering="crispEdges" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-      <!-- Shadow -->
       <ellipse cx="24" cy="46" rx="14" ry="2.5" fill="rgba(0,0,0,0.22)" shape-rendering="auto" />
-
-      <!-- Medical Doctor Cap matching Nurse Cap structure -->
       <path d="M15 5 h18 v8 h-18 z" fill="#6D28D9" />
       <path d="M13 11 h22 v3 h-22 z" fill="#5B21B6" />
-
-      <!-- Golden Cross Badge on Cap -->
       <rect x="22" y="7" width="4" height="4" fill="#FBBF24" />
       <rect x="23" y="6" width="2" height="6" fill="#FBBF24" />
-
-      <!-- Dark Indigo Anime Hair Bangs -->
       <path d="M12 12 h24 v14 h-24 z" fill="#1E1B4B" />
       <path d="M10 16 h4 v10 h-4 z" fill="#1E1B4B" />
       <path d="M34 16 h4 v10 h-4 z" fill="#1E1B4B" />
@@ -231,79 +445,52 @@ export const PET_SVGS = {
       <rect x="14" y="16" width="4" height="3" fill="#4338CA" />
       <rect x="22" y="16" width="4" height="2" fill="#4338CA" />
       <rect x="30" y="16" width="4" height="3" fill="#4338CA" />
-
-      <!-- Cute Chibi Face (Identical size & skin to Nurse) -->
       <rect x="14" y="18" width="20" height="12" fill="#FED7AA" />
       <rect x="12" y="20" width="2" height="8" fill="#FED7AA" />
       <rect x="34" y="20" width="2" height="8" fill="#FED7AA" />
-
-      <!-- Round Golden Study Spectacles -->
       <circle cx="18" cy="23" r="3.5" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
       <circle cx="30" cy="23" r="3.5" fill="none" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
       <line x1="21.5" y1="23" x2="26.5" y2="23" stroke="#FBBF24" stroke-width="1.1" shape-rendering="auto" />
-
-      <!-- Big Sparkling Anime Eyes behind spectacles -->
-      <rect x="16" y="21" width="4" height="5" fill="#0F172A" />
-      <rect x="16" y="21" width="2" height="2" fill="#FFFFFF" />
-      <rect x="18" y="24" width="2" height="2" fill="#A78BFA" />
-
-      <rect x="28" y="21" width="4" height="5" fill="#0F172A" />
-      <rect x="28" y="21" width="2" height="2" fill="#FFFFFF" />
-      <rect x="30" y="24" width="2" height="2" fill="#A78BFA" />
-
-      <!-- Rosy Blush Cheeks -->
-      <rect x="13" y="26" width="3" height="2" fill="#FB7185" />
-      <rect x="32" y="26" width="3" height="2" fill="#FB7185" />
-
-      <!-- Cheerful Smile -->
-      <rect x="23" y="27" width="2" height="1" fill="#E11D48" />
-
-      <!-- Violet Study Robe / Cardigan -->
+      ${faceContent}
       <rect x="15" y="30" width="18" height="12" fill="#7C3AED" />
       <rect x="18" y="30" width="12" height="12" fill="#8E74E5" />
       <polygon points="21,30 27,30 24,34" fill="#FED7AA" shape-rendering="auto" />
-
-      <!-- Holding Medical Study Book -->
       <rect x="20" y="34" width="8" height="6" fill="#38BDF8" rx="1" shape-rendering="auto" />
       <line x1="24" y1="34" x2="24" y2="40" stroke="#0284C7" stroke-width="0.8" shape-rendering="auto" />
-
-      <!-- Cute Hands -->
       <circle cx="14" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
       <circle cx="34" cy="36" r="2.2" fill="#FED7AA" shape-rendering="auto" />
-
-      <!-- Pants & Shoes -->
       <rect x="18" y="42" width="5" height="3" fill="#4338CA" />
       <rect x="25" y="42" width="5" height="3" fill="#4338CA" />
       <rect x="17" y="44" width="6" height="2" fill="#1E1B4B" />
       <rect x="25" y="44" width="6" height="2" fill="#1E1B4B" />
     </svg>
-  `
-};
+  `;
+}
 
 export const PET_CATALOG = [
   {
     id: 'bandage-nurse-realistic',
     name: 'Nurse',
     emoji: '🩺',
-    svg: PET_SVGS['bandage-nurse-realistic']
+    svg: getNurseSvg('default')
   },
   {
     id: 'shinchan',
     name: 'Shinchan',
     emoji: '🎈',
-    svg: PET_SVGS['shinchan']
+    svg: getShinchanSvg('default')
   },
   {
     id: 'banana-cat',
     name: 'Banana Cat',
     emoji: '🍌',
-    svg: PET_SVGS['banana-cat']
+    svg: getBananaCatSvg('default')
   },
   {
     id: 'moxie',
     name: 'Muksi',
     emoji: '📚',
-    svg: PET_SVGS['moxie']
+    svg: getMoxieSvg('default')
   }
 ];
 
@@ -329,8 +516,8 @@ export function setActivePetId(petId) {
   const container = document.getElementById('apk-companion-pet');
   if (container) {
     const avatar = container.querySelector('.apk-pet-avatar');
-    if (avatar) avatar.innerHTML = pet.svg;
-    container.classList.remove('is-hop');
+    if (avatar) avatar.innerHTML = getPetSvg(petId, 'default');
+    container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod');
     void container.offsetWidth;
     container.classList.add('is-hop');
   }
@@ -344,18 +531,47 @@ export function isPetEnabled() {
   return false;
 }
 
-export function setPetEnabled(enabled) {
-  try {
-    localStorage.setItem(STORAGE_ENABLED_KEY, enabled ? 'true' : 'false');
-  } catch {}
-  document.body.classList.toggle('apk-pet-disabled', !enabled);
+// STRICT CHECK: Determine if the current screen is the Login / Authentication screen
+export function isLoginScreenActive() {
+  if (typeof document === 'undefined') return false;
+  if (document.body.classList.contains('on-login-screen')) return true;
+  const authScreen = document.getElementById('auth-screen');
+  if (authScreen && !authScreen.classList.contains('hide')) {
+    return true;
+  }
+  // Check if unauthenticated on root/index
+  const isIndex = window.location.pathname.endsWith('/index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+  if (isIndex) {
+    const token = localStorage.getItem('token') || localStorage.getItem('nnl_auth_token') || localStorage.getItem('nnl_auth_session');
+    if (!token) return true;
+  }
+  return false;
+}
+
+// Synchronize Pet Visibility: NEVER visible on login screen, and only if enabled by user
+export function syncPetVisibility() {
   const el = document.getElementById('apk-companion-pet');
+  const onLogin = isLoginScreenActive();
+  const enabled = isPetEnabled();
+
+  if (onLogin) {
+    if (el) {
+      el.style.display = 'none';
+      el.classList.add('hide', 'hide-on-auth');
+    }
+    document.body.classList.add('on-login-screen');
+    return;
+  }
+
+  document.body.classList.remove('on-login-screen');
+  document.body.classList.toggle('apk-pet-disabled', !enabled);
+
   if (enabled) {
     if (!el) {
       renderPetElement();
     } else {
       el.style.display = 'flex';
-      el.classList.remove('hide');
+      el.classList.remove('hide', 'hide-on-auth');
     }
   } else {
     if (el) {
@@ -364,24 +580,62 @@ export function setPetEnabled(enabled) {
     }
   }
 }
+window.__nnlSyncPetVisibility = syncPetVisibility;
+
+export function setPetEnabled(enabled) {
+  try {
+    localStorage.setItem(STORAGE_ENABLED_KEY, enabled ? 'true' : 'false');
+  } catch {}
+  syncPetVisibility();
+}
+
+let expressionResetTimeout = null;
+
+export function setPetExpression(expr, bodyAnim = null) {
+  const container = document.getElementById('apk-companion-pet');
+  if (!container) return;
+  const currentPetId = getActivePetId();
+  const avatar = container.querySelector('.apk-pet-avatar');
+  if (avatar) {
+    avatar.innerHTML = getPetSvg(currentPetId, expr);
+  }
+
+  if (bodyAnim) {
+    container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod');
+    void container.offsetWidth; // trigger reflow
+    container.classList.add(bodyAnim);
+  }
+
+  clearTimeout(expressionResetTimeout);
+  if (expr !== 'default') {
+    expressionResetTimeout = setTimeout(() => {
+      const curAvatar = container.querySelector('.apk-pet-avatar');
+      if (curAvatar) {
+        curAvatar.innerHTML = getPetSvg(currentPetId, 'default');
+      }
+      container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod');
+    }, 2600);
+  }
+}
 
 function renderPetElement() {
   if (document.getElementById('apk-companion-pet')) return;
+  if (isLoginScreenActive()) return; // NEVER render on login screen
+
   const currentPetId = getActivePetId();
-  const pet = PET_CATALOG.find(p => p.id === currentPetId) || PET_CATALOG[0];
 
   const root = document.createElement('div');
   root.id = 'apk-companion-pet';
   root.className = 'apk-companion-pet';
   root.setAttribute('role', 'button');
   root.setAttribute('tabindex', '0');
-  root.setAttribute('aria-label', `Companion Pet: ${pet.name}`);
-  root.style.display = isPetEnabled() ? 'flex' : 'none';
+  root.setAttribute('aria-label', `Companion Pet`);
+  root.style.display = (isPetEnabled() && !isLoginScreenActive()) ? 'flex' : 'none';
 
   root.innerHTML = `
     <div class="apk-pet-bursts" aria-hidden="true"></div>
     <div class="apk-pet-avatar">
-      ${pet.svg}
+      ${getPetSvg(currentPetId, 'default')}
     </div>
   `;
 
@@ -403,54 +657,32 @@ function renderPetElement() {
   let pos = getBottomRightDefault();
   setPosition(pos.x, pos.y);
 
-  // Tap reaction: Gentle squish + floating heart burst
   const burstsEl = root.querySelector('.apk-pet-bursts');
-  const EMOTIONS = [
-    { text: "NNL ke Papa is studying! Respect! 👑", mood: "funny", icon: "👑" },
-    { text: "Target NORCET 2026! Focus mode ON! 🎯", mood: "focused", icon: "🩺" },
-    { text: "You're doing great! Keep going! 💖", mood: "happy", icon: "💖" },
-    { text: "Drink some water & let's crack this! 💧", mood: "care", icon: "💧" },
-    { text: "One lecture closer to AIIMS! 🏥", mood: "cheer", icon: "✨" },
-    { text: "Late night grind! Full power! 🌙", mood: "night", icon: "⚡" }
-  ];
-  let emotionIdx = 0;
-  let bubbleTimeout = null;
 
-  const showSpeechBubble = (text, icon = '💬') => {
-    let bubble = root.querySelector('.apk-pet-speech-bubble');
-    if (!bubble) {
-      bubble = document.createElement('div');
-      bubble.className = 'apk-pet-speech-bubble';
-      root.appendChild(bubble);
-    }
-    bubble.innerHTML = `<span class="bubble-icon">${icon}</span> <span class="bubble-text">${text}</span>`;
-    bubble.classList.remove('hide', 'fade-out');
-    bubble.classList.add('pop-in');
-    clearTimeout(bubbleTimeout);
-    bubbleTimeout = setTimeout(() => {
-      bubble.classList.add('fade-out');
-      setTimeout(() => bubble.classList.add('hide'), 300);
-    }, 3800);
-  };
+  // Dynamic emotional expressions cycle: facial emotion + body reaction + micro sparkles
+  const EXPRESSIONS = [
+    { expr: 'happy', anim: 'is-hop', burst: ['✨', '★', '💛'] },
+    { expr: 'wink', anim: 'is-wiggle', burst: ['✧', '♪', '🌸'] },
+    { expr: 'heart-eyes', anim: 'is-cheer', burst: ['♥', '💖', '✨'] },
+    { expr: 'focus', anim: 'is-nod', burst: ['⚡', '✦', '🔥'] },
+    { expr: 'shocked', anim: 'is-squish', burst: ['💧', '!', '✦'] },
+    { expr: 'happy', anim: 'is-spin', burst: ['🌟', '♫', '✨'] }
+  ];
+  let exprIndex = 0;
 
   const handleTap = () => {
-    root.classList.remove('is-hop', 'is-wiggle', 'is-cheer');
-    void root.offsetWidth;
+    const item = EXPRESSIONS[exprIndex % EXPRESSIONS.length];
+    exprIndex++;
 
-    const current = EMOTIONS[emotionIdx % EMOTIONS.length];
-    emotionIdx++;
+    // Apply facial expression + body change animation
+    setPetExpression(item.expr, item.anim);
 
-    const anims = ['is-hop', 'is-wiggle', 'is-cheer'];
-    const chosenAnim = anims[Math.floor(Math.random() * anims.length)];
-    root.classList.add(chosenAnim);
-    showSpeechBubble(current.text, current.icon);
-
+    // Cute emotional micro-particle burst (Zero text bubbles!)
     if (burstsEl) {
       for (let i = 0; i < 4; i++) {
         const p = document.createElement('span');
         p.className = 'apk-pet-burst-item';
-        p.textContent = ['♥', '✧', '★', '🩺'][i % 4];
-        p.style.color = i % 2 === 0 ? '#EC4899' : '#A78BFA';
+        p.textContent = item.burst[i % item.burst.length];
         p.style.setProperty('--bx', `${(Math.random() - 0.5) * 60}px`);
         p.style.setProperty('--by', `${-25 - Math.random() * 40}px`);
         burstsEl.appendChild(p);
@@ -505,13 +737,22 @@ function renderPetElement() {
   root.addEventListener('pointerup', onPointerUp);
   root.addEventListener('pointercancel', onPointerUp);
 
-  // Periodically show occasional cute encouraging bubble
+  // Periodically perform subtle natural idle micro-expressions (blink, cute ear twitch) - NO text!
   setInterval(() => {
-    if (!isDragging && Math.random() < 0.35) {
-      const e = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)];
-      showSpeechBubble(e.text, e.icon);
+    if (isDragging || isLoginScreenActive() || !isPetEnabled()) return;
+    if (Math.random() < 0.4) {
+      // Natural quick blink or subtle wink
+      const randomExpr = Math.random() < 0.5 ? 'sleepy' : 'wink';
+      const curAvatar = root.querySelector('.apk-pet-avatar');
+      const curPetId = getActivePetId();
+      if (curAvatar) {
+        curAvatar.innerHTML = getPetSvg(curPetId, randomExpr);
+        setTimeout(() => {
+          if (curAvatar) curAvatar.innerHTML = getPetSvg(curPetId, 'default');
+        }, 220);
+      }
     }
-  }, 45000);
+  }, 24000);
 
   window.addEventListener('resize', () => {
     pos.x = Math.max(10, Math.min(window.innerWidth - 68, pos.x));
@@ -523,8 +764,18 @@ function renderPetElement() {
 export function initPetSystem() {
   if (typeof window === 'undefined' || window.__nnlPetMounted) return;
   window.__nnlPetMounted = true;
-  document.body.classList.toggle('apk-pet-disabled', !isPetEnabled());
-  if (isPetEnabled()) {
-    renderPetElement();
+
+  // Observe login state changes dynamically
+  const observer = new MutationObserver(() => {
+    syncPetVisibility();
+  });
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  const authScreen = document.getElementById('auth-screen');
+  if (authScreen) {
+    observer.observe(authScreen, { attributes: true, attributeFilter: ['class', 'style'] });
   }
+
+  // Initial check
+  syncPetVisibility();
 }

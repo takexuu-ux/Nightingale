@@ -413,11 +413,15 @@ function checkLoginState() {
 
   if (token) {
     // Transition UI to logged-in state
+    document.body.classList.remove('on-login-screen');
     authScreen.classList.add('hide');
     appHeader.classList.remove('hide');
     classroomDashboard.classList.remove('hide');
     if (cyberHero) cyberHero.classList.add('hide');
     if (toggleBtn) toggleBtn.classList.remove('hide');
+    if (typeof window.__nnlSyncPetVisibility === 'function') {
+      window.__nnlSyncPetVisibility();
+    }
 
     // Update profile info
     let displayName = savedPhone ? savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2') : 'Student';
@@ -434,7 +438,16 @@ function checkLoginState() {
     setActiveTabNav(activeTab);
     loadDashboard();
   } else {
-    // Show login screen
+    // Show login screen: Companion pet MUST NEVER be shown on login screen
+    document.body.classList.add('on-login-screen');
+    const petEl = document.getElementById('apk-companion-pet');
+    if (petEl) {
+      petEl.style.display = 'none';
+      petEl.classList.add('hide', 'hide-on-auth');
+    }
+    if (typeof window.__nnlSyncPetVisibility === 'function') {
+      window.__nnlSyncPetVisibility();
+    }
     authScreen.classList.remove('hide');
     appHeader.classList.add('hide');
     classroomDashboard.classList.add('hide');
@@ -3472,6 +3485,228 @@ async function resumeLecture(recId, btnEl) {
   window.location.href = `all-videos.html?autoPlay=${encodeURIComponent(recId)}&seek=${item?.currentTime || 0}`;
 }
 
+function generateSaarthiResponse(query) {
+  const q = (query || '').toLowerCase();
+  
+  if (q.includes('glasgow') || q.includes('gcs')) {
+    return `
+      <strong>Glasgow Coma Scale (GCS) High-Yield NORCET Guide:</strong><br/>
+      • <strong>Scores:</strong> Min = 3 (deep coma/death), Max = 15 (fully awake). Score ≤ 8 indicates severe brain injury ("GCS ≤ 8, Intubate!").<br/>
+      • <strong>Eye Opening (E - Max 4):</strong> 4 = Spontaneous, 3 = To speech, 2 = To pain, 1 = None.<br/>
+      • <strong>Verbal Response (V - Max 5):</strong> 5 = Oriented, 4 = Confused, 3 = Inappropriate words, 2 = Incomprehensible sounds, 1 = None.<br/>
+      • <strong>Motor Response (M - Max 6):</strong> 6 = Obeys commands, 5 = Localizes pain, 4 = Normal flexion (withdrawal), 3 = Abnormal flexion (Decorticate), 2 = Extension (Decerebrate), 1 = None.<br/>
+      <em>Priority Note:</em> Decerebrate posturing indicates midbrain/brainstem damage and is worse than decorticate!
+    `;
+  }
+  
+  if (q.includes('parkland') || q.includes('burn')) {
+    return `
+      <strong>Parkland Burn Fluid Resuscitation Formula:</strong><br/>
+      • <strong>Formula:</strong> <code>4 mL × Weight in kg × % TBSA burned</code> (using Ringer's Lactate / RL).<br/>
+      • <strong>Administration Schedule:</strong><br/>
+        - <strong>First 8 hours:</strong> Give 50% (half) of the total calculated volume (calculated from the exact time of burn injury, NOT hospital admission!).<br/>
+        - <strong>Next 16 hours:</strong> Give remaining 50% evenly.<br/>
+      • <strong>Adequacy of Resuscitation Indicator:</strong> Urine Output <strong>0.5 to 1.0 mL/kg/hour</strong> (or 30-50 mL/hr in adults).
+    `;
+  }
+
+  if (q.includes('digoxin') || q.includes('lanoxin')) {
+    return `
+      <strong>Digoxin (Lanoxin) Critical NORCET Nursing Points:</strong><br/>
+      • <strong>Therapeutic Range:</strong> 0.5 – 2.0 ng/mL.<br/>
+      • <strong>Assessment:</strong> Always assess <strong>Apical Pulse for 1 full minute</strong> before giving. Withhold and notify physician if HR &lt; 60 bpm in adults (&lt; 90-110 in infants).<br/>
+      • <strong>Early Toxicity Signs:</strong> GI symptoms — anorexia, nausea, vomiting, abdominal pain.<br/>
+      • <strong>Visual Disturbance:</strong> Yellow/green vision, halos around lights (xanthopsia), blurred vision.<br/>
+      • <strong>Risk Factors:</strong> <strong>Hypokalemia (&lt; 3.5 mEq/L)</strong> greatly increases toxicity risk!<br/>
+      • <strong>Antidote:</strong> Digoxin Immune Fab (DigiFab/Digibind).
+    `;
+  }
+
+  if (q.includes('fetal') || q.includes('fhr') || q.includes('deceleration')) {
+    return `
+      <strong>Fetal Heart Rate (FHR) Decelerations (VEAL CHOP Mnemonic):</strong><br/>
+      • <strong>V</strong>ariable = <strong>C</strong>ord Compression (Priority: Change maternal position to left side/knee-chest; stop oxytocin).<br/>
+      • <strong>E</strong>arly = <strong>H</strong>ead Compression (Normal/benign; no intervention needed, document).<br/>
+      • <strong>A</strong>cceleration = <strong>O</strong>xygenated / OK (Reassuring sign of fetal wellbeing).<br/>
+      • <strong>L</strong>ate = <strong>P</strong>lacental Insufficiency (Emergency! LION: Left lateral position, Increase IV fluids, Oxygen 8-10 L/min via non-rebreather, Notify physician/stop oxytocin).
+    `;
+  }
+
+  return `
+    <strong>Clinical Concept Breakdown for NORCET:</strong><br/>
+    • <strong>Overview:</strong> Regarding <em>${escapeHtml(query)}</em>, high-yield examination focus emphasizes early assessment, priority nursing interventions, and adverse effect prevention.<br/>
+    • <strong>Priority Nursing Action:</strong> Always verify airway, breathing, circulation (ABCs) first, assess vitals, and compare clinical findings with baseline parameters before intervention.<br/>
+    • <strong>Safety Alert:</strong> Document deviations immediately, ensure therapeutic drug levels, and verify informed consent and contraindications prior to procedural execution.
+  `;
+}
+
+function initClassHubButtons() {
+  const btnSaarthi = document.getElementById('hub-btn-saarthi');
+  const btnMySpace = document.getElementById('hub-btn-myspace');
+  const btnScheduled = document.getElementById('hub-btn-scheduled');
+  const btnResume = document.getElementById('hub-btn-resume');
+
+  const resumeDrawer = document.getElementById('apk-resume-drawer');
+  const resumeBackdrop = document.getElementById('resume-drawer-backdrop');
+  const closeResumeBtn = document.getElementById('close-resume-drawer-btn');
+  const resumeList = document.getElementById('resume-drawer-list');
+
+  const saarthiModal = document.getElementById('apk-saarthi-modal');
+  const saarthiBackdrop = document.getElementById('saarthi-modal-backdrop');
+  const closeSaarthiBtn = document.getElementById('close-saarthi-modal-btn');
+  const saarthiForm = document.getElementById('saarthi-ask-form');
+  const saarthiInput = document.getElementById('saarthi-ask-input');
+  const saarthiChatLog = document.getElementById('saarthi-chat-log');
+
+  if (btnResume) {
+    btnResume.addEventListener('click', () => {
+      if (!resumeDrawer || !resumeList) return;
+      const historyMap = getWatchHistory();
+      const items = Object.values(historyMap).sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
+
+      if (items.length === 0) {
+        resumeList.innerHTML = `
+          <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align:center;">
+            <h4 style="color:#ffffff;margin:0 0 6px 0;font-size:15px;">No In-Progress Lectures</h4>
+            <p style="color:#94a3b8;font-size:12px;margin:0;">Start watching any class from Videos or Home to resume anytime!</p>
+          </div>
+        `;
+      } else {
+        resumeList.innerHTML = items.map(item => {
+          const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+          const isCompleted = pct >= 90;
+          const curFormatted = formatWatchTime(item.currentTime || 0);
+          const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
+          return `
+            <div class="apk-resume-item" data-rec-id="${escapeHtml(item.recId || '')}">
+              <div style="flex:1;overflow:hidden;">
+                <h5 style="margin:0 0 4px 0;font-size:13px;font-weight:700;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  ${escapeHtml(item.title || 'Recorded Lecture')}
+                </h5>
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#94a3b8;">
+                  <span>${escapeHtml(item.instructor || 'NNL Faculty')}</span>
+                  <span>•</span>
+                  <span>${curFormatted}${durFormatted ? ` / ${durFormatted}` : ''} (${pct}%)</span>
+                </div>
+                <div style="width:100%;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:6px;overflow:hidden;">
+                  <div style="width:${pct}%;height:100%;background:${isCompleted ? '#10b981' : '#f97316'};border-radius:2px;"></div>
+                </div>
+              </div>
+              <button type="button" class="btn-resume-item-action" data-rec-id="${escapeHtml(item.recId || '')}" style="padding:6px 14px;background:#f97316;color:#ffffff;border:none;border-radius:10px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+                <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <span>${isCompleted ? 'Rewatch' : 'Resume'}</span>
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        resumeList.querySelectorAll('.btn-resume-item-action, .apk-resume-item').forEach(el => {
+          el.addEventListener('click', (e) => {
+            const recId = el.getAttribute('data-rec-id');
+            if (recId) {
+              closeResumeDrawer();
+              resumeLecture(recId);
+            }
+          });
+        });
+      }
+
+      resumeDrawer.classList.remove('hide');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+
+  function closeResumeDrawer() {
+    if (!resumeDrawer) return;
+    resumeDrawer.classList.add('hide');
+    document.body.style.overflow = '';
+  }
+  closeResumeBtn?.addEventListener('click', closeResumeDrawer);
+  resumeBackdrop?.addEventListener('click', closeResumeDrawer);
+
+  if (btnMySpace) {
+    btnMySpace.addEventListener('click', () => {
+      window.location.href = 'saved.html';
+    });
+  }
+
+  if (btnScheduled) {
+    btnScheduled.addEventListener('click', () => {
+      const picker = document.getElementById('apk-date-picker-wrap');
+      if (picker) {
+        picker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        setActiveTabNav('upcoming');
+      }
+    });
+  }
+
+  if (btnSaarthi) {
+    btnSaarthi.addEventListener('click', () => {
+      if (!saarthiModal) return;
+      saarthiModal.classList.remove('hide');
+      document.body.style.overflow = 'hidden';
+      saarthiInput?.focus();
+    });
+  }
+
+  function closeSaarthiModal() {
+    if (!saarthiModal) return;
+    saarthiModal.classList.add('hide');
+    document.body.style.overflow = '';
+  }
+  closeSaarthiBtn?.addEventListener('click', closeSaarthiModal);
+  saarthiBackdrop?.addEventListener('click', closeSaarthiModal);
+
+  document.querySelectorAll('.saarthi-topic-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const askText = pill.getAttribute('data-ask');
+      if (askText && saarthiInput) {
+        saarthiInput.value = askText;
+        saarthiForm?.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
+  });
+
+  saarthiForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = saarthiInput?.value?.trim();
+    if (!query || !saarthiChatLog) return;
+
+    const userMsgEl = document.createElement('div');
+    userMsgEl.className = 'saarthi-msg user-msg';
+    userMsgEl.innerHTML = `
+      <div class="saarthi-msg-avatar">👤</div>
+      <div class="saarthi-msg-text">${escapeHtml(query)}</div>
+    `;
+    saarthiChatLog.appendChild(userMsgEl);
+    saarthiInput.value = '';
+    saarthiChatLog.scrollTop = saarthiChatLog.scrollHeight;
+
+    const typingEl = document.createElement('div');
+    typingEl.className = 'saarthi-msg bot-msg';
+    typingEl.innerHTML = `
+      <div class="saarthi-msg-avatar">🩺</div>
+      <div class="saarthi-msg-text"><em>Analyzing question & preparing NORCET clinical explanation...</em></div>
+    `;
+    saarthiChatLog.appendChild(typingEl);
+    saarthiChatLog.scrollTop = saarthiChatLog.scrollHeight;
+
+    setTimeout(() => {
+      typingEl.remove();
+      const botResponse = generateSaarthiResponse(query);
+      const botMsgEl = document.createElement('div');
+      botMsgEl.className = 'saarthi-msg bot-msg';
+      botMsgEl.innerHTML = `
+        <div class="saarthi-msg-avatar">🩺</div>
+        <div class="saarthi-msg-text">${botResponse}</div>
+      `;
+      saarthiChatLog.appendChild(botMsgEl);
+      saarthiChatLog.scrollTop = saarthiChatLog.scrollHeight;
+    }, 500);
+  });
+}
+
 function renderContinueWatchingSection() {
   const section = document.getElementById('continue-watching-section');
   const grid = document.getElementById('continue-watching-grid');
@@ -3480,6 +3715,12 @@ function renderContinueWatchingSection() {
   if (heroSavedCount) {
     const saved = getSavedLecturesList();
     heroSavedCount.textContent = saved.length;
+  }
+
+  const hubResumeBadge = document.getElementById('hub-resume-badge-text');
+  const allHistory = Object.values(getWatchHistory());
+  if (hubResumeBadge) {
+    hubResumeBadge.textContent = allHistory.length > 0 ? `In-Progress (${allHistory.length})` : 'Continue Watching';
   }
 
   if (!section || !grid) return;
@@ -3561,12 +3802,15 @@ window.__nnlRefreshWatchProgress = () => {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(renderContinueWatchingSection, 150);
+    setTimeout(initClassHubButtons, 150);
   });
 } else {
   setTimeout(renderContinueWatchingSection, 150);
+  setTimeout(initClassHubButtons, 150);
 }
 window.addEventListener('load', () => {
   setTimeout(renderContinueWatchingSection, 300);
+  setTimeout(initClassHubButtons, 300);
 });
 
 function scheduleNotificationForClass(c) {

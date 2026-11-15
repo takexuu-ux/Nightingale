@@ -5801,70 +5801,73 @@ body:has(#auth-screen.hide) .dashboard-container {
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.25) !important;
 }
 
-/* FORCE LARGE OUTLINE DESIGN OVERRIDING ALL SPECIFICITY RULES */
-.auth-container .brand-subtitle {
-  display: block !important;
-  font-size: 0.75rem !important; /* Slightly smaller to fit clean on one line */
-  color: #fda4af !important; /* Soft rose tint to match red/pink theme */
-  font-style: italic !important;
-  margin-top: 0.8rem !important;
-  opacity: 0.9 !important;
-  line-height: 1.4 !important;
-  max-width: none !important; /* Remove max-width constraint */
-  white-space: nowrap !important; /* Force quote to stay on a single line */
-  font-weight: 500 !important;
+/* Clean, Polished Glassmorphic Auth Card (Unified Web & Mobile) */
+.auth-hero-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: calc(100vh - 120px) !important;
+  padding: 1.5rem 1rem !important;
+}
+
+.auth-container {
+  width: 100% !important;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+  background: rgba(18, 22, 36, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px !important;
+  padding: 2.25rem 2rem !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+[data-theme="light"] .auth-container {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(108, 79, 214, 0.18) !important;
+  box-shadow: 0 24px 60px rgba(108, 79, 214, 0.12) !important;
 }
 
 .auth-container .brand-header {
-  text-align: left !important;
-  margin-bottom: 10.5rem !important; /* Pushes number input block further down */
-  margin-left: -15px !important; /* Shifts the heading and sub-quote slightly to the left */
+  text-align: center !important;
+  margin-bottom: 2rem !important;
+  margin-left: 0 !important;
 }
 
-.auth-container .brand-title.interactive-outline {
-  position: relative !important;
+.auth-container .brand-title {
   font-family: var(--font-display) !important;
-  font-size: 7.2rem !important; /* Huge prominent brand heading */
-  font-weight: 950 !important;
-  letter-spacing: 5px !important;
-  line-height: 1.05 !important;
-  margin-bottom: 0.5rem !important;
-  margin-top: 0 !important;
-  color: #ff2a5f !important; /* Vibrant electric ruby-rose (rich, radiant red/pink) */
-  -webkit-text-fill-color: #ff2a5f !important;
-  background: none !important;
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65) !important; /* Clean cinematic separation shadow */
-  filter: none !important;
-  cursor: default !important;
-  width: max-content !important;
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  color: #ffffff !important;
+  margin: 0 0 0.5rem 0 !important;
+}
+
+[data-theme="light"] .auth-container .brand-title {
+  color: #1e1b4b !important;
+}
+
+.auth-container .brand-subtitle {
   display: block !important;
-  overflow: visible !important;
+  font-size: 0.82rem !important;
+  color: #a5b4fc !important;
+  font-style: italic !important;
+  margin-top: 0.4rem !important;
+  opacity: 0.85 !important;
+  line-height: 1.45 !important;
+  max-width: 380px !important;
+  white-space: normal !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
-/* Crisp blue outline style font tracking cursor spotlight directly over the solid red text (strictly no glow) */
-.auth-container .brand-title.interactive-outline::after {
-  content: attr(data-text);
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  font-family: var(--font-display) !important;
-  font-size: 7.2rem !important;
-  font-weight: 950 !important;
-  letter-spacing: 5px !important;
-  line-height: 1.05 !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  -webkit-text-stroke: 2.2px #c084fc !important; /* Elegant ethereal purple outline font */
-  -webkit-mask-image: radial-gradient(circle 180px at var(--mouse-x, -500px) var(--mouse-y, -500px), black 0%, rgba(0, 0, 0, 0.7) 35%, rgba(0, 0, 0, 0.2) 65%, transparent 100%) !important;
-  mask-image: radial-gradient(circle 180px at var(--mouse-x, -500px) var(--mouse-y, -500px), black 0%, rgba(0, 0, 0, 0.7) 35%, rgba(0, 0, 0, 0.2) 65%, transparent 100%) !important;
-  filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.45)) drop-shadow(0 0 10px rgba(168, 85, 247, 0.2)) !important; /* Gentle fading purple glow */
-  text-shadow: none !important;
-  pointer-events: none !important;
-  box-sizing: border-box !important;
+[data-theme="light"] .auth-container .brand-subtitle {
+  color: #6366f1 !important;
 }
 
 /* THEMED PREVIEWS FOR ZOOM CARD IN PRODUCTION */

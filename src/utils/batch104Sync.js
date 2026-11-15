@@ -3,6 +3,8 @@
 // Merges verified static baseline with live updates from /cms/batches/{id}/ & /batch_cms/topic/
 // so new classes, notes PDFs, and next-day tests populate automatically for Notes & Tests.
 
+import { BATCH_8_ID, BATCH_8_SUBJECTS, BATCH_8_BASELINE_SYNC } from '../data/batch8BlueSapphireData.js';
+import { BATCH_69_ID, BATCH_69_SUBJECTS, BATCH_69_BASELINE_SYNC } from '../data/batch69FastTrackData.js';
 import { BATCH_103_ID, BATCH_103_SUBJECTS, BATCH_103_BASELINE_SYNC } from '../data/batch103HinglishData.js';
 import { BATCH_104_ID, BATCH_104_SUBJECTS, BATCH_104_BASELINE_SYNC } from '../data/batch104EnglishData.js';
 
@@ -35,6 +37,20 @@ export function hydrateAndroidAuthSession() {
 hydrateAndroidAuthSession();
 
 const BATCH_CONFIGS = {
+  8: {
+    id: BATCH_8_ID,
+    title: 'Blue Sapphire (Hinglish)',
+    subjects: BATCH_8_SUBJECTS,
+    baselineSync: BATCH_8_BASELINE_SYNC,
+    cacheKey: 'nnl_batch_8_live_cache_v1'
+  },
+  69: {
+    id: BATCH_69_ID,
+    title: 'Fast Track',
+    subjects: BATCH_69_SUBJECTS,
+    baselineSync: BATCH_69_BASELINE_SYNC,
+    cacheKey: 'nnl_batch_69_live_cache_v1'
+  },
   103: {
     id: BATCH_103_ID,
     title: 'Red Sapphire (Hinglish)',
@@ -52,7 +68,13 @@ const BATCH_CONFIGS = {
 };
 
 export function getBatchIdFromName(batchName) {
-  return String(batchName || '').toUpperCase().includes('ENGLISH') ? 104 : 103;
+  const upper = String(batchName || '').toUpperCase();
+  if (upper.includes('BLUE')) return 8;
+  if (upper.includes('FAST') && upper.includes('ENG')) return 36;
+  if (upper.includes('FAST')) return 69;
+  if (upper.includes('BRAHMASTRA')) return 102;
+  if (upper.includes('ENGLISH')) return 104;
+  return 103;
 }
 
 function fetchWithTimeout(url, options = {}, ms = 20000) {
@@ -441,8 +463,9 @@ export function computeBatchTotals(subjects) {
 }
 
 export function getBatchBaselineState(batchId = 104) {
-  const id = Number(batchId) === 103 ? 103 : 104;
-  const cfg = BATCH_CONFIGS[id];
+  const num = Number(batchId);
+  const id = BATCH_CONFIGS[num] ? num : (num === 104 ? 104 : 103);
+  const cfg = BATCH_CONFIGS[id] || BATCH_CONFIGS[103];
 
   try {
     const cachedRaw = localStorage.getItem(cfg.cacheKey);
@@ -478,8 +501,9 @@ export function getBatchBaselineState(batchId = 104) {
 const inFlightByBatch = new Map();
 
 export async function syncBatchLive(batchId = 104, { force = false, onUpdate } = {}) {
-  const id = Number(batchId) === 103 ? 103 : 104;
-  const cfg = BATCH_CONFIGS[id];
+  const num = Number(batchId);
+  const id = BATCH_CONFIGS[num] ? num : (num === 104 ? 104 : 103);
+  const cfg = BATCH_CONFIGS[id] || BATCH_CONFIGS[103];
   const baselineState = getBatchBaselineState(id);
   const token = localStorage.getItem('nnl_access_token');
   if (!token) {

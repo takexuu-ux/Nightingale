@@ -1389,6 +1389,54 @@ function bindTopicPills() {
   });
 }
 
+// Direct Native & Browser PDF Download Trigger
+export function triggerFileDownload(url, title, filename) {
+  if (!url) return;
+  const cleanTitle = (title || 'Study Notes').trim();
+  const cleanName = (filename || 'study_notes.pdf').trim();
+
+  // 1. Native Android DownloadManager Bridge (Saves directly to /Download)
+  if (window.AndroidBridge && typeof window.AndroidBridge.downloadPdf === 'function') {
+    try {
+      window.AndroidBridge.downloadPdf(url, cleanTitle, cleanName);
+      return;
+    } catch (e) {
+      console.warn('AndroidBridge download error:', e);
+    }
+  }
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.downloadPdf === 'function') {
+    try {
+      window.AndroidVideoBridge.downloadPdf(url, cleanTitle, cleanName);
+      return;
+    } catch (e) {
+      console.warn('AndroidVideoBridge download error:', e);
+    }
+  }
+
+  // 2. Web browser fallback: Fetch blob to download directly to local storage
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('Fetch failed');
+      return res.blob();
+    })
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = cleanName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+      }, 1500);
+    })
+    .catch(() => {
+      window.open(url, '_blank');
+    });
+}
+window.triggerFileDownload = triggerFileDownload;
+
 // In-App Minimal PDF Reader Modal
 function openPdfModal(title, url, downloadName = '') {
   if (!url) return;
@@ -1427,6 +1475,27 @@ function closePdfModal() {
 
 // Event Listeners Initialization
 function initEventListeners() {
+  document.addEventListener('click', (e) => {
+    const dlBtn = e.target.closest('.btn-note-download');
+    if (dlBtn) {
+      e.preventDefault();
+      const url = dlBtn.getAttribute('href') || dlBtn.getAttribute('data-url');
+      const filename = dlBtn.getAttribute('download') || dlBtn.getAttribute('data-filename') || 'notes.pdf';
+      const title = dlBtn.closest('.note-doc-card')?.querySelector('.note-doc-title')?.textContent?.trim() || filename;
+      triggerFileDownload(url, title, filename);
+    }
+  });
+
+  if (pdfModalDownloadBtn) {
+    pdfModalDownloadBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const url = pdfModalDownloadBtn.href;
+      const filename = pdfModalDownloadBtn.getAttribute('download') || 'notes.pdf';
+      const title = pdfModalTitle ? pdfModalTitle.textContent : filename;
+      triggerFileDownload(url, title, filename);
+    });
+  }
+
   if (btnBackSubjects) {
     btnBackSubjects.addEventListener('click', closeSubjectView);
   }

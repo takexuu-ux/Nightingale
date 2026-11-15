@@ -251,6 +251,63 @@
             <h2 id="apk-hero-greeting" class="apk-home-title">Welcome, NNL ke Papa 👑</h2>
           </div>
 
+          <!-- Class Hub 4 Action Cards (NNL Saarthi, MySpace, Scheduled, Resume) -->
+          <div id="apk-home-hub-strip" class="apk-home-hub-strip">
+            <button type="button" id="hub-btn-saarthi" class="apk-hub-card" aria-label="NNL Saarthi AI Tutor">
+              <div class="apk-hub-icon-wrap saarthi-glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a8 8 0 0 0-8 8c0 3.37 2.1 6.25 5.08 7.37L9 22l4-2 4 2-.08-4.63A8 8 0 0 0 12 2z"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <div class="apk-hub-text-wrap">
+                <span class="apk-hub-title">NNL Saarthi</span>
+                <span class="apk-hub-sub">AI Study Tutor</span>
+              </div>
+            </button>
+
+            <button type="button" id="hub-btn-myspace" class="apk-hub-card" aria-label="MySpace Bookmarks and Downloads">
+              <div class="apk-hub-icon-wrap myspace-glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                </svg>
+              </div>
+              <div class="apk-hub-text-wrap">
+                <span class="apk-hub-title">MySpace</span>
+                <span class="apk-hub-sub">Saved & Offline</span>
+              </div>
+            </button>
+
+            <button type="button" id="hub-btn-scheduled" class="apk-hub-card" aria-label="Scheduled Timetable">
+              <div class="apk-hub-icon-wrap scheduled-glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <div class="apk-hub-text-wrap">
+                <span class="apk-hub-title">Scheduled</span>
+                <span class="apk-hub-sub">Batch Timetable</span>
+              </div>
+            </button>
+
+            <button type="button" id="hub-btn-resume" class="apk-hub-card" aria-label="Resume In-Progress Lectures">
+              <div class="apk-hub-icon-wrap resume-glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polygon points="10 8 16 12 10 16 10 8"/>
+                </svg>
+              </div>
+              <div class="apk-hub-text-wrap">
+                <span class="apk-hub-title">Resume</span>
+                <span class="apk-hub-sub" id="hub-resume-badge-text">Continue Watching</span>
+              </div>
+            </button>
+          </div>
+
           <!-- Minimal Resume Last Watched Lecture Card -->
           <div id="continue-watching-section" class="hide" style="width:100%;margin-top:10px;margin-bottom:28px;">
             <div id="continue-watching-grid" class="continue-watching-grid" style="margin-top:0;"></div>
@@ -605,6 +662,69 @@
         </div>
         <div class="cyber-dialog-footer" id="cyber-dialog-footer">
           <!-- Dynamically populated buttons -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Dedicated Resume In-Progress Lectures Drawer -->
+    <div id="apk-resume-drawer" class="apk-drawer-modal hide" role="dialog" aria-label="Resume In-Progress Lectures">
+      <div class="apk-drawer-backdrop" id="resume-drawer-backdrop"></div>
+      <div class="apk-drawer-panel">
+        <div class="apk-drawer-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="apk-hub-icon-wrap resume-glow" style="width:34px;height:34px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </div>
+            <div>
+              <h3 class="apk-drawer-title">Resume Watching</h3>
+              <p class="apk-drawer-sub">Pick up exactly where you left off</p>
+            </div>
+          </div>
+          <button type="button" id="close-resume-drawer-btn" class="apk-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div id="resume-drawer-list" class="apk-drawer-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- NNL Saarthi AI Tutor & Doubt Solver Modal -->
+    <div id="apk-saarthi-modal" class="apk-drawer-modal hide" role="dialog" aria-label="NNL Saarthi AI Tutor">
+      <div class="apk-drawer-backdrop" id="saarthi-modal-backdrop"></div>
+      <div class="apk-drawer-panel apk-saarthi-panel">
+        <div class="apk-drawer-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="apk-hub-icon-wrap saarthi-glow" style="width:34px;height:34px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a8 8 0 0 0-8 8c0 3.37 2.1 6.25 5.08 7.37L9 22l4-2 4 2-.08-4.63A8 8 0 0 0 12 2z"/></svg>
+            </div>
+            <div>
+              <h3 class="apk-drawer-title">NNL Saarthi AI Tutor</h3>
+              <p class="apk-drawer-sub">Instant Clinical Doubts & NORCET Mentor</p>
+            </div>
+          </div>
+          <button type="button" id="close-saarthi-modal-btn" class="apk-drawer-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="apk-saarthi-body">
+          <div class="saarthi-quick-topics">
+            <span class="saarthi-topic-pill" data-ask="Explain Glasgow Coma Scale with scoring and clinical interpretation">🧠 GCS Scale</span>
+            <span class="saarthi-topic-pill" data-ask="Give a high-yield summary of Burn Parkland formula with an example">🔥 Parkland Formula</span>
+            <span class="saarthi-topic-pill" data-ask="What are the key NORCET priority signs for Digoxin Toxicity?">💊 Digoxin Toxicity</span>
+            <span class="saarthi-topic-pill" data-ask="Explain Fetal Heart Rate decelerations (Early, Late, Variable)">👶 FHR Decelerations</span>
+          </div>
+          <div id="saarthi-chat-log" class="saarthi-chat-log">
+            <div class="saarthi-msg bot-msg">
+              <div class="saarthi-msg-avatar">🩺</div>
+              <div class="saarthi-msg-text">
+                <strong>Namaste Rajit!</strong> I am your NNL Saarthi AI Tutor. Ask me any nursing concept, NCLEX-style priority question, drug calculation, or NORCET clinical doubt!
+              </div>
+            </div>
+          </div>
+          <form id="saarthi-ask-form" class="saarthi-ask-form">
+            <input type="text" id="saarthi-ask-input" class="saarthi-ask-input" placeholder="Ask a doubt or clinical concept..." required autocomplete="off" />
+            <button type="submit" id="saarthi-ask-btn" class="saarthi-ask-btn" aria-label="Send Doubt">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </form>
         </div>
       </div>
     </div>

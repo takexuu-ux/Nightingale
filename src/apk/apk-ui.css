@@ -3320,6 +3320,10 @@ body:not(.apk-is-auth) {
 
 /* ── Codex Companion Pet System (Guaranteed OFF & Zero Flicker) ── */
 body.apk-pet-disabled #apk-companion-pet,
+body.on-login-screen #apk-companion-pet,
+body:has(#auth-screen:not(.hide)) #apk-companion-pet,
+.auth-hero-wrapper ~ #apk-companion-pet,
+#apk-companion-pet.hide-on-auth,
 #apk-companion-pet.hide {
   display: none !important;
   visibility: hidden !important;
@@ -6767,74 +6771,57 @@ main#app,
   transition: none !important;
 }
 .apk-pet-speech-bubble {
-  position: absolute !important;
-  bottom: calc(100% + 8px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  background: rgba(18, 22, 36, 0.94) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(167, 139, 250, 0.35) !important;
-  border-radius: 14px !important;
-  padding: 6px 12px !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  white-space: nowrap !important;
+  display: none !important;
+  visibility: hidden !important;
   pointer-events: none !important;
-  z-index: 10000 !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+  opacity: 0 !important;
 }
-[data-theme="light"] .apk-pet-speech-bubble {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border: 1px solid rgba(108, 79, 214, 0.25) !important;
-  color: #0f172a !important;
-  box-shadow: 0 8px 20px rgba(108, 79, 214, 0.15) !important;
+
+/* ── Dynamic Pet Body Expression Animations ── */
+#apk-companion-pet.is-wiggle .apk-pet-avatar {
+  animation: apkPetWiggle 0.5s ease-in-out !important;
 }
-.apk-pet-speech-bubble.pop-in {
-  animation: apkBubblePop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+#apk-companion-pet.is-cheer .apk-pet-avatar {
+  animation: apkPetCheer 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
-.apk-pet-speech-bubble.fade-out {
-  animation: apkBubbleFade 0.25s ease forwards !important;
+#apk-companion-pet.is-spin .apk-pet-avatar {
+  animation: apkPetSpin 0.55s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
-.apk-pet-speech-bubble::after {
-  content: '' !important;
-  position: absolute !important;
-  top: 100% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  border: 5px solid transparent !important;
-  border-top-color: rgba(18, 22, 36, 0.94) !important;
+#apk-companion-pet.is-squish .apk-pet-avatar {
+  animation: apkPetSquish 0.45s ease !important;
 }
-[data-theme="light"] .apk-pet-speech-bubble::after {
-  border-top-color: rgba(255, 255, 255, 0.96) !important;
+#apk-companion-pet.is-nod .apk-pet-avatar {
+  animation: apkPetNod 0.44s ease !important;
 }
-@keyframes apkBubblePop {
-  0% { opacity: 0; transform: translateX(-50%) scale(0.6) translateY(8px); }
-  100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
-}
-@keyframes apkBubbleFade {
-  0% { opacity: 1; transform: translateX(-50%) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(-6px); }
-}
-#apk-companion-pet.is-wiggle {
-  animation: apkPetWiggle 0.45s ease-in-out !important;
-}
-#apk-companion-pet.is-cheer {
-  animation: apkPetCheer 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
+
 @keyframes apkPetWiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-14deg) scale(1.06); }
-  75% { transform: rotate(14deg) scale(1.06); }
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-14deg) scale(1.08); }
+  75% { transform: rotate(14deg) scale(1.08); }
 }
 @keyframes apkPetCheer {
   0%, 100% { transform: translateY(0) scale(1); }
-  40% { transform: translateY(-16px) scale(1.12); }
-  70% { transform: translateY(-4px) scale(1.04); }
+  35% { transform: translateY(-18px) scale(1.15, 0.95); }
+  65% { transform: translateY(-4px) scale(0.95, 1.08); }
+  85% { transform: translateY(-10px) scale(1.05); }
+}
+@keyframes apkPetSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.18); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes apkPetSquish {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.24, 0.76); }
+  60% { transform: scale(0.88, 1.16); }
+  85% { transform: scale(1.06, 0.95); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes apkPetNod {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(7px) rotate(-6deg); }
+  60% { transform: translateY(0) rotate(0deg); }
+  80% { transform: translateY(4px) rotate(-3deg); }
 }
 
 /* ── CBT Test Overview / Pre-Test Instructions Modal ── */
@@ -7689,4 +7676,311 @@ main#app,
     height: 24px !important;
     min-height: 24px !important;
   }
+}
+
+/* ── Class Hub 4 Action Cards Strip (NNL Saarthi, MySpace, Scheduled, Resume) ── */
+.apk-home-hub-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-top: 14px;
+  margin-bottom: 22px;
+}
+
+.apk-hub-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(18, 22, 36, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  color: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.apk-hub-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.apk-hub-card:active {
+  transform: scale(0.97);
+}
+
+[data-theme="light"] .apk-hub-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(108, 79, 214, 0.15);
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(108, 79, 214, 0.08);
+}
+
+.apk-hub-icon-wrap {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apk-hub-text-wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.apk-hub-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apk-hub-sub {
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saarthi-glow {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(126, 34, 206, 0.35));
+  color: #c084fc;
+}
+.myspace-glow {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(2, 132, 199, 0.35));
+  color: #38bdf8;
+}
+.scheduled-glow {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(21, 128, 61, 0.35));
+  color: #4ade80;
+}
+.resume-glow {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(194, 65, 12, 0.35));
+  color: #fb923c;
+}
+
+@media (max-width: 768px) {
+  .apk-home-hub-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .apk-hub-card {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+}
+
+/* ── Drawers & Modal Panels (Resume & Saarthi) ── */
+.apk-drawer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.apk-drawer-modal.hide {
+  display: none !important;
+}
+.apk-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.apk-drawer-panel {
+  position: relative;
+  z-index: 10;
+  width: 90%;
+  max-width: 580px;
+  max-height: 85vh;
+  background: rgba(18, 22, 36, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+[data-theme="light"] .apk-drawer-panel {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(108, 79, 214, 0.18);
+  box-shadow: 0 24px 60px rgba(108, 79, 214, 0.14);
+}
+.apk-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+[data-theme="light"] .apk-drawer-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.apk-drawer-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+[data-theme="light"] .apk-drawer-title {
+  color: #0f172a;
+}
+.apk-drawer-sub {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.apk-drawer-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+.apk-drawer-list {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+}
+.apk-resume-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  gap: 12px;
+}
+[data-theme="light"] .apk-resume-item {
+  background: rgba(108, 79, 214, 0.04);
+  border: 1px solid rgba(108, 79, 214, 0.1);
+}
+
+/* Saarthi Chat Modal Body */
+.apk-saarthi-body {
+  display: flex;
+  flex-direction: column;
+  height: 62vh;
+  padding: 16px;
+  gap: 12px;
+}
+.saarthi-quick-topics {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.saarthi-quick-topics::-webkit-scrollbar {
+  display: none;
+}
+.saarthi-topic-pill {
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.saarthi-chat-log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+}
+.saarthi-msg {
+  display: flex;
+  gap: 10px;
+  max-width: 85%;
+}
+.saarthi-msg.bot-msg {
+  align-self: flex-start;
+}
+.saarthi-msg.user-msg {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.saarthi-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background: rgba(168, 85, 247, 0.2);
+}
+.saarthi-msg-text {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.45;
+  background: rgba(255, 255, 255, 0.07);
+  color: #f1f5f9;
+}
+[data-theme="light"] .saarthi-msg-text {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.saarthi-msg.user-msg .saarthi-msg-text {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #ffffff;
+}
+.saarthi-ask-form {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+.saarthi-ask-input {
+  flex: 1;
+  height: 42px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 13px;
+}
+[data-theme="light"] .saarthi-ask-input {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+.saarthi-ask-btn {
+  width: 44px;
+  height: 42px;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

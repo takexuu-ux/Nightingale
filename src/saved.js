@@ -165,12 +165,48 @@ const pdfModalIframe = document.getElementById('pdf-modal-iframe');
 const pdfModalCloseBtn = document.getElementById('pdf-modal-close-btn');
 const pdfModalDownloadBtn = document.getElementById('pdf-modal-download-btn');
 
+function triggerFileDownload(url, title, filename) {
+  if (!url) return;
+  const cleanTitle = (title || 'Study Notes').trim();
+  const cleanName = (filename || 'study_notes.pdf').trim();
+
+  if (window.AndroidBridge && typeof window.AndroidBridge.downloadPdf === 'function') {
+    try {
+      window.AndroidBridge.downloadPdf(url, cleanTitle, cleanName);
+      return;
+    } catch (_) {}
+  }
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.downloadPdf === 'function') {
+    try {
+      window.AndroidVideoBridge.downloadPdf(url, cleanTitle, cleanName);
+      return;
+    } catch (_) {}
+  }
+
+  fetch(url)
+    .then(r => r.blob())
+    .then(blob => {
+      const bUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = bUrl;
+      a.download = cleanName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(bUrl); }, 1500);
+    })
+    .catch(() => window.open(url, '_blank'));
+}
+
 function openPdfPreview(title, url, downloadName = '') {
   if (!pdfModal) return;
   if (pdfModalTitle) pdfModalTitle.textContent = title;
   if (pdfModalDownloadBtn) {
     pdfModalDownloadBtn.href = url;
     if (downloadName) pdfModalDownloadBtn.setAttribute('download', downloadName);
+    pdfModalDownloadBtn.onclick = (e) => {
+      e.preventDefault();
+      triggerFileDownload(url, title, downloadName);
+    };
   }
   if (pdfModalIframe) {
     pdfModalIframe.src = getPdfPreviewSrc(url);
