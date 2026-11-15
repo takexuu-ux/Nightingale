@@ -175,6 +175,7 @@ function syncPetSelectionUI() {
 
   const toggleBtn = panel.querySelector('#apk-pet-toggle-btn');
   if (toggleBtn) {
+    toggleBtn.classList.toggle('active', petEnabled);
     toggleBtn.classList.toggle('is-on', petEnabled);
   }
 
@@ -245,8 +246,8 @@ function buildSidePanel() {
           ${availablePets.map(p => `
             <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
               <span class="apk-pet-card-check">✓</span>
-              <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;">
-                ${p.webp ? `<img src="${p.webp}" alt="${p.name}" style="width:28px;height:36px;object-fit:contain;background:transparent;" draggable="false" />` : (p.svg || p.emoji)}
+              <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;">
+                ${p.svg || p.emoji}
               </div>
               <span class="apk-pet-card-name">${p.name}</span>
             </div>
@@ -258,15 +259,15 @@ function buildSidePanel() {
       <div>
         <div class="apk-side-section-title">Saved Content &amp; Resources</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <!-- Single Unified Saved Button (Opens Lectures / Notes / Tests options) -->
+          <!-- Single Unified Saved Button (Opens dedicated Saved Hub page directly) -->
           <button type="button" id="apk-side-saved-hub-btn" class="apk-batch-option" style="width:100%;">
             <div style="display:flex;align-items:center;gap:10px;">
               <div style="width:32px;height:32px;border-radius:10px;background:rgba(142,116,229,0.18);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                <span style="font-weight:800;font-size:13.5px;">Saved &amp; Offline</span>
-                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Lectures, Notes, PDFs &amp; Tests</span>
+                <span style="font-weight:800;font-size:13.5px;">Saved Content</span>
+                <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">Lectures, Notes, PDFs &amp; Question Banks</span>
               </div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -329,7 +330,7 @@ function buildSidePanel() {
   // Single Unified Saved & Offline Hub inside Side Panel
   panel.querySelector('#apk-side-saved-hub-btn')?.addEventListener('click', () => {
     closeSidePanel();
-    openSavedHubModal();
+    window.location.href = '/saved.html';
   });
 
   // Switch Batch inside Side Panel
@@ -382,12 +383,8 @@ function buildSidePanel() {
     const dy = e.changedTouches[0].clientY - touchStartY;
     if (Math.abs(dy) > 70) return;
 
-    // Swipe right from left edge (startX < 50) opens side panel
-    if (dx > 55 && touchStartX < 50) {
-      openSidePanel();
-    }
     // Swipe left inside open side panel closes it
-    else if (dx < -60 && !panel.classList.contains('hide')) {
+    if (dx < -60 && !panel.classList.contains('hide')) {
       closeSidePanel();
     }
   }, { passive: true });
@@ -633,14 +630,14 @@ function normalizeHeaderAndChrome() {
     el.innerHTML = `${icon}<span>${label}</span>`;
   });
 
-  // Attach saved tab click listener
+  // Attach saved tab click listener -> Navigates directly to dedicated Saved page
   const savedTab = document.getElementById('tab-saved');
   if (savedTab && !savedTab.__nnlBound) {
     savedTab.__nnlBound = true;
     savedTab.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      openSavedHubModal();
+      window.location.href = '/saved.html';
     });
   }
 
@@ -842,7 +839,7 @@ function enforceAuthGuard() {
     token = null;
   }
   const path = window.location.pathname || '/';
-  const isSubpage = /\/(all-videos|notes|tests)\.html$/i.test(path);
+  const isSubpage = /\/(all-videos|notes|tests|saved)\.html$/i.test(path);
   const explicitOut = sessionStorage.getItem('nnl_explicit_logout') === 'true';
 
   if (isSubpage && (!token || explicitOut)) {
@@ -906,14 +903,20 @@ function attachNavLiquidDropAndCards() {
   navTabs.querySelectorAll('.nav-tab').forEach((btn) => {
     // Water droplet float on hover/pointer enter before click
     btn.addEventListener('pointerenter', () => {
+      navTabs.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('floating-active'));
+      btn.classList.add('floating-active');
       placePillOnTab(btn, false);
     });
     btn.addEventListener('pointerdown', () => {
+      navTabs.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('floating-active'));
+      btn.classList.add('floating-active');
       placePillOnTab(btn, false);
     });
     btn.addEventListener('click', () => {
       const prev = navTabs.querySelector('.nav-tab.active');
       if (prev && prev.id) sessionStorage.setItem('nnl_prev_nav_id', prev.id);
+      navTabs.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('floating-active'));
+      btn.classList.add('floating-active');
       requestAnimationFrame(() => {
         const nextActive = navTabs.querySelector('.nav-tab.active') || btn;
         placePillOnTab(nextActive, false);
@@ -922,8 +925,12 @@ function attachNavLiquidDropAndCards() {
   });
 
   navTabs.addEventListener('pointerleave', () => {
+    navTabs.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('floating-active'));
     const cur = navTabs.querySelector('.nav-tab.active');
-    if (cur) placePillOnTab(cur, false);
+    if (cur) {
+      cur.classList.add('floating-active');
+      placePillOnTab(cur, false);
+    }
   });
 
   window.addEventListener('resize', () => {

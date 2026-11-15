@@ -354,26 +354,8 @@ function updateTopStats() {
 
 function renderCategoryChips() {
   if (!catFiltersBar) return;
-  if (videoSectionMode !== 'all') {
-    catFiltersBar.style.display = 'none';
-    return;
-  }
-  catFiltersBar.style.display = 'flex';
-  const cats = ['ALL', 'Core Subjects', 'Fastrack', 'T&D Series', 'Procedures & Non-Nursing', 'OTR Revision'];
-  catFiltersBar.innerHTML = cats.map(c => {
-    const cnt = c === 'ALL'
-      ? ALL_VIDEO_SUBJECTS.length
-      : ALL_VIDEO_SUBJECTS.filter(s => s.category === c).length;
-    return `<button class="filter-chip vid-cat-chip ${activeCategoryFilter === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">${c === 'ALL' ? 'All Subjects' : escapeHtml(c)} (${cnt})</button>`;
-  }).join('');
-
-  catFiltersBar.querySelectorAll('.vid-cat-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeCategoryFilter = btn.getAttribute('data-cat') || 'ALL';
-      renderCategoryChips();
-      renderCurrentCatalog();
-    });
-  });
+  // User explicitly requested to remove the category filter strip and show all subjects by default
+  catFiltersBar.style.display = 'none';
 }
 
 function renderCurrentCatalog() {
@@ -1277,6 +1259,15 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCurrentCatalog();
     }
     updateTopStats();
+  });
+
+  const searchToggleBtn = document.getElementById('btn-toggle-video-search');
+  const searchBox = document.getElementById('videos-search-box');
+  searchToggleBtn?.addEventListener('click', () => {
+    if (searchBox) {
+      searchBox.classList.toggle('active');
+    }
+    videosSearchInput?.focus();
   });
 
   videosSearchInput?.addEventListener('input', (e) => {

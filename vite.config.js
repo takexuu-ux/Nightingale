@@ -25,7 +25,8 @@ export default defineConfig(({ mode }) => ({
         main: './index.html',
         allVideos: './all-videos.html',
         notes: './notes.html',
-        tests: './tests.html'
+        tests: './tests.html',
+        saved: './saved.html'
       }
     }
   },

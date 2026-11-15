@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <script>
+      (function(){
+        try {
+          var t = localStorage.getItem('nnl_app_theme');
+          if (!t) {
+            t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+          if (localStorage.getItem('nnl_access_token')) {
+            var s = document.createElement('style');
+            s.textContent = '#app-preloader{display:none!important;}';
+            document.head.appendChild(s);
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <meta name="description" content="Nightingale Saved Content — Bookmarked Lectures, Notes, PDFs & Practice Question Banks." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>Nightingale — Saved Content</title>
+  </head>
+  <body class="notes-theme-page">
+    <!-- Ambient Vector Landscape Background Layer -->
+    <div id="apk-ambient-bg"></div>
+
+    <!-- Top Navigation Header -->
+    <header id="app-header" class="app-header">
+      <div class="header-logo" style="cursor: pointer;" onclick="window.location.href='/'">
+        <span class="logo-text">NIGHTINGALE</span>
+      </div>
+
+      <nav class="header-nav-tabs">
+        <div class="nav-tabs" style="margin: 0 !important;">
+          <button id="tab-live" class="nav-tab" title="Home" onclick="window.location.href='/'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>HOME</span>
+          </button>
+
+          <button id="tab-videos" class="nav-tab" title="Videos" onclick="window.location.href='/all-videos.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>ALL VIDEOS</span>
+          </button>
+
+          <button id="tab-notes" class="nav-tab" title="Notes & PDFs" onclick="window.location.href='/notes.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>NOTES &amp; PDFs</span>
+          </button>
+
+          <button id="tab-tests" class="nav-tab" title="Tests" onclick="window.location.href='/tests.html'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span>TESTS</span>
+          </button>
+
+          <button id="tab-saved" class="nav-tab active" title="Saved Content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>SAVED</span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
+      <div class="notes-page-container">
+
+        <!-- Header -->
+        <section class="notes-hero-header" style="margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h1 class="notes-hero-title" style="margin: 0; font-size: 1.6rem;">Saved</h1>
+            </div>
+            <div class="notes-search-wrapper" style="max-width: 320px; width: 100%;">
+              <svg class="notes-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+              </svg>
+              <input
+                type="text"
+                id="saved-search-input"
+                class="notes-search-input"
+                placeholder="Search saved content..."
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- Top Segmented Mode Selector: Lectures / Notes & PDFs / Question Banks -->
+        <div class="saved-mode-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 6px; padding: 4px; border-radius: 999px; background: rgba(30, 24, 52, 0.65); border: 1px solid rgba(142, 116, 229, 0.28); margin-bottom: 1.25rem; box-sizing: border-box;">
+          <button type="button" id="saved-tab-lectures" class="saved-mode-tab active" data-target="lectures">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+            <span>Lectures</span>
+            <span id="count-lectures" class="saved-mode-badge">0</span>
+          </button>
+          <button type="button" id="saved-tab-notes" class="saved-mode-tab" data-target="notes">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            <span>Notes &amp; PDFs</span>
+            <span id="count-notes" class="saved-mode-badge">0</span>
+          </button>
+          <button type="button" id="saved-tab-tests" class="saved-mode-tab" data-target="tests">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>Question Banks</span>
+            <span id="count-tests" class="saved-mode-badge">0</span>
+          </button>
+        </div>
+
+        <!-- Section 1: Saved Lectures -->
+        <section id="saved-section-lectures" class="saved-content-section">
+          <div id="saved-lectures-container" class="subject-lectures-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+        </section>
+
+        <!-- Section 2: Saved Notes & PDFs -->
+        <section id="saved-section-notes" class="saved-content-section hide">
+          <div id="saved-notes-container" class="notes-subject-grid"></div>
+        </section>
+
+        <!-- Section 3: Saved Question Banks -->
+        <section id="saved-section-tests" class="saved-content-section hide">
+          <div id="saved-tests-container" class="tests-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- RECORDING VIEWER -->
+    <div id="recording-viewer" class="recording-viewer hide">
+      <div class="recording-viewer-header">
+        <div class="recording-viewer-meta">
+          <span class="cyber-hero-badge" style="margin-bottom:0.25rem;display:inline-block;">// RECORDED LECTURE</span>
+          <h2 id="recording-viewer-title" style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:#fff;margin:0;"></h2>
+          <span id="recording-viewer-instructor" style="font-size:0.8rem;color:var(--text-secondary);"></span>
+        </div>
+        <button id="close-recording-viewer" class="btn-close-recording" title="Back">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          <span>Back</span>
+        </button>
+      </div>
+      <div class="recording-viewer-body">
+        <video id="recording-video" class="recording-video-player hide" controls preload="metadata" playsinline>
+          Your browser does not support video playback.
+        </video>
+        <div id="recording-no-url" class="recording-no-url hide">
+          <h3 id="recording-error-title" style="font-family:var(--font-display);font-size:1rem;margin-bottom:0.5rem;">Playback Preparation</h3>
+          <p id="recording-error-desc" style="color:var(--text-secondary);font-size:0.85rem;">Securing lecture stream...</p>
+          <button id="recording-retry-btn" class="btn" style="margin-top:1rem;padding:0.6rem 1.4rem;background:linear-gradient(135deg,#8E74E5,#7C5CE0);color:#fff;font-weight:700;border:none;border-radius:10px;cursor:pointer;">Retry Playback</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PDF Reader Modal -->
+    <div id="pdf-modal" class="pdf-modal-overlay hide">
+      <div class="pdf-modal-container">
+        <div class="pdf-modal-header">
+          <div class="pdf-modal-title" id="pdf-modal-title">Saved PDF</div>
+          <div class="pdf-modal-actions">
+            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">
+              <span>Open PDF</span>
+            </a>
+            <button id="pdf-modal-close-btn" class="btn-close-quiz" title="Close" aria-label="Close">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="pdf-modal-body">
+          <iframe id="pdf-modal-iframe" class="pdf-iframe" src=""></iframe>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/saved.js"></script>
+  </body>
+</html>
