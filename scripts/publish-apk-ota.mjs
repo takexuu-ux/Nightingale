@@ -5,7 +5,9 @@ import { execSync } from 'child_process';
 
 const ROOT = 'C:/Users/Rajit/Desktop/NNL/Nightingale';
 const ANDROID_ROOT = 'C:/Users/Rajit/Desktop/NNL/NightingaleAndroid';
-const DESKTOP_APK = 'C:/Users/Rajit/Desktop/Red Sapphire Hinglish.apk';
+const DESKTOP_APK = fs.existsSync('C:/Users/Rajit/Desktop/Nightingale App.apk')
+  ? 'C:/Users/Rajit/Desktop/Nightingale App.apk'
+  : 'C:/Users/Rajit/Desktop/Red Sapphire Hinglish.apk';
 const GH_TOKEN = process.env.GITHUB_TOKEN || '';
 const REPO_PUSH_URL = GH_TOKEN
   ? `https://takexuu-ux:${GH_TOKEN}@github.com/takexuu-ux/Nightingale.git`
