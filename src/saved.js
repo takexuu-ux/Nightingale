@@ -64,16 +64,35 @@ pdfModal?.addEventListener('click', (e) => {
 });
 
 // Video Playback
-function openLectureViewer(rec) {
+async function openLectureViewer(rec) {
   if (!rec) return;
   const recId = rec.recId || rec.id;
   const tk = localStorage.getItem('nnl_access_token') || '';
 
   // If in native Android app, directly play through native VdoPlayerActivity
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    let currentOtp = rec.otp || '';
+    let currentPb = rec.playbackInfo || '';
+
+    if ((!currentOtp || !currentPb) && recId) {
+      try {
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2200));
+        const fetchPromise = fetchFreshVdoCipherOtp(recId, { isBatch103: true }).catch(() =>
+          fetchFreshVdoCipherOtp(recId, { isBatch103: false })
+        );
+        const fresh = await Promise.race([fetchPromise, timeoutPromise]);
+        if (fresh && fresh.otp && fresh.playbackInfo) {
+          currentOtp = fresh.otp;
+          currentPb = fresh.playbackInfo;
+          rec.otp = currentOtp;
+          rec.playbackInfo = currentPb;
+        }
+      } catch (_) {}
+    }
+
     window.AndroidVideoBridge.playVideoWithAuth(
-      rec.otp || '',
-      rec.playbackInfo || '',
+      currentOtp,
+      currentPb,
       rec.title || 'Recorded Lecture',
       rec.instructor || 'NNL Faculty',
       String(recId),

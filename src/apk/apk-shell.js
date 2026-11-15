@@ -886,6 +886,25 @@ function attachNavLiquidDropAndCards() {
   const navTabs = document.querySelector('.header-nav-tabs .nav-tabs');
   if (!navTabs) return;
 
+  // On Tablet & Desktop (>= 768px), nav rail uses dedicated solid purple active states
+  if (window.innerWidth >= 768) {
+    const existingPill = document.getElementById('apk-nav-liquid-indicator');
+    if (existingPill) existingPill.remove();
+
+    navTabs.querySelectorAll('.nav-tab').forEach((btn) => {
+      if (btn.__tabletBound) return;
+      btn.__tabletBound = true;
+      btn.addEventListener('click', () => {
+        navTabs.querySelectorAll('.nav-tab').forEach(t => {
+          t.classList.remove('active');
+          t.classList.remove('floating-active');
+        });
+        btn.classList.add('active');
+      });
+    });
+    return;
+  }
+
   let pill = document.getElementById('apk-nav-liquid-indicator');
   if (!pill) {
     pill = document.createElement('span');

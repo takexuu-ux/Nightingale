@@ -4225,10 +4225,12 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
 }
 
-/* Make active tab transparent over liquid indicator so droplet visibly hosts it */
-.app-header .nav-tabs:has(#apk-nav-liquid-indicator) .nav-tab.active {
-  background: transparent !important;
-  box-shadow: none !important;
+/* Make active tab transparent over liquid indicator so droplet visibly hosts it (MOBILE ONLY) */
+@media (max-width: 767px) {
+  .app-header .nav-tabs:has(#apk-nav-liquid-indicator) .nav-tab.active {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
 }
 
 /* ── Smooth Staggered Card Arrangement Animation ── */
@@ -6545,6 +6547,7 @@ main#app,
     align-items: center !important;
     justify-content: center !important;
   }
+  .app-header .nav-tabs:has(#apk-nav-liquid-indicator) .nav-tab.active,
   .app-header .header-nav-tabs .nav-tab.active,
   .app-header .nav-tabs .nav-tab.active,
   .app-header .nav-tab.active,

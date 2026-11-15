@@ -1172,7 +1172,7 @@ function initRecordingsViewer() {
   });
 }
 
-function openRecordingPlayer(recording) {
+async function openRecordingPlayer(recording) {
   const recId = recording?.id || recording?.recId;
   const offState = offlineMapByRecId.get(String(recId));
   if (offState && offState.completed && !offState.expired && hasNativeOfflineBridge()) {
@@ -1201,10 +1201,31 @@ function openRecordingPlayer(recording) {
       percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
     });
 
-    // Directly launch native player immediately (VdoPlayerActivity will stream natively with zero wait)
+    let currentOtp = recording.otp || '';
+    let currentPb = recording.playbackInfo || '';
+
+    if ((!currentOtp || !currentPb) && recId) {
+      try {
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2200));
+        const fetchPromise = fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch }).catch(() =>
+          fetchFreshVdoCipherOtp(recId, { isBatch103: !isBatch })
+        );
+        const fresh = await Promise.race([fetchPromise, timeoutPromise]);
+        if (fresh && fresh.otp && fresh.playbackInfo) {
+          currentOtp = fresh.otp;
+          currentPb = fresh.playbackInfo;
+          recording.otp = currentOtp;
+          recording.playbackInfo = currentPb;
+        }
+      } catch (e) {
+        console.warn('[Videos] Pre-fetch OTP race passed to native:', e);
+      }
+    }
+
+    // Directly launch native player immediately (VdoPlayerActivity will stream natively with valid credentials)
     window.AndroidVideoBridge.playVideoWithAuth(
-      recording.otp || '',
-      recording.playbackInfo || '',
+      currentOtp,
+      currentPb,
       recording.title || 'Recorded Lecture',
       recording.instructor || 'NNL Faculty',
       String(recId || ''),
