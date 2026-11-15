@@ -248,19 +248,42 @@ const pdfModalIframe = document.getElementById('pdf-modal-iframe');
 const pdfModalDownloadBtn = document.getElementById('pdf-modal-download-btn');
 
 const SUBJECT_SVG = {
-  pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3"/>',
-  anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714"/>',
+  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 19V7M21 19v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4M3 14h18M6 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
+  foundation: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 19V7M21 19v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4M3 14h18M6 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
+  fon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 19V7M21 19v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4M3 14h18M6 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
+  child: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-6 6c0 4 3 7 6 7s6-3 6-7a6 6 0 0 0-6-6zM9 9h.01M15 9h.01M10 12c.5.5 1.5.5 2 0M2 9a2 2 0 0 0 2 2M22 9a2 2 0 0 1-2 2M6 19a6 6 0 0 1 12 0"/>',
+  pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-6 6c0 4 3 7 6 7s6-3 6-7a6 6 0 0 0-6-6zM9 9h.01M15 9h.01M10 12c.5.5 1.5.5 2 0M2 9a2 2 0 0 0 2 2M22 9a2 2 0 0 1-2 2M6 19a6 6 0 0 1 12 0"/>',
+  paediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-6 6c0 4 3 7 6 7s6-3 6-7a6 6 0 0 0-6-6zM9 9h.01M15 9h.01M10 12c.5.5 1.5.5 2 0M2 9a2 2 0 0 0 2 2M22 9a2 2 0 0 1-2 2M6 19a6 6 0 0 1 12 0"/>',
+  midwifery: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
+  obg: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
+  obstetric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
+  gynaec: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
+  community: '<path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  chn: '<path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  surgery: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.5 4.5l5 5L7 22H2v-5L14.5 4.5zM13 6l5 5M6 18l2 2"/>',
+  surgical: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.5 4.5l5 5L7 22H2v-5L14.5 4.5zM13 6l5 5M6 18l2 2"/>',
+  msn: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.5 4.5l5 5L7 22H2v-5L14.5 4.5zM13 6l5 5M6 18l2 2"/>',
   medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>',
-  pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>',
-  midwifery: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>',
-  community: '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125h5.25v-4.875h4.5V21H19.5V9.75"/>',
-  default: '<polygon stroke-linecap="round" stroke-linejoin="round" points="5 3 19 12 5 21 5 3"/>'
+  pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 8.5 7 7"/>',
+  pharma: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 8.5 7 7"/>',
+  anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M5 7l7 5 7-5M5 12l7 5 7-5M5 17l7 5 7-5"/>',
+  physiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M5 7l7 5 7-5M5 12l7 5 7-5M5 17l7 5 7-5"/>',
+  mental: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.5 2A4.5 4.5 0 0 0 5 6.5c0 1.34.58 2.54 1.5 3.37A4.5 4.5 0 0 0 4 14c0 1.77 1.02 3.3 2.5 4.04V20a2 2 0 0 0 2 2h2V2h-1zM14.5 2A4.5 4.5 0 0 1 19 6.5c0 1.34-.58 2.54-1.5 3.37A4.5 4.5 0 0 1 20 14c0 1.77-1.02 3.3-2.5 4.04V20a2 2 0 0 1-2 2h-2V2h1z"/>',
+  psychiatr: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.5 2A4.5 4.5 0 0 0 5 6.5c0 1.34.58 2.54 1.5 3.37A4.5 4.5 0 0 0 4 14c0 1.77 1.02 3.3 2.5 4.04V20a2 2 0 0 0 2 2h2V2h-1zM14.5 2A4.5 4.5 0 0 1 19 6.5c0 1.34-.58 2.54-1.5 3.37A4.5 4.5 0 0 1 20 14c0 1.77-1.02 3.3-2.5 4.04V20a2 2 0 0 1-2 2h-2V2h1z"/>',
+  microbiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18h8M3 22h18M14 22a7 7 0 1 0-7-7M9 14l2-2M17 6l3 3-8 8-3-3 8-8zM19 4l1 1-1.5 1.5-1-1L19 4z"/>',
+  pathology: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18h8M3 22h18M14 22a7 7 0 1 0-7-7M9 14l2-2M17 6l3 3-8 8-3-3 8-8zM19 4l1 1-1.5 1.5-1-1L19 4z"/>',
+  nutrition: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
+  biochem: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
+  research: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM9 12h6M9 16h4"/>',
+  management: '<path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM9 12h6M9 16h4"/>',
+  timetable: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>',
+  default: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v8M8 12h8"/>'
 };
 
 function getSubjectSVG(title) {
   const l = String(title || '').toLowerCase();
   for (const [k, p] of Object.entries(SUBJECT_SVG)) {
-    if (l.includes(k)) return p;
+    if (k !== 'default' && l.includes(k)) return p;
   }
   return SUBJECT_SVG.default;
 }

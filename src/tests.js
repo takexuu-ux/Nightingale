@@ -1129,6 +1129,7 @@ function initEventBindings() {
 
   // Quiz Viewer Controls
   document.getElementById('quiz-top-close-btn')?.addEventListener('click', closeQuizViewer);
+  document.getElementById('quiz-top-back-btn')?.addEventListener('click', closeQuizViewer);
   document.getElementById('quiz-close-btn')?.addEventListener('click', closeQuizViewer);
   document.getElementById('quiz-prev-btn')?.addEventListener('click', () => {
     if (currentQuestionIndex > 0) {

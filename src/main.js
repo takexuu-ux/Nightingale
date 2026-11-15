@@ -3432,24 +3432,6 @@ async function resumeLecture(recId, btnEl) {
       let currentOtp = item?.otp || '';
       let currentPb = item?.playbackInfo || '';
 
-      if ((!currentOtp || !currentPb) && recId) {
-        try {
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2200));
-          const fetchPromise = fetchFreshVdoCipherOtp(recId, { isBatch103: true }).catch(() =>
-            fetchFreshVdoCipherOtp(recId, { isBatch103: false })
-          );
-          const fresh = await Promise.race([fetchPromise, timeoutPromise]);
-          if (fresh && fresh.otp && fresh.playbackInfo) {
-            currentOtp = fresh.otp;
-            currentPb = fresh.playbackInfo;
-            if (item) {
-              item.otp = currentOtp;
-              item.playbackInfo = currentPb;
-            }
-          }
-        } catch (_) {}
-      }
-
       window.AndroidVideoBridge.playVideoWithAuth(
         currentOtp,
         currentPb,

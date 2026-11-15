@@ -101,7 +101,7 @@
     </header>
 
     <!-- Main Categorized Practice Tests Application -->
-    <main id="app" style="display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 auto; padding-top: 1rem; box-sizing: border-box;">
+    <main id="app">
       <div class="notes-page-container">
 
         <!-- Compact Header: "Tests" + Search Box Directly Beside Title -->
@@ -233,18 +233,24 @@
     <div id="quiz-viewer" class="quiz-viewer-overlay hide">
       <div class="quiz-viewer-box">
         <div class="quiz-viewer-header">
-          <div class="quiz-viewer-title-area">
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
-              <span id="quiz-badge-type" class="cyber-hero-badge">// PRACTICE ASSESSMENT</span>
-              <button id="quiz-mode-toggle-btn" class="quiz-mode-toggle-pill" title="Toggle Practice / Exam Mode">
-                <span id="quiz-mode-icon" style="display:inline-flex;align-items:center;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </span>
-                <span id="quiz-mode-label">Practice Mode</span>
-              </button>
+          <div class="quiz-viewer-header-left" style="display:flex;align-items:center;gap:14px;">
+            <button id="quiz-top-back-btn" class="btn-quiz-back" title="Back to Tests" aria-label="Back">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Back</span>
+            </button>
+            <div class="quiz-viewer-title-area">
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.15rem;">
+                <span id="quiz-badge-type" class="cyber-hero-badge">// PRACTICE ASSESSMENT</span>
+                <button id="quiz-mode-toggle-btn" class="quiz-mode-toggle-pill" title="Toggle Practice / Exam Mode">
+                  <span id="quiz-mode-icon" style="display:inline-flex;align-items:center;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </span>
+                  <span id="quiz-mode-label">Practice Mode</span>
+                </button>
+              </div>
+              <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Practice Test</h2>
+              <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
             </div>
-            <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Practice Test</h2>
-            <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
           </div>
           <div class="quiz-header-controls" style="display: flex; align-items: center; gap: 0.75rem;">
             <div id="quiz-timer-container" class="quiz-timer-container">
@@ -305,10 +311,12 @@
         </div>
 
         <div class="quiz-viewer-footer">
-          <button id="quiz-prev-btn" class="btn btn-secondary">Previous</button>
-          <button id="quiz-show-ans-btn" class="btn btn-zoom">Explain</button>
-          <button id="quiz-next-btn" class="btn btn-secondary">Next</button>
-          <button id="quiz-submit-btn" class="btn btn-exit" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #f87171;">Submit Test</button>
+          <div class="quiz-footer-nav-group">
+            <button id="quiz-prev-btn" class="btn btn-cbt-action btn-cbt-prev">Previous</button>
+            <button id="quiz-show-ans-btn" class="btn btn-cbt-action btn-cbt-explain">Explain</button>
+            <button id="quiz-next-btn" class="btn btn-cbt-action btn-cbt-next">Next</button>
+          </div>
+          <button id="quiz-submit-btn" class="btn btn-cbt-action btn-cbt-submit">Submit Test</button>
         </div>
       </div>
     </div>

@@ -103,23 +103,36 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
 
 export function getRecentlyWatchedLectures(limit = 8) {
   const map = getWatchHistory();
-  let lastId = '';
-  try {
-    lastId = localStorage.getItem('nnl_last_watched_rec_id') || '';
-  } catch (_) {}
-  if (!lastId && typeof window !== 'undefined' && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.getLastWatchedRecId === 'function') {
+  let nativeLastId = '';
+  if (typeof window !== 'undefined' && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.getLastWatchedRecId === 'function') {
     try {
-      lastId = window.AndroidVideoBridge.getLastWatchedRecId() || '';
+      nativeLastId = window.AndroidVideoBridge.getLastWatchedRecId() || '';
+    } catch (_) {}
+  }
+  if (nativeLastId) {
+    try {
+      localStorage.setItem('nnl_last_watched_rec_id', nativeLastId);
+    } catch (_) {}
+  }
+  let lastId = nativeLastId;
+  if (!lastId) {
+    try {
+      lastId = localStorage.getItem('nnl_last_watched_rec_id') || '';
     } catch (_) {}
   }
 
   const list = Object.values(map);
   list.sort((a, b) => {
+    const timeA = a.lastWatched || 0;
+    const timeB = b.lastWatched || 0;
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
     if (lastId) {
       if (String(a.recId) === String(lastId)) return -1;
       if (String(b.recId) === String(lastId)) return 1;
     }
-    return (b.lastWatched || 0) - (a.lastWatched || 0);
+    return 0;
   });
   return list.slice(0, limit);
 }
