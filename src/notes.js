@@ -1366,16 +1366,7 @@ function bindTopicPills() {
 function openPdfModal(title, url, downloadName = '') {
   if (!url) return;
 
-  // 1. Native Android PDF Bridge (instant system viewer intent)
-  if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
-    try {
-      window.AndroidPdfBridge.openPdf(url, title || 'Class Notes PDF');
-    } catch (e) {
-      console.warn('[Notes] Native PDF bridge fallback:', e);
-    }
-  }
-
-  // 2. Web In-App Modal with full PDF preview & direct open fallback
+  // In-App Full-Screen Minimal PDF Modal
   if (!pdfModal) {
     window.open(url, '_blank');
     return;

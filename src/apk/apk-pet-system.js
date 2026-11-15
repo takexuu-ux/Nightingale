@@ -405,28 +405,61 @@ function renderPetElement() {
 
   // Tap reaction: Gentle squish + floating heart burst
   const burstsEl = root.querySelector('.apk-pet-bursts');
+  const EMOTIONS = [
+    { text: "NNL ke Papa is studying! Respect! 👑", mood: "funny", icon: "👑" },
+    { text: "Target NORCET 2026! Focus mode ON! 🎯", mood: "focused", icon: "🩺" },
+    { text: "You're doing great! Keep going! 💖", mood: "happy", icon: "💖" },
+    { text: "Drink some water & let's crack this! 💧", mood: "care", icon: "💧" },
+    { text: "One lecture closer to AIIMS! 🏥", mood: "cheer", icon: "✨" },
+    { text: "Late night grind! Full power! 🌙", mood: "night", icon: "⚡" }
+  ];
+  let emotionIdx = 0;
+  let bubbleTimeout = null;
+
+  const showSpeechBubble = (text, icon = '💬') => {
+    let bubble = root.querySelector('.apk-pet-speech-bubble');
+    if (!bubble) {
+      bubble = document.createElement('div');
+      bubble.className = 'apk-pet-speech-bubble';
+      root.appendChild(bubble);
+    }
+    bubble.innerHTML = `<span class="bubble-icon">${icon}</span> <span class="bubble-text">${text}</span>`;
+    bubble.classList.remove('hide', 'fade-out');
+    bubble.classList.add('pop-in');
+    clearTimeout(bubbleTimeout);
+    bubbleTimeout = setTimeout(() => {
+      bubble.classList.add('fade-out');
+      setTimeout(() => bubble.classList.add('hide'), 300);
+    }, 3800);
+  };
+
   const handleTap = () => {
-    root.classList.remove('is-hop');
+    root.classList.remove('is-hop', 'is-wiggle', 'is-cheer');
     void root.offsetWidth;
-    root.classList.add('is-hop');
+
+    const current = EMOTIONS[emotionIdx % EMOTIONS.length];
+    emotionIdx++;
+
+    const anims = ['is-hop', 'is-wiggle', 'is-cheer'];
+    const chosenAnim = anims[Math.floor(Math.random() * anims.length)];
+    root.classList.add(chosenAnim);
+    showSpeechBubble(current.text, current.icon);
 
     if (burstsEl) {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         const p = document.createElement('span');
         p.className = 'apk-pet-burst-item';
-        p.textContent = i % 2 === 0 ? '♥' : '✧';
-        p.style.color = '#A78BFA';
-        p.style.setProperty('--bx', `${(Math.random() - 0.5) * 50}px`);
-        p.style.setProperty('--by', `${-20 - Math.random() * 35}px`);
+        p.textContent = ['♥', '✧', '★', '🩺'][i % 4];
+        p.style.color = i % 2 === 0 ? '#EC4899' : '#A78BFA';
+        p.style.setProperty('--bx', `${(Math.random() - 0.5) * 60}px`);
+        p.style.setProperty('--by', `${-25 - Math.random() * 40}px`);
         burstsEl.appendChild(p);
         setTimeout(() => p.remove(), 750);
       }
     }
   };
 
-  root.addEventListener('click', handleTap);
-
-  // Drag and drop support
+  // Drag and drop support with touch pointer capture
   let isDragging = false;
   let startX = 0, startY = 0;
   let originX = 0, originY = 0;
@@ -440,6 +473,7 @@ function renderPetElement() {
     originX = pos.x;
     originY = pos.y;
     root.classList.add('is-dragging');
+    try { root.setPointerCapture(e.pointerId); } catch (_) {}
   };
 
   const onPointerMove = (e) => {
@@ -448,7 +482,7 @@ function renderPetElement() {
     const cy = e.clientY || (e.touches && e.touches[0].clientY) || 0;
     const dx = cx - startX;
     const dy = cy - startY;
-    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
     const newX = Math.max(10, Math.min(window.innerWidth - 68, originX + dx));
     const newY = Math.max(10, Math.min(window.innerHeight - 80, originY + dy));
     pos.x = newX;
@@ -456,15 +490,28 @@ function renderPetElement() {
     setPosition(newX, newY);
   };
 
-  const onPointerUp = () => {
+  const onPointerUp = (e) => {
     if (!isDragging) return;
     isDragging = false;
     root.classList.remove('is-dragging');
+    try { root.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (!moved) {
+      handleTap();
+    }
   };
 
   root.addEventListener('pointerdown', onPointerDown);
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
-  window.addEventListener('pointerup', onPointerUp, { passive: true });
+  root.addEventListener('pointermove', onPointerMove);
+  root.addEventListener('pointerup', onPointerUp);
+  root.addEventListener('pointercancel', onPointerUp);
+
+  // Periodically show occasional cute encouraging bubble
+  setInterval(() => {
+    if (!isDragging && Math.random() < 0.35) {
+      const e = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)];
+      showSpeechBubble(e.text, e.icon);
+    }
+  }, 45000);
 
   window.addEventListener('resize', () => {
     pos.x = Math.max(10, Math.min(window.innerWidth - 68, pos.x));

@@ -113,8 +113,19 @@ async function refreshOfflineDownloads({ reRender = false } = {}) {
     // Update active download badges directly in DOM without reloading/re-rendering the whole page
     if (hasActive) {
       json.items.forEach(it => {
-        const btn = document.querySelector(`.btn-save-lecture[data-rec-idx]`);
-        // update top status without full page refresh
+        const btn = document.querySelector(`.btn-save-lecture[data-rec-id="${it.recId}"]`);
+        if (btn) {
+          const span = btn.querySelector('span');
+          if (it.status === 'downloading') {
+            const pct = Math.round(it.percent || 0);
+            if (span) span.textContent = `${pct}%`;
+            btn.classList.add('is-downloading');
+          } else if (it.completed) {
+            if (span) span.textContent = 'Saved';
+            btn.classList.remove('is-downloading');
+            btn.classList.add('is-saved');
+          }
+        }
       });
     }
 
@@ -131,8 +142,10 @@ async function startOfflineLectureDownload(rec, btnEl) {
   offlinePendingReq.add(key);
 
   if (btnEl) {
-    btnEl.disabled = true;
-    btnEl.innerHTML = '<span>Preparing...</span>';
+    btnEl.disabled = false;
+    const span = btnEl.querySelector('span');
+    if (span) span.textContent = '0%';
+    btnEl.classList.add('is-downloading');
   }
 
   try {
@@ -153,18 +166,13 @@ async function startOfflineLectureDownload(rec, btnEl) {
     });
     const startJson = await startRes.json();
     if (!startJson.ok) throw new Error(startJson.error || 'Could not queue download');
-    if (btnEl) {
-      btnEl.disabled = false;
-      const span = btnEl.querySelector('span');
-      if (span) span.textContent = 'Saved';
-      btnEl.classList.add('is-saved');
-    }
     await refreshOfflineDownloads({ reRender: false });
   } catch (err) {
     if (btnEl) {
       btnEl.disabled = false;
       btnEl.title = err.message;
       btnEl.innerHTML = '<span>Save</span>';
+      btnEl.classList.remove('is-downloading');
     }
     console.warn(`[Offline] Save queue note: ${err.message}`);
   } finally {
@@ -1012,9 +1020,9 @@ function renderSubjectLecturesList() {
     const durClean = (rec.duration || '').replace(/^⏱️\s*/, '').trim() || 'Recorded';
 
     const saveBtnHtml = `
-      <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''}" data-rec-idx="${idx}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture for Offline'}">
+      <button class="sd-mini-pill btn-save-lecture ${isSaved ? 'is-saved' : ''} ${isDownloading ? 'is-downloading' : ''}" data-rec-idx="${idx}" data-rec-id="${rec.id}" title="${isSaved ? 'Remove from Saved' : 'Save Lecture for Offline'}">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        <span>${isDownloading ? `${offState.percent || 0}%` : (isSaved ? 'Saved' : 'Save')}</span>
+        <span>${isDownloading ? `${Math.round(offState.percent || 0)}%` : (isSaved ? 'Saved' : 'Save')}</span>
       </button>
     `;
 
@@ -1098,18 +1106,23 @@ function renderSubjectLecturesList() {
       });
       btn.classList.toggle('is-saved', nowSaved);
       const label = btn.querySelector('span');
-      if (label) label.textContent = nowSaved ? 'Saved' : 'Save';
       const svg = btn.querySelector('svg');
       if (svg) svg.setAttribute('fill', nowSaved ? 'currentColor' : 'none');
 
       // Seamless offline integration: saving also starts offline caching
       if (nowSaved && hasNativeOfflineBridge()) {
+        if (label) label.textContent = '0%';
+        btn.classList.add('is-downloading');
         const st = offlineMapByRecId.get(String(rec.id));
         if (!st || (!st.completed && st.status !== 'downloading')) {
           startOfflineLectureDownload(rec, btn);
         }
       } else if (!nowSaved && hasNativeOfflineBridge()) {
+        if (label) label.textContent = 'Save';
+        btn.classList.remove('is-downloading');
         deleteOfflineLecture(rec.id);
+      } else {
+        if (label) label.textContent = nowSaved ? 'Saved' : 'Save';
       }
 
       updateTopStats();
@@ -1127,16 +1140,7 @@ function renderSubjectLecturesList() {
 function openPdfModal(title, url) {
   if (!url) return;
 
-  // 1. Native Android PDF Bridge (instant system viewer intent)
-  if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
-    try {
-      window.AndroidPdfBridge.openPdf(url, title || 'Lecture Notes PDF');
-    } catch (e) {
-      console.warn('[Videos] Native PDF bridge fallback:', e);
-    }
-  }
-
-  // 2. Web In-App Modal with full PDF preview & direct open fallback
+  // In-App Full-Screen Minimal PDF Modal
   if (!pdfModal) {
     window.open(url, '_blank');
     return;

@@ -180,6 +180,25 @@ recordingRetryBtn?.addEventListener('click', () => {
   if (activePlayingRec) loadLectureStream(activePlayingRec);
 });
 
+function formatDurationLabel(dur) {
+  if (!dur) return 'Recorded';
+  if (typeof dur === 'string') {
+    const clean = dur.trim();
+    if (clean.toLowerCase().includes('min') || clean.toLowerCase().includes('hr') || clean.toLowerCase().includes('sec')) {
+      return clean;
+    }
+    const num = parseFloat(clean);
+    if (!isNaN(num) && num > 0) {
+      return num > 300 ? `${Math.round(num / 60)} mins` : `${Math.round(num)} mins`;
+    }
+    return clean || 'Recorded';
+  }
+  if (typeof dur === 'number' && !isNaN(dur) && dur > 0) {
+    return dur > 300 ? `${Math.round(dur / 60)} mins` : `${Math.round(dur)} mins`;
+  }
+  return 'Recorded';
+}
+
 // Render Saved Lectures
 function renderSavedLectures() {
   if (!lecturesContainer) return;
@@ -207,7 +226,7 @@ function renderSavedLectures() {
 
   lecturesContainer.innerHTML = filtered.map((lec, idx) => {
     const thumb = lec.thumb || '/nightingale.png';
-    const duration = lec.duration ? `${Math.round(lec.duration / 60)} mins` : 'Recorded';
+    const duration = formatDurationLabel(lec.duration);
     const recIdClean = String(lec.id || lec.recId || '');
     return `
       <div class="sd-lecture-card apk-card-arrange" data-rec-id="${recIdClean}" style="--card-i: ${idx};">
@@ -231,12 +250,8 @@ function renderSavedLectures() {
           <div class="sd-lecture-sub-line">
             <span class="sd-lecture-progress-label">${duration}</span>
             <div class="sd-lecture-actions">
-              <button type="button" class="sd-mini-pill btn-play-saved-rec" data-rec-id="${recIdClean}" style="background:var(--accent);color:#fff;border:none;">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                <span>Play</span>
-              </button>
-              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${recIdClean}" title="Remove from saved">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${recIdClean}" title="Remove from saved" style="padding: 6px 12px; font-size: 12px; font-weight: 600; min-height: 28px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.32); border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 <span>Remove</span>
               </button>
             </div>
@@ -246,7 +261,7 @@ function renderSavedLectures() {
     `;
   }).join('');
 
-  lecturesContainer.querySelectorAll('.btn-play-saved-rec, .sd-lecture-card[data-rec-id]').forEach(el => {
+  lecturesContainer.querySelectorAll('.sd-lecture-card[data-rec-id]').forEach(el => {
     el.addEventListener('click', (e) => {
       if (e.target.closest('.btn-unsave-rec')) return;
       const id = el.getAttribute('data-rec-id');

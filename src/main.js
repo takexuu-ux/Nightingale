@@ -3459,7 +3459,8 @@ async function resumeLecture(recId, btnEl) {
         tk,
         true,
         item?.notePdfUrl || '',
-        item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF')
+        item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF'),
+        item?.currentTime || 0
       );
       if (btnEl) {
         btnEl.disabled = false;

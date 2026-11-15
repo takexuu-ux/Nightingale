@@ -62,7 +62,7 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
   const calcPercent = percent > 0 ? percent : (duration > 0 ? Math.round((currentTime / duration) * 100) : 0);
   const prev = map[id] || {};
 
-  map[id] = {
+  const record = {
     recId: id,
     title: title || prev.title || 'Lecture',
     instructor: instructor || prev.instructor || 'NNL Faculty',
@@ -74,9 +74,26 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
     lastWatched: Date.now()
   };
 
+  map[id] = record;
+
   try {
     localStorage.setItem(WATCH_KEY, JSON.stringify(map));
+    localStorage.setItem('nnl_last_watched_rec_id', id);
   } catch (_) {}
+
+  // Sync immediately to native Android bridge
+  if (typeof window !== 'undefined' && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.recordLectureWatch === 'function') {
+    try {
+      window.AndroidVideoBridge.recordLectureWatch(
+        id,
+        record.title,
+        record.instructor,
+        record.currentTime,
+        record.duration,
+        record.percent
+      );
+    } catch (_) {}
+  }
 
   // Trigger UI refresh event
   if (typeof window !== 'undefined') {
@@ -86,8 +103,24 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
 
 export function getRecentlyWatchedLectures(limit = 8) {
   const map = getWatchHistory();
+  let lastId = '';
+  try {
+    lastId = localStorage.getItem('nnl_last_watched_rec_id') || '';
+  } catch (_) {}
+  if (!lastId && typeof window !== 'undefined' && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.getLastWatchedRecId === 'function') {
+    try {
+      lastId = window.AndroidVideoBridge.getLastWatchedRecId() || '';
+    } catch (_) {}
+  }
+
   const list = Object.values(map);
-  list.sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
+  list.sort((a, b) => {
+    if (lastId) {
+      if (String(a.recId) === String(lastId)) return -1;
+      if (String(b.recId) === String(lastId)) return 1;
+    }
+    return (b.lastWatched || 0) - (a.lastWatched || 0);
+  });
   return list.slice(0, limit);
 }
 

@@ -172,6 +172,63 @@
       </div>
     </main>
 
+    <!-- Test Overview / Instructions Modal -->
+    <div id="quiz-overview-modal" class="quiz-overview-overlay hide">
+      <div class="quiz-overview-card">
+        <div class="quiz-overview-header">
+          <div class="quiz-overview-badge" id="overview-badge">PRACTICE ASSESSMENT</div>
+          <button id="overview-close-btn" class="btn-close-overview" aria-label="Close Overview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="quiz-overview-body">
+          <h2 id="overview-title" class="quiz-overview-title">Practice Test</h2>
+          <p id="overview-subtitle" class="quiz-overview-subtitle">Red Sapphire • Nursing Officer / NORCET Standard CBT Exam</p>
+          
+          <div class="overview-stats-grid">
+            <div class="overview-stat-box">
+              <span class="overview-stat-icon">📝</span>
+              <span class="overview-stat-label">Questions</span>
+              <strong id="overview-questions-count" class="overview-stat-val">--</strong>
+            </div>
+            <div class="overview-stat-box">
+              <span class="overview-stat-icon">⏱️</span>
+              <span class="overview-stat-label">Duration</span>
+              <strong id="overview-duration" class="overview-stat-val">30 mins</strong>
+            </div>
+            <div class="overview-stat-box">
+              <span class="overview-stat-icon">🎯</span>
+              <span class="overview-stat-label">Marks</span>
+              <strong id="overview-marks" class="overview-stat-val">Full Marks</strong>
+            </div>
+            <div class="overview-stat-box">
+              <span class="overview-stat-icon">⚖️</span>
+              <span class="overview-stat-label">Marking</span>
+              <strong class="overview-stat-val">+1 / -0.25</strong>
+            </div>
+          </div>
+
+          <div class="overview-instructions-box">
+            <h4>Instructions &amp; Guidelines:</h4>
+            <ul>
+              <li>Select the best single correct option among the 4 choices.</li>
+              <li>You can navigate back and forth using Previous and Next.</li>
+              <li>In Practice Mode, click "Explain" for detailed clinical rationales.</li>
+              <li>In Exam Mode, complete before the timer elapses and tap "Submit Test".</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="quiz-overview-footer">
+          <button id="overview-cancel-btn" type="button" class="btn btn-secondary">Cancel</button>
+          <button id="overview-start-btn" type="button" class="btn btn-start-test-cta">
+            <span>Start Test Now</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Fullscreen Quiz / CBT Test Runner Overlay -->
     <div id="quiz-viewer" class="quiz-viewer-overlay hide">
       <div class="quiz-viewer-box">

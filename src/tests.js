@@ -645,6 +645,37 @@ function renderTestRowHtml(t, metaSubLabel) {
   `;
 }
 
+let pendingTestLaunch = null;
+
+function openTestOverviewModal({ id, title, duration = 1800, isBatchTest = false, mode = 'practice', questionsCount = null }) {
+  const modal = document.getElementById('quiz-overview-modal');
+  if (!modal) {
+    loadAndStartTest({ id, title, duration, isBatchTest, mode });
+    return;
+  }
+  pendingTestLaunch = { id, title, duration, isBatchTest, mode };
+
+  const badgeEl = document.getElementById('overview-badge');
+  const titleEl = document.getElementById('overview-title');
+  const durEl = document.getElementById('overview-duration');
+  const marksEl = document.getElementById('overview-marks');
+  const countEl = document.getElementById('overview-questions-count');
+
+  if (badgeEl) badgeEl.textContent = mode === 'exam' ? 'EXAM SIMULATION' : 'PRACTICE ASSESSMENT';
+  if (titleEl) titleEl.textContent = title;
+  const durMins = Math.max(1, Math.round(duration / 60));
+  if (durEl) durEl.textContent = `${durMins} mins`;
+  if (marksEl) marksEl.textContent = `${questionsCount || 20} Marks`;
+  if (countEl) countEl.textContent = questionsCount ? String(questionsCount) : '20-50';
+
+  modal.classList.remove('hide');
+}
+
+function closeTestOverviewModal() {
+  document.getElementById('quiz-overview-modal')?.classList.add('hide');
+  pendingTestLaunch = null;
+}
+
 function bindTestAttemptButtons(container) {
   if (!container) return;
   container.querySelectorAll('.btn-launch-test').forEach(btn => {
@@ -655,7 +686,7 @@ function bindTestAttemptButtons(container) {
       const duration = parseInt(btn.getAttribute('data-duration') || '1800', 10);
       const isBatchTest = btn.getAttribute('data-batch') === '1';
       const mode = btn.getAttribute('data-mode') || 'practice';
-      loadAndStartTest({ id: testId, title, duration, isBatchTest, mode });
+      openTestOverviewModal({ id: testId, title, duration, isBatchTest, mode });
     });
   });
 
@@ -672,14 +703,6 @@ function bindTestAttemptButtons(container) {
 
 function openPdfModal(title, url, downloadName = '') {
   if (!url) return;
-  if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
-    try {
-      window.AndroidPdfBridge.openPdf(url, title || 'Test PDF');
-    } catch (e) {
-      console.warn('[Tests] Native PDF bridge fallback:', e);
-    }
-  }
-
   const modal = document.getElementById('pdf-modal');
   const titleEl = document.getElementById('pdf-modal-title');
   const dlBtn = document.getElementById('pdf-modal-download-btn');
@@ -1049,6 +1072,14 @@ function closeQuizViewer() {
 }
 
 function initEventBindings() {
+  document.getElementById('overview-close-btn')?.addEventListener('click', closeTestOverviewModal);
+  document.getElementById('overview-cancel-btn')?.addEventListener('click', closeTestOverviewModal);
+  document.getElementById('overview-start-btn')?.addEventListener('click', () => {
+    const cfg = pendingTestLaunch;
+    closeTestOverviewModal();
+    if (cfg) loadAndStartTest(cfg);
+  });
+
   document.getElementById('test-tab-series')?.addEventListener('click', () => switchSection('series'));
   document.getElementById('test-tab-qbank')?.addEventListener('click', () => switchSection('qbank'));
   document.getElementById('test-tab-rb104')?.addEventListener('click', () => switchSection('rb104'));
