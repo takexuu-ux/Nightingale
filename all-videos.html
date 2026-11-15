@@ -57,28 +57,111 @@
       .subject-lectures-container {
         display: flex;
         flex-direction: column;
-        gap: 7px;
+        gap: 8px;
       }
-      .sd-lecture-card {
+      .notes-detail-compact-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 7px 11px;
+        margin-bottom: 9px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(28, 22, 52, 0.88), rgba(18, 14, 34, 0.94));
+        border: 1px solid rgba(167, 139, 250, 0.18);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-sizing: border-box;
+      }
+      [data-theme="light"] .notes-detail-compact-bar {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(244, 238, 255, 0.94));
+        border: 1px solid rgba(108, 79, 214, 0.18);
+      }
+      .subject-detail-top-line {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 7px 10px;
-        min-height: 50px;
-        max-height: 58px;
-        border-radius: 11px;
-        background: linear-gradient(135deg, rgba(24, 19, 44, 0.78), rgba(16, 12, 32, 0.88));
-        border: 1px solid rgba(167, 139, 250, 0.14);
+        width: 100%;
+        min-width: 0;
+      }
+      .subject-detail-top-line .btn-notes-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 7px;
+        background: rgba(142, 116, 229, 0.16);
+        border: 1px solid rgba(167, 139, 250, 0.28);
+        color: var(--text-primary);
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .subject-detail-top-line .subject-detail-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .subject-detail-sub-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+      }
+      .subject-detail-sub-line .subject-detail-count {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .subject-detail-sub-line .subject-detail-teacher-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+      }
+      .subject-detail-sub-line .subject-detail-teacher-box svg {
+        stroke: var(--accent);
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+      }
+      .subject-detail-sub-line .subject-detail-teacher {
+        color: var(--text-primary);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Lecture Cards (Comfortable Height ~68px, Generous 16:9 Thumbnail, Clear Subtext) */
+      .sd-lecture-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        min-height: 68px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(24, 19, 44, 0.82), rgba(16, 12, 32, 0.9));
+        border: 1px solid rgba(167, 139, 250, 0.16);
         cursor: pointer;
         transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
         box-sizing: border-box;
       }
       [data-theme="light"] .sd-lecture-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 240, 255, 0.92));
-        border: 1px solid rgba(108, 79, 214, 0.14);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 240, 255, 0.92));
+        border: 1px solid rgba(108, 79, 214, 0.16);
       }
       .sd-lecture-card:hover {
-        border-color: rgba(167, 139, 250, 0.38);
+        border-color: rgba(167, 139, 250, 0.42);
         transform: translateY(-1px);
       }
       .sd-lecture-card:active {
@@ -86,17 +169,17 @@
       }
       .sd-lecture-num {
         font-family: var(--font-display, monospace);
-        font-size: 0.76rem;
+        font-size: 0.78rem;
         font-weight: 800;
         color: var(--accent);
-        min-width: 20px;
+        min-width: 22px;
         text-align: center;
         flex-shrink: 0;
       }
       .sd-lecture-thumb-wrap {
-        width: 60px;
-        height: 36px;
-        border-radius: 6px;
+        width: 72px;
+        height: 44px;
+        border-radius: 8px;
         overflow: hidden;
         position: relative;
         flex-shrink: 0;
@@ -125,7 +208,7 @@
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         justify-content: center;
       }
       .sd-lecture-top-line {
@@ -136,7 +219,7 @@
         width: 100%;
       }
       .sd-lecture-title {
-        font-size: 0.80rem;
+        font-size: 0.86rem;
         font-weight: 700;
         color: var(--text-primary);
         white-space: nowrap;
@@ -146,7 +229,7 @@
         min-width: 0;
       }
       .sd-lecture-date {
-        font-size: 0.67rem;
+        font-size: 0.69rem;
         font-weight: 600;
         color: var(--text-muted);
         white-space: nowrap;
@@ -163,7 +246,8 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        font-size: 0.68rem;
+        font-size: 0.72rem;
+        font-weight: 600;
         color: var(--text-secondary);
         white-space: nowrap;
         overflow: hidden;
@@ -179,20 +263,20 @@
         display: inline-flex;
         align-items: center;
         gap: 3px;
-        padding: 2px 6px;
-        border-radius: 5px;
-        font-size: 0.67rem;
+        padding: 3px 7px;
+        border-radius: 6px;
+        font-size: 0.68rem;
         font-weight: 700;
         line-height: 1;
         cursor: pointer;
-        background: rgba(142, 116, 229, 0.12);
-        border: 1px solid rgba(167, 139, 250, 0.24);
+        background: rgba(142, 116, 229, 0.14);
+        border: 1px solid rgba(167, 139, 250, 0.26);
         color: var(--text-primary);
         transition: all 0.15s ease;
         white-space: nowrap;
       }
       .sd-mini-pill:hover {
-        background: rgba(142, 116, 229, 0.22);
+        background: rgba(142, 116, 229, 0.24);
         border-color: rgba(167, 139, 250, 0.45);
       }
       .sd-mini-pill.is-saved,
@@ -326,17 +410,19 @@
 
         <!-- VIEW 2: Compact Subject Lectures View -->
         <section id="subject-detail-view" class="subject-detail-view hide">
-          <!-- Subject Detail Header: Back button, Title & Subtitle (Video Count • Teacher) on same line -->
+          <!-- Subject Detail Header: Row 1 Back & Subject Title; Row 2 Left Video Count, Right Person Icon & Teacher Name -->
           <div class="notes-detail-compact-bar">
-            <button id="btn-back-to-subjects" class="btn-notes-back">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-              <span>Back</span>
-            </button>
-            <div class="subject-detail-info">
+            <div class="subject-detail-top-line">
+              <button id="btn-back-to-subjects" class="btn-notes-back" type="button" aria-label="Go Back">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                <span>Back</span>
+              </button>
               <h2 id="subject-detail-title" class="subject-detail-title">Subject Title</h2>
-              <div class="subject-detail-meta-line">
-                <span id="subject-detail-count" class="subject-detail-count">0 Videos</span>
-                <span class="meta-dot">•</span>
+            </div>
+            <div class="subject-detail-sub-line">
+              <span id="subject-detail-count" class="subject-detail-count">0 Videos</span>
+              <div class="subject-detail-teacher-box">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span id="subject-detail-teacher" class="subject-detail-teacher">NNL Faculty</span>
               </div>
             </div>

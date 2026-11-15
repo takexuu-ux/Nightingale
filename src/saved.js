@@ -213,29 +213,76 @@ function renderSavedLectures() {
   });
 }
 
-// Render Saved Notes & PDFs
+// Real Local Storage for Saved Notes & Question Banks (Zero hardcoded fake items)
+const SAVED_NOTES_KEY = 'nnl_saved_notes_v1';
+const SAVED_TESTS_KEY = 'nnl_saved_tests_v1';
+
+function getSavedNotesList() {
+  try {
+    const raw = localStorage.getItem(SAVED_NOTES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function toggleSavedNote(note) {
+  try {
+    let list = getSavedNotesList();
+    const id = String(note.id || note.url || note.title);
+    const idx = list.findIndex(n => String(n.id || n.url || n.title) === id);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+    } else {
+      list.unshift(note);
+    }
+    localStorage.setItem(SAVED_NOTES_KEY, JSON.stringify(list));
+    return idx < 0;
+  } catch {
+    return false;
+  }
+}
+
+function getSavedTestsList() {
+  try {
+    const raw = localStorage.getItem(SAVED_TESTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function toggleSavedTest(test) {
+  try {
+    let list = getSavedTestsList();
+    const id = String(test.id || test.title);
+    const idx = list.findIndex(t => String(t.id || t.title) === id);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+    } else {
+      list.unshift(test);
+    }
+    localStorage.setItem(SAVED_TESTS_KEY, JSON.stringify(list));
+    return idx < 0;
+  } catch {
+    return false;
+  }
+}
+
+// Render Saved Notes & PDFs (Shows ONLY notes saved by the user, NO 'PDF Note' prefix, NO download button)
 function renderSavedNotes() {
   if (!notesContainer) return;
-  let allNotes = [];
-  try {
-    Object.keys(MASTER_NOTES_BY_SUBJECT || {}).forEach(subKey => {
-      const notes = MASTER_NOTES_BY_SUBJECT[subKey];
-      if (Array.isArray(notes)) {
-        notes.forEach(n => {
-          allNotes.push({ ...n, subject: subKey });
-        });
-      }
-    });
-  } catch {}
-
-  // Take first 12 curated high-yield clinical notes & brochures as baseline saved resources
-  const savedNotesList = allNotes.slice(0, 14);
+  const savedNotesList = getSavedNotesList();
   if (countNotesEl) countNotesEl.textContent = savedNotesList.length;
 
   const q = searchQuery.trim().toLowerCase();
   const filtered = savedNotesList.filter(n => {
     if (!q) return true;
-    return `${n.title} ${n.subject} ${n.topic || ''}`.toLowerCase().includes(q);
+    return `${n.title} ${n.subject || ''} ${n.topic || ''}`.toLowerCase().includes(q);
   });
 
   if (filtered.length === 0) {
@@ -245,7 +292,7 @@ function renderSavedNotes() {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         </div>
         <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved notes</p>
-        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Save lecture notes and high-yield clinical PDFs from the Notes tab.</p>
+        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Save notes from the Notes tab to view them here.</p>
       </div>
     `;
     return;
@@ -257,19 +304,16 @@ function renderSavedNotes() {
     return `
       <div class="note-doc-card apk-card-arrange" style="--card-i: ${idx};">
         <div class="note-doc-info">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-            <span class="note-doc-badge" style="background:rgba(56,189,248,0.18);color:#38BDF8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;">PDF NOTE</span>
-            <span style="font-size:11px;color:var(--text-secondary);">${n.subject}</span>
-          </div>
+          ${n.subject ? `<div style="font-size:11.5px;font-weight:700;color:var(--accent);margin-bottom:4px;">${n.subject}</div>` : ''}
           <h4 class="note-doc-title" style="font-size:13.5px;font-weight:700;margin:0 0 6px;color:var(--text-primary);">${cleanTitle}</h4>
         </div>
         <div class="note-doc-actions" style="display:flex;align-items:center;gap:6px;margin-top:8px;">
-          <button type="button" class="btn-note-view btn-preview-saved-pdf" data-title="${encodeURIComponent(cleanTitle)}" data-url="${encodeURIComponent(n.url || '')}" data-filename="${encodeURIComponent(downloadName)}" style="padding:6px 12px;font-size:11.5px;border-radius:8px;font-weight:700;cursor:pointer;">
+          <button type="button" class="btn-note-view btn-preview-saved-pdf" data-title="${encodeURIComponent(cleanTitle)}" data-url="${encodeURIComponent(n.url || '')}" data-filename="${encodeURIComponent(downloadName)}" style="padding:6px 14px;font-size:11.5px;border-radius:8px;font-weight:700;cursor:pointer;">
             <span>View PDF</span>
           </button>
-          <a href="${n.url || '#'}" target="_blank" rel="noopener noreferrer" download="${downloadName}" class="btn-note-download" style="padding:6px 12px;font-size:11.5px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
-            <span>Download</span>
-          </a>
+          <button type="button" class="sd-del-btn btn-unsave-note" data-note-id="${n.id || n.url || n.title}" title="Remove from saved" style="padding:6px 9px;border-radius:8px;cursor:pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
       </div>
     `;
@@ -284,31 +328,37 @@ function renderSavedNotes() {
       openPdfPreview(title, url, fn);
     });
   });
+
+  notesContainer.querySelectorAll('.btn-unsave-note').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-note-id');
+      toggleSavedNote({ id });
+      renderSavedNotes();
+    });
+  });
 }
 
-// Render Saved Question Banks
+// Render Saved Question Banks (Shows ONLY question banks saved by the user)
 function renderSavedTests() {
   if (!testsContainer) return;
-  const sampleBanks = [
-    { id: 'norcet-qb-01', title: 'NORCET 07 Prelims & Mains Full Question Bank', questions: 200, duration: '180 mins', category: 'Live Mock Series' },
-    { id: 'pharmacology-qb', title: 'Clinical Pharmacology High-Yield Question Bank', questions: 120, duration: '90 mins', category: 'Subject Series' },
-    { id: 'msn-high-yield-qb', title: 'Medical Surgical Nursing Priority Clinical Q-Set', questions: 150, duration: '120 mins', category: 'High-Yield Bank' },
-    { id: 'pediatric-obg-qb', title: 'OBG & Pediatric Nursing Golden 100 MCQs', questions: 100, duration: '80 mins', category: 'Practice Set' }
-  ];
-
-  if (countTestsEl) countTestsEl.textContent = sampleBanks.length;
+  const savedBanks = getSavedTestsList();
+  if (countTestsEl) countTestsEl.textContent = savedBanks.length;
 
   const q = searchQuery.trim().toLowerCase();
-  const filtered = sampleBanks.filter(t => {
+  const filtered = savedBanks.filter(t => {
     if (!q) return true;
-    return `${t.title} ${t.category}`.toLowerCase().includes(q);
+    return `${t.title} ${t.category || ''}`.toLowerCase().includes(q);
   });
 
   if (filtered.length === 0) {
     testsContainer.innerHTML = `
       <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align: center; width: 100%; grid-column: 1 / -1;">
+        <div style="width: 52px; height: 52px; margin: 0 auto 0.85rem; border-radius: 16px; background: rgba(142,116,229,0.18); border: 1px solid rgba(142,116,229,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
         <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved question banks</p>
-        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Bookmark practice tests and question sets from the Tests tab.</p>
+        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Bookmark question banks from the Tests tab to practice them here.</p>
       </div>
     `;
     return;
@@ -317,19 +367,38 @@ function renderSavedTests() {
   testsContainer.innerHTML = filtered.map((test, idx) => `
     <div class="test-card apk-card-arrange" style="--card-i: ${idx}; padding: 14px; border-radius: 14px; background: rgba(30, 24, 52, 0.65); border: 1px solid rgba(142, 116, 229, 0.22); display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
       <div>
-        <span style="font-size: 10.5px; font-weight: 700; color: var(--accent); background: rgba(142, 116, 229, 0.16); padding: 2px 8px; border-radius: 6px;">${test.category}</span>
+        ${test.category ? `<span style="font-size: 10.5px; font-weight: 700; color: var(--accent); background: rgba(142, 116, 229, 0.16); padding: 2px 8px; border-radius: 6px;">${test.category}</span>` : ''}
         <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 8px 0 4px;">${test.title}</h4>
         <div style="font-size: 11.5px; color: var(--text-secondary); display: flex; gap: 8px;">
-          <span>${test.questions} Questions</span>
-          <span>•</span>
-          <span>${test.duration}</span>
+          <span>${test.questions || 100} Questions</span>
+          ${test.duration ? `<span>•</span><span>${test.duration}</span>` : ''}
         </div>
       </div>
-      <button type="button" class="btn" onclick="window.location.href='/tests.html'" style="width: 100%; height: 36px; border-radius: 9px; font-size: 12.5px; font-weight: 700; background: linear-gradient(135deg, #8E74E5 0%, #7C5CE0 100%); color: #fff; border: none; cursor: pointer;">
-        Start Question Bank
-      </button>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn btn-start-saved-test" data-test-id="${test.id}" style="flex:1; height: 36px; border-radius: 9px; font-size: 12.5px; font-weight: 700; background: linear-gradient(135deg, #8E74E5 0%, #7C5CE0 100%); color: #fff; border: none; cursor: pointer;">
+          Start Question Bank
+        </button>
+        <button type="button" class="sd-del-btn btn-unsave-test" data-test-id="${test.id}" title="Remove from saved" style="padding:0 10px; border-radius:9px; cursor:pointer;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
     </div>
   `).join('');
+
+  testsContainer.querySelectorAll('.btn-start-saved-test').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.location.href = '/tests.html';
+    });
+  });
+
+  testsContainer.querySelectorAll('.btn-unsave-test').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-test-id');
+      toggleSavedTest({ id });
+      renderSavedTests();
+    });
+  });
 }
 
 // Top Tab Switcher

@@ -1035,8 +1035,8 @@ function renderSubjectLecturesList() {
           </div>
           <div class="sd-lecture-sub-line">
             <div class="sd-lecture-meta-left">
-              ${rec.duration ? `<span class="sd-lecture-duration">${escapeHtml(rec.duration)}</span>` : ''}
-              ${rec.topic && rec.topic !== rec.title ? `<span class="meta-dot">•</span><span class="sd-lecture-topic">${escapeHtml(rec.topic)}</span>` : ''}
+              <span class="sd-lecture-duration">⏱️ ${escapeHtml(rec.duration || 'Recorded')}</span>
+              ${dateFormatted ? `<span class="meta-dot">•</span><span class="sd-lecture-date-sub">${escapeHtml(dateFormatted)}</span>` : ''}
             </div>
             <div class="sd-lecture-actions">
               ${pdfBtnHtml}

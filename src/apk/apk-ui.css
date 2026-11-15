@@ -188,14 +188,14 @@ body {
 
 [data-theme="dark"] #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper.jpg') !important;
-  opacity: 0.82 !important;
-  filter: brightness(0.95) saturate(1.1) !important;
+  opacity: 0.90 !important;
+  filter: brightness(1.0) contrast(1.05) !important;
 }
 
 [data-theme="light"] #apk-ambient-bg {
-  background-image: url('./bg-app-wallpaper.jpg') !important;
-  opacity: 0.88 !important;
-  filter: brightness(1.28) saturate(1.15) contrast(0.92) !important;
+  background-image: url('./bg-app-wallpaper-light.jpg') !important;
+  opacity: 0.92 !important;
+  filter: brightness(1.08) contrast(1.02) !important;
 }
 
 main#app,
@@ -4247,25 +4247,26 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   height: 100dvh !important;
   max-height: none !important;
   margin: 0 !important;
-  background: linear-gradient(160deg, rgba(54, 43, 92, 0.97) 0%, rgba(38, 29, 68, 0.98) 50%, rgba(22, 17, 40, 0.99) 100%) !important;
+  background: linear-gradient(160deg, rgba(32, 24, 60, 0.94) 0%, rgba(22, 16, 42, 0.96) 50%, rgba(12, 9, 24, 0.98) 100%) !important;
   backdrop-filter: blur(36px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(36px) saturate(180%) !important;
   border: none !important;
   border-right: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 0 20px 20px 0 !important;
   box-shadow: 16px 0 48px rgba(0, 0, 0, 0.65), inset 1px 0 0 rgba(255, 255, 255, 0.15) !important;
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important; /* DYNAMICALLY DISTRIBUTE OVER FULL HEIGHT */
   transform: translate3d(0, 0, 0);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
   padding: max(18px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px !important;
-  gap: 8px !important;
+  gap: 12px !important; /* EQUAL GAP BETWEEN EACH CARD */
   box-sizing: border-box !important;
 }
 
 [data-theme="light"] .apk-side-drawer {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 240, 254, 0.96) 60%, rgba(238, 230, 252, 0.98) 100%) !important;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.97) 0%, rgba(246, 240, 254, 0.95) 60%, rgba(238, 230, 252, 0.97) 100%) !important;
   border: none !important;
   border-right: 1px solid rgba(108, 79, 214, 0.18) !important;
   box-shadow: 12px 0 36px rgba(45, 34, 72, 0.14) !important;
@@ -5559,50 +5560,50 @@ main#app,
   margin: 0 !important;
 }
 
-/* ── Compact Subject Detail Bar (Back + Title + Subtitle Video Count & Teacher) ── */
+/* ── Compact Subject Detail Bar (Row 1 Back & Subject Name; Row 2 Left Video Count, Right Teacher) ── */
 .notes-detail-compact-bar {
   display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 8px 12px !important;
-  margin-bottom: 12px !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 7px 11px !important;
+  margin-bottom: 9px !important;
   border-radius: 12px !important;
-  background: linear-gradient(135deg, rgba(28, 22, 52, 0.82), rgba(18, 14, 34, 0.9)) !important;
+  background: linear-gradient(135deg, rgba(28, 22, 52, 0.88), rgba(18, 14, 34, 0.94)) !important;
   border: 1px solid rgba(167, 139, 250, 0.18) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
+  box-sizing: border-box !important;
 }
 
 [data-theme="light"] .notes-detail-compact-bar {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(244, 238, 255, 0.92)) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(244, 238, 255, 0.94)) !important;
   border: 1px solid rgba(108, 79, 214, 0.18) !important;
 }
 
-.notes-detail-compact-bar .btn-notes-back {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-  padding: 6px 11px !important;
-  border-radius: 9px !important;
-  background: rgba(142, 116, 229, 0.16) !important;
-  border: 1px solid rgba(167, 139, 250, 0.28) !important;
-  color: var(--text-primary) !important;
-  font-size: 0.76rem !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  flex-shrink: 0 !important;
-  transition: all 0.2s ease !important;
-}
-
-.notes-detail-compact-bar .subject-detail-info {
+.subject-detail-top-line {
   display: flex !important;
-  flex-direction: column !important;
-  gap: 2px !important;
-  flex: 1 1 auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
   min-width: 0 !important;
 }
 
-.notes-detail-compact-bar .subject-detail-title {
+.subject-detail-top-line .btn-notes-back {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 3px 8px !important;
+  border-radius: 7px !important;
+  background: rgba(142, 116, 229, 0.16) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  color: var(--text-primary) !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.subject-detail-top-line .subject-detail-title {
   margin: 0 !important;
   font-size: 1.05rem !important;
   font-weight: 800 !important;
@@ -5610,50 +5611,64 @@ main#app,
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 
-.notes-detail-compact-bar .subject-detail-meta-line {
+.subject-detail-sub-line {
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.subject-detail-sub-line .subject-detail-count {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+}
+
+.subject-detail-sub-line .subject-detail-teacher-box {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
   font-size: 0.72rem !important;
   font-weight: 600 !important;
   color: var(--text-secondary) !important;
+}
+
+.subject-detail-sub-line .subject-detail-teacher-box svg {
+  stroke: var(--accent) !important;
+  width: 13px !important;
+  height: 13px !important;
+  flex-shrink: 0 !important;
+}
+
+.subject-detail-sub-line .subject-detail-teacher {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
-.notes-detail-compact-bar .subject-detail-meta-line .subject-detail-count {
-  color: var(--accent) !important;
-  font-weight: 700 !important;
-}
-
-.notes-detail-compact-bar .subject-detail-meta-line .meta-dot {
-  opacity: 0.55 !important;
-}
-
-.notes-detail-compact-bar .subject-detail-meta-line .subject-detail-teacher {
-  color: var(--text-primary) !important;
-}
-
-/* ── Compact 4-Part Lecture Card (~54px height, No Play button, Row 1 Title & Date, Row 2 Length & PDF & Save) ── */
+/* ── Lecture Card (Comfortable Height ~68px, Generous 16:9 Thumbnail, Clear Subtext) ── */
 .subject-lectures-container {
   display: flex !important;
   flex-direction: column !important;
-  gap: 7px !important;
+  gap: 8px !important;
 }
 
 .sd-lecture-card {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  padding: 7px 10px !important;
-  min-height: 50px !important;
-  max-height: 58px !important;
-  border-radius: 11px !important;
-  background: linear-gradient(135deg, rgba(24, 19, 44, 0.78), rgba(16, 12, 32, 0.88)) !important;
-  border: 1px solid rgba(167, 139, 250, 0.14) !important;
+  gap: 10px !important;
+  padding: 9px 12px !important;
+  min-height: 68px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, rgba(24, 19, 44, 0.82), rgba(16, 12, 32, 0.9)) !important;
+  border: 1px solid rgba(167, 139, 250, 0.16) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   cursor: pointer !important;
@@ -5662,13 +5677,13 @@ main#app,
 }
 
 [data-theme="light"] .sd-lecture-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(245, 240, 255, 0.92)) !important;
-  border: 1px solid rgba(108, 79, 214, 0.14) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 240, 255, 0.92)) !important;
+  border: 1px solid rgba(108, 79, 214, 0.16) !important;
 }
 
 .sd-lecture-card:hover {
   transform: translateY(-1px) !important;
-  border-color: rgba(167, 139, 250, 0.38) !important;
+  border-color: rgba(167, 139, 250, 0.42) !important;
 }
 
 .sd-lecture-card:active {
@@ -5678,19 +5693,19 @@ main#app,
 /* Part 1: Serial number */
 .sd-lecture-card .sd-lecture-num {
   font-family: var(--font-display, monospace) !important;
-  font-size: 0.76rem !important;
+  font-size: 0.78rem !important;
   font-weight: 800 !important;
   color: var(--accent) !important;
-  min-width: 20px !important;
+  min-width: 22px !important;
   text-align: center !important;
   flex-shrink: 0 !important;
 }
 
 /* Part 2: Video thumbnail */
 .sd-lecture-card .sd-lecture-thumb-wrap {
-  width: 60px !important;
-  height: 36px !important;
-  border-radius: 6px !important;
+  width: 72px !important;
+  height: 44px !important;
+  border-radius: 8px !important;
   overflow: hidden !important;
   position: relative !important;
   flex-shrink: 0 !important;
@@ -5723,7 +5738,7 @@ main#app,
   min-width: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 4px !important;
   justify-content: center !important;
 }
 
@@ -5737,7 +5752,7 @@ main#app,
 }
 
 .sd-lecture-card .sd-lecture-title {
-  font-size: 0.80rem !important;
+  font-size: 0.86rem !important;
   font-weight: 700 !important;
   color: var(--text-primary) !important;
   white-space: nowrap !important;
@@ -5748,7 +5763,7 @@ main#app,
 }
 
 .sd-lecture-card .sd-lecture-date {
-  font-size: 0.67rem !important;
+  font-size: 0.69rem !important;
   font-weight: 600 !important;
   color: var(--text-muted) !important;
   white-space: nowrap !important;
@@ -5768,7 +5783,8 @@ main#app,
   display: flex !important;
   align-items: center !important;
   gap: 5px !important;
-  font-size: 0.68rem !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
   color: var(--text-secondary) !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -5787,21 +5803,21 @@ main#app,
   display: inline-flex !important;
   align-items: center !important;
   gap: 3px !important;
-  padding: 2px 6px !important;
-  border-radius: 5px !important;
-  font-size: 0.67rem !important;
+  padding: 3px 7px !important;
+  border-radius: 6px !important;
+  font-size: 0.68rem !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   cursor: pointer !important;
-  background: rgba(142, 116, 229, 0.12) !important;
-  border: 1px solid rgba(167, 139, 250, 0.24) !important;
+  background: rgba(142, 116, 229, 0.14) !important;
+  border: 1px solid rgba(167, 139, 250, 0.26) !important;
   color: var(--text-primary) !important;
   transition: all 0.15s ease !important;
   white-space: nowrap !important;
 }
 
 .sd-mini-pill:hover {
-  background: rgba(142, 116, 229, 0.22) !important;
+  background: rgba(142, 116, 229, 0.24) !important;
   border-color: rgba(167, 139, 250, 0.45) !important;
 }
 
