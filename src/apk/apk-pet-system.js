@@ -10,25 +10,25 @@ export const PET_CATALOG = [
     id: 'bandage-nurse-realistic',
     name: 'Nurse',
     emoji: '🩺',
-    gif: '/pets_gif/bandage-nurse-realistic.gif'
+    webp: '/pets_webp/bandage-nurse-realistic.webp'
   },
   {
     id: 'shinchan',
     name: 'Shinchan',
     emoji: '🎈',
-    gif: '/pets_gif/shinchan.gif'
+    webp: '/pets_webp/shinchan.webp'
   },
   {
     id: 'banana-cat',
     name: 'Banana Cat',
     emoji: '🍌',
-    gif: '/pets_gif/banana-cat.gif'
+    webp: '/pets_webp/banana-cat.webp'
   },
   {
     id: 'moxie',
     name: 'Muksi',
     emoji: '📚',
-    gif: '/pets_gif/moxie.gif'
+    webp: '/pets_webp/moxie.webp'
   }
 ];
 
@@ -54,7 +54,7 @@ export function setActivePetId(petId) {
   const container = document.getElementById('apk-companion-pet');
   if (container) {
     const avatar = container.querySelector('.apk-pet-avatar');
-    if (avatar) avatar.innerHTML = `<img src="${pet.gif}" alt="${pet.name}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));" draggable="false" />`;
+    if (avatar) avatar.innerHTML = `<img src="${pet.webp}" alt="${pet.name}" style="width:100%;height:100%;object-fit:contain;background:transparent;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));" draggable="false" />`;
     container.classList.remove('is-hop');
     void container.offsetWidth;
     container.classList.add('is-hop');
@@ -106,7 +106,7 @@ function renderPetElement() {
   root.innerHTML = `
     <div class="apk-pet-bursts" aria-hidden="true"></div>
     <div class="apk-pet-avatar">
-      <img src="${pet.gif}" alt="${pet.name}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));" draggable="false" />
+      <img src="${pet.webp}" alt="${pet.name}" style="width:100%;height:100%;object-fit:contain;background:transparent;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));" draggable="false" />
     </div>
   `;
 

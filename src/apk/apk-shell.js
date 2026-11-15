@@ -246,7 +246,7 @@ function buildSidePanel() {
             <div class="apk-pet-card" data-pet-id="${p.id}" role="button" tabindex="0">
               <span class="apk-pet-card-check">✓</span>
               <div class="apk-pet-card-icon" style="display:flex;align-items:center;justify-content:center;">
-                ${p.gif ? `<img src="${p.gif}" alt="${p.name}" style="width:36px;height:48px;object-fit:contain;" draggable="false" />` : (p.svg || p.emoji)}
+                ${p.webp ? `<img src="${p.webp}" alt="${p.name}" style="width:28px;height:36px;object-fit:contain;background:transparent;" draggable="false" />` : (p.svg || p.emoji)}
               </div>
               <span class="apk-pet-card-name">${p.name}</span>
             </div>
@@ -773,7 +773,7 @@ function normalizeHeaderAndChrome() {
       showcase.innerHTML = `
         <div class="apk-brand-inline-row">
           <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
-          <h1 class="apk-showcase-title apk-brand-gradient-text">Nightingale</h1>
+          <h1 class="apk-showcase-title apk-brand-gradient-text">NIGHTINGALE</h1>
         </div>
         <div class="apk-showcase-pills">
           <span class="apk-showcase-pill">Live</span>

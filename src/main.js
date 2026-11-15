@@ -4149,6 +4149,13 @@ function initOtpBoxes() {
 
   // Modern W3C WebOTP API: automatically catches SMS verification codes on Android
   function startWebOtpAutoFetch() {
+    // Proactively request SMS permissions via AndroidAuthBridge if running in native APK
+    try {
+      if (window.AndroidAuthBridge && typeof window.AndroidAuthBridge.requestSmsPermission === 'function') {
+        window.AndroidAuthBridge.requestSmsPermission();
+      }
+    } catch (_) {}
+
     if (typeof window !== 'undefined' && 'OTPCredential' in window && navigator.credentials) {
       try {
         const ac = new AbortController();
