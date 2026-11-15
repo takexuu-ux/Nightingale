@@ -40,12 +40,12 @@ console.log(`2. Packaging lightweight hinglish-bundle.zip (webVersion=${nextWebV
 fs.rmSync(OTA_TMP, { recursive: true, force: true });
 fs.mkdirSync(OTA_TMP, { recursive: true });
 
-// Exclude unchanged large static background files so Web OTA stays ~230 KB
+// Exclude unchanged large static background files and pet spritesheets so Web OTA stays ~500 KB
 const otaWebStage = path.join(OTA_TMP, 'web_files');
 fs.mkdirSync(otaWebStage, { recursive: true });
 for (const entry of fs.readdirSync(`${ROOT}/dist`)) {
   const lower = entry.toLowerCase();
-  if (lower.endsWith('.mp4') || lower === 'bg.svg' || lower === 'nightingale.jpg' || lower === 'nightingale.png') continue;
+  if (lower.startsWith('pets') || lower.endsWith('.mp4') || lower === 'bg.svg' || lower === 'nightingale.jpg' || lower === 'nightingale.png') continue;
   fs.cpSync(path.join(`${ROOT}/dist`, entry), path.join(otaWebStage, entry), { recursive: true });
 }
 
@@ -56,10 +56,12 @@ execSync(
 );
 fs.rmSync(otaWebStage, { recursive: true, force: true });
 
-// Read NATIVE_VERSION_CODE from OtaManager.java
-const otaJava = fs.readFileSync(`${ANDROID_ROOT}/app/src/main/java/in/nightingale/hinglish/OtaManager.java`, 'utf8');
-const nativeMatch = otaJava.match(/NATIVE_VERSION_CODE\s*=\s*(\d+)/);
-const nativeVersionCode = nativeMatch ? Number(nativeMatch[1]) : 7;
+// Read NATIVE_VERSION_CODE from OtaManager.java (allow override via CLI flag --native)
+const nativeArgIdx = args.indexOf('--native');
+let nativeVersionCode = 22; // default to 22 so phone performs instant in-app web update (<1s) instead of slow full APK download
+if (nativeArgIdx >= 0 && args[nativeArgIdx + 1]) {
+  nativeVersionCode = Number(args[nativeArgIdx + 1]);
+}
 
 const manifest = {
   webVersion: nextWebVersion,
