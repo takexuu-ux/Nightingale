@@ -6512,3 +6512,84 @@ main#app,
 .quiz-viewer-overlay.hide {
   display: none !important;
 }
+
+/* ── Tablet Sidebar: Active Button Background Exactly Behind Its Button ── */
+@media (min-width: 768px) {
+  #apk-nav-liquid-indicator {
+    display: none !important;
+  }
+  .app-header .header-nav-tabs .nav-tab,
+  .app-header .nav-tabs .nav-tab,
+  .app-header .nav-tab {
+    position: relative !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .app-header .header-nav-tabs .nav-tab.active,
+  .app-header .nav-tabs .nav-tab.active,
+  .app-header .nav-tab.active {
+    background: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 58%, #9378EC 100%) !important;
+    color: #FFFFFF !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 16px rgba(124, 92, 224, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    transform: none !important;
+  }
+  .app-header .header-nav-tabs .nav-tab.active svg,
+  .app-header .nav-tabs .nav-tab.active svg,
+  .app-header .nav-tab.active svg {
+    stroke: #FFFFFF !important;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3)) !important;
+  }
+
+  /* Hide Options/Hamburger buttons on tablet UI (already in side panel) */
+  #apk-hamburger-btn,
+  .apk-hamburger-btn,
+  #tweak-panel-toggle-btn,
+  .tweak-panel-toggle-btn,
+  .tweaks-toggle-btn,
+  .cyber-tweaks-widget {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* ── Perfectly Centered "Logging in..." & Spinner in Login Box ── */
+#verify-otp-btn,
+#send-otp-btn,
+.btn-verify-compact {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+}
+#verify-otp-btn .spinner,
+#send-otp-btn .spinner {
+  margin: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-width: 2px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── High-Priority PDF Reader Modal Overlay ── */
+.pdf-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999998 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(6, 8, 15, 0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+.pdf-modal-overlay.hide {
+  display: none !important;
+}

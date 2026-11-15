@@ -1131,7 +1131,6 @@ function openPdfModal(title, url) {
   if (typeof window !== 'undefined' && window.AndroidPdfBridge && typeof window.AndroidPdfBridge.openPdf === 'function') {
     try {
       window.AndroidPdfBridge.openPdf(url, title || 'Lecture Notes PDF');
-      return;
     } catch (e) {
       console.warn('[Videos] Native PDF bridge fallback:', e);
     }
@@ -1189,6 +1188,7 @@ function openRecordingPlayer(recording) {
 
   // If in native Android app, directly launch native player with zero flicker / web popup
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    hydrateAndroidAuthSession();
     const tk = localStorage.getItem('nnl_access_token') || '';
     const pdfUrl = recording.notePdfUrl || '';
     const pdfTitle = recording.notePdfTitle || (recording.title ? `${recording.title} Notes` : 'Class Notes PDF');
@@ -1202,29 +1202,29 @@ function openRecordingPlayer(recording) {
     });
 
     (async () => {
+      let data = null;
       try {
-        let data = null;
         try {
           data = await fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch });
         } catch (e1) {
           data = await fetchFreshVdoCipherOtp(recId, { isBatch103: !isBatch });
         }
-        if (data && data.otp && data.playbackInfo) {
-          window.AndroidVideoBridge.playVideoWithAuth(
-            data.otp,
-            data.playbackInfo,
-            recording.title || 'Recorded Lecture',
-            recording.instructor || 'NNL Faculty',
-            String(recId || ''),
-            tk,
-            isBatch,
-            pdfUrl,
-            pdfTitle
-          );
-        }
       } catch (err) {
-        console.error('[Videos] Native playback launch error:', err);
+        console.warn('[Videos] Web pre-fetch OTP fallback to native VdoPlayerActivity:', err);
       }
+
+      // Always launch native player! Even if web pre-fetch timed out, VdoPlayerActivity will refresh OTP itself!
+      window.AndroidVideoBridge.playVideoWithAuth(
+        data?.otp || '',
+        data?.playbackInfo || '',
+        recording.title || 'Recorded Lecture',
+        recording.instructor || 'NNL Faculty',
+        String(recId || ''),
+        tk,
+        isBatch,
+        pdfUrl,
+        pdfTitle
+      );
     })();
     return;
   }

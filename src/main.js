@@ -3439,22 +3439,20 @@ async function resumeLecture(recId, btnEl) {
           console.warn('Both OTP attempts failed:', e1, e2);
         }
       }
-      if (data && data.otp && data.playbackInfo) {
-        window.AndroidVideoBridge.playVideoWithAuth(
-          data.otp,
-          data.playbackInfo,
-          item?.title || 'Recorded Lecture',
-          item?.instructor || 'NNL Faculty',
-          String(recId),
-          tk,
-          true
-        );
-        if (btnEl) {
-          btnEl.disabled = false;
-          btnEl.innerHTML = '<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span>';
-        }
-        return;
+      window.AndroidVideoBridge.playVideoWithAuth(
+        data?.otp || '',
+        data?.playbackInfo || '',
+        item?.title || 'Recorded Lecture',
+        item?.instructor || 'NNL Faculty',
+        String(recId),
+        tk,
+        true
+      );
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = '<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span>';
       }
+      return;
     } catch (err) {
       console.warn('Native video resume fallback:', err);
     }
@@ -4385,7 +4383,7 @@ otpForm.addEventListener('submit', async (e) => {
   const verifyBtn = document.getElementById('verify-otp-btn');
   const originalBtnText = verifyBtn.innerHTML;
   verifyBtn.disabled = true;
-  verifyBtn.innerHTML = '<div class="spinner"></div> Logging in...';
+  verifyBtn.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;animation:apkSpin 0.7s linear infinite;margin-right:8px;vertical-align:middle;flex-shrink:0;"></span><span>Logging in...</span>';
 
   const isApkShell = document.body.classList.contains('apk-shell-active');
   const otpContainer = document.getElementById('otp-boxes-container');

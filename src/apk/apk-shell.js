@@ -706,9 +706,9 @@ function normalizeHeaderAndChrome() {
   }
 
   const appHeader = document.getElementById('app-header');
-  if (window.innerWidth >= 768 && appHeader) {
-    if (hamBtn.parentElement !== appHeader) {
-      appHeader.insertBefore(hamBtn, appHeader.firstChild);
+  if (window.innerWidth >= 768) {
+    if (hamBtn) {
+      hamBtn.style.setProperty('display', 'none', 'important');
     }
   } else {
     if (hamBtn.parentElement !== document.body) {

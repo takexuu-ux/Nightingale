@@ -72,29 +72,27 @@ function openLectureViewer(rec) {
   // If in native Android app, directly play through native VdoPlayerActivity
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
     (async () => {
+      let otpData = null;
       try {
-        let otpData = null;
         try {
           otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
         } catch {
           otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
         }
-        if (otpData && otpData.otp && otpData.playbackInfo) {
-          window.AndroidVideoBridge.playVideoWithAuth(
-            otpData.otp,
-            otpData.playbackInfo,
-            rec.title || 'Recorded Lecture',
-            rec.instructor || 'NNL Faculty',
-            String(recId),
-            tk,
-            true,
-            rec.notePdfUrl || '',
-            rec.notePdfTitle || ''
-          );
-        }
       } catch (e) {
-        console.error('[Saved] Playback error:', e);
+        console.warn('[Saved] Web pre-fetch OTP fallback to native:', e);
       }
+      window.AndroidVideoBridge.playVideoWithAuth(
+        otpData?.otp || '',
+        otpData?.playbackInfo || '',
+        rec.title || 'Recorded Lecture',
+        rec.instructor || 'NNL Faculty',
+        String(recId),
+        tk,
+        true,
+        rec.notePdfUrl || '',
+        rec.notePdfTitle || ''
+      );
     })();
     return;
   }
