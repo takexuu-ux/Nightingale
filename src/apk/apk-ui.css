@@ -375,11 +375,13 @@ button, input, select, textarea {
   font-size: 1.45rem;
 }
 
-.preloader-status-container p {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+.preloader-status-container,
+.preloader-status-container p,
+#preloader-status {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* ── Minimal Navigation Chrome (Left Rail on Tablet / Bottom Dock on Mobile) ── */

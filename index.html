@@ -48,21 +48,18 @@
           </div>
           <div class="logo-text" style="font-family:'Outfit',system-ui,sans-serif;font-weight:700;letter-spacing:0.04em;">Nightingale</div>
         </div>
-        <div class="preloader-status-container">
-          <p id="preloader-status">Setting up your study space...</p>
-        </div>
       </div>
       <script>
-        // Guaranteed immediate preloader auto-dismiss (400ms max)
+        // Guaranteed immediate preloader auto-dismiss (300ms max)
         setTimeout(function() {
           var p = document.getElementById('app-preloader');
           if (p) {
             p.classList.add('fade-out');
             p.style.opacity = '0';
             p.style.pointerEvents = 'none';
-            setTimeout(function() { if (p && p.parentNode) p.parentNode.removeChild(p); }, 300);
+            setTimeout(function() { if (p && p.parentNode) p.parentNode.removeChild(p); }, 250);
           }
-        }, 400);
+        }, 300);
       </script>
     </div>
 

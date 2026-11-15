@@ -53,7 +53,7 @@ for (const entry of fs.readdirSync(`${ROOT}/dist`)) {
 
 const zipPath = path.join(OTA_TMP, 'hinglish-bundle.zip');
 execSync(
-  `powershell -NoProfile -Command "Compress-Archive -Path '${otaWebStage}/*' -DestinationPath '${zipPath}' -Force"`,
+  `tar.exe -a -c -f "${zipPath}" -C "${otaWebStage}" .`,
   { stdio: 'inherit' }
 );
 fs.rmSync(otaWebStage, { recursive: true, force: true });

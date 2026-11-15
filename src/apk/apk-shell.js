@@ -743,6 +743,8 @@ function normalizeHeaderAndChrome() {
     preloaderLogo.insertBefore(badge, preloaderLogo.firstChild);
     const txt = preloaderLogo.querySelector('.logo-text');
     if (txt) txt.textContent = 'Nightingale';
+    const statusEl = document.querySelector('.preloader-status-container');
+    if (statusEl) statusEl.remove();
   }
 
   // Header Logo
