@@ -2,6 +2,8 @@
 // Architected for clean subject isolation, complete Medicine library (141+ verified PDFs),
 // paginated API fetching, and Red Sapphire Brochure & Timetable access.
 
+import './apk/apk-shell.js';
+
 import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';

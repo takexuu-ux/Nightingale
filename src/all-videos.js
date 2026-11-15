@@ -1,4 +1,5 @@
 // Nightingale All Videos Library — Instant Subject + Teacher Catalog, Throttled On-Demand Topic Loading & Batch 103 Live Sync
+import './apk/apk-shell.js';
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';

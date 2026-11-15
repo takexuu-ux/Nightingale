@@ -22,9 +22,17 @@
     </script>
     <meta name="description" content="Access Nightingale premium nursing preparation classes directly from your PC browser and join live interactive sessions." />
     <title>Nightingale Classroom - Premium Nursing Portal</title>
-    <script type="module" src="/src/apk/apk-shell.js"></script>
   </head>
-  <body>
+  <body class="apk-is-auth on-login-screen">
+    <script>
+      (function(){
+        try {
+          if (localStorage.getItem('nnl_access_token')) {
+            document.body.classList.remove('apk-is-auth', 'on-login-screen');
+          }
+        } catch(e) {}
+      })();
+    </script>
     <!-- Ambient Single Unified Background Layer -->
     <div id="apk-ambient-bg"></div>
 
@@ -32,33 +40,41 @@
     <div id="app-preloader" class="app-preloader">
       <div class="preloader-content">
         <div class="preloader-logo">
-          <svg viewBox="0 0 40 24" fill="none" stroke="currentColor" class="heartbeat-svg preloader-heartbeat">
-            <path d="M0 12h14l3-8 4 16 3-11 2 3h14" class="heartbeat-track" />
-            <path d="M0 12h14l3-8 4 16 3-11 2 3h14" class="heartbeat-pulse" />
-          </svg>
-          <div class="logo-text">NIGHTINGALE</div>
+          <div class="apk-logo-badge" style="width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg, #4E329A 0%, #6F4FC4 55%, #957AE9 100%);display:inline-flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(91,62,168,0.26);">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:26px;">
+              <path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="46" cy="11.5" r="3.2" fill="#E9DFFF"/>
+            </svg>
+          </div>
+          <div class="logo-text" style="font-family:'Outfit',system-ui,sans-serif;font-weight:700;letter-spacing:0.04em;">Nightingale</div>
         </div>
         <div class="preloader-status-container">
           <p id="preloader-status">Setting up your study space...</p>
         </div>
       </div>
       <script>
-        // Guaranteed inline preloader auto-dismiss (1 sec max)
+        // Guaranteed immediate preloader auto-dismiss (400ms max)
         setTimeout(function() {
           var p = document.getElementById('app-preloader');
           if (p) {
+            p.classList.add('fade-out');
             p.style.opacity = '0';
-            p.style.transition = 'opacity 0.4s ease';
-            setTimeout(function() { if (p && p.parentNode) p.parentNode.removeChild(p); }, 400);
+            p.style.pointerEvents = 'none';
+            setTimeout(function() { if (p && p.parentNode) p.parentNode.removeChild(p); }, 300);
           }
-        }, 1000);
+        }, 400);
       </script>
     </div>
 
     <!-- App Header (Visible when logged in) -->
     <header id="app-header" class="app-header hide">
       <div id="header-logo" class="header-logo" style="cursor: pointer;" onclick="window.location.href='/'">
-        <span class="logo-text">NIGHTINGALE</span>
+        <div class="apk-logo-badge" style="width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg, #4E329A 0%, #6F4FC4 55%, #957AE9 100%);display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(91,62,168,0.28);">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px;">
+            <path d="M18 45V20c7 0 11 5.5 14 11.5C35 37.5 39 43 46 43V18" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="46" cy="11.5" r="3.2" fill="#E9DFFF"/>
+          </svg>
+        </div>
       </div>
       
       <!-- Primary Top Navigation Tabs -->

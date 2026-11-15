@@ -1,3 +1,4 @@
+import './apk/apk-shell.js';
 import {
   getSavedLecturesList,
   toggleSavedLecture,

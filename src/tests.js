@@ -1,4 +1,5 @@
 // Nightingale Categorized Practice Tests, Question Bank & Batch 104 CBT Controller
+import './apk/apk-shell.js';
 import { PRACTICE_TEST_SERIES, QBANK_SUBJECTS, TESTS_CATALOG_TOTALS } from './data/allTestsCatalog.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';

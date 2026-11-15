@@ -303,7 +303,17 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.32s ease;
+  transition: opacity 0.32s ease, visibility 0.32s ease;
+}
+
+.app-preloader.fade-out,
+.app-preloader.hide,
+#app-preloader.fade-out,
+#app-preloader.hide {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  display: none !important;
 }
 
 .preloader-content {
@@ -744,8 +754,12 @@ body:has(#app-header.hide) main#app > .container {
   flex-direction: column;
 }
 
-body:not(.apk-is-auth) #apk-auth-showcase,
-body:not(.apk-is-auth) .auth-hero-wrapper {
+body:has(#auth-screen.hide) #apk-auth-showcase,
+body:has(#auth-screen.hide) .auth-hero-wrapper,
+body:has(#classroom-dashboard:not(.hide)) #apk-auth-showcase,
+body:has(#classroom-dashboard:not(.hide)) .auth-hero-wrapper,
+body:not(.apk-is-auth):has(#classroom-dashboard:not(.hide)) #apk-auth-showcase,
+body:not(.apk-is-auth):has(#classroom-dashboard:not(.hide)) .auth-hero-wrapper {
   display: none !important;
 }
 
@@ -3739,8 +3753,21 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 }
 
-.header-logo {
-  display: none !important;
+@media (min-width: 768px) {
+  .header-logo {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 4px 0 10px !important;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 767px) {
+  .header-logo {
+    display: none !important;
+  }
 }
 
 /* Common Nav Tab Button Behavior (NO static colors on inactive tabs; ONLY clicked active tab changes color) */

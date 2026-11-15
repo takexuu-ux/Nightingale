@@ -1,3 +1,4 @@
+import './apk/apk-shell.js';
 import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/appMode.js';
 import { fetchFreshVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import {
@@ -4952,59 +4953,16 @@ if (!activeBatch || !VALID_INIT_BATCHES.includes(activeBatch)) {
 
 function updateFavicon() {
   try {
-    const canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw background circle
-    ctx.fillStyle = '#050608';
-    ctx.beginPath();
-    ctx.arc(16, 16, 15, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Get active accent color (pink/cyan/amber/emerald) from body class
-    let accent = '#ff0055';
-    if (document.body.classList.contains('tweak-cyan-mode')) accent = '#00f0ff';
-    else if (document.body.classList.contains('tweak-amber-mode')) accent = '#ffaa00';
-    else if (document.body.classList.contains('tweak-emerald-mode')) accent = '#00ff66';
-    
-    const pts = [
-      {x: 3, y: 16},
-      {x: 11, y: 16},
-      {x: 13, y: 7},
-      {x: 16, y: 25},
-      {x: 18, y: 11},
-      {x: 20, y: 16},
-      {x: 29, y: 16}
-    ];
-
-    // Draw solid glowing heartbeat line
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 2.5;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    
-    // Glow effect
-    ctx.shadowColor = accent;
-    ctx.shadowBlur = 4;
-    
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i].x, pts[i].y);
-    }
-    ctx.stroke();
-    
     let link = document.querySelector("link[rel~='icon']");
     if (!link) {
       link = document.createElement('link');
       link.rel = 'icon';
       document.getElementsByTagName('head')[0].appendChild(link);
     }
-    link.href = canvas.toDataURL('image/png');
+    link.type = 'image/svg+xml';
+    link.href = '/favicon.svg';
   } catch (e) {
-    console.warn('Favicon generation failed:', e);
+    console.warn('Favicon update failed:', e);
   }
 }
 
