@@ -5016,6 +5016,22 @@ main#app,
   overflow: visible !important;
 }
 
+@media (min-width: 768px) {
+  .apk-date-picker-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .apk-date-picker-bar {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
 .apk-date-picker-bar {
   width: 100% !important;
   display: flex !important;
@@ -5594,15 +5610,17 @@ main#app,
   box-shadow: 0 4px 14px rgba(108, 79, 214, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
-.header-nav-tabs .nav-tab,
-.header-nav-tabs .nav-tab.active,
-.header-nav-tabs .nav-tabs .nav-tab.active {
-  position: relative !important;
-  z-index: 2 !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  transition: color 0.2s ease !important;
+@media (max-width: 767px) {
+  .header-nav-tabs .nav-tab,
+  .header-nav-tabs .nav-tab.active,
+  .header-nav-tabs .nav-tabs .nav-tab.active {
+    position: relative !important;
+    z-index: 2 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition: color 0.2s ease !important;
+  }
 }
 
 .header-nav-tabs .nav-tab svg {
@@ -6529,23 +6547,62 @@ main#app,
   }
   .app-header .header-nav-tabs .nav-tab.active,
   .app-header .nav-tabs .nav-tab.active,
-  .app-header .nav-tab.active {
-    background: linear-gradient(135deg, #5B3EA8 0%, #7C5CE0 58%, #9378EC 100%) !important;
+  .app-header .nav-tab.active,
+  .app-header .header-nav-tabs .nav-tab.floating-active,
+  .app-header .nav-tabs .nav-tab.floating-active,
+  .app-header .nav-tab.floating-active,
+  .app-header .header-nav-tabs .nav-tab:active,
+  .app-header .nav-tabs .nav-tab:active,
+  .app-header .nav-tab:active {
+    background: linear-gradient(135deg, #6C4FD6 0%, #8E74E5 55%, #A78BFA 100%) !important;
     color: #FFFFFF !important;
     border-radius: 14px !important;
-    box-shadow: 0 4px 16px rgba(124, 92, 224, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(108, 79, 214, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
     transform: none !important;
   }
   .app-header .header-nav-tabs .nav-tab.active svg,
   .app-header .nav-tabs .nav-tab.active svg,
-  .app-header .nav-tab.active svg {
+  .app-header .nav-tab.active svg,
+  .app-header .header-nav-tabs .nav-tab.floating-active svg,
+  .app-header .nav-tabs .nav-tab.floating-active svg,
+  .app-header .nav-tab.floating-active svg,
+  .app-header .header-nav-tabs .nav-tab:active svg,
+  .app-header .nav-tabs .nav-tab:active svg,
+  .app-header .nav-tab:active svg {
     stroke: #FFFFFF !important;
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3)) !important;
   }
 
-  /* Hide Options/Hamburger buttons on tablet UI (already in side panel) */
-  #apk-hamburger-btn,
-  .apk-hamburger-btn,
+  /* Options Button inside Left Sidebar Rail on Tablet (Clean, aligned, zero overlap) */
+  .app-header .apk-hamburger-btn,
+  .app-header #apk-hamburger-btn {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: static !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 4px auto 12px auto !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    cursor: pointer !important;
+  }
+  .app-header .apk-hamburger-btn:hover,
+  .app-header .apk-hamburger-btn:active {
+    background: rgba(142, 116, 229, 0.28) !important;
+    border-color: rgba(167, 139, 250, 0.5) !important;
+  }
+
+  /* Hide floating/redundant body overlays on tablet */
+  body > #apk-hamburger-btn,
+  body > .apk-hamburger-btn,
   #tweak-panel-toggle-btn,
   .tweak-panel-toggle-btn,
   .tweaks-toggle-btn,

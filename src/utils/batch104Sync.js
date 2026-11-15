@@ -15,10 +15,10 @@ export function hydrateAndroidAuthSession() {
       const raw = window.AndroidAuthBridge.getSessionJson();
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved.access && !localStorage.getItem('nnl_access_token')) {
+        if (saved.access) {
           localStorage.setItem('nnl_access_token', saved.access);
         }
-        if (saved.refresh && !localStorage.getItem('nnl_refresh_token')) {
+        if (saved.refresh) {
           localStorage.setItem('nnl_refresh_token', saved.refresh);
         }
         if (saved.phone && !localStorage.getItem('nnl_phone')) {
@@ -176,10 +176,13 @@ export async function fetchFreshVdoCipherOtp(recId, { isBatch103 = false } = {})
       lastStatus = res.status;
       if (!res.ok) continue;
       const data = await res.json();
-      if (data && data.otp && data.playbackInfo) {
+      const payload = data?.data || data;
+      const otp = payload?.otp || data?.otp;
+      const playbackInfo = payload?.playbackInfo || data?.playbackInfo;
+      if (otp && playbackInfo) {
         return {
-          otp: data.otp,
-          playbackInfo: data.playbackInfo,
+          otp,
+          playbackInfo,
           sourceEndpoint: ep
         };
       }
@@ -228,10 +231,13 @@ export async function fetchOfflineVdoCipherOtp(recId, { isBatch103 = false } = {
       lastStatus = res.status;
       if (!res.ok) continue;
       const data = await res.json();
-      if (data && data.otp && data.playbackInfo) {
+      const payload = data?.data || data;
+      const otp = payload?.otp || data?.otp;
+      const playbackInfo = payload?.playbackInfo || data?.playbackInfo;
+      if (otp && playbackInfo) {
         return {
-          otp: data.otp,
-          playbackInfo: data.playbackInfo,
+          otp,
+          playbackInfo,
           sourceEndpoint: ep
         };
       }

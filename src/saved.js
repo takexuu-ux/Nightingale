@@ -71,29 +71,17 @@ function openLectureViewer(rec) {
 
   // If in native Android app, directly play through native VdoPlayerActivity
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
-    (async () => {
-      let otpData = null;
-      try {
-        try {
-          otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
-        } catch {
-          otpData = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
-        }
-      } catch (e) {
-        console.warn('[Saved] Web pre-fetch OTP fallback to native:', e);
-      }
-      window.AndroidVideoBridge.playVideoWithAuth(
-        otpData?.otp || '',
-        otpData?.playbackInfo || '',
-        rec.title || 'Recorded Lecture',
-        rec.instructor || 'NNL Faculty',
-        String(recId),
-        tk,
-        true,
-        rec.notePdfUrl || '',
-        rec.notePdfTitle || ''
-      );
-    })();
+    window.AndroidVideoBridge.playVideoWithAuth(
+      rec.otp || '',
+      rec.playbackInfo || '',
+      rec.title || 'Recorded Lecture',
+      rec.instructor || 'NNL Faculty',
+      String(recId),
+      tk,
+      true,
+      rec.notePdfUrl || '',
+      rec.notePdfTitle || (rec.title ? `${rec.title} Notes` : 'Class Notes PDF')
+    );
     return;
   }
 
@@ -201,8 +189,9 @@ function renderSavedLectures() {
   lecturesContainer.innerHTML = filtered.map((lec, idx) => {
     const thumb = lec.thumb || '/nightingale.png';
     const duration = lec.duration ? `${Math.round(lec.duration / 60)} mins` : 'Recorded';
+    const recIdClean = String(lec.id || lec.recId || '');
     return `
-      <div class="sd-lecture-card apk-card-arrange" data-rec-id="${lec.recId}" style="--card-i: ${idx};">
+      <div class="sd-lecture-card apk-card-arrange" data-rec-id="${recIdClean}" style="--card-i: ${idx};">
         <span class="sd-lecture-num">${idx + 1}</span>
         <div class="sd-lecture-thumb-wrap">
           <img src="${thumb}" alt="${lec.title}" class="sd-lecture-thumb" loading="lazy" onerror="this.src='/nightingale.png'" />
@@ -223,11 +212,11 @@ function renderSavedLectures() {
           <div class="sd-lecture-sub-line">
             <span class="sd-lecture-progress-label">${duration}</span>
             <div class="sd-lecture-actions">
-              <button type="button" class="sd-mini-pill btn-play-saved-rec" data-rec-id="${lec.recId}" style="background:var(--accent);color:#fff;border:none;">
+              <button type="button" class="sd-mini-pill btn-play-saved-rec" data-rec-id="${recIdClean}" style="background:var(--accent);color:#fff;border:none;">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <span>Play</span>
               </button>
-              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${lec.recId}" title="Remove from saved">
+              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${recIdClean}" title="Remove from saved">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 <span>Remove</span>
               </button>
@@ -238,11 +227,11 @@ function renderSavedLectures() {
     `;
   }).join('');
 
-  lecturesContainer.querySelectorAll('.btn-play-saved-rec').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = btn.getAttribute('data-rec-id');
-      const rec = list.find(r => String(r.recId) === String(id));
+  lecturesContainer.querySelectorAll('.btn-play-saved-rec, .sd-lecture-card[data-rec-id]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.btn-unsave-rec')) return;
+      const id = el.getAttribute('data-rec-id');
+      const rec = list.find(r => String(r.id || r.recId) === String(id));
       if (rec) openLectureViewer(rec);
     });
   });
@@ -251,8 +240,10 @@ function renderSavedLectures() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = btn.getAttribute('data-rec-id');
-      toggleSavedLecture(id);
-      renderSavedLectures();
+      if (id && id !== 'undefined' && id !== 'null') {
+        toggleSavedLecture(id);
+        renderSavedLectures();
+      }
     });
   });
 }

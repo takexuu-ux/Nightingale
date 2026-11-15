@@ -25,10 +25,10 @@ export function restoreApkSessionSync() {
     const raw = window.AndroidAuthBridge.getSessionJson();
     if (!raw) return;
     const saved = JSON.parse(raw);
-    if (saved.access && !localStorage.getItem('nnl_access_token')) {
+    if (saved.access) {
       localStorage.setItem('nnl_access_token', saved.access);
     }
-    if (saved.refresh && !localStorage.getItem('nnl_refresh_token')) {
+    if (saved.refresh) {
       localStorage.setItem('nnl_refresh_token', saved.refresh);
     }
     if (saved.phone && !localStorage.getItem('nnl_phone')) {

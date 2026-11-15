@@ -1201,31 +1201,18 @@ function openRecordingPlayer(recording) {
       percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
     });
 
-    (async () => {
-      let data = null;
-      try {
-        try {
-          data = await fetchFreshVdoCipherOtp(recId, { isBatch103: isBatch });
-        } catch (e1) {
-          data = await fetchFreshVdoCipherOtp(recId, { isBatch103: !isBatch });
-        }
-      } catch (err) {
-        console.warn('[Videos] Web pre-fetch OTP fallback to native VdoPlayerActivity:', err);
-      }
-
-      // Always launch native player! Even if web pre-fetch timed out, VdoPlayerActivity will refresh OTP itself!
-      window.AndroidVideoBridge.playVideoWithAuth(
-        data?.otp || '',
-        data?.playbackInfo || '',
-        recording.title || 'Recorded Lecture',
-        recording.instructor || 'NNL Faculty',
-        String(recId || ''),
-        tk,
-        isBatch,
-        pdfUrl,
-        pdfTitle
-      );
-    })();
+    // Directly launch native player immediately (VdoPlayerActivity will stream natively with zero wait)
+    window.AndroidVideoBridge.playVideoWithAuth(
+      recording.otp || '',
+      recording.playbackInfo || '',
+      recording.title || 'Recorded Lecture',
+      recording.instructor || 'NNL Faculty',
+      String(recId || ''),
+      tk,
+      isBatch,
+      pdfUrl,
+      pdfTitle
+    );
     return;
   }
 

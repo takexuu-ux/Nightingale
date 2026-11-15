@@ -3429,24 +3429,16 @@ async function resumeLecture(recId, btnEl) {
   // 1. Native Android player execution
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
     try {
-      let data = null;
-      try {
-        data = await fetchFreshVdoCipherOtp(recId, { isBatch103: true });
-      } catch (e1) {
-        try {
-          data = await fetchFreshVdoCipherOtp(recId, { isBatch103: false });
-        } catch (e2) {
-          console.warn('Both OTP attempts failed:', e1, e2);
-        }
-      }
       window.AndroidVideoBridge.playVideoWithAuth(
-        data?.otp || '',
-        data?.playbackInfo || '',
+        item?.otp || '',
+        item?.playbackInfo || '',
         item?.title || 'Recorded Lecture',
         item?.instructor || 'NNL Faculty',
         String(recId),
         tk,
-        true
+        true,
+        item?.notePdfUrl || '',
+        item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF')
       );
       if (btnEl) {
         btnEl.disabled = false;

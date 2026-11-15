@@ -96,25 +96,30 @@ export function getRecentlyWatchedLectures(limit = 8) {
 export function getSavedLectureIds() {
   try {
     const raw = localStorage.getItem(SAVED_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return arr.filter(x => x && x !== 'undefined' && x !== 'null');
+      }
+    }
   } catch (_) {}
   return [];
 }
 
 export function isLectureSaved(recId) {
-  if (!recId) return false;
+  if (!recId || recId === 'undefined' || recId === 'null') return false;
   const ids = getSavedLectureIds();
   return ids.includes(String(recId));
 }
 
 export function toggleSavedLecture(recId, meta = null) {
-  if (!recId) return false;
+  if (!recId || recId === 'undefined' || recId === 'null') return false;
   const id = String(recId);
   let ids = getSavedLectureIds();
   const alreadySaved = ids.includes(id);
 
   if (alreadySaved) {
-    ids = ids.filter(x => x !== id);
+    ids = ids.filter(x => x !== id && x !== 'undefined' && x !== 'null');
   } else {
     ids.unshift(id);
   }
@@ -128,15 +133,20 @@ export function toggleSavedLecture(recId, meta = null) {
     let metaMap = {};
     const rawMeta = localStorage.getItem('nnl_saved_lectures_meta');
     if (rawMeta) metaMap = JSON.parse(rawMeta);
+    delete metaMap['undefined'];
+    delete metaMap['null'];
+
     if (!alreadySaved && meta) {
       metaMap[id] = {
         id,
+        recId: id,
         title: meta.title || 'Saved Lecture',
         instructor: meta.instructor || 'NNL Faculty',
         subject: meta.subject || '',
         thumb: meta.thumb || '',
         duration: meta.duration || '',
         notePdfUrl: meta.notePdfUrl || '',
+        notePdfTitle: meta.notePdfTitle || '',
         date: meta.date || ''
       };
     } else if (alreadySaved) {
@@ -157,9 +167,25 @@ export function getSavedLecturesList() {
   try {
     const raw = localStorage.getItem('nnl_saved_lectures_meta');
     if (raw) metaMap = JSON.parse(raw);
+    delete metaMap['undefined'];
+    delete metaMap['null'];
   } catch (_) {}
 
-  return ids.map(id => metaMap[id] || { id, title: `Lecture #${id}` });
+  return ids.map(id => {
+    const m = metaMap[id] || {};
+    return {
+      id: String(id),
+      recId: String(id),
+      title: m.title || `Lecture #${id}`,
+      instructor: m.instructor || 'NNL Faculty',
+      subject: m.subject || '',
+      thumb: m.thumb || '',
+      duration: m.duration || '',
+      notePdfUrl: m.notePdfUrl || '',
+      notePdfTitle: m.notePdfTitle || '',
+      date: m.date || ''
+    };
+  });
 }
 
 // Global hook for Android resume

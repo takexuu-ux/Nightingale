@@ -707,9 +707,13 @@ function normalizeHeaderAndChrome() {
 
   const appHeader = document.getElementById('app-header');
   if (window.innerWidth >= 768) {
-    if (hamBtn) {
-      hamBtn.style.setProperty('display', 'none', 'important');
+    if (appHeader && hamBtn.parentElement !== appHeader) {
+      appHeader.insertBefore(hamBtn, appHeader.firstChild);
     }
+    hamBtn.style.removeProperty('display');
+    hamBtn.style.removeProperty('visibility');
+    hamBtn.style.removeProperty('opacity');
+    hamBtn.style.removeProperty('pointer-events');
   } else {
     if (hamBtn.parentElement !== document.body) {
       document.body.appendChild(hamBtn);
@@ -1104,9 +1108,10 @@ function initApkShell() {
         document.querySelector('#notes-subject-view:not(.hide), #subject-detail-view:not(.hide), #tests-detail-view:not(.hide), #quiz-viewer:not(.hide), #recording-viewer:not(.hide)') ||
         document.body.classList.contains('apk-in-detail')
       );
+      const isTablet = window.innerWidth >= 768;
       const ham = document.getElementById('apk-hamburger-btn');
       if (ham) {
-        if (hasBackButton || document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
+        if ((!isTablet && hasBackButton) || document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
           ham.style.setProperty('display', 'none', 'important');
           ham.style.setProperty('visibility', 'hidden', 'important');
         } else {
