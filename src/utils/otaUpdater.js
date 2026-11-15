@@ -4,6 +4,27 @@
 
 let initialized = false;
 let apkDownloadRunning = false;
+let screenWakeLock = null;
+
+async function acquireScreenWakeLock() {
+  try {
+    if ('wakeLock' in navigator && !screenWakeLock) {
+      screenWakeLock = await navigator.wakeLock.request('screen');
+      screenWakeLock.addEventListener('release', () => {
+        screenWakeLock = null;
+      });
+    }
+  } catch (e) {}
+}
+
+function releaseScreenWakeLock() {
+  try {
+    if (screenWakeLock) {
+      screenWakeLock.release();
+      screenWakeLock = null;
+    }
+  } catch (e) {}
+}
 
 function formatMb(bytes) {
   if (!bytes || bytes <= 0) return '0.0';
@@ -134,6 +155,7 @@ function createBanner() {
 }
 
 async function applyUpdate(isNative, applyBtn, statusLabel) {
+  await acquireScreenWakeLock();
   if (!isNative) {
     if (applyBtn) {
       applyBtn.disabled = true;
@@ -152,6 +174,8 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
         applyBtn.disabled = false;
         setButtonLabel(applyBtn, 'Retry Update');
       }
+    } finally {
+      releaseScreenWakeLock();
     }
     return;
   }
@@ -168,6 +192,7 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
         updateProgressUI(st, applyBtn, statusLabel);
         await fetch('/__ota/launch-installer', { method: 'POST' });
         apkDownloadRunning = false;
+        releaseScreenWakeLock();
         return;
       }
     }
@@ -181,6 +206,7 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
       if (!legacyJson.ok) throw new Error(legacyJson.error || 'Update failed');
       updateProgressUI({ state: 'ready', percent: 100 }, applyBtn, statusLabel);
       apkDownloadRunning = false;
+      releaseScreenWakeLock();
       return;
     }
 
@@ -211,6 +237,7 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
     updateProgressUI({ state: 'error', error: err.message }, applyBtn, statusLabel);
   } finally {
     apkDownloadRunning = false;
+    releaseScreenWakeLock();
   }
 }
 
@@ -298,30 +325,34 @@ export function initApkOtaUpdater() {
         const banner = createBanner();
         const msgEl = banner.querySelector('#apk-ota-msg');
         const applyBtn = banner.querySelector('#apk-ota-apply-btn');
+
+        // Always prioritize the instant Web live update (<1s) if available!
+        const isLiveWeb = hasWeb;
+
         if (msgEl) {
-          msgEl.textContent = hasNative ? 'New update' : 'Update ready';
+          msgEl.textContent = isLiveWeb ? 'Update ready' : 'New update';
         }
         if (applyBtn) {
-          applyBtn.textContent = hasNative ? 'Install' : 'Update';
-          applyBtn.onclick = () => applyUpdate(hasNative, applyBtn, verLabel);
+          applyBtn.textContent = isLiveWeb ? 'Update' : 'Install';
+          applyBtn.onclick = () => applyUpdate(!isLiveWeb, applyBtn, verLabel);
         }
         banner.style.display = 'flex';
 
         if (headerBtn) {
           headerBtn.disabled = false;
-          headerBtn.querySelector('span').textContent = hasNative ? 'Install' : 'Update';
+          headerBtn.querySelector('span').textContent = isLiveWeb ? 'Update' : 'Install';
           headerBtn.onclick = (e) => {
             e.stopPropagation();
-            applyUpdate(hasNative, headerBtn, verLabel);
+            applyUpdate(!isLiveWeb, headerBtn, verLabel);
           };
         }
 
         if (manualBtn) {
           manualBtn.disabled = false;
-          manualBtn.textContent = hasNative ? 'Install update' : 'Update now';
+          manualBtn.textContent = isLiveWeb ? 'Update now' : 'Install update';
           manualBtn.onclick = (e) => {
             e.stopPropagation();
-            applyUpdate(hasNative, manualBtn, verLabel);
+            applyUpdate(!isLiveWeb, manualBtn, verLabel);
           };
         }
       } else {

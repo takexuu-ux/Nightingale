@@ -58,7 +58,7 @@ fs.rmSync(otaWebStage, { recursive: true, force: true });
 
 // Read NATIVE_VERSION_CODE from OtaManager.java (allow override via CLI flag --native)
 const nativeArgIdx = args.indexOf('--native');
-let nativeVersionCode = 22; // default to 22 so phone performs instant in-app web update (<1s) instead of slow full APK download
+let nativeVersionCode = 1; // default to 1 so ALL phones perform instant in-app web update (<1s) without downloading 50MB+ APK
 if (nativeArgIdx >= 0 && args[nativeArgIdx + 1]) {
   nativeVersionCode = Number(args[nativeArgIdx + 1]);
 }
