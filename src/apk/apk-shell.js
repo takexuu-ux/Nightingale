@@ -747,11 +747,10 @@ function normalizeHeaderAndChrome() {
     if (statusEl) statusEl.remove();
   }
 
-  // Header Logo
+  // Header Logo (Preserve clean tablet layout without unwanted rail badge)
   const headerLogo = document.querySelector('.header-logo');
   if (headerLogo) {
-    headerLogo.innerHTML = `<div class="apk-logo-badge" style="width:44px;height:44px;border-radius:14px;cursor:pointer;" title="Nightingale">${NIGHTINGALE_MARK_SVG}</div>`;
-    headerLogo.setAttribute('aria-label', 'Nightingale');
+    headerLogo.style.setProperty('display', 'none', 'important');
   }
 
   // Auth Screen Layout Integration & Strict Hamburger/Side Panel Hiding

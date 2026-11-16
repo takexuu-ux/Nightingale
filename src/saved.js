@@ -13,7 +13,6 @@ import { getPdfPreviewSrc } from './config/appMode.js';
 hydrateAndroidAuthSession();
 
 let activeSavedTab = 'lectures'; // 'lectures' | 'notes' | 'tests'
-let activeSubFilter = 'all'; // 'all' | 'offline'
 let searchQuery = '';
 let localOfflineMap = new Map();
 let offlinePollTimer = null;
@@ -378,29 +377,18 @@ function renderSavedLectures() {
 
   const q = searchQuery.trim().toLowerCase();
   const filtered = list.filter(item => {
-    const recId = String(item.id || item.recId || '');
-    const off = localOfflineMap.get(recId);
-    const isOfflineHere = Boolean(off && off.completed && !off.expired);
-
-    if (activeSubFilter === 'offline' && !isOfflineHere) return false;
-
     if (!q) return true;
     return `${item.title} ${item.instructor} ${item.subject}`.toLowerCase().includes(q);
   });
 
   if (filtered.length === 0) {
-    const emptyTitle = activeSubFilter === 'offline' ? 'No offline downloads on this device' : 'No saved lectures';
-    const emptyDesc = activeSubFilter === 'offline'
-      ? 'Lectures downloaded on other devices stay on that device. Tap "Download" on any saved lecture to watch it offline here.'
-      : 'Bookmark classes from Videos or Home to watch them offline anytime.';
-
     lecturesContainer.innerHTML = `
       <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align: center; width: 100%;">
         <div style="width: 52px; height: 52px; margin: 0 auto 0.85rem; border-radius: 16px; background: rgba(142,116,229,0.18); border: 1px solid rgba(167,139,250,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent);">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 4 20 12 6 20 6 4"/></svg>
         </div>
-        <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">${emptyTitle}</p>
-        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">${emptyDesc}</p>
+        <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved lectures</p>
+        <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Bookmark classes from Videos or Home to access them here.</p>
       </div>
     `;
     return;
@@ -742,16 +730,6 @@ searchInput?.addEventListener('input', (e) => {
   if (activeSavedTab === 'lectures') renderSavedLectures();
   else if (activeSavedTab === 'notes') renderSavedNotes();
   else if (activeSavedTab === 'tests') renderSavedTests();
-});
-
-// Sub-filter Pills (All Saved vs Downloaded on this Device)
-document.querySelectorAll('.saved-sub-filter-pill').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.saved-sub-filter-pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    activeSubFilter = btn.getAttribute('data-subfilter') || 'all';
-    renderSavedLectures();
-  });
 });
 
 // Initialize

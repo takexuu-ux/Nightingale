@@ -13,9 +13,9 @@ export const IS_ANDROID_WEBVIEW =
 
 export function getPdfPreviewSrc(rawPdfUrl) {
   if (!rawPdfUrl) return '';
-  // CloudFront blocks direct cross-origin iframe embedding in desktop browsers via X-Frame-Options.
-  // Google Docs Embedded Viewer cleanly streams and renders PDFs across all desktop and mobile browsers.
-  return `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(rawPdfUrl)}`;
+  // Direct PDF URL embeds natively across all modern desktop browsers (Chrome, Edge, Firefox, Safari)
+  // giving users full zoom, page search, navigation and crisp vector rendering.
+  return rawPdfUrl;
 }
 
 export function restoreApkSessionSync() {

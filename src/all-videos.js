@@ -249,12 +249,12 @@ const pdfModalIframe = document.getElementById('pdf-modal-iframe');
 const pdfModalDownloadBtn = document.getElementById('pdf-modal-download-btn');
 
 const SUBJECT_SVG = {
-  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 19V7M21 19v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4M3 14h18M6 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
-  foundation: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 19V7M21 19v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4M3 14h18M6 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
-  fon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 19V7M21 19v-4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4M3 14h18M6 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
-  child: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-6 6c0 4 3 7 6 7s6-3 6-7a6 6 0 0 0-6-6zM9 9h.01M15 9h.01M10 12c.5.5 1.5.5 2 0M2 9a2 2 0 0 0 2 2M22 9a2 2 0 0 1-2 2M6 19a6 6 0 0 1 12 0"/>',
-  pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-6 6c0 4 3 7 6 7s6-3 6-7a6 6 0 0 0-6-6zM9 9h.01M15 9h.01M10 12c.5.5 1.5.5 2 0M2 9a2 2 0 0 0 2 2M22 9a2 2 0 0 1-2 2M6 19a6 6 0 0 1 12 0"/>',
-  paediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0-6 6c0 4 3 7 6 7s6-3 6-7a6 6 0 0 0-6-6zM9 9h.01M15 9h.01M10 12c.5.5 1.5.5 2 0M2 9a2 2 0 0 0 2 2M22 9a2 2 0 0 1-2 2M6 19a6 6 0 0 1 12 0"/>',
+  nursing: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4c-3.5 0-6 2.5-6 6v3h12v-3c0-3.5-2.5-6-6-6zM8 17h8M9 20h6M12 2v2"/>',
+  foundation: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4c-3.5 0-6 2.5-6 6v3h12v-3c0-3.5-2.5-6-6-6zM8 17h8M9 20h6M12 2v2"/>',
+  fon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4c-3.5 0-6 2.5-6 6v3h12v-3c0-3.5-2.5-6-6-6zM8 17h8M9 20h6M12 2v2"/>',
+  child: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a4 4 0 0 1 4 4c0 1.6-.9 3-2.3 3.6A5 5 0 0 1 18 14v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-4a5 5 0 0 1 4.3-4.4A4 4 0 0 1 12 2zM9 14v2M15 14v2"/>',
+  pediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a4 4 0 0 1 4 4c0 1.6-.9 3-2.3 3.6A5 5 0 0 1 18 14v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-4a5 5 0 0 1 4.3-4.4A4 4 0 0 1 12 2zM9 14v2M15 14v2"/>',
+  paediatric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a4 4 0 0 1 4 4c0 1.6-.9 3-2.3 3.6A5 5 0 0 1 18 14v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-4a5 5 0 0 1 4.3-4.4A4 4 0 0 1 12 2zM9 14v2M15 14v2"/>',
   midwifery: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
   obg: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
   obstetric: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/>',
@@ -264,17 +264,17 @@ const SUBJECT_SVG = {
   surgery: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.5 4.5l5 5L7 22H2v-5L14.5 4.5zM13 6l5 5M6 18l2 2"/>',
   surgical: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.5 4.5l5 5L7 22H2v-5L14.5 4.5zM13 6l5 5M6 18l2 2"/>',
   msn: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.5 4.5l5 5L7 22H2v-5L14.5 4.5zM13 6l5 5M6 18l2 2"/>',
-  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>',
-  pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 8.5 7 7"/>',
-  pharma: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m8.5 8.5 7 7"/>',
-  anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M5 7l7 5 7-5M5 12l7 5 7-5M5 17l7 5 7-5"/>',
-  physiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M5 7l7 5 7-5M5 12l7 5 7-5M5 17l7 5 7-5"/>',
+  medicine: '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 3.75v3a5.25 5.25 0 0 0 10.5 0v-3M9.75 12v3.75a3.75 3.75 0 0 0 7.5 0v-1.5m0 0a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5zM3.5 3.75h2M14 3.75h2"/>',
+  pharmacology: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7ZM8.5 8.5l7 7"/>',
+  pharma: '<path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7ZM8.5 8.5l7 7"/>',
+  anatomy: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>',
+  physiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>',
   mental: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.5 2A4.5 4.5 0 0 0 5 6.5c0 1.34.58 2.54 1.5 3.37A4.5 4.5 0 0 0 4 14c0 1.77 1.02 3.3 2.5 4.04V20a2 2 0 0 0 2 2h2V2h-1zM14.5 2A4.5 4.5 0 0 1 19 6.5c0 1.34-.58 2.54-1.5 3.37A4.5 4.5 0 0 1 20 14c0 1.77-1.02 3.3-2.5 4.04V20a2 2 0 0 1-2 2h-2V2h1z"/>',
   psychiatr: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.5 2A4.5 4.5 0 0 0 5 6.5c0 1.34.58 2.54 1.5 3.37A4.5 4.5 0 0 0 4 14c0 1.77 1.02 3.3 2.5 4.04V20a2 2 0 0 0 2 2h2V2h-1zM14.5 2A4.5 4.5 0 0 1 19 6.5c0 1.34-.58 2.54-1.5 3.37A4.5 4.5 0 0 1 20 14c0 1.77-1.02 3.3-2.5 4.04V20a2 2 0 0 1-2 2h-2V2h1z"/>',
   microbiology: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18h8M3 22h18M14 22a7 7 0 1 0-7-7M9 14l2-2M17 6l3 3-8 8-3-3 8-8zM19 4l1 1-1.5 1.5-1-1L19 4z"/>',
   pathology: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18h8M3 22h18M14 22a7 7 0 1 0-7-7M9 14l2-2M17 6l3 3-8 8-3-3 8-8zM19 4l1 1-1.5 1.5-1-1L19 4z"/>',
-  nutrition: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
-  biochem: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 2a5 5 0 0 0-5 5c0 4 5 10 5 10s5-6 5-10a5 5 0 0 0-5-5zM12 2v4"/>',
+  nutrition: '<path stroke-linecap="round" stroke-linejoin="round" d="M10 2v5.5a4.5 4.5 0 0 0-1.5 3.4V19a3 3 0 0 0 3 3h1a3 3 0 0 0 3-3v-8.1a4.5 4.5 0 0 0-1.5-3.4V2h-4zM8 14h8"/>',
+  biochem: '<path stroke-linecap="round" stroke-linejoin="round" d="M10 2v5.5a4.5 4.5 0 0 0-1.5 3.4V19a3 3 0 0 0 3 3h1a3 3 0 0 0 3-3v-8.1a4.5 4.5 0 0 0-1.5-3.4V2h-4zM8 14h8"/>',
   statistics: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
   statist: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
   biostat: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3M3 13l5-4 5 4 6-8"/>',
@@ -1390,6 +1390,37 @@ async function openRecordingPlayer(recording) {
     thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
     percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
   });
+
+  // Web Browser Check: If on web browser without native DRM bridge and without direct videoUrl,
+  // immediately surface clean study notes access without trapping user in endless spinner.
+  const isWebBrowser = typeof window !== 'undefined' && !window.AndroidVideoBridge && !hasNativeOfflineBridge();
+  if (isWebBrowser && !recording.videoUrl) {
+    loader.remove();
+    if (noUrlEl) {
+      const errTitle = document.getElementById('recording-error-title');
+      const errDesc = document.getElementById('recording-error-desc');
+      if (errTitle) errTitle.textContent = recording.notePdfUrl ? 'Video on Android App • Class Notes Available' : 'Nightingale App Player';
+      if (errDesc) {
+        errDesc.innerHTML = recording.notePdfUrl
+          ? `DRM video streaming is exclusive to the Nightingale Android App.<br><span style="color:var(--text-primary);font-weight:600;">You can view and download all accompanying study notes below.</span>`
+          : 'DRM encrypted video playback is exclusive to the Nightingale Android App.';
+      }
+      if (retryBtn) {
+        if (recording.notePdfUrl) {
+          retryBtn.textContent = 'Open Notes PDF';
+          retryBtn.onclick = (e) => {
+            e.preventDefault();
+            const pTitle = recording.notePdfTitle || `${recording.title} Notes`;
+            openPdfModal(pTitle, recording.notePdfUrl);
+          };
+        } else {
+          retryBtn.style.display = 'none';
+        }
+      }
+      noUrlEl.classList.remove('hide');
+    }
+    return;
+  }
 
   const launchPlayback = async () => {
     try {
