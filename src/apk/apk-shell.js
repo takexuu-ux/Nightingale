@@ -834,24 +834,28 @@ function normalizeHeaderAndChrome() {
 
       const flowerSVGs = [
         // 1. Cherry Blossom / Sakura
-        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-6" r="3.6" fill="#F472B6"/><circle cx="5.7" cy="-1.8" r="3.6" fill="#FBCFE8"/><circle cx="3.5" cy="4.8" r="3.6" fill="#EC4899"/><circle cx="-3.5" cy="4.8" r="3.6" fill="#F472B6"/><circle cx="-5.7" cy="-1.8" r="3.6" fill="#FBCFE8"/><circle cx="0" cy="0" r="2.2" fill="#FDE047"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="18" height="18" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-6" r="3.8" fill="#F472B6"/><circle cx="5.7" cy="-1.8" r="3.8" fill="#FBCFE8"/><circle cx="3.5" cy="4.8" r="3.8" fill="#EC4899"/><circle cx="-3.5" cy="4.8" r="3.8" fill="#F472B6"/><circle cx="-5.7" cy="-1.8" r="3.8" fill="#FBCFE8"/><circle cx="0" cy="0" r="2.2" fill="#FDE047"/></g></svg>`,
         // 2. Lavender Violet Floret
-        `<svg viewBox="0 0 24 24" width="15" height="15" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-5" r="3.4" fill="#C084FC"/><circle cx="4.8" cy="1.6" r="3.4" fill="#DDD6FE"/><circle cx="-4.8" cy="1.6" r="3.4" fill="#A855F7"/><circle cx="0" cy="0" r="1.8" fill="#FEF08A"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-5" r="3.4" fill="#C084FC"/><circle cx="4.8" cy="1.6" r="3.4" fill="#DDD6FE"/><circle cx="-4.8" cy="1.6" r="3.4" fill="#A855F7"/><circle cx="0" cy="0" r="1.8" fill="#FEF08A"/></g></svg>`,
         // 3. Delicate Daisy / Aster floret
-        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-6" rx="2" ry="3.8" fill="#FFFFFF"/><ellipse cx="5.2" cy="-3" rx="2" ry="3.8" transform="rotate(60 5.2 -3)" fill="#FDF4FF"/><ellipse cx="5.2" cy="3" rx="2" ry="3.8" transform="rotate(120 5.2 3)" fill="#FFFFFF"/><ellipse cx="0" cy="6" rx="2" ry="3.8" fill="#FDF4FF"/><ellipse cx="-5.2" cy="3" rx="2" ry="3.8" transform="rotate(60 -5.2 3)" fill="#FFFFFF"/><ellipse cx="-5.2" cy="-3" rx="2" ry="3.8" transform="rotate(120 -5.2 -3)" fill="#FDF4FF"/><circle cx="0" cy="0" r="2.8" fill="#FACC15"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="17" height="17" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-6" rx="2" ry="4" fill="#FFFFFF"/><ellipse cx="5.2" cy="-3" rx="2" ry="4" transform="rotate(60 5.2 -3)" fill="#FDF4FF"/><ellipse cx="5.2" cy="3" rx="2" ry="4" transform="rotate(120 5.2 3)" fill="#FFFFFF"/><ellipse cx="0" cy="6" rx="2" ry="4" fill="#FDF4FF"/><ellipse cx="-5.2" cy="3" rx="2" ry="4" transform="rotate(60 -5.2 3)" fill="#FFFFFF"/><ellipse cx="-5.2" cy="-3" rx="2" ry="4" transform="rotate(120 -5.2 -3)" fill="#FDF4FF"/><circle cx="0" cy="0" r="2.8" fill="#FACC15"/></g></svg>`,
         // 4. Soft Sage Green Leaf
-        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.9"/></svg>`,
+        `<svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.95"/></svg>`,
         // 5. Pink Rose Petal
-        `<svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.92"/></svg>`
+        `<svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.95"/></svg>`,
+        // 6. Glowing Gold Pollen Star
+        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><circle cx="12" cy="12" r="3.5" fill="#FDE047"/><path d="M12 2v20M2 12h20" stroke="#FEF08A" stroke-width="2" stroke-linecap="round"/></svg>`,
+        // 7. Wisteria Blue Bell
+        `<svg viewBox="0 0 24 24" width="15" height="15" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-4" r="3" fill="#818CF8"/><circle cx="3.8" cy="2" r="3" fill="#A5B4FC"/><circle cx="-3.8" cy="2" r="3" fill="#6366F1"/><circle cx="0" cy="5" r="2.2" fill="#E0E7FF"/></g></svg>`
       ];
 
-      const spawnFlowerAtCursor = (clientX, clientY) => {
+      const spawnFlowerAtCursor = (clientX, clientY, isMicro = false) => {
         if (!sparksEl) return;
         const rect = bot.getBoundingClientRect();
         const x = clientX - rect.left;
         const y = clientY - rect.top;
 
-        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+        if (x < -20 || y < -20 || x > rect.width + 20 || y > rect.height + 20) return;
 
         const flower = document.createElement('span');
         flower.className = 'apk-cursor-flower';
@@ -860,32 +864,40 @@ function normalizeHeaderAndChrome() {
         flower.style.top = `${y}px`;
 
         const angle = Math.random() * Math.PI * 2;
-        const dist = 16 + Math.random() * 30;
+        const dist = (isMicro ? 10 : 20) + Math.random() * (isMicro ? 22 : 38);
         const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist - (8 + Math.random() * 16);
-        const rot = (Math.random() - 0.5) * 90;
-        const scale = 0.8 + Math.random() * 0.4;
+        const dy = Math.sin(angle) * dist - (isMicro ? 6 : 14 + Math.random() * 18);
+        const rot = (Math.random() - 0.5) * 110;
+        const baseScale = isMicro ? (0.45 + Math.random() * 0.3) : (0.85 + Math.random() * 0.45);
 
         flower.style.setProperty('--target-x', `${dx}px`);
         flower.style.setProperty('--target-y', `${dy}px`);
         flower.style.setProperty('--target-rot', `${rot}deg`);
-        flower.style.setProperty('--target-scale', `${scale}`);
+        flower.style.setProperty('--target-scale', `${baseScale}`);
 
         sparksEl.appendChild(flower);
-        setTimeout(() => flower.remove(), 950);
+        setTimeout(() => flower.remove(), 1050);
       };
 
       const onPointerMove = (e) => {
         const now = Date.now();
-        if (now - lastSpawnTime < 60) return;
+        if (now - lastSpawnTime < 32) return; // Lush & fluid 32ms cadence
         lastSpawnTime = now;
-        spawnFlowerAtCursor(e.clientX, e.clientY);
+
+        // Spawn rich bloom cluster: 1 primary flower + 1-2 floating micro-petals
+        spawnFlowerAtCursor(e.clientX, e.clientY, false);
+        spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 16, e.clientY + (Math.random() - 0.5) * 16, true);
+        if (Math.random() > 0.4) {
+          spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 24, e.clientY + (Math.random() - 0.5) * 24, true);
+        }
       };
 
       bot.addEventListener('pointermove', onPointerMove);
       bot.addEventListener('pointerdown', (e) => {
-        for (let i = 0; i < 4; i++) {
-          setTimeout(() => spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 20, e.clientY + (Math.random() - 0.5) * 20), i * 35);
+        for (let i = 0; i < 8; i++) {
+          setTimeout(() => {
+            spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 32, e.clientY + (Math.random() - 0.5) * 32, i % 2 === 0);
+          }, i * 28);
         }
       });
 

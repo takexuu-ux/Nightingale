@@ -208,6 +208,42 @@ body {
   filter: none !important;
 }
 
+/* ── High-Detail 16:9 Botanical Landscape Wallpaper on Desktop Web (> 1024px) ── */
+@media (min-width: 1024px) {
+  body:not(.apk-shell-active) [data-theme="dark"] #apk-ambient-bg,
+  body:not(.apk-shell-active) #apk-ambient-bg {
+    background-image: url('./bg-web-landscape-dark.jpg') !important;
+    background-size: cover !important;
+    background-position: center center !important;
+  }
+
+  body:not(.apk-shell-active) [data-theme="light"] #apk-ambient-bg {
+    background-image: url('./bg-web-landscape-light.jpg') !important;
+    background-size: cover !important;
+    background-position: center center !important;
+  }
+}
+
+/* ── STRICT GUARANTEE: Mobile, Tablet (< 1024px) & APK Shell ALWAYS preserve the original wallpaper ── */
+@media (max-width: 1023px) {
+  #apk-ambient-bg,
+  [data-theme="dark"] #apk-ambient-bg {
+    background-image: url('./bg-app-wallpaper.jpg') !important;
+  }
+  [data-theme="light"] #apk-ambient-bg {
+    background-image: url('./bg-app-wallpaper-light.jpg') !important;
+  }
+}
+
+body.apk-shell-active #apk-ambient-bg,
+body.apk-shell-active [data-theme="dark"] #apk-ambient-bg {
+  background-image: url('./bg-app-wallpaper.jpg') !important;
+}
+
+body.apk-shell-active [data-theme="light"] #apk-ambient-bg {
+  background-image: url('./bg-app-wallpaper-light.jpg') !important;
+}
+
 main#app,
 .main-content,
 .auth-container,

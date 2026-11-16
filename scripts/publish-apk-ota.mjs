@@ -49,7 +49,7 @@ const otaWebStage = path.join(OTA_TMP, 'web_files');
 fs.mkdirSync(otaWebStage, { recursive: true });
 for (const entry of fs.readdirSync(`${ROOT}/dist`)) {
   const lower = entry.toLowerCase();
-  if (lower.startsWith('pets') || lower.endsWith('.mp4') || lower === 'bg.svg' || lower === 'nightingale.jpg' || lower === 'nightingale.png') continue;
+  if (lower.startsWith('pets') || lower.startsWith('bg-web-landscape') || lower.endsWith('.mp4') || lower === 'bg.svg' || lower === 'nightingale.jpg' || lower === 'nightingale.png') continue;
   fs.cpSync(path.join(`${ROOT}/dist`, entry), path.join(otaWebStage, entry), { recursive: true });
 }
 
