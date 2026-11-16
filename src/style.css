@@ -6681,12 +6681,12 @@ header.app-header.hide {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(255, 30, 56, 0.08);
-  border: 1px solid rgba(255, 30, 56, 0.22);
+  background: rgba(142, 116, 229, 0.14) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-red);
+  color: var(--accent) !important;
   flex-shrink: 0;
 }
 

@@ -418,6 +418,7 @@ function checkLoginState() {
     document.body.classList.remove('apk-is-auth', 'on-login-screen');
     document.body.classList.add('is-logged-in');
     authScreen.classList.add('hide');
+    document.getElementById('auth-screen-container')?.classList.add('hide');
     const authWrapper = document.querySelector('.auth-hero-wrapper');
     if (authWrapper) authWrapper.classList.add('hide');
     appHeader.classList.remove('hide');
