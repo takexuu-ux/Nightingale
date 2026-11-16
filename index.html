@@ -353,6 +353,20 @@
             <div id="class-list-container" class="class-grid" style="width: 100%;"></div>
           </div>
         </section>
+        <script>
+          (function(){
+            try {
+              if (localStorage.getItem('nnl_access_token')) {
+                var d = document.getElementById('classroom-dashboard');
+                if (d) d.classList.remove('hide');
+                var a = document.getElementById('auth-screen');
+                if (a) a.classList.add('hide');
+                var h = document.getElementById('app-header');
+                if (h) h.classList.remove('hide');
+              }
+            } catch(e) {}
+          })();
+        </script>
 
       </div>
     </main>

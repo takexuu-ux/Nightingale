@@ -1399,24 +1399,13 @@ async function openRecordingPlayer(recording) {
     if (noUrlEl) {
       const errTitle = document.getElementById('recording-error-title');
       const errDesc = document.getElementById('recording-error-desc');
-      if (errTitle) errTitle.textContent = recording.notePdfUrl ? 'Video on Android App • Class Notes Available' : 'Nightingale App Player';
+      if (errTitle) errTitle.textContent = recording.notePdfUrl ? 'Android App Video Lecture' : 'Nightingale App Player';
       if (errDesc) {
         errDesc.innerHTML = recording.notePdfUrl
-          ? `DRM video streaming is exclusive to the Nightingale Android App.<br><span style="color:var(--text-primary);font-weight:600;">You can view and download all accompanying study notes below.</span>`
-          : 'DRM encrypted video playback is exclusive to the Nightingale Android App.';
+          ? `Video streaming is exclusive to the Nightingale Android app.<br><span style="color:var(--text-secondary);font-weight:500;">Access the complete accompanying study notes and materials below:</span>`
+          : 'Video streaming is exclusive to the Nightingale Android app.';
       }
-      if (retryBtn) {
-        if (recording.notePdfUrl) {
-          retryBtn.textContent = 'Open Notes PDF';
-          retryBtn.onclick = (e) => {
-            e.preventDefault();
-            const pTitle = recording.notePdfTitle || `${recording.title} Notes`;
-            openPdfModal(pTitle, recording.notePdfUrl);
-          };
-        } else {
-          retryBtn.style.display = 'none';
-        }
-      }
+      if (retryBtn) retryBtn.style.display = 'none';
       noUrlEl.classList.remove('hide');
     }
     return;

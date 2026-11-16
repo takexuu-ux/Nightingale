@@ -415,7 +415,7 @@ function checkLoginState() {
 
   if (token) {
     // Transition UI to logged-in state
-    document.body.classList.remove('on-login-screen');
+    document.body.classList.remove('apk-is-auth', 'on-login-screen');
     authScreen.classList.add('hide');
     appHeader.classList.remove('hide');
     classroomDashboard.classList.remove('hide');

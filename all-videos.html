@@ -445,49 +445,54 @@
 
     <!-- RECORDING VIEWER -->
     <div id="recording-viewer" class="recording-viewer hide">
-      <div class="recording-viewer-header">
-        <div class="recording-viewer-meta">
-          <h2 id="recording-viewer-title" style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--text-primary);margin:0;"></h2>
-          <span id="recording-viewer-instructor" style="font-size:0.8rem;color:var(--text-secondary);"></span>
-        </div>
-        <button id="close-recording-viewer" class="btn-close-recording" title="Close">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="recording-viewer-body">
-        <video id="recording-video" class="recording-video-player hide" controls preload="metadata" playsinline>
-          Your browser does not support video playback.
-        </video>
-        <div id="recording-no-url" class="recording-no-url hide">
-          <div style="width:48px;height:48px;margin:0 auto 1rem;border-radius:14px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.35);display:flex;align-items:center;justify-content:center;color:#c4b5fd;">
-            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <div class="recording-viewer-card">
+        <div class="recording-viewer-header">
+          <div class="recording-viewer-meta">
+            <h2 id="recording-viewer-title" style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--text-primary);margin:0;"></h2>
+            <span id="recording-viewer-instructor" style="font-size:0.8rem;color:var(--text-secondary);"></span>
           </div>
-          <h3 id="recording-error-title" style="font-family:var(--font-display);font-size:1rem;margin-bottom:0.5rem;">Playback</h3>
-          <p id="recording-error-desc" style="color:var(--text-secondary);font-size:0.85rem;">Loading lecture...</p>
-          <button id="recording-retry-btn" class="btn" style="margin-top:1rem;padding:0.6rem 1.4rem;background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;font-weight:700;border:none;border-radius:10px;cursor:pointer;">Retry</button>
-        </div>
-      </div>
-
-      <!-- Portrait Mode Notes PDF Bar -->
-      <div id="recording-portrait-notes" class="recording-portrait-notes hide">
-        <div class="rpn-meta-wrap">
-          <div class="rpn-icon-box">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline stroke-linecap="round" stroke-linejoin="round" points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-          </div>
-          <div class="rpn-text-wrap">
-            <span class="rpn-badge">LECTURE NOTES PDF</span>
-            <h4 id="rpn-title" class="rpn-title">Handwritten Notes</h4>
-          </div>
-        </div>
-        <div class="rpn-actions">
-          <button id="rpn-view-btn" class="rpn-btn rpn-view-btn" type="button">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><circle cx="12" cy="12" r="3" stroke-width="2.2"/></svg>
-            <span>View PDF</span>
+          <button id="close-recording-viewer" class="btn-close-recording" title="Close" aria-label="Close lecture viewer">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
-          <a id="rpn-download-btn" href="#" target="_blank" rel="noopener noreferrer" class="rpn-btn rpn-dl-btn" download>
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-            <span>Download</span>
-          </a>
+        </div>
+        <div class="recording-viewer-body">
+          <video id="recording-video" class="recording-video-player hide" controls preload="metadata" playsinline>
+            Your browser does not support video playback.
+          </video>
+          <div id="recording-no-url" class="recording-no-url hide">
+            <div class="rec-app-notice-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h3 id="recording-error-title" class="rec-app-notice-title">Android App Video Lecture</h3>
+            <p id="recording-error-desc" class="rec-app-notice-desc">VdoCipher DRM video streaming is protected and exclusive to the Nightingale Android app.</p>
+            
+            <!-- Embedded Integrated Notes Section inside the same card -->
+            <div id="recording-portrait-notes" class="recording-portrait-notes hide">
+              <div class="rpn-meta-wrap">
+                <div class="rpn-icon-box">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline stroke-linecap="round" stroke-linejoin="round" points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                </div>
+                <div class="rpn-text-wrap">
+                  <span class="rpn-badge">LECTURE NOTES PDF</span>
+                  <h4 id="rpn-title" class="rpn-title">Handwritten Notes</h4>
+                </div>
+              </div>
+              <div class="rpn-actions">
+                <button id="rpn-view-btn" class="rpn-btn rpn-view-btn" type="button">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><circle cx="12" cy="12" r="3" stroke-width="2.2"/></svg>
+                  <span>View PDF</span>
+                </button>
+                <a id="rpn-download-btn" href="#" target="_blank" rel="noopener noreferrer" class="rpn-btn rpn-dl-btn" download>
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                  <span>Download</span>
+                </a>
+              </div>
+            </div>
+
+            <button id="recording-retry-btn" class="btn" style="display:none;">Retry</button>
+          </div>
         </div>
       </div>
     </div>

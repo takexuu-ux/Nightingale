@@ -171,12 +171,12 @@ body {
 }
 
 [data-theme="dark"] body {
-  background-color: #0b0816 !important;
+  background-color: transparent !important;
   background-image: none !important;
 }
 
 [data-theme="light"] body {
-  background-color: #ffffff !important;
+  background-color: transparent !important;
   background-image: none !important;
   color: #0f172a !important;
 }
@@ -976,7 +976,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 }
 
 @media (min-width: 768px) {
-  body:not(.apk-is-auth) main#app,
+  body.apk-is-auth main#app,
   body.on-login-screen main#app,
   body:has(#auth-screen:not(.hide)) main#app {
     display: flex !important;
@@ -990,7 +990,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     max-width: 100% !important;
   }
 
-  body:not(.apk-is-auth) .container,
+  body.apk-is-auth .container,
   body.on-login-screen .container,
   body:has(#auth-screen:not(.hide)) .container {
     display: flex !important;
@@ -1005,7 +1005,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     margin: 0 !important;
   }
 
-  body:not(.apk-is-auth) .auth-hero-wrapper,
+  body.apk-is-auth .auth-hero-wrapper,
   body.on-login-screen .auth-hero-wrapper,
   body:has(#auth-screen:not(.hide)) .auth-hero-wrapper {
     position: relative !important;
@@ -1024,7 +1024,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     z-index: 2 !important;
   }
 
-  body:not(.apk-is-auth) .apk-auth-showcase,
+  body.apk-is-auth .apk-auth-showcase,
   body.on-login-screen .apk-auth-showcase,
   body:has(#auth-screen:not(.hide)) .apk-auth-showcase {
     order: 1 !important;
@@ -1037,7 +1037,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     gap: 16px !important;
   }
 
-  body:not(.apk-is-auth) .apk-brand-inline-row,
+  body.apk-is-auth .apk-brand-inline-row,
   body.on-login-screen .apk-brand-inline-row,
   body:has(#auth-screen:not(.hide)) .apk-brand-inline-row {
     justify-content: flex-start !important;
@@ -1046,7 +1046,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     width: 100% !important;
   }
 
-  body:not(.apk-is-auth) .apk-showcase-title,
+  body.apk-is-auth .apk-showcase-title,
   body.on-login-screen .apk-showcase-title,
   body:has(#auth-screen:not(.hide)) .apk-showcase-title {
     margin: 0 !important;
@@ -1058,13 +1058,13 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     text-transform: uppercase !important;
   }
 
-  body:not(.apk-is-auth) .apk-showcase-quote,
+  body.apk-is-auth .apk-showcase-quote,
   body.on-login-screen .apk-showcase-quote,
   body:has(#auth-screen:not(.hide)) .apk-showcase-quote {
     display: none !important;
   }
 
-  body:not(.apk-is-auth) .apk-showcase-pills,
+  body.apk-is-auth .apk-showcase-pills,
   body.on-login-screen .apk-showcase-pills,
   body:has(#auth-screen:not(.hide)) .apk-showcase-pills {
     justify-content: flex-start !important;
@@ -1072,10 +1072,10 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     gap: 8px !important;
   }
 
-  body:not(.apk-is-auth) #auth-screen,
+  body.apk-is-auth #auth-screen,
   body.on-login-screen #auth-screen,
   body:has(#auth-screen:not(.hide)) #auth-screen,
-  body:not(.apk-is-auth) .auth-container,
+  body.apk-is-auth .auth-container,
   body.on-login-screen .auth-container,
   body:has(#auth-screen:not(.hide)) .auth-container {
     order: 2 !important;
@@ -1086,7 +1086,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     max-width: 420px !important;
   }
 
-  body:not(.apk-is-auth) .apk-auth-botanical,
+  body.apk-is-auth .apk-auth-botanical,
   body.on-login-screen .apk-auth-botanical,
   body:has(#auth-screen:not(.hide)) .apk-auth-botanical {
     position: fixed !important;
@@ -2202,15 +2202,13 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
   transform: scale(0.975);
 }
 
-/* ── Inside-App Neutral Surface (keep blue gradient strictly on Login screen) ── */
+/* ── Inside-App Transparent Surface so Ambient Medical Wallpaper Shines Through ── */
 body:not(.apk-is-auth) {
-  background: #F7F8FC !important;
-  background-image: none !important;
+  background: transparent !important;
 }
 
 [data-theme="dark"] body:not(.apk-is-auth) {
-  background: #0B0D13 !important;
-  background-image: none !important;
+  background: transparent !important;
 }
 
 /* Keep ALL subject / video / notes cards completely uniform with rich gradient (matching Notes & Tests) */
@@ -4248,7 +4246,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   z-index: 1;
   user-select: none;
   -webkit-user-select: none;
-  filter: drop-shadow(0 12px 28px rgba(124, 92, 224, 0.12));
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.16));
   transition: filter 0.35s ease;
 }
 
@@ -4261,7 +4259,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 .apk-auth-botanical:hover,
 .apk-auth-botanical.is-blooming {
   transform: translateY(-50%) !important;
-  filter: drop-shadow(0 18px 38px rgba(124, 92, 224, 0.26)) !important;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.22)) !important;
 }
 
 .apk-botanical-sparks {
@@ -6635,21 +6633,118 @@ main#app,
   font-weight: 700 !important;
 }
 
-/* Portrait Mode Notes PDF Player Bar */
+/* Clean Centered Web & App Lecture Viewer Card */
+.recording-viewer-card {
+  width: 100% !important;
+  max-width: 580px !important;
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  margin: auto !important;
+  animation: apkFadeSlide 0.25s var(--fluid-ease) both !important;
+}
+
+[data-theme="light"] .recording-viewer-card {
+  box-shadow: 0 16px 48px rgba(108, 79, 214, 0.18) !important;
+}
+
+.recording-viewer-card:has(iframe),
+.recording-viewer-card:has(video:not(.hide)) {
+  max-width: 960px !important;
+  max-height: 85vh !important;
+}
+
+.recording-viewer-card .recording-viewer-header {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 18px !important;
+  background: var(--bg-subtle) !important;
+  border-bottom: 1px solid var(--border-hairline) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.recording-viewer-card .recording-viewer-body {
+  padding: 24px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--bg-canvas) !important;
+  min-height: 220px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.recording-no-url {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.rec-app-notice-icon {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 14px !important;
+  background: rgba(142, 116, 229, 0.16) !important;
+  border: 1px solid rgba(167, 139, 250, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--accent) !important;
+  margin: 0 auto 12px !important;
+}
+
+[data-theme="light"] .rec-app-notice-icon {
+  background: rgba(108, 79, 214, 0.1) !important;
+  border-color: rgba(108, 79, 214, 0.22) !important;
+}
+
+.rec-app-notice-title {
+  font-family: var(--font-sans) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  margin: 0 0 6px !important;
+}
+
+.rec-app-notice-desc {
+  font-size: 0.84rem !important;
+  color: var(--text-secondary) !important;
+  line-height: 1.5 !important;
+  max-width: 440px !important;
+  margin: 0 auto 16px !important;
+}
+
+/* Portrait & In-Modal Study Notes PDF Row */
 .recording-portrait-notes {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   gap: 12px !important;
   padding: 12px 16px !important;
-  background: linear-gradient(135deg, rgba(28, 22, 52, 0.95), rgba(18, 14, 34, 0.98)) !important;
-  border-top: 1px solid rgba(167, 139, 250, 0.22) !important;
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 14px !important;
   box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 520px !important;
+  margin: 4px auto 0 !important;
+  box-shadow: var(--shadow-card) !important;
 }
 
 [data-theme="light"] .recording-portrait-notes {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 238, 255, 0.95)) !important;
-  border-top: 1px solid rgba(108, 79, 214, 0.18) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(108, 79, 214, 0.18) !important;
 }
 
 .recording-portrait-notes.hide {
@@ -7568,6 +7663,173 @@ main#app,
   display: grid !important;
   grid-template-columns: repeat(5, 1fr) !important;
   gap: 8px !important;
+}
+
+/* Question Navigator Badges - Soft Modern Squircles */
+.nav-q-btn {
+  height: 38px !important;
+  min-height: 38px !important;
+  width: 100% !important;
+  border-radius: 10px !important;
+  background: rgba(142, 116, 229, 0.12) !important;
+  border: 1px solid rgba(167, 139, 250, 0.22) !important;
+  color: #e2e8f0 !important;
+  font-family: var(--font-sans) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+[data-theme="light"] .nav-q-btn {
+  background: rgba(108, 79, 214, 0.08) !important;
+  border: 1px solid rgba(108, 79, 214, 0.2) !important;
+  color: #1e293b !important;
+}
+
+.nav-q-btn:hover {
+  background: rgba(142, 116, 229, 0.24) !important;
+  border-color: #8E74E5 !important;
+  transform: translateY(-1px) !important;
+}
+
+.nav-q-btn.answered {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: #10B981 !important;
+  color: #34D399 !important;
+}
+
+[data-theme="light"] .nav-q-btn.answered {
+  background: rgba(16, 185, 129, 0.16) !important;
+  border-color: #059669 !important;
+  color: #065F46 !important;
+}
+
+.nav-q-btn.active {
+  box-shadow: 0 0 0 2px #8E74E5, 0 4px 12px rgba(142, 116, 229, 0.35) !important;
+  border-color: #C084FC !important;
+  font-weight: 800 !important;
+  transform: scale(1.04) !important;
+}
+
+[data-theme="light"] .nav-q-btn.active {
+  box-shadow: 0 0 0 2px #6C4FD6, 0 4px 12px rgba(108, 79, 214, 0.25) !important;
+  border-color: #6C4FD6 !important;
+}
+
+/* Navigator Legend */
+.quiz-sidebar-legend {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 10px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="light"] .quiz-sidebar-legend {
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.legend-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .legend-item {
+  color: #64748b !important;
+}
+
+.legend-dot {
+  width: 9px !important;
+  height: 9px !important;
+  border-radius: 50% !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+.legend-dot.unanswered {
+  background: rgba(142, 116, 229, 0.25) !important;
+  border: 1px solid rgba(167, 139, 250, 0.45) !important;
+}
+
+.legend-dot.answered {
+  background: #10B981 !important;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Modern CBT Assessment Pill (Eliminating cyber monospace font & // slashes) */
+.quiz-badge-type {
+  font-family: var(--font-sans) !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  color: #C084FC !important;
+  background: rgba(142, 116, 229, 0.16) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  border-radius: 999px !important;
+  padding: 3px 10px !important;
+  letter-spacing: 0.02em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+[data-theme="light"] .quiz-badge-type {
+  color: #6C4FD6 !important;
+  background: rgba(108, 79, 214, 0.1) !important;
+  border-color: rgba(108, 79, 214, 0.22) !important;
+}
+
+/* Question Header Clean Badges (Sans-serif, elegant, balanced) */
+.question-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+.question-number-badge {
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #A78BFA !important;
+  background: rgba(142, 116, 229, 0.12) !important;
+  border: 1px solid rgba(167, 139, 250, 0.25) !important;
+  padding: 3px 9px !important;
+  border-radius: 7px !important;
+  letter-spacing: 0.01em !important;
+}
+
+[data-theme="light"] .question-number-badge {
+  color: #6C4FD6 !important;
+  background: rgba(108, 79, 214, 0.08) !important;
+  border-color: rgba(108, 79, 214, 0.2) !important;
+}
+
+.question-level-badge {
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: #38BDF8 !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  padding: 3px 9px !important;
+  border-radius: 7px !important;
+}
+
+[data-theme="light"] .question-level-badge {
+  color: #0284C7 !important;
+  background: rgba(2, 132, 199, 0.08) !important;
+  border-color: rgba(2, 132, 199, 0.2) !important;
 }
 
 /* Equal Button Alignment in CBT Footer */

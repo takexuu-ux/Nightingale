@@ -1000,7 +1000,7 @@ async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = fals
 
   if (titleEl) titleEl.textContent = title;
   if (badgeEl) {
-    badgeEl.textContent = isBatchTest ? '// RED SAPPHIRE BATCH TEST' : '// CBT PRACTICE TEST';
+    badgeEl.textContent = isBatchTest ? 'Red Sapphire Batch Test' : 'CBT Practice Test';
   }
   if (metaEl) metaEl.textContent = 'Loading test questions...';
 
@@ -1061,15 +1061,17 @@ function updateQuizModeUi() {
 
 function startOrStopTimer() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
+  const timerContainer = document.getElementById('quiz-timer-container');
   const timerEl = document.getElementById('quiz-timer');
   if (currentQuizMode === 'exam') {
+    if (timerContainer) timerContainer.style.display = 'flex';
     quizTimeRemaining = currentTestConfig?.duration || 1800;
     const tick = () => {
       if (timerEl) {
         const m = Math.floor(quizTimeRemaining / 60).toString().padStart(2, '0');
         const s = (quizTimeRemaining % 60).toString().padStart(2, '0');
         timerEl.textContent = `${m}:${s}`;
-        timerEl.style.color = quizTimeRemaining < 60 ? '#f87171' : '#00f3d0';
+        timerEl.style.color = quizTimeRemaining < 60 ? '#f87171' : 'var(--accent, #a78bfa)';
       }
     };
     tick();
@@ -1081,9 +1083,9 @@ function startOrStopTimer() {
         submitTest();
       }
     }, 1000);
-  } else if (timerEl) {
-    timerEl.textContent = currentQuizMode === 'review' ? 'REVIEW' : 'PRACTICE';
-    timerEl.style.color = '#00f3d0';
+  } else {
+    // In practice/review mode, timer is untimed — do not crowd header with duplicate neon tags
+    if (timerContainer) timerContainer.style.display = 'none';
   }
 }
 

@@ -756,7 +756,8 @@ function normalizeHeaderAndChrome() {
   // Auth Screen Layout Integration & Strict Hamburger/Side Panel Hiding
   const syncAuthMode = () => {
     const authEl = document.getElementById('auth-screen');
-    const isAuth = Boolean(authEl && !authEl.classList.contains('hide'));
+    const token = localStorage.getItem('nnl_access_token');
+    const isAuth = !token && Boolean(authEl && !authEl.classList.contains('hide'));
     if (document.body.classList.contains('apk-is-auth') !== isAuth) {
       document.body.classList.toggle('apk-is-auth', isAuth);
     }
@@ -818,83 +819,14 @@ function normalizeHeaderAndChrome() {
       sendOtpSpan.textContent = 'Get OTP';
     }
 
-    // Transparent Botanical Anatomical Heart, Lungs & Flowers Artwork
+    // Transparent Botanical Anatomical Heart & Lungs Artwork (Clean, no overpowering particle bloom)
     if (wrapper && !document.getElementById('apk-auth-botanical')) {
       const bot = document.createElement('div');
       bot.id = 'apk-auth-botanical';
       bot.className = 'apk-auth-botanical';
       bot.innerHTML = `
         <img src="${botanicalImgUrl}" alt="Botanical anatomical heart and lungs illustration" class="apk-botanical-img" draggable="false" />
-        <div class="apk-botanical-sparks" aria-hidden="true"></div>
       `;
-
-      const sparksEl = bot.querySelector('.apk-botanical-sparks');
-      let lastSpawnTime = 0;
-
-      const flowerSVGs = [
-        // 1. Cherry Blossom / Sakura
-        `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-6" r="4.2" fill="#F472B6"/><circle cx="5.7" cy="-1.8" r="4.2" fill="#FBCFE8"/><circle cx="3.5" cy="4.8" r="4.2" fill="#EC4899"/><circle cx="-3.5" cy="4.8" r="4.2" fill="#F472B6"/><circle cx="-5.7" cy="-1.8" r="4.2" fill="#FBCFE8"/><circle cx="0" cy="0" r="2.6" fill="#FDE047"/></g></svg>`,
-        // 2. Lavender Violet Floret Cluster
-        `<svg viewBox="0 0 24 24" width="18" height="18" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-5" r="3.8" fill="#C084FC"/><circle cx="5" cy="1.6" r="3.8" fill="#DDD6FE"/><circle cx="-5" cy="1.6" r="3.8" fill="#A855F7"/><circle cx="0" cy="4" r="2.8" fill="#E9D5FF"/><circle cx="0" cy="0" r="2.2" fill="#FEF08A"/></g></svg>`,
-        // 3. Delicate White Chamomile / Daisy floret
-        `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-6.5" rx="2.2" ry="4.5" fill="#FFFFFF"/><ellipse cx="5.6" cy="-3.2" rx="2.2" ry="4.5" transform="rotate(60 5.6 -3.2)" fill="#FDF4FF"/><ellipse cx="5.6" cy="3.2" rx="2.2" ry="4.5" transform="rotate(120 5.6 3.2)" fill="#FFFFFF"/><ellipse cx="0" cy="6.5" rx="2.2" ry="4.5" fill="#FDF4FF"/><ellipse cx="-5.6" cy="3.2" rx="2.2" ry="4.5" transform="rotate(60 -5.6 3.2)" fill="#FFFFFF"/><ellipse cx="-5.6" cy="-3.2" rx="2.2" ry="4.5" transform="rotate(120 -5.6 -3.2)" fill="#FDF4FF"/><circle cx="0" cy="0" r="3.2" fill="#FACC15"/></g></svg>`,
-        // 4. Soft Sage Green Leaf
-        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.95"/></svg>`,
-        // 5. Pink Wild Rose Petal
-        `<svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.95"/></svg>`,
-        // 6. Glowing Gold Pollen Star & Spores
-        `<svg viewBox="0 0 24 24" width="15" height="15" fill="none"><circle cx="12" cy="12" r="4" fill="#FDE047"/><path d="M12 2v20M2 12h20" stroke="#FEF08A" stroke-width="2.2" stroke-linecap="round"/></svg>`,
-        // 7. Wisteria & Periwinkle Bell Flower
-        `<svg viewBox="0 0 24 24" width="17" height="17" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-4" r="3.4" fill="#818CF8"/><circle cx="4" cy="2" r="3.4" fill="#A5B4FC"/><circle cx="-4" cy="2" r="3.4" fill="#6366F1"/><circle cx="0" cy="5" r="2.6" fill="#E0E7FF"/></g></svg>`,
-        // 8. Soft Blush Camellia
-        `<svg viewBox="0 0 24 24" width="19" height="19" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-4.5" r="3.8" fill="#FDA4AF"/><circle cx="4.5" cy="-1.5" r="3.8" fill="#FECDD3"/><circle cx="3" cy="4.5" r="3.8" fill="#F43F5E"/><circle cx="-3" cy="4.5" r="3.8" fill="#FB7185"/><circle cx="-4.5" cy="-1.5" r="3.8" fill="#FDA4AF"/><circle cx="0" cy="0" r="2" fill="#FEF9C3"/></g></svg>`
-      ];
-
-      const spawnFlowerAtCursor = (clientX, clientY, isMicro = false) => {
-        if (!sparksEl) return;
-        const rect = bot.getBoundingClientRect();
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
-
-        if (x < -30 || y < -30 || x > rect.width + 30 || y > rect.height + 30) return;
-
-        const flower = document.createElement('span');
-        flower.className = 'apk-cursor-flower';
-        flower.innerHTML = flowerSVGs[Math.floor(Math.random() * flowerSVGs.length)];
-        flower.style.left = `${x}px`;
-        flower.style.top = `${y}px`;
-
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 10 + Math.random() * 22;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist - (8 + Math.random() * 14);
-        const rot = (Math.random() - 0.5) * 80;
-        const baseScale = isMicro ? (0.55 + Math.random() * 0.2) : (0.75 + Math.random() * 0.25);
-
-        flower.style.setProperty('--target-x', `${dx}px`);
-        flower.style.setProperty('--target-y', `${dy}px`);
-        flower.style.setProperty('--target-rot', `${rot}deg`);
-        flower.style.setProperty('--target-scale', `${baseScale}`);
-
-        sparksEl.appendChild(flower);
-        setTimeout(() => flower.remove(), 850);
-      };
-
-      const onPointerMove = (e) => {
-        const now = Date.now();
-        if (now - lastSpawnTime < 80) return; // Gentle, subtle cadence
-        lastSpawnTime = now;
-
-        // Spawn exactly 1 delicate floret or petal per step
-        spawnFlowerAtCursor(e.clientX, e.clientY, Math.random() > 0.4);
-      };
-
-      bot.addEventListener('pointermove', onPointerMove);
-      bot.addEventListener('pointerdown', (e) => {
-        spawnFlowerAtCursor(e.clientX, e.clientY, false);
-        spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 20, e.clientY + (Math.random() - 0.5) * 20, true);
-      });
-
       wrapper.appendChild(bot);
     }
   }
