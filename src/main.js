@@ -3095,38 +3095,6 @@ function renderHomeDateCalendar(poolClasses) {
       }
     });
 
-    // If date has no live/scheduled classes from API, provide high-yield curriculum lectures for this day
-    if (matches.length === 0 && RED_SAPPHIRE_DATA) {
-      const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
-      const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
-      if (fallbackList && fallbackList.length > 0) {
-        // Deterministic day-based index so the date consistently shows curated classes
-        const dayOffset = Math.abs(targetDate.getDate() + (targetDate.getMonth() + 1) * 31);
-        const item1 = fallbackList[dayOffset % fallbackList.length];
-        const item2 = fallbackList[(dayOffset + 4) % fallbackList.length];
-        
-        const createVirtualClass = (item, hourStart) => {
-          const s = new Date(targetDate);
-          s.setHours(hourStart, 0, 0, 0);
-          const e = new Date(s);
-          e.setHours(hourStart + 3, 0, 0, 0);
-          return {
-            id: item.id || `rs-${dayOffset}-${hourStart}`,
-            title: item.title,
-            instructor: item.faculty || item.instructor || 'NNL Faculty',
-            start: s.toISOString(),
-            end: e.toISOString(),
-            meetingId: item.meetingId || '814 2901 8820',
-            passcode: item.passcode || '992026',
-            vdoCipherId: item.vdoCipherId || '',
-            subject: item.subject || 'Red Sapphire Batch'
-          };
-        };
-
-        matches = [createVirtualClass(item1, 10), createVirtualClass(item2, 15)];
-      }
-    }
-
     return matches.sort((a, b) => {
       const aT = parseApiDate(a.start || a.startTime || '').getTime();
       const bT = parseApiDate(b.start || b.startTime || '').getTime();
@@ -3140,7 +3108,7 @@ function renderHomeDateCalendar(poolClasses) {
 
     const dayClasses = getClassesForDate(targetDate);
     const isToday = targetDate.toDateString() === now.toDateString();
-    const fullHeading = isToday ? "Today's Lectures" : `${dayNames[targetDate.getDay()]}`;
+    const fullHeading = isToday ? "Today's Lectures" : `${dayNames[targetDate.getDay()]}, ${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
 
     if (statusBar && dateLabel) {
       statusBar.classList.remove('hide');
@@ -3167,7 +3135,7 @@ function renderHomeDateCalendar(poolClasses) {
       if (emptyState) {
         emptyState.classList.remove('hide');
         const emptyTitle = emptyState.querySelector('.apk-empty-title');
-        if (emptyTitle) emptyTitle.textContent = 'No lectures on this date';
+        if (emptyTitle) emptyTitle.textContent = isToday ? 'No classes scheduled for today' : `No lectures scheduled on ${dayNames[targetDate.getDay()]}, ${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
       }
     }
   }
