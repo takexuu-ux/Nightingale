@@ -794,6 +794,7 @@ function normalizeHeaderAndChrome() {
         <div class="apk-brand-inline-row">
           <h1 class="apk-showcase-title apk-brand-gradient-text">NIGHTINGALE</h1>
         </div>
+        <p class="apk-showcase-quote">"To do what nobody else will do, in a way that nobody else can do, in spite of all we go through; that is to be a nurse."</p>
         <div class="apk-showcase-pills">
           <span class="apk-showcase-pill">Live</span>
           <span class="apk-showcase-pill">Lectures</span>

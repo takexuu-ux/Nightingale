@@ -1169,6 +1169,52 @@ function renderSubjectLecturesList() {
   });
 }
 
+export function triggerFileDownload(url, title, filename) {
+  if (!url) return;
+  const cleanTitle = (title || 'Study Notes').trim();
+  const cleanName = (filename || 'study_notes.pdf').trim();
+
+  // 1. Native Android DownloadManager Bridge (Saves directly to /Download)
+  if (window.AndroidBridge && typeof window.AndroidBridge.downloadPdf === 'function') {
+    try {
+      window.AndroidBridge.downloadPdf(url, cleanTitle, cleanName);
+      return;
+    } catch (e) {
+      console.warn('AndroidBridge download error:', e);
+    }
+  }
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.downloadPdf === 'function') {
+    try {
+      window.AndroidVideoBridge.downloadPdf(url, cleanTitle, cleanName);
+      return;
+    } catch (e) {
+      console.warn('AndroidVideoBridge download error:', e);
+    }
+  }
+
+  // 2. Web browser fallback: Fetch blob to download directly to local storage
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('Fetch failed');
+      return res.blob();
+    })
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = cleanName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+      }, 1500);
+    })
+    .catch(() => {
+      window.open(url, '_blank');
+    });
+}
+
 function openPdfModal(title, url) {
   if (!url) return;
 
@@ -1178,7 +1224,13 @@ function openPdfModal(title, url) {
     return;
   }
   if (pdfModalTitle) pdfModalTitle.textContent = title || 'Lecture Notes PDF';
-  if (pdfModalDownloadBtn) pdfModalDownloadBtn.href = url;
+  if (pdfModalDownloadBtn) {
+    pdfModalDownloadBtn.href = url;
+    pdfModalDownloadBtn.onclick = (e) => {
+      e.preventDefault();
+      triggerFileDownload(url, title, `${(title || 'notes').replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`);
+    };
+  }
   if (pdfModalIframe) pdfModalIframe.src = getPdfPreviewSrc(url);
   pdfModal.classList.remove('hide');
   document.body.style.overflow = 'hidden';
@@ -1295,7 +1347,12 @@ async function openRecordingPlayer(recording) {
     if (rpnTitle) rpnTitle.textContent = pdfTitle;
     if (rpnDlBtn) {
       rpnDlBtn.href = recording.notePdfUrl;
-      rpnDlBtn.setAttribute('download', `${pdfTitle.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`);
+      const safeFilename = `${pdfTitle.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+      rpnDlBtn.setAttribute('download', safeFilename);
+      rpnDlBtn.onclick = (e) => {
+        e.preventDefault();
+        triggerFileDownload(recording.notePdfUrl, pdfTitle, safeFilename);
+      };
     }
     if (rpnViewBtn) {
       rpnViewBtn.onclick = (e) => {

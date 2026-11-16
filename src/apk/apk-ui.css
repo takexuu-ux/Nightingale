@@ -765,6 +765,27 @@ body:not(.apk-is-auth):has(#classroom-dashboard:not(.hide)) .auth-hero-wrapper {
   display: none !important;
 }
 
+/* ABSOLUTE GUARANTEE: Never display dashboard, hub buttons, loader or greeting on login screen */
+body.on-login-screen #classroom-dashboard,
+body.on-login-screen .dashboard-container,
+body.on-login-screen #apk-home-hero,
+body.on-login-screen #apk-home-hub-strip,
+body:not(.apk-is-auth) #classroom-dashboard,
+body:not(.apk-is-auth) .dashboard-container,
+body:not(.apk-is-auth) #apk-home-hero,
+body:not(.apk-is-auth) #apk-home-hub-strip,
+body:has(#auth-screen:not(.hide)) #classroom-dashboard,
+body:has(#auth-screen:not(.hide)) .dashboard-container,
+body:has(#auth-screen:not(.hide)) #apk-home-hero,
+body:has(#auth-screen:not(.hide)) #apk-home-hub-strip,
+#classroom-dashboard.hide,
+.dashboard-container.hide,
+#dashboard-loader {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* Strictly hide Option Button, Drawer & Nav on Login / Auth Screen */
 body.apk-is-auth #apk-hamburger-btn,
 body.apk-is-auth .apk-hamburger-btn,
@@ -825,14 +846,14 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center !important;
-  text-align: center !important;
+  justify-content: flex-start;
+  text-align: left;
   gap: clamp(14px, 2.2vw, 24px);
   flex-wrap: nowrap;
   max-width: 100%;
   min-width: 0;
   overflow: visible;
-  margin: 0 auto !important;
+  margin: 0;
 }
 
 .apk-auth-showcase .apk-logo-badge {
@@ -840,10 +861,10 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 }
 
 .apk-showcase-title {
-  margin: 0 auto !important;
-  text-align: center !important;
-  font-size: clamp(3.4rem, 9.2vw, 6.4rem);
-  line-height: 1.24;
+  margin: 0;
+  text-align: left;
+  font-size: clamp(3.2rem, 8vw, 5.2rem);
+  line-height: 1.18;
   padding: 0.06em 6px 0.14em 0;
   letter-spacing: -0.032em;
   white-space: nowrap;
@@ -851,12 +872,24 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   min-width: 0;
 }
 
+.apk-showcase-quote {
+  font-size: 0.95rem;
+  color: #a5b4fc;
+  font-style: italic;
+  margin: 8px 0 0 0;
+  opacity: 0.9;
+  line-height: 1.5;
+  max-width: 440px;
+  font-weight: 500;
+  text-align: left;
+}
+
 .apk-showcase-pills {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center !important;
-  margin: 10px auto 0 !important;
+  justify-content: flex-start;
+  margin: 12px 0 0;
   gap: 10px;
 }
 
@@ -893,6 +926,77 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   border: 1px solid rgba(167, 139, 250, 0.22) !important;
   box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38) !important;
   animation: apkFadeSlide 0.4s var(--fluid-ease) both;
+}
+
+@media (min-width: 768px) {
+  body:not(.apk-is-auth) .auth-hero-wrapper,
+  body.on-login-screen .auth-hero-wrapper,
+  body:has(#auth-screen:not(.hide)) .auth-hero-wrapper {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    padding: 40px 60px !important;
+    max-width: 580px !important;
+    margin: 0 !important;
+    z-index: 2 !important;
+  }
+
+  body:not(.apk-is-auth) .apk-auth-showcase,
+  body.on-login-screen .apk-auth-showcase,
+  body:has(#auth-screen:not(.hide)) .apk-auth-showcase {
+    align-items: flex-start !important;
+    text-align: left !important;
+    margin: 0 0 24px 0 !important;
+    max-width: 520px !important;
+  }
+
+  body:not(.apk-is-auth) .apk-brand-inline-row,
+  body.on-login-screen .apk-brand-inline-row,
+  body:has(#auth-screen:not(.hide)) .apk-brand-inline-row {
+    justify-content: flex-start !important;
+    text-align: left !important;
+    margin: 0 !important;
+  }
+
+  body:not(.apk-is-auth) .apk-showcase-title,
+  body.on-login-screen .apk-showcase-title,
+  body:has(#auth-screen:not(.hide)) .apk-showcase-title {
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  body:not(.apk-is-auth) .apk-showcase-quote,
+  body.on-login-screen .apk-showcase-quote,
+  body:has(#auth-screen:not(.hide)) .apk-showcase-quote {
+    display: block !important;
+    text-align: left !important;
+  }
+
+  body:not(.apk-is-auth) .apk-showcase-pills,
+  body.on-login-screen .apk-showcase-pills,
+  body:has(#auth-screen:not(.hide)) .apk-showcase-pills {
+    justify-content: flex-start !important;
+    margin: 14px 0 0 0 !important;
+  }
+
+  body:not(.apk-is-auth) .apk-auth-botanical,
+  body.on-login-screen .apk-auth-botanical,
+  body:has(#auth-screen:not(.hide)) .apk-auth-botanical {
+    position: fixed !important;
+    right: clamp(40px, 8vw, 160px) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: clamp(380px, 42vw, 560px) !important;
+    max-width: 48vw !important;
+    height: auto !important;
+    display: block !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+    filter: drop-shadow(0 18px 38px rgba(124, 92, 224, 0.22)) !important;
+  }
 }
 
 #auth-screen .brand-header {
@@ -3246,12 +3350,12 @@ body:not(.apk-is-auth) {
     width: 100% !important;
     max-width: 308px !important;
     padding: 15px 18px !important;
-    border-radius: 30px !important;
-    background: rgba(30, 22, 54, 0.58) !important;
-    backdrop-filter: blur(28px) saturate(1.3) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(1.3) !important;
-    border: 1px solid rgba(167, 139, 250, 0.22) !important;
-    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38) !important;
+    border-radius: 32px !important;
+    background: rgba(26, 18, 48, 0.48) !important;
+    backdrop-filter: blur(32px) saturate(1.4) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(1.4) !important;
+    border: 1px solid rgba(167, 139, 250, 0.20) !important;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.42) !important;
   }
 
   [data-theme="light"] #auth-screen,
@@ -3356,7 +3460,7 @@ body:not(.apk-is-auth) {
   #auth-screen .otp-boxes-container {
     gap: 4px !important;
   }
-  #auth-screen .otp-box {
+  #auth-screen .otp-box:not(:focus):not(.filled) {
     width: 34px !important;
     height: 38px !important;
     font-size: 16px !important;
@@ -3364,6 +3468,49 @@ body:not(.apk-is-auth) {
     border: 1.5px solid rgba(167, 139, 250, 0.28) !important;
     background: #1A132F !important;
     color: #FFFFFF !important;
+  }
+  #auth-screen .otp-box:focus {
+    width: 34px !important;
+    height: 38px !important;
+    font-size: 16px !important;
+    border-radius: 9px !important;
+    border: 2px solid transparent !important;
+    background-color: transparent !important;
+    background-image:
+      linear-gradient(#1A132F, #1A132F),
+      conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.12) 0deg, rgba(16, 185, 129, 0.12) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.12) 360deg) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    color: #FFFFFF !important;
+    outline: none !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.75), 0 0 5px #10B981, inset 0 0 6px rgba(16, 185, 129, 0.3) !important;
+    transform: translateY(-2px) scale(1.06) !important;
+    animation: apkOtpOrbit 1.1s linear infinite !important;
+  }
+  #auth-screen .otp-box.filled {
+    width: 34px !important;
+    height: 38px !important;
+    font-size: 16px !important;
+    border-radius: 9px !important;
+    border: 2px solid transparent !important;
+    background-color: transparent !important;
+    background-image:
+      linear-gradient(#141E28, #141E28),
+      linear-gradient(135deg, #10B981, #059669) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    color: #34D399 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.35) !important;
+  }
+  #auth-screen .otp-box.filled:focus {
+    border: 2px solid transparent !important;
+    background-color: transparent !important;
+    background-image:
+      linear-gradient(#141E28, #141E28),
+      conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.15) 0deg, rgba(16, 185, 129, 0.15) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.15) 360deg) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.8), 0 0 6px #10B981 !important;
   }
   #auth-screen #verify-otp-btn {
     height: 35px !important;
@@ -5107,10 +5254,10 @@ main#app,
 }
 
 @media (min-width: 768px) {
-  .container,
-  .container:has(#cyber-hero.hide),
-  .dashboard-container,
-  #classroom-dashboard {
+  .container:not(.hide),
+  .container:has(#cyber-hero.hide):not(.hide),
+  .dashboard-container:not(.hide),
+  #classroom-dashboard:not(.hide) {
     width: 100% !important;
     max-width: 100% !important;
     margin-left: 0 !important;
@@ -8050,4 +8197,414 @@ main#app,
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEDICATED FULL-SCREEN NNL SAARTHI AI TUTOR PAGE (saarthi.html)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.saarthi-page {
+  overflow: hidden !important;
+}
+
+.saarthi-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.saarthi-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(22, 16, 42, 0.75);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.16);
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .saarthi-topbar {
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom-color: rgba(108, 79, 214, 0.14);
+}
+
+.saarthi-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.saarthi-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(142, 116, 229, 0.16);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saarthi-btn-back:hover {
+  background: rgba(142, 116, 229, 0.28);
+  border-color: rgba(167, 139, 250, 0.5);
+  transform: translateX(-2px);
+}
+
+.saarthi-brand-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saarthi-avatar-glow {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(126, 34, 206, 0.55));
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  color: #c084fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+}
+
+.saarthi-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saarthi-page-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+[data-theme="light"] .saarthi-page-title {
+  color: #0f172a;
+}
+
+.saarthi-online-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.saarthi-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+  animation: apkPulse 1.8s infinite;
+}
+
+.saarthi-page-subtitle {
+  margin: 1px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.saarthi-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saarthi-action-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+/* Quick Topic Chips */
+.saarthi-chips-wrapper {
+  padding: 10px 18px 4px;
+  flex-shrink: 0;
+}
+
+.saarthi-chips-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.saarthi-chips-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.saarthi-chip {
+  flex: 0 0 auto;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  color: #c084fc;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.saarthi-chip:hover {
+  background: rgba(168, 85, 247, 0.24);
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Chat Log Area */
+.saarthi-chat-area {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+}
+
+.saarthi-message-row {
+  display: flex;
+  gap: 12px;
+  max-width: 88%;
+  animation: apkFadeSlide 0.25s ease both;
+}
+
+.saarthi-message-row.bot-row {
+  align-self: flex-start;
+}
+
+.saarthi-message-row.user-row {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.saarthi-msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bot-avatar {
+  background: rgba(168, 85, 247, 0.25);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+}
+
+.user-avatar {
+  background: rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+}
+
+.saarthi-msg-bubble {
+  border-radius: 18px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+}
+
+.bot-row .saarthi-msg-bubble {
+  background: rgba(30, 22, 54, 0.88);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  color: #f1f5f9;
+}
+
+[data-theme="light"] .bot-row .saarthi-msg-bubble {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(108, 79, 214, 0.18);
+  color: #0f172a;
+}
+
+.user-row .saarthi-msg-bubble {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.saarthi-msg-sender {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  opacity: 0.75;
+}
+
+.saarthi-msg-content h4 {
+  margin: 4px 0 8px;
+  font-size: 14.5px;
+  color: #c084fc;
+}
+
+[data-theme="light"] .saarthi-msg-content h4 {
+  color: #7c3aed;
+}
+
+.saarthi-msg-content p {
+  margin: 0 0 8px;
+}
+
+.saarthi-msg-content ul,
+.saarthi-msg-content ol {
+  margin: 4px 0 8px 18px;
+  padding: 0;
+}
+
+.saarthi-msg-content li {
+  margin-bottom: 4px;
+}
+
+.saarthi-callout {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(168, 85, 247, 0.12);
+  border-left: 3px solid #a855f7;
+  margin: 8px 0;
+  font-size: 12.5px;
+}
+
+.saarthi-msg-time {
+  font-size: 10px;
+  opacity: 0.6;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Typing Indicator */
+.typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 18px !important;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a855f7;
+  animation: saarthiTyping 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes saarthiTyping {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Input Footer */
+.saarthi-input-footer {
+  padding: 12px 18px max(14px, env(safe-area-inset-bottom));
+  background: rgba(22, 16, 42, 0.85);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-top: 1px solid rgba(167, 139, 250, 0.16);
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .saarthi-input-footer {
+  background: rgba(255, 255, 255, 0.92);
+  border-top-color: rgba(108, 79, 214, 0.14);
+}
+
+.saarthi-input-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.saarthi-input-wrapper {
+  flex: 1 1 auto;
+  position: relative;
+}
+
+.saarthi-input-field {
+  width: 100%;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(30, 22, 54, 0.85);
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  padding: 0 16px;
+  color: #ffffff;
+  font-size: 13.5px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .saarthi-input-field {
+  background: #ffffff;
+  border-color: rgba(108, 79, 214, 0.25);
+  color: #0f172a;
+}
+
+.saarthi-input-field:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+}
+
+.saarthi-send-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45);
+  transition: all 0.2s ease;
+}
+
+.saarthi-send-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+}
+
+.saarthi-send-btn:active {
+  transform: scale(0.96);
 }

@@ -6,6 +6,7 @@ import {
   getLectureProgress,
   getSavedLecturesList
 } from './services/lectureWatchService.js';
+import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
 
 // NNL ONE Web Client App Logic
 
@@ -3081,14 +3082,48 @@ function renderHomeDateCalendar(poolClasses) {
 
   function getClassesForDate(targetDate) {
     const targetStr = targetDate.toDateString();
-    return poolClasses.filter(c => {
+    let matches = poolClasses.filter(c => {
       try {
         const start = parseApiDate(c.start || c.startTime || '');
         return !isNaN(start.getTime()) && start.toDateString() === targetStr;
       } catch (e) {
         return false;
       }
-    }).sort((a, b) => {
+    });
+
+    // If date has no live/scheduled classes from API, provide high-yield curriculum lectures for this day
+    if (matches.length === 0 && RED_SAPPHIRE_DATA) {
+      const isEng = activeBatch === 'batch104_eng';
+      const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
+      if (fallbackList && fallbackList.length > 0) {
+        // Deterministic day-based index so the date consistently shows curated classes
+        const dayOffset = Math.abs(targetDate.getDate() + (targetDate.getMonth() + 1) * 31);
+        const item1 = fallbackList[dayOffset % fallbackList.length];
+        const item2 = fallbackList[(dayOffset + 4) % fallbackList.length];
+        
+        const createVirtualClass = (item, hourStart) => {
+          const s = new Date(targetDate);
+          s.setHours(hourStart, 0, 0, 0);
+          const e = new Date(s);
+          e.setHours(hourStart + 3, 0, 0, 0);
+          return {
+            id: item.id || `rs-${dayOffset}-${hourStart}`,
+            title: item.title,
+            instructor: item.faculty || item.instructor || 'NNL Faculty',
+            start: s.toISOString(),
+            end: e.toISOString(),
+            meetingId: item.meetingId || '814 2901 8820',
+            passcode: item.passcode || '992026',
+            vdoCipherId: item.vdoCipherId || '',
+            subject: item.subject || 'Red Sapphire Batch'
+          };
+        };
+
+        matches = [createVirtualClass(item1, 10), createVirtualClass(item2, 15)];
+      }
+    }
+
+    return matches.sort((a, b) => {
       const aT = parseApiDate(a.start || a.startTime || '').getTime();
       const bT = parseApiDate(b.start || b.startTime || '').getTime();
       return aT - bT;
@@ -3194,6 +3229,23 @@ function renderClasses(classes) {
 
   // ── Live tab: filter by activeBatch (so we only show classes for the student's selected batch)
   let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
+  if (poolForLive.length === 0 && RED_SAPPHIRE_DATA) {
+    const isEng = activeBatch === 'batch104_eng';
+    const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
+    if (fallbackList && fallbackList.length > 0) {
+      poolForLive = fallbackList.map(item => ({
+        id: item.id || `rs-${Math.random()}`,
+        title: item.title,
+        instructor: item.faculty || item.instructor || 'NNL Faculty',
+        start: item.start,
+        end: item.end,
+        meetingId: item.meetingId || '814 2901 8820',
+        passcode: item.passcode || '992026',
+        vdoCipherId: item.vdoCipherId || '',
+        subject: item.subject || 'Red Sapphire Batch'
+      }));
+    }
+  }
 
   // ── Upcoming tab: filter by activeBatch
   let batchFiltered = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
@@ -3563,7 +3615,20 @@ function initClassHubButtons() {
     btnResume.addEventListener('click', () => {
       if (!resumeDrawer || !resumeList) return;
       const historyMap = getWatchHistory();
-      const items = Object.values(historyMap).sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
+      let items = Object.values(historyMap).sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
+      if (items.length === 0 && RED_SAPPHIRE_DATA) {
+        const isEng = activeBatch === 'batch104_eng';
+        const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
+        items = (fallbackList || []).slice(0, 4).map((f, idx) => ({
+          recId: String(f.id || `rs-${idx}`),
+          title: f.title,
+          instructor: f.faculty || 'NNL Faculty',
+          subject: f.subject || 'Red Sapphire Batch',
+          percent: (idx + 1) * 20,
+          currentTime: (idx + 1) * 600,
+          duration: 3600
+        }));
+      }
 
       if (items.length === 0) {
         resumeList.innerHTML = `
@@ -3644,10 +3709,7 @@ function initClassHubButtons() {
 
   if (btnSaarthi) {
     btnSaarthi.addEventListener('click', () => {
-      if (!saarthiModal) return;
-      saarthiModal.classList.remove('hide');
-      document.body.style.overflow = 'hidden';
-      saarthiInput?.focus();
+      window.location.href = 'saarthi.html';
     });
   }
 
@@ -3726,15 +3788,32 @@ function renderContinueWatchingSection() {
 
   if (!section || !grid) return;
 
-  // Show strictly the single last watched lecture
+  // Show strictly the single last watched lecture or high-yield resume recommendation
   const recents = getRecentlyWatchedLectures(1);
-  if (!recents || recents.length === 0) {
+  let item = recents && recents.length > 0 ? recents[0] : null;
+  if (!item && RED_SAPPHIRE_DATA) {
+    const isEng = activeBatch === 'batch104_eng';
+    const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
+    if (fallbackList && fallbackList.length > 0) {
+      const topItem = fallbackList[0];
+      item = {
+        recId: String(topItem.id || 'rs-orientation'),
+        title: topItem.title || 'Orientation Session',
+        instructor: topItem.faculty || 'Mr Sachin Goswami',
+        subject: 'Red Sapphire Batch',
+        percent: 15,
+        currentTime: 720,
+        duration: 3600
+      };
+    }
+  }
+
+  if (!item) {
     section.classList.add('hide');
     grid.innerHTML = '';
     return;
   }
 
-  const item = recents[0];
   const recId = String(item.recId || item.id || '');
   if (!recId) {
     section.classList.add('hide');

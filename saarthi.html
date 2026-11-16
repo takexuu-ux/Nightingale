@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <script>
+      (function(){
+        try {
+          var t = localStorage.getItem('nnl_app_theme');
+          if (!t) {
+            t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch(e) {}
+      })();
+    </script>
+    <meta name="description" content="NNL Saarthi — 24/7 AI Clinical Study Tutor for NORCET and Nursing Officer Aspirants." />
+    <title>NNL Saarthi — AI Study Tutor</title>
+  </head>
+  <body class="notes-theme-page saarthi-page">
+    <!-- Ambient Single Unified Background Layer -->
+    <div id="apk-ambient-bg"></div>
+
+    <div class="saarthi-page-container">
+      <!-- Saarthi Header Top Bar -->
+      <header class="saarthi-topbar">
+        <div class="saarthi-topbar-left">
+          <button type="button" id="saarthi-back-btn" class="saarthi-btn-back" aria-label="Back to Classroom">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div class="saarthi-brand-meta">
+            <div class="saarthi-avatar-glow">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a8 8 0 0 0-8 8c0 3.37 2.1 6.25 5.08 7.37L9 22l4-2 4 2-.08-4.63A8 8 0 0 0 12 2z"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="saarthi-title-row">
+                <h1 class="saarthi-page-title">NNL Saarthi</h1>
+                <span class="saarthi-online-pill">
+                  <span class="saarthi-pulse-dot"></span>
+                  Online
+                </span>
+              </div>
+              <p class="saarthi-page-subtitle">24/7 AI Clinical Mentor &amp; NORCET Companion</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="saarthi-topbar-right">
+          <button type="button" id="saarthi-clear-chat-btn" class="saarthi-action-btn" title="Clear Chat History">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Clear</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Quick Nursing Topic Chips Carousel -->
+      <div class="saarthi-chips-wrapper">
+        <div class="saarthi-chips-scroll" id="saarthi-topic-chips">
+          <button type="button" class="saarthi-chip" data-prompt="Explain Pediatric Drug Dosage Calculations and IV Drop Factor Formula with examples">
+            💊 IV Drops &amp; Dosage Formula
+          </button>
+          <button type="button" class="saarthi-chip" data-prompt="Break down Glasgow Coma Scale (GCS) scoring criteria and clinical significance">
+            🧠 Glasgow Coma Scale (GCS)
+          </button>
+          <button type="button" class="saarthi-chip" data-prompt="What are the cardinal ECG signs in Hyperkalemia and ACLS management?">
+            📈 Hyperkalemia ECG &amp; ACLS
+          </button>
+          <button type="button" class="saarthi-chip" data-prompt="Explain Stages of Labor and Bishop Score in OBG Nursing">
+            👶 Stages of Labor &amp; Bishop Score
+          </button>
+          <button type="button" class="saarthi-chip" data-prompt="Explain Metabolic Acidosis vs Respiratory Alkalosis with ABG analysis trick">
+            🧪 ABG Analysis &amp; Acid-Base
+          </button>
+          <button type="button" class="saarthi-chip" data-prompt="Give me NORCET 2026 high-yield nursing priorities and mnemonics">
+            🎯 NORCET 2026 High-Yield Pearls
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Chat Body -->
+      <main class="saarthi-chat-area" id="saarthi-chat-log" role="log" aria-live="polite">
+        <!-- Messages will be rendered dynamically -->
+      </main>
+
+      <!-- Bottom Chat Input Bar -->
+      <footer class="saarthi-input-footer">
+        <form id="saarthi-chat-form" class="saarthi-input-form">
+          <div class="saarthi-input-wrapper">
+            <input 
+              type="text" 
+              id="saarthi-chat-input" 
+              class="saarthi-input-field" 
+              placeholder="Ask Saarthi any clinical concept, drug calculation, or nursing rationale..." 
+              autocomplete="off" 
+              maxlength="1000"
+              required 
+            />
+          </div>
+          <button type="submit" id="saarthi-chat-submit" class="saarthi-send-btn" aria-label="Send Message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </form>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/saarthi.js"></script>
+  </body>
+</html>
