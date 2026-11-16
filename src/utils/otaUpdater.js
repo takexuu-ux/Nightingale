@@ -156,19 +156,26 @@ function createBanner() {
 
 async function applyUpdate(isNative, applyBtn, statusLabel) {
   await acquireScreenWakeLock();
+  const banner = document.getElementById('apk-ota-banner');
+  const msgEl = banner?.querySelector('#apk-ota-msg');
+
   if (!isNative) {
     if (applyBtn) {
       applyBtn.disabled = true;
       setButtonLabel(applyBtn, 'Updating...');
     }
+    if (msgEl) msgEl.textContent = 'Applying live update...';
     if (statusLabel) statusLabel.textContent = 'Applying live update...';
     try {
       const res = await fetch('/__ota/apply', { method: 'POST' });
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'Update failed');
       setButtonLabel(applyBtn, 'Reloading...');
+      if (msgEl) msgEl.textContent = 'Updated! Reloading...';
       setTimeout(() => window.location.reload(), 300);
     } catch (err) {
+      console.error('[OTA] Live update error:', err);
+      if (msgEl) msgEl.textContent = `Update failed: ${err.message}`;
       if (statusLabel) statusLabel.textContent = `Update failed: ${err.message}`;
       if (applyBtn) {
         applyBtn.disabled = false;

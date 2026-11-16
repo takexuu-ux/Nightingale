@@ -54,10 +54,21 @@ for (const entry of fs.readdirSync(`${ROOT}/dist`)) {
 }
 
 const zipPath = path.join(OTA_TMP, 'hinglish-bundle.zip');
-execSync(
-  `tar.exe -a -c -f "${zipPath}" -C "${otaWebStage}" .`,
-  { stdio: 'inherit' }
-);
+// Use Python's built-in zipfile to create clean relative paths without leading './' or root dot entries
+const pyZipScript = `
+import os, zipfile
+stage = r"${otaWebStage.replace(/\\/g, '/')}"
+out = r"${zipPath.replace(/\\/g, '/')}"
+with zipfile.ZipFile(out, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+    for root, dirs, files in os.walk(stage):
+        for f in files:
+            full = os.path.join(root, f)
+            rel = os.path.relpath(full, stage).replace('\\\\\\\\', '/')
+            zf.write(full, rel)
+`;
+fs.writeFileSync(path.join(OTA_TMP, 'make_zip.py'), pyZipScript);
+execSync(`python "${path.join(OTA_TMP, 'make_zip.py')}"`, { stdio: 'inherit' });
+fs.rmSync(path.join(OTA_TMP, 'make_zip.py'), { force: true });
 fs.rmSync(otaWebStage, { recursive: true, force: true });
 
 // Read NATIVE_VERSION_CODE from OtaManager.java (allow override via CLI flag --native)
