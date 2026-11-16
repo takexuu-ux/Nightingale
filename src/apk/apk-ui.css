@@ -4290,8 +4290,8 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   pointer-events: none;
   transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
   opacity: 0;
-  animation: apkFlowerCursorBloom 1.05s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-  filter: drop-shadow(0 3px 8px rgba(168, 85, 247, 0.55)) drop-shadow(0 0 5px rgba(244, 114, 182, 0.45));
+  animation: apkFlowerCursorBloom 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  filter: drop-shadow(0 2px 5px rgba(168, 85, 247, 0.35));
   z-index: 10;
   will-change: transform, opacity;
 }
@@ -4301,17 +4301,17 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
   }
-  18% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(var(--target-scale, 1.2)) rotate(calc(var(--target-rot, 35deg) * 0.3));
+  20% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(var(--target-scale, 0.8)) rotate(calc(var(--target-rot, 25deg) * 0.3));
   }
   65% {
-    opacity: 0.95;
-    transform: translate(calc(-50% + var(--target-x) * 0.7), calc(-50% + var(--target-y) * 0.7)) scale(calc(var(--target-scale, 1.2) * 0.96)) rotate(calc(var(--target-rot, 35deg) * 0.7));
+    opacity: 0.8;
+    transform: translate(calc(-50% + var(--target-x) * 0.7), calc(-50% + var(--target-y) * 0.7)) scale(calc(var(--target-scale, 0.8) * 0.92)) rotate(calc(var(--target-rot, 25deg) * 0.7));
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--target-x)), calc(-50% + var(--target-y))) scale(0.4) rotate(var(--target-rot, 70deg));
+    transform: translate(calc(-50% + var(--target-x)), calc(-50% + var(--target-y))) scale(0.35) rotate(var(--target-rot, 50deg));
   }
 }
 

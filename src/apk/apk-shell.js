@@ -866,11 +866,11 @@ function normalizeHeaderAndChrome() {
         flower.style.top = `${y}px`;
 
         const angle = Math.random() * Math.PI * 2;
-        const dist = (isMicro ? 12 : 24) + Math.random() * (isMicro ? 24 : 45);
+        const dist = 10 + Math.random() * 22;
         const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist - (isMicro ? 8 : 16 + Math.random() * 22);
-        const rot = (Math.random() - 0.5) * 140;
-        const baseScale = isMicro ? (0.55 + Math.random() * 0.35) : (1.0 + Math.random() * 0.5);
+        const dy = Math.sin(angle) * dist - (8 + Math.random() * 14);
+        const rot = (Math.random() - 0.5) * 80;
+        const baseScale = isMicro ? (0.55 + Math.random() * 0.2) : (0.75 + Math.random() * 0.25);
 
         flower.style.setProperty('--target-x', `${dx}px`);
         flower.style.setProperty('--target-y', `${dy}px`);
@@ -878,31 +878,22 @@ function normalizeHeaderAndChrome() {
         flower.style.setProperty('--target-scale', `${baseScale}`);
 
         sparksEl.appendChild(flower);
-        setTimeout(() => flower.remove(), 1150);
+        setTimeout(() => flower.remove(), 850);
       };
 
       const onPointerMove = (e) => {
         const now = Date.now();
-        if (now - lastSpawnTime < 18) return; // Super lush 18ms blooming burst
+        if (now - lastSpawnTime < 80) return; // Gentle, subtle cadence
         lastSpawnTime = now;
 
-        // Rich blooming bouquet: 2 primary flowers + 2-3 floating petals & pollen sparks
-        spawnFlowerAtCursor(e.clientX, e.clientY, false);
-        spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 20, e.clientY + (Math.random() - 0.5) * 20, false);
-        spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 32, e.clientY + (Math.random() - 0.5) * 32, true);
-        spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 44, e.clientY + (Math.random() - 0.5) * 44, true);
-        if (Math.random() > 0.25) {
-          spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 56, e.clientY + (Math.random() - 0.5) * 56, true);
-        }
+        // Spawn exactly 1 delicate floret or petal per step
+        spawnFlowerAtCursor(e.clientX, e.clientY, Math.random() > 0.4);
       };
 
       bot.addEventListener('pointermove', onPointerMove);
       bot.addEventListener('pointerdown', (e) => {
-        for (let i = 0; i < 16; i++) {
-          setTimeout(() => {
-            spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 48, e.clientY + (Math.random() - 0.5) * 48, i % 2 === 0);
-          }, i * 20);
-        }
+        spawnFlowerAtCursor(e.clientX, e.clientY, false);
+        spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 20, e.clientY + (Math.random() - 0.5) * 20, true);
       });
 
       wrapper.appendChild(bot);
