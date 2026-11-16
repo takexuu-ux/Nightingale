@@ -6,12 +6,12 @@
   "redirects": [
     {
       "source": "/apk",
-      "destination": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/RedSapphireHinglish.apk",
+      "destination": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk",
       "permanent": false
     },
     {
       "source": "/download",
-      "destination": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/RedSapphireHinglish.apk",
+      "destination": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk",
       "permanent": false
     }
   ],

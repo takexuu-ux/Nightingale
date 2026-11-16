@@ -71,22 +71,24 @@ const manifest = {
   updatedAt: new Date().toISOString(),
   notes: releaseNotes,
   zipUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/hinglish-bundle.zip',
-  apkUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/RedSapphireHinglish.apk'
+  apkUrl: 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk'
 };
 
 fs.writeFileSync(path.join(OTA_TMP, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
 const builtApk = `${ANDROID_ROOT}/app/build/outputs/apk/debug/app-debug.apk`;
 if (fs.existsSync(DESKTOP_APK)) {
+  fs.copyFileSync(DESKTOP_APK, path.join(OTA_TMP, 'Nightingale.apk'));
   fs.copyFileSync(DESKTOP_APK, path.join(OTA_TMP, 'RedSapphireHinglish.apk'));
 } else if (fs.existsSync(builtApk)) {
+  fs.copyFileSync(builtApk, path.join(OTA_TMP, 'Nightingale.apk'));
   fs.copyFileSync(builtApk, path.join(OTA_TMP, 'RedSapphireHinglish.apk'));
 }
 
 console.log(`3. Publishing webVersion=${nextWebVersion}, nativeVersionCode=${nativeVersionCode} to GitHub ota-hinglish...`);
 execSync('git init', { cwd: OTA_TMP, stdio: 'inherit' });
 execSync('git checkout -b ota-hinglish', { cwd: OTA_TMP, stdio: 'inherit' });
-execSync('git add manifest.json hinglish-bundle.zip RedSapphireHinglish.apk', { cwd: OTA_TMP, stdio: 'inherit' });
+execSync('git add manifest.json hinglish-bundle.zip Nightingale.apk RedSapphireHinglish.apk', { cwd: OTA_TMP, stdio: 'inherit' });
 execSync(`git commit -m "Publish OTA web v${nextWebVersion} (native v${nativeVersionCode})"`, { cwd: OTA_TMP, stdio: 'inherit' });
 execSync(`git push --force "${REPO_PUSH_URL}" ota-hinglish`, { cwd: OTA_TMP, stdio: 'inherit' });
 
