@@ -829,28 +829,66 @@ function normalizeHeaderAndChrome() {
         <div class="apk-botanical-sparks" aria-hidden="true"></div>
       `;
 
-      const triggerBloom = () => {
-        bot.classList.remove('is-blooming');
-        void bot.offsetWidth;
-        bot.classList.add('is-blooming');
-        const sparksEl = bot.querySelector('.apk-botanical-sparks');
-        if (sparksEl) {
-          for (let i = 0; i < 7; i++) {
-            const p = document.createElement('span');
-            p.className = 'apk-petal-spark';
-            p.style.setProperty('--dx', `${(Math.random() - 0.5) * 110}px`);
-            p.style.setProperty('--dy', `${-26 - Math.random() * 64}px`);
-            p.style.left = `${30 + Math.random() * 40}%`;
-            p.style.top = `${28 + Math.random() * 44}%`;
-            sparksEl.appendChild(p);
-            setTimeout(() => p.remove(), 950);
-          }
-        }
-        setTimeout(() => bot.classList.remove('is-blooming'), 1100);
+      const sparksEl = bot.querySelector('.apk-botanical-sparks');
+      let lastSpawnTime = 0;
+
+      const flowerSVGs = [
+        // 1. Cherry Blossom / Sakura
+        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-6" r="3.6" fill="#F472B6"/><circle cx="5.7" cy="-1.8" r="3.6" fill="#FBCFE8"/><circle cx="3.5" cy="4.8" r="3.6" fill="#EC4899"/><circle cx="-3.5" cy="4.8" r="3.6" fill="#F472B6"/><circle cx="-5.7" cy="-1.8" r="3.6" fill="#FBCFE8"/><circle cx="0" cy="0" r="2.2" fill="#FDE047"/></g></svg>`,
+        // 2. Lavender Violet Floret
+        `<svg viewBox="0 0 24 24" width="15" height="15" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-5" r="3.4" fill="#C084FC"/><circle cx="4.8" cy="1.6" r="3.4" fill="#DDD6FE"/><circle cx="-4.8" cy="1.6" r="3.4" fill="#A855F7"/><circle cx="0" cy="0" r="1.8" fill="#FEF08A"/></g></svg>`,
+        // 3. Delicate Daisy / Aster floret
+        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-6" rx="2" ry="3.8" fill="#FFFFFF"/><ellipse cx="5.2" cy="-3" rx="2" ry="3.8" transform="rotate(60 5.2 -3)" fill="#FDF4FF"/><ellipse cx="5.2" cy="3" rx="2" ry="3.8" transform="rotate(120 5.2 3)" fill="#FFFFFF"/><ellipse cx="0" cy="6" rx="2" ry="3.8" fill="#FDF4FF"/><ellipse cx="-5.2" cy="3" rx="2" ry="3.8" transform="rotate(60 -5.2 3)" fill="#FFFFFF"/><ellipse cx="-5.2" cy="-3" rx="2" ry="3.8" transform="rotate(120 -5.2 -3)" fill="#FDF4FF"/><circle cx="0" cy="0" r="2.8" fill="#FACC15"/></g></svg>`,
+        // 4. Soft Sage Green Leaf
+        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.9"/></svg>`,
+        // 5. Pink Rose Petal
+        `<svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.92"/></svg>`
+      ];
+
+      const spawnFlowerAtCursor = (clientX, clientY) => {
+        if (!sparksEl) return;
+        const rect = bot.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+
+        const flower = document.createElement('span');
+        flower.className = 'apk-cursor-flower';
+        flower.innerHTML = flowerSVGs[Math.floor(Math.random() * flowerSVGs.length)];
+        flower.style.left = `${x}px`;
+        flower.style.top = `${y}px`;
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 16 + Math.random() * 30;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - (8 + Math.random() * 16);
+        const rot = (Math.random() - 0.5) * 90;
+        const scale = 0.8 + Math.random() * 0.4;
+
+        flower.style.setProperty('--target-x', `${dx}px`);
+        flower.style.setProperty('--target-y', `${dy}px`);
+        flower.style.setProperty('--target-rot', `${rot}deg`);
+        flower.style.setProperty('--target-scale', `${scale}`);
+
+        sparksEl.appendChild(flower);
+        setTimeout(() => flower.remove(), 950);
       };
 
-      bot.addEventListener('pointerdown', triggerBloom);
-      bot.addEventListener('pointerenter', triggerBloom);
+      const onPointerMove = (e) => {
+        const now = Date.now();
+        if (now - lastSpawnTime < 60) return;
+        lastSpawnTime = now;
+        spawnFlowerAtCursor(e.clientX, e.clientY);
+      };
+
+      bot.addEventListener('pointermove', onPointerMove);
+      bot.addEventListener('pointerdown', (e) => {
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => spawnFlowerAtCursor(e.clientX + (Math.random() - 0.5) * 20, e.clientY + (Math.random() - 0.5) * 20), i * 35);
+        }
+      });
+
       wrapper.appendChild(bot);
     }
   }

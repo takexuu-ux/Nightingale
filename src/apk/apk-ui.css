@@ -4198,7 +4198,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   position: absolute;
   right: clamp(8px, 3.5vw, 48px);
   top: 50%;
-  transform: translateY(-48%);
+  transform: translateY(-50%);
   width: clamp(230px, 36vw, 410px);
   aspect-ratio: 360 / 390;
   background: transparent;
@@ -4208,7 +4208,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   user-select: none;
   -webkit-user-select: none;
   filter: drop-shadow(0 12px 28px rgba(124, 92, 224, 0.12));
-  transition: transform 0.4s var(--spring-bounce), filter 0.35s ease;
+  transition: filter 0.35s ease;
 }
 
 .apk-botanical-svg {
@@ -4217,34 +4217,10 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   overflow: visible;
 }
 
-.apk-auth-botanical .bot-lungs {
-  transform-origin: 180px 200px;
-  animation: apkLungBreathe 5.2s ease-in-out infinite;
-}
-
-.apk-auth-botanical .bot-heart {
-  transform-origin: 180px 198px;
-  animation: apkHeartPulse 2.6s ease-in-out infinite;
-}
-
-.apk-auth-botanical .bot-foliage,
-.apk-auth-botanical .bot-flowers {
-  transform-origin: 180px 190px;
-  animation: apkBotanicalSway 6.5s ease-in-out infinite;
-}
-
 .apk-auth-botanical:hover,
 .apk-auth-botanical.is-blooming {
-  transform: translateY(-51%) scale(1.045);
-  filter: drop-shadow(0 16px 34px rgba(124, 92, 224, 0.22));
-}
-
-.apk-auth-botanical.is-blooming .bot-heart {
-  animation: apkHeartPulse 0.72s ease-in-out 2;
-}
-
-.apk-auth-botanical.is-blooming .bot-flowers {
-  animation: apkFlowerBloom 0.9s var(--spring-bounce) 1;
+  transform: translateY(-50%) !important;
+  filter: drop-shadow(0 18px 38px rgba(124, 92, 224, 0.26)) !important;
 }
 
 .apk-botanical-sparks {
@@ -4252,6 +4228,37 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   inset: 0;
   pointer-events: none;
   overflow: visible;
+  z-index: 10;
+}
+
+.apk-cursor-flower {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  opacity: 0;
+  animation: apkFlowerCursorBloom 0.95s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  filter: drop-shadow(0 2px 7px rgba(168, 85, 247, 0.4));
+  z-index: 10;
+  will-change: transform, opacity;
+}
+
+@keyframes apkFlowerCursorBloom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--target-scale, 1)) rotate(calc(var(--target-rot, 35deg) * 0.3));
+  }
+  65% {
+    opacity: 0.9;
+    transform: translate(calc(-50% + var(--target-x) * 0.7), calc(-50% + var(--target-y) * 0.7)) scale(calc(var(--target-scale, 1) * 0.95)) rotate(calc(var(--target-rot, 35deg) * 0.7));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--target-x)), calc(-50% + var(--target-y))) scale(0.35) rotate(var(--target-rot, 70deg));
+  }
 }
 
 .apk-petal-spark {
@@ -4317,7 +4324,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   }
   .apk-auth-botanical:hover,
   .apk-auth-botanical.is-blooming {
-    transform: scale(1.05) !important;
+    transform: none !important;
   }
 }
 
@@ -4461,22 +4468,14 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   background: transparent;
   user-select: none;
   -webkit-user-select: none;
-  animation: apkBotanicalFloat 5.4s ease-in-out infinite;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
 }
 
 .apk-auth-botanical.is-blooming .apk-botanical-img {
-  animation: apkBotanicalPulse 0.85s var(--spring-bounce) 1;
-}
-
-@keyframes apkBotanicalFloat {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-7px) scale(1.018); }
-}
-
-@keyframes apkBotanicalPulse {
-  0% { transform: scale(1) rotate(0deg); }
-  40% { transform: scale(1.075) rotate(-1.5deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  animation: none !important;
+  transform: none !important;
 }
 
 /* ── Liquid Drop Indicator Morphing Between Left Sidebar / Dock Nav Buttons ── */
