@@ -825,26 +825,23 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center !important;
+  text-align: center !important;
   gap: clamp(14px, 2.2vw, 24px);
   flex-wrap: nowrap;
   max-width: 100%;
   min-width: 0;
   overflow: visible;
+  margin: 0 auto !important;
 }
 
 .apk-auth-showcase .apk-logo-badge {
-  width: clamp(58px, 7.4vw, 90px);
-  height: clamp(58px, 7.4vw, 90px);
-  border-radius: clamp(18px, 2.4vw, 27px);
-}
-
-.apk-auth-showcase .apk-logo-badge svg {
-  width: clamp(32px, 4.1vw, 50px);
-  height: clamp(32px, 4.1vw, 50px);
+  display: none !important;
 }
 
 .apk-showcase-title {
-  margin: 0;
+  margin: 0 auto !important;
+  text-align: center !important;
   font-size: clamp(3.4rem, 9.2vw, 6.4rem);
   line-height: 1.24;
   padding: 0.06em 6px 0.14em 0;
@@ -858,6 +855,8 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center !important;
+  margin: 10px auto 0 !important;
   gap: 10px;
 }
 
@@ -887,12 +886,12 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   max-width: 368px;
   min-width: 0;
   padding: 20px 22px;
-  border-radius: 22px;
-  background: var(--bg-glass-strong);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-float);
+  border-radius: 30px !important;
+  background: rgba(30, 22, 54, 0.58) !important;
+  backdrop-filter: blur(28px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.4) !important;
+  border: 1px solid rgba(167, 139, 250, 0.22) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38) !important;
   animation: apkFadeSlide 0.4s var(--fluid-ease) both;
 }
 
@@ -3154,22 +3153,14 @@ body:not(.apk-is-auth) {
   }
 
   .apk-brand-inline-row {
-    gap: 12px !important;
+    gap: 0 !important;
     justify-content: center !important;
     align-items: center !important;
+    width: 100% !important;
   }
 
   .apk-auth-showcase .apk-logo-badge {
-    width: 44px !important;
-    height: 44px !important;
-    border-radius: 13px !important;
-    background: rgba(142, 116, 229, 0.22) !important;
-    border: 1px solid rgba(167, 139, 250, 0.35) !important;
-  }
-
-  .apk-auth-showcase .apk-logo-badge svg {
-    width: 25px !important;
-    height: 25px !important;
+    display: none !important;
   }
 
   .apk-showcase-title {
@@ -3179,6 +3170,8 @@ body:not(.apk-is-auth) {
     letter-spacing: 0.04em !important;
     font-weight: 900 !important;
     text-transform: uppercase !important;
+    text-align: center !important;
+    margin: 0 auto !important;
   }
 
   .apk-showcase-pills {
@@ -3227,20 +3220,20 @@ body:not(.apk-is-auth) {
     margin-top: auto !important;
     margin-bottom: 38px !important; /* shifted higher up from the bottom */
     width: 100% !important;
-    max-width: 300px !important;
-    padding: 14px 16px !important;
-    border-radius: 20px !important;
-    background: rgba(43, 35, 72, 0.85) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(167, 139, 250, 0.28) !important;
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.40) !important;
+    max-width: 308px !important;
+    padding: 15px 18px !important;
+    border-radius: 30px !important;
+    background: rgba(30, 22, 54, 0.58) !important;
+    backdrop-filter: blur(28px) saturate(1.3) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(1.3) !important;
+    border: 1px solid rgba(167, 139, 250, 0.22) !important;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38) !important;
   }
 
   [data-theme="light"] #auth-screen,
   [data-theme="light"] .auth-container {
-    background: rgba(255, 255, 255, 0.90) !important;
-    border: 1px solid rgba(108, 79, 214, 0.20) !important;
+    background: rgba(255, 255, 255, 0.70) !important;
+    border: 1px solid rgba(108, 79, 214, 0.18) !important;
     box-shadow: 0 12px 32px rgba(45, 34, 72, 0.12) !important;
   }
 

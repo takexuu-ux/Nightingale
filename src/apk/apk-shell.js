@@ -792,7 +792,6 @@ function normalizeHeaderAndChrome() {
       showcase.className = 'apk-auth-showcase';
       showcase.innerHTML = `
         <div class="apk-brand-inline-row">
-          <div class="apk-logo-badge">${NIGHTINGALE_MARK_SVG}</div>
           <h1 class="apk-showcase-title apk-brand-gradient-text">NIGHTINGALE</h1>
         </div>
         <div class="apk-showcase-pills">
@@ -803,6 +802,8 @@ function normalizeHeaderAndChrome() {
       `;
       wrapper.insertBefore(showcase, authEl);
     }
+    const staleShowcaseBadge = document.querySelector('.apk-auth-showcase .apk-logo-badge');
+    if (staleShowcaseBadge) staleShowcaseBadge.remove();
 
     const subtitleEl = authEl.querySelector('.brand-subtitle');
     if (subtitleEl) {
