@@ -3,6 +3,18 @@
   "outputDirectory": "dist",
   "trailingSlash": false,
   "cleanUrls": false,
+  "redirects": [
+    {
+      "source": "/apk",
+      "destination": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/RedSapphireHinglish.apk",
+      "permanent": false
+    },
+    {
+      "source": "/download",
+      "destination": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/RedSapphireHinglish.apk",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/auth/v2/login/otp/send",
