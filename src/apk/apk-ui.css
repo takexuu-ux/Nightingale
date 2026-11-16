@@ -873,15 +873,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 }
 
 .apk-showcase-quote {
-  font-size: 0.95rem;
-  color: #a5b4fc;
-  font-style: italic;
-  margin: 8px 0 0 0;
-  opacity: 0.9;
-  line-height: 1.5;
-  max-width: 440px;
-  font-weight: 500;
-  text-align: left;
+  display: none !important;
 }
 
 .apk-showcase-pills {
@@ -929,6 +921,33 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 }
 
 @media (min-width: 768px) {
+  body:not(.apk-is-auth) main#app,
+  body.on-login-screen main#app,
+  body:has(#auth-screen:not(.hide)) main#app {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    min-height: 100vh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body:not(.apk-is-auth) .container,
+  body.on-login-screen .container,
+  body:has(#auth-screen:not(.hide)) .container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    padding: 0 0 0 clamp(48px, 8vw, 120px) !important;
+    margin: 0 !important;
+  }
+
   body:not(.apk-is-auth) .auth-hero-wrapper,
   body.on-login-screen .auth-hero-wrapper,
   body:has(#auth-screen:not(.hide)) .auth-hero-wrapper {
@@ -937,20 +956,27 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: center !important;
-    min-height: 100vh !important;
-    padding: 40px 60px !important;
-    max-width: 580px !important;
+    min-height: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 440px !important;
     margin: 0 !important;
+    gap: 18px !important;
     z-index: 2 !important;
   }
 
   body:not(.apk-is-auth) .apk-auth-showcase,
   body.on-login-screen .apk-auth-showcase,
   body:has(#auth-screen:not(.hide)) .apk-auth-showcase {
+    order: 1 !important;
     align-items: flex-start !important;
     text-align: left !important;
-    margin: 0 0 24px 0 !important;
-    max-width: 520px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 12px !important;
   }
 
   body:not(.apk-is-auth) .apk-brand-inline-row,
@@ -959,6 +985,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     justify-content: flex-start !important;
     text-align: left !important;
     margin: 0 !important;
+    width: auto !important;
   }
 
   body:not(.apk-is-auth) .apk-showcase-title,
@@ -966,30 +993,47 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   body:has(#auth-screen:not(.hide)) .apk-showcase-title {
     margin: 0 !important;
     text-align: left !important;
+    font-size: clamp(2.8rem, 4.5vw, 3.8rem) !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
   }
 
   body:not(.apk-is-auth) .apk-showcase-quote,
   body.on-login-screen .apk-showcase-quote,
   body:has(#auth-screen:not(.hide)) .apk-showcase-quote {
-    display: block !important;
-    text-align: left !important;
+    display: none !important;
   }
 
   body:not(.apk-is-auth) .apk-showcase-pills,
   body.on-login-screen .apk-showcase-pills,
   body:has(#auth-screen:not(.hide)) .apk-showcase-pills {
     justify-content: flex-start !important;
-    margin: 14px 0 0 0 !important;
+    margin: 0 !important;
+    gap: 8px !important;
+  }
+
+  body:not(.apk-is-auth) #auth-screen,
+  body.on-login-screen #auth-screen,
+  body:has(#auth-screen:not(.hide)) #auth-screen,
+  body:not(.apk-is-auth) .auth-container,
+  body.on-login-screen .auth-container,
+  body:has(#auth-screen:not(.hide)) .auth-container {
+    order: 2 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    align-self: flex-start !important;
+    width: 100% !important;
+    max-width: 400px !important;
   }
 
   body:not(.apk-is-auth) .apk-auth-botanical,
   body.on-login-screen .apk-auth-botanical,
   body:has(#auth-screen:not(.hide)) .apk-auth-botanical {
     position: fixed !important;
-    right: clamp(40px, 8vw, 160px) !important;
+    right: clamp(40px, 8vw, 140px) !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    width: clamp(380px, 42vw, 560px) !important;
+    width: clamp(380px, 40vw, 560px) !important;
     max-width: 48vw !important;
     height: auto !important;
     display: block !important;
