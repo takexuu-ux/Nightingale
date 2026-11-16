@@ -3158,6 +3158,8 @@ function renderHomeDateCalendar(poolClasses) {
         const end = c.end || c.endTime ? parseApiDate(c.end || c.endTime) : new Date(start.getTime() + 2 * 3600000);
         const isLiveNow = now >= start && now <= end;
         const isStartingSoon = start > now && (start - now) <= 30 * 60 * 1000;
+        const hasEnded = now > end;
+        c._hasEndedToday = hasEnded;
         classListContainer.appendChild(createClassCard(c, isLiveNow, isStartingSoon));
       });
     } else {
@@ -3465,7 +3467,7 @@ function renderClasses(classes) {
 function updateHeroGreeting() {
   const greetingEl = document.getElementById('apk-hero-greeting');
   if (!greetingEl) return;
-  greetingEl.textContent = 'Welcome, NNL ke Papa 👑';
+  greetingEl.textContent = 'Welcome, NNL ke Papa';
 }
 
 function formatWatchTime(sec) {
@@ -3939,10 +3941,19 @@ function createClassCard(c, isCurrentlyLive) {
   }
   
   const formattedTime = formatClassTime(dateStr, timeStr);
+  const now = new Date();
+  const start = startVal ? parseApiDate(startVal) : null;
+  const endVal = c.end || c.endTime || '';
+  const end = endVal ? parseApiDate(endVal) : (start && !isNaN(start.getTime()) ? new Date(start.getTime() + 2 * 3600000) : null);
+  
+  const hasEnded = Boolean(
+    c._hasEndedToday || 
+    (end && !isNaN(end.getTime()) && now.getTime() > end.getTime())
+  );
 
   let buttonsHtml = '';
   if (activeTab === 'recordings') {
-    const recordingId = c.recordingId || c.recordings?.[0]?.id || '';
+    const recordingId = c.recordingId || c.recordings?.[0]?.id || c.vdoCipherId || '';
     if (recordingId) {
       buttonsHtml = `
         <div style="margin-top: 0.85rem; width: 100%;">
@@ -3961,15 +3972,7 @@ function createClassCard(c, isCurrentlyLive) {
       `;
     }
   } else {
-    if (c._hasEndedToday) {
-      buttonsHtml = `
-        <div style="margin-top: 0.85rem; width: 100%;" class="zoom-action-container">
-          <button class="btn btn-secondary join-embedded-btn" disabled data-class-id="${c.id}" style="width: 100%; opacity: 0.5;">
-            <span>Class Ended</span>
-          </button>
-        </div>
-      `;
-    } else if (isCurrentlyLive) {
+    if (isCurrentlyLive) {
       buttonsHtml = `
         <div style="margin-top: 0.85rem; width: 100%;" class="zoom-action-container">
           <button class="btn btn-zoom join-embedded-btn" data-class-id="${c.id}" data-class-title="${title.replace(/"/g, '&quot;')}" data-class-instructor="${instructor.replace(/"/g, '&quot;')}" style="width: 100%;">
@@ -3977,6 +3980,27 @@ function createClassCard(c, isCurrentlyLive) {
           </button>
         </div>
       `;
+    } else if (hasEnded) {
+      const recordingId = c.recordingId || c.recordings?.[0]?.id || c.vdoCipherId || '';
+      if (recordingId) {
+        buttonsHtml = `
+          <div style="margin-top: 0.85rem; width: 100%;">
+            <button class="btn btn-primary" onclick="window.location.href='/all-videos.html?autoPlay=${encodeURIComponent(c.id || recordingId)}'" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Watch Recording</span>
+            </button>
+          </div>
+        `;
+      } else {
+        buttonsHtml = `
+          <div style="margin-top: 0.85rem; width: 100%;">
+            <div class="apk-upcoming-pill" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 14px;border-radius:12px;background:var(--bg-subtle);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:700;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Class Completed</span>
+            </div>
+          </div>
+        `;
+      }
     } else {
       scheduleNotificationForClass(c);
       buttonsHtml = `
@@ -3995,8 +4019,8 @@ function createClassCard(c, isCurrentlyLive) {
   let badgeHtml = '';
   if (isCurrentlyLive) {
     badgeHtml = '<div class="live-indicator live-pulse" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Live Now</div>';
-  } else if (c._hasEndedToday) {
-    badgeHtml = '<div class="live-indicator status-ended" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Ended</div>';
+  } else if (hasEnded) {
+    badgeHtml = '<div class="live-indicator status-ended" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Completed</div>';
   } else {
     badgeHtml = '<div class="live-indicator status-upcoming" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Upcoming</div>';
   }
