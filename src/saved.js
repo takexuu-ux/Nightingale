@@ -18,6 +18,129 @@ let localOfflineMap = new Map();
 let offlinePollTimer = null;
 const offlinePendingReq = new Set();
 
+let serverLectures = [];
+let serverNotes = [];
+let serverTests = [];
+
+async function syncServerBookmarks() {
+  const token = localStorage.getItem('nnl_access_token') || sessionStorage.getItem('nnl_access_token') || '';
+  if (!token) return;
+
+  const headers = {
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+
+  try {
+    const [vidRes, noteRes, hwRes, qbRes, testRes] = await Promise.allSettled([
+      fetch('/api/cms/videos/bookmark/', { headers }),
+      fetch('/api/cms/notes/bookmark/', { headers }),
+      fetch('/api/cms/handwritten_notes/bookmark/', { headers }),
+      fetch('/api/cms/question_bank/bookmark/', { headers }),
+      fetch('/api/cms/test/bookmark/', { headers })
+    ]);
+
+    if (vidRes.status === 'fulfilled' && vidRes.value.ok) {
+      const vJson = await vidRes.value.json().catch(() => ({}));
+      const items = vJson?.data || vJson?.results || (Array.isArray(vJson) ? vJson : []);
+      if (Array.isArray(items)) {
+        serverLectures = items.map(it => {
+          const v = it.video || it;
+          return {
+            id: String(v.id || it.id),
+            recId: String(v.id || it.id),
+            title: v.title || v.name || 'Saved Lecture',
+            instructor: v.instructor || v.faculty || 'NNL Faculty',
+            subject: v.subject?.name || v.subject || 'Clinical Nursing',
+            duration: v.duration || v.video_duration || 'Recorded',
+            thumb: v.thumbnail || v.thumb || '/nightingale.png',
+            notePdfUrl: v.note_pdf || v.pdf_url || '',
+            notePdfTitle: v.title ? `${v.title} Notes` : 'Class Notes'
+          };
+        });
+      }
+    }
+
+    const mergedNotes = [];
+    if (noteRes.status === 'fulfilled' && noteRes.value.ok) {
+      const nJson = await noteRes.value.json().catch(() => ({}));
+      const items = nJson?.data || nJson?.results || (Array.isArray(nJson) ? nJson : []);
+      if (Array.isArray(items)) {
+        items.forEach(it => {
+          const n = it.notes || it.note || it;
+          mergedNotes.push({
+            id: String(n.id || it.id),
+            title: n.title || n.name || 'Study Notes',
+            subject: n.subject?.name || n.subject || 'Nursing Notes',
+            url: n.pdf_url || n.file || n.url || '',
+            pageCount: n.page_count || n.pages || ''
+          });
+        });
+      }
+    }
+
+    if (hwRes.status === 'fulfilled' && hwRes.value.ok) {
+      const hJson = await hwRes.value.json().catch(() => ({}));
+      const items = hJson?.data || hJson?.results || (Array.isArray(hJson) ? hJson : []);
+      if (Array.isArray(items)) {
+        items.forEach(it => {
+          const h = it.handwrittenNotes || it.handwritten_note || it;
+          mergedNotes.push({
+            id: String(h.id || it.id),
+            title: h.title || h.name || 'Handwritten Notes',
+            subject: h.subject?.name || h.subject || 'Specialty Note',
+            url: h.pdf_url || h.file || h.url || '',
+            pageCount: h.page_count || ''
+          });
+        });
+      }
+    }
+    serverNotes = mergedNotes;
+
+    const mergedTests = [];
+    if (qbRes.status === 'fulfilled' && qbRes.value.ok) {
+      const qJson = await qbRes.value.json().catch(() => ({}));
+      const items = qJson?.data || qJson?.results || (Array.isArray(qJson) ? qJson : []);
+      if (Array.isArray(items)) {
+        items.forEach(it => {
+          const q = it.question_bank || it.question || it;
+          mergedTests.push({
+            id: String(q.id || it.id),
+            title: q.title || q.name || 'Question Bank',
+            category: q.category || q.subject || 'QBank',
+            questions: q.question_count || q.questions_count || 100,
+            duration: q.duration || 'Practice'
+          });
+        });
+      }
+    }
+
+    if (testRes.status === 'fulfilled' && testRes.value.ok) {
+      const tJson = await testRes.value.json().catch(() => ({}));
+      const items = tJson?.data || tJson?.results || (Array.isArray(tJson) ? tJson : []);
+      if (Array.isArray(items)) {
+        items.forEach(it => {
+          const t = it.test || it;
+          mergedTests.push({
+            id: String(t.id || it.id),
+            title: t.title || t.name || 'Mock Test',
+            category: t.category || t.type || 'Test Series',
+            questions: t.total_questions || t.question_count || 100,
+            duration: t.duration || '120 mins'
+          });
+        });
+      }
+    }
+    serverTests = mergedTests;
+
+    renderSavedLectures();
+    renderSavedNotes();
+    renderSavedTests();
+  } catch (err) {
+    console.warn('[MySpace] Bookmark sync error:', err);
+  }
+}
+
 const lecturesContainer = document.getElementById('saved-lectures-container');
 const notesContainer = document.getElementById('saved-notes-container');
 const testsContainer = document.getElementById('saved-tests-container');
@@ -360,10 +483,18 @@ function formatDurationLabel(dur) {
   return 'Recorded';
 }
 
+function getAllSavedLectures() {
+  const local = getSavedLecturesList();
+  const map = new Map();
+  serverLectures.forEach(l => map.set(String(l.id || l.recId), l));
+  local.forEach(l => map.set(String(l.id || l.recId), l));
+  return Array.from(map.values());
+}
+
 // Render Saved Lectures
 function renderSavedLectures() {
   if (!lecturesContainer) return;
-  const list = getSavedLecturesList();
+  const list = getAllSavedLectures();
   if (countLecturesEl) countLecturesEl.textContent = list.length;
   if (countAllSavedEl) countAllSavedEl.textContent = list.length;
 
@@ -382,6 +513,10 @@ function renderSavedLectures() {
   });
 
   if (filtered.length === 0) {
+    const token = localStorage.getItem('nnl_access_token');
+    const authHint = !token
+      ? `<p style="font-size: 11px; margin-top: 8px;"><a href="/" style="color: var(--accent); text-decoration: underline;">Log In with Mobile</a> to sync your saved classes from the official app.</p>`
+      : '';
     lecturesContainer.innerHTML = `
       <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align: center; width: 100%;">
         <div style="width: 52px; height: 52px; margin: 0 auto 0.85rem; border-radius: 16px; background: rgba(142,116,229,0.18); border: 1px solid rgba(167,139,250,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent);">
@@ -389,6 +524,7 @@ function renderSavedLectures() {
         </div>
         <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved lectures</p>
         <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Bookmark classes from Videos or Home to access them here.</p>
+        ${authHint}
       </div>
     `;
     return;
@@ -495,6 +631,14 @@ function renderSavedLectures() {
       if (id && id !== 'undefined' && id !== 'null') {
         toggleSavedLecture(id);
         deleteOfflineMedia(id);
+        serverLectures = serverLectures.filter(l => String(l.id || l.recId) !== String(id));
+        const token = localStorage.getItem('nnl_access_token');
+        if (token) {
+          fetch(`/api/cms/videos/bookmark/${id}/`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          }).catch(() => {});
+        }
         renderSavedLectures();
       }
     });
@@ -561,10 +705,26 @@ function toggleSavedTest(test) {
   }
 }
 
-// Render Saved Notes & PDFs (Shows ONLY notes saved by the user, NO 'PDF Note' prefix, NO download button)
+function getAllSavedNotes() {
+  const local = getSavedNotesList();
+  const map = new Map();
+  serverNotes.forEach(n => map.set(String(n.id || n.url || n.title), n));
+  local.forEach(n => map.set(String(n.id || n.url || n.title), n));
+  return Array.from(map.values());
+}
+
+function getAllSavedTests() {
+  const local = getSavedTestsList();
+  const map = new Map();
+  serverTests.forEach(t => map.set(String(t.id || t.title), t));
+  local.forEach(t => map.set(String(t.id || t.title), t));
+  return Array.from(map.values());
+}
+
+// Render Saved Notes & PDFs (Shows notes saved by user + synchronized from NNL account)
 function renderSavedNotes() {
   if (!notesContainer) return;
-  const savedNotesList = getSavedNotesList();
+  const savedNotesList = getAllSavedNotes();
   if (countNotesEl) countNotesEl.textContent = savedNotesList.length;
 
   const q = searchQuery.trim().toLowerCase();
@@ -574,6 +734,10 @@ function renderSavedNotes() {
   });
 
   if (filtered.length === 0) {
+    const token = localStorage.getItem('nnl_access_token');
+    const authHint = !token
+      ? `<p style="font-size: 11px; margin-top: 8px;"><a href="/" style="color: var(--accent); text-decoration: underline;">Log In with Mobile</a> to sync your saved notes from your account.</p>`
+      : '';
     notesContainer.innerHTML = `
       <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align: center; width: 100%; grid-column: 1 / -1;">
         <div style="width: 52px; height: 52px; margin: 0 auto 0.85rem; border-radius: 16px; background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.3); display: flex; align-items: center; justify-content: center; color: #38BDF8;">
@@ -581,6 +745,7 @@ function renderSavedNotes() {
         </div>
         <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved notes</p>
         <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Save notes from the Notes tab to view them here.</p>
+        ${authHint}
       </div>
     `;
     return;
@@ -622,15 +787,23 @@ function renderSavedNotes() {
       e.stopPropagation();
       const id = btn.getAttribute('data-note-id');
       toggleSavedNote({ id });
+      serverNotes = serverNotes.filter(n => String(n.id || n.url || n.title) !== String(id));
+      const token = localStorage.getItem('nnl_access_token');
+      if (token && id) {
+        fetch(`/api/cms/notes/bookmark/${id}/`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
+      }
       renderSavedNotes();
     });
   });
 }
 
-// Render Saved Question Banks (Shows ONLY question banks saved by the user)
+// Render Saved Question Banks (Shows question banks saved by user + synchronized from NNL account)
 function renderSavedTests() {
   if (!testsContainer) return;
-  const savedBanks = getSavedTestsList();
+  const savedBanks = getAllSavedTests();
   if (countTestsEl) countTestsEl.textContent = savedBanks.length;
 
   const q = searchQuery.trim().toLowerCase();
@@ -640,6 +813,10 @@ function renderSavedTests() {
   });
 
   if (filtered.length === 0) {
+    const token = localStorage.getItem('nnl_access_token');
+    const authHint = !token
+      ? `<p style="font-size: 11px; margin-top: 8px;"><a href="/" style="color: var(--accent); text-decoration: underline;">Log In with Mobile</a> to sync your saved tests and QBanks from your account.</p>`
+      : '';
     testsContainer.innerHTML = `
       <div class="notes-empty-state" style="padding: 2.5rem 1rem; text-align: center; width: 100%; grid-column: 1 / -1;">
         <div style="width: 52px; height: 52px; margin: 0 auto 0.85rem; border-radius: 16px; background: rgba(142,116,229,0.18); border: 1px solid rgba(142,116,229,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent);">
@@ -647,6 +824,7 @@ function renderSavedTests() {
         </div>
         <p class="apk-empty-title" style="font-weight: 700; font-size: 15px; margin: 0 0 4px; color: var(--text-primary);">No saved question banks</p>
         <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Bookmark question banks from the Tests tab to practice them here.</p>
+        ${authHint}
       </div>
     `;
     return;
@@ -684,6 +862,14 @@ function renderSavedTests() {
       e.stopPropagation();
       const id = btn.getAttribute('data-test-id');
       toggleSavedTest({ id });
+      serverTests = serverTests.filter(t => String(t.id || t.title) !== String(id));
+      const token = localStorage.getItem('nnl_access_token');
+      if (token && id) {
+        fetch(`/api/cms/test/bookmark/${id}/`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
+      }
       renderSavedTests();
     });
   });
@@ -737,3 +923,4 @@ renderSavedLectures();
 renderSavedNotes();
 renderSavedTests();
 refreshLocalOffline({ reRender: true });
+syncServerBookmarks();

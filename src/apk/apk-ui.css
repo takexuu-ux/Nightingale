@@ -7212,15 +7212,15 @@ main#app,
   overflow: hidden !important;
 }
 .pdf-modal-header {
-  height: 52px !important;
-  min-height: 52px !important;
-  padding: 0 16px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
   background: var(--bg-elevated, #121624) !important;
-  border-bottom: 1px solid var(--border-hairline, rgba(255, 255, 255, 0.1)) !important;
+  border-bottom: 1px solid var(--border-hairline, rgba(255, 255, 255, 0.08)) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 12px !important;
+  gap: 8px !important;
   flex-shrink: 0 !important;
 }
 [data-theme="light"] .pdf-modal-header {
@@ -7228,20 +7228,49 @@ main#app,
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 .pdf-modal-title {
-  font-size: 14px !important;
-  font-weight: 700 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
   color: var(--text-primary, #ffffff) !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  letter-spacing: -0.01em;
 }
 [data-theme="light"] .pdf-modal-title {
   color: #0f172a !important;
 }
+.pdf-modal-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.pdf-modal-actions .btn-note-download,
+.pdf-modal-actions #pdf-modal-download-btn {
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  height: 24px !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+.pdf-modal-actions #pdf-modal-close-btn,
+.pdf-modal-actions .btn-close-quiz {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
 .pdf-modal-body {
   flex: 1 !important;
   width: 100vw !important;
-  height: calc(100vh - 52px) !important;
+  height: calc(100vh - 36px) !important;
   min-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;

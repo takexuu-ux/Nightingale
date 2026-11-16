@@ -2,8 +2,8 @@ import './style.css';
 import './apk/apk-ui.css';
 import './apk/apk-shell.js';
 
-// Local storage key for persistent Saarthi chat
-const SAARTHI_HISTORY_KEY = 'nnl_saarthi_chat_history_v2';
+// Local storage key for persistent Saarthi chat cache
+const SAARTHI_HISTORY_KEY = 'nnl_saarthi_chat_history_v3';
 
 const chatLog = document.getElementById('saarthi-chat-log');
 const chatForm = document.getElementById('saarthi-chat-form');
@@ -15,18 +15,58 @@ const topicChips = document.getElementById('saarthi-topic-chips');
 const INITIAL_GREETING = {
   role: 'bot',
   text: `
-    <p>Namaste! I am <strong>NNL Saarthi</strong>, your dedicated 24/7 AI Clinical Study Mentor.</p>
-    <p>I can help you master:</p>
+    <p>Namaste! I am <strong>NNL Saarthi</strong>, your dedicated 24/7 AI Clinical Mentor &amp; NORCET Companion.</p>
+    <p>Ask me anything regarding:</p>
     <ul>
-      <li><strong>Clinical Drug Calculations:</strong> IV flow rates, pediatric dosages, mcg/kg/min infusions.</li>
-      <li><strong>NORCET &amp; Nursing Officer High-Yield:</strong> Priority rationales, Gold Standard nursing interventions, mnemonics.</li>
-      <li><strong>ECG &amp; Diagnostics:</strong> Dysrhythmias, electrolyte imbalances, arterial blood gas (ABG) interpretations.</li>
-      <li><strong>Specialty Concepts:</strong> OBG labor stages, pediatric milestones, triage, emergency resuscitation.</li>
+      <li><strong>Clinical Drug Calculations:</strong> IV drop factor, pediatric dosages, mcg/kg/min infusions.</li>
+      <li><strong>NORCET &amp; Nursing Officer High-Yield:</strong> Priority rationales, Gold Standard nursing interventions.</li>
+      <li><strong>Diagnostics &amp; ECG:</strong> Dysrhythmias, electrolyte imbalances, arterial blood gas (ABG) interpretations.</li>
+      <li><strong>Specialty Concepts:</strong> OBG labor stages, pediatric milestones, emergency resuscitation.</li>
     </ul>
-    <p>Choose any quick topic above or type your clinical question below!</p>
+    <p>Pick a suggested question above or type your clinical question below!</p>
   `,
   timestamp: Date.now()
 };
+
+function formatMarkdown(text) {
+  if (!text) return '';
+  let str = text;
+  // Escape HTML tags to prevent XSS
+  str = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // Headers: ### Header -> <h4>Header</h4>
+  str = str.replace(/^### (.*$)/gim, '<h4 class="saarthi-md-h4">$1</h4>');
+  str = str.replace(/^## (.*$)/gim, '<h3 class="saarthi-md-h3">$1</h3>');
+  str = str.replace(/^# (.*$)/gim, '<h2 class="saarthi-md-h2">$1</h2>');
+
+  // Bold: **text** -> <strong>text</strong>
+  str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Italic: *text* or _text_ -> <em>text</em>
+  str = str.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // Inline code: `code` -> <code>code</code>
+  str = str.replace(/`([^`]+)`/g, '<code class="saarthi-inline-code">$1</code>');
+
+  // Unordered list items: * or - 
+  str = str.replace(/^\s*[-*]\s+(.*)$/gim, '<li>$1</li>');
+  str = str.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul class="saarthi-md-list">$1</ul>');
+  // Clean duplicate nested uls
+  str = str.replace(/<\/ul>\s*<ul class="saarthi-md-list">/g, '');
+
+  // Numbered list items: 1. Item
+  str = str.replace(/^\s*(\d+)\.\s+(.*)$/gim, '<li>$2</li>');
+
+  // Paragraph breaks
+  str = str.replace(/\n\n+/g, '</p><p>');
+  str = str.replace(/\n/g, '<br/>');
+
+  return `<p>${str}</p>`;
+}
+
+function getAuthToken() {
+  return localStorage.getItem('nnl_access_token') || sessionStorage.getItem('nnl_access_token') || '';
+}
 
 function getStoredHistory() {
   try {
@@ -68,10 +108,19 @@ function renderMessage(msg) {
          </svg>
        </div>`;
 
+  const metaSubject = msg.subject ? `<span class="saarthi-msg-tag">${msg.subject}</span>` : '';
+  const remainingHtml = (typeof msg.remainingQuestions === 'number')
+    ? `<span class="saarthi-remaining-badge">${msg.remainingQuestions} queries left</span>`
+    : '';
+
   row.innerHTML = `
     ${avatarHtml}
     <div class="saarthi-msg-bubble">
-      <div class="saarthi-msg-sender">${isBot ? 'NNL Saarthi' : 'You'}</div>
+      <div class="saarthi-msg-sender">
+        <span>${isBot ? 'NNL Saarthi' : 'You'}</span>
+        ${metaSubject}
+        ${remainingHtml}
+      </div>
       <div class="saarthi-msg-content">${msg.text}</div>
       <div class="saarthi-msg-time">${formatTime(msg.timestamp || Date.now())}</div>
     </div>
@@ -88,146 +137,85 @@ function renderAllMessages() {
   history.forEach(renderMessage);
 }
 
-function generateClinicalResponse(query) {
-  const q = (query || '').toLowerCase().trim();
+// Fetch suggested questions from real NNL backend
+async function loadSuggestedQuestions() {
+  const token = getAuthToken();
+  const headers = { 'Accept': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  if (q.includes('drop') || q.includes('flow rate') || q.includes('dosage') || q.includes('formula') || q.includes('calc')) {
-    return `
-      <h4>💉 Clinical Formula &amp; Drug Dosage Guide</h4>
-      <p><strong>1. IV Flow Rate (Drops per Minute - gtt/min):</strong></p>
-      <div class="saarthi-callout">
-        <code>Flow Rate (gtt/min) = [Total Volume (mL) × Drop Factor (gtt/mL)] ÷ Time (in minutes)</code>
-      </div>
-      <ul>
-        <li><strong>Standard Macro-drip:</strong> 10, 15, or 20 gtt/mL.</li>
-        <li><strong>Micro-drip (Pediatric):</strong> 60 gtt/mL (Remember: in micro-drip, <code>mL/hr = gtt/min</code>).</li>
-      </ul>
-      <p><strong>Example:</strong> Infuse 1000 mL Normal Saline over 8 hours using a 15 gtt/mL set.<br/>
-      <code>gtt/min = (1000 × 15) ÷ (8 × 60) = 15000 ÷ 480 ≈ 31.25 → 31 drops/min</code>.</p>
-      <p><strong>Clinical Pearl:</strong> Always double check high-alert infusions (Heparin, Insulin, Potassium, Inotropes) with an independent second nurse!</p>
-    `;
+  try {
+    const res = await fetch('/api/api/ai/suggested_questions/', { headers });
+    if (!res.ok) return;
+    const json = await res.json();
+    const list = json?.data || json?.results || (Array.isArray(json) ? json : null);
+    if (!list || !Array.isArray(list) || list.length === 0) return;
+
+    if (topicChips) {
+      topicChips.innerHTML = list.map(q => {
+        const text = q.question || q.text || q.title || '';
+        if (!text) return '';
+        return `
+          <button type="button" class="saarthi-chip" data-prompt="${text.replace(/"/g, '&quot;')}">
+            💡 ${text}
+          </button>
+        `;
+      }).join('');
+    }
+  } catch (e) {
+    console.warn('[Saarthi] Suggested questions fetch note:', e);
   }
-
-  if (q.includes('glasgow') || q.includes('gcs')) {
-    return `
-      <h4>🧠 Glasgow Coma Scale (GCS) Breakdown</h4>
-      <p>Total score ranges from <strong>3 (Deep coma/death)</strong> to <strong>15 (Fully awake/oriented)</strong> across 3 categories:</p>
-      <ol>
-        <li><strong>Eye Opening (E - Max 4):</strong>
-          <ul>
-            <li>4 = Spontaneous</li>
-            <li>3 = To sound/verbal command</li>
-            <li>2 = To pressure/pain</li>
-            <li>1 = None</li>
-          </ul>
-        </li>
-        <li><strong>Verbal Response (V - Max 5):</strong>
-          <ul>
-            <li>5 = Oriented (Person, place, time)</li>
-            <li>4 = Confused conversation</li>
-            <li>3 = Inappropriate words</li>
-            <li>2 = Incomprehensible sounds (moaning)</li>
-            <li>1 = None</li>
-          </ul>
-        </li>
-        <li><strong>Motor Response (M - Max 6):</strong>
-          <ul>
-            <li>6 = Obeys commands</li>
-            <li>5 = Localizes to pain</li>
-            <li>4 = Normal flexion (withdrawal from pain)</li>
-            <li>3 = Abnormal flexion (Decorticate posturing - arms flexed to core)</li>
-            <li>2 = Extension (Decerebrate posturing - arms extended, pronated; worse prognosis)</li>
-            <li>1 = None (Flaccid)</li>
-          </ul>
-        </li>
-      </ol>
-      <p><strong>NORCET Golden Rule:</strong> <code>GCS ≤ 8 → Intubate!</code> ("GCS eight, intubate").</p>
-    `;
-  }
-
-  if (q.includes('ecg') || q.includes('hyperkalemia') || q.includes('potassium')) {
-    return `
-      <h4>📈 Hyperkalemia &amp; Cardiac Rhythm Management</h4>
-      <p><strong>Progressive ECG Changes in Hyperkalemia (K<sup>+</sup> &gt; 5.0 mEq/L):</strong></p>
-      <ol>
-        <li><strong>Mild (5.5 - 6.5 mEq/L):</strong> Tall, narrow, tented (peaked) T waves; shortened QT interval.</li>
-        <li><strong>Moderate (6.5 - 7.5 mEq/L):</strong> Flattened or lost P waves; prolonged PR interval; ST depression.</li>
-        <li><strong>Severe (&gt; 7.5 - 8.0 mEq/L):</strong> Widening of QRS complex, bundle branch blocks, merging into a fatal <em>Sine Wave</em> pattern → Ventricular Fibrillation or Asystole.</li>
-      </ol>
-      <p><strong>Emergency Treatment Hierarchy (ACLS):</strong></p>
-      <ul>
-        <li><strong>Step 1 (Myocardial Membrane Stabilization):</strong> <em>Calcium Gluconate 10%</em> IV over 2–5 min (Protects heart from dysrhythmia; does NOT lower serum K<sup>+</sup>).</li>
-        <li><strong>Step 2 (Shift K<sup>+</sup> into Cells):</strong> Regular Insulin 10 units IV + 50 mL 50% Dextrose (D50) IV push; nebulized Albuterol.</li>
-        <li><strong>Step 3 (Eliminate K<sup>+</sup> from Body):</strong> IV Furosemide (Lasix), Sodium Polystyrene Sulfonate (Kayexalate), or emergent Hemodialysis.</li>
-      </ul>
-    `;
-  }
-
-  if (q.includes('labor') || q.includes('stages') || q.includes('obg') || q.includes('bishop')) {
-    return `
-      <h4>👶 Stages of Labor &amp; Clinical Management</h4>
-      <ol>
-        <li><strong>First Stage (Cervical Dilation: 0 to 10 cm):</strong>
-          <ul>
-            <li><em>Latent Phase:</em> 0 to 5 cm (mild contractions, mother excited/talkative).</li>
-            <li><em>Active Phase:</em> 6 to 10 cm (rapid dilation &ge; 1 cm/hr, intense contractions, patient needs focused breathing).</li>
-          </ul>
-        </li>
-        <li><strong>Second Stage (Fetal Expulsion: 10 cm to Birth):</strong>
-          <ul>
-            <li>Active pushing; crown of fetal head visible.</li>
-            <li>Assess for early decelerations (benign head compression) vs variable (cord compression) or late decelerations (uteroplacental insufficiency).</li>
-          </ul>
-        </li>
-        <li><strong>Third Stage (Placental Delivery: Birth to Placenta Expulsion):</strong>
-          <ul>
-            <li>Normal duration: 5 to 30 minutes.</li>
-            <li>Cardinal signs of separation: Sudden gush of blood, lengthening of umbilical cord, uterus becomes firm and globular (fundus rises).</li>
-            <li>Management: Active Management of Third Stage of Labor (AMTSL) with 10 IU Oxytocin IM/IV.</li>
-          </ul>
-        </li>
-        <li><strong>Fourth Stage (Maternal Recovery: First 1–2 hours postpartum):</strong>
-          <ul>
-            <li>Monitor for Postpartum Hemorrhage (PPH). Fundus must be firm and at the level of the umbilicus. If boggy: <em>Massage fundus immediately!</em></li>
-          </ul>
-        </li>
-      </ol>
-    `;
-  }
-
-  if (q.includes('abg') || q.includes('acid') || q.includes('alkalosis')) {
-    return `
-      <h4>🧪 Rapid ABG Interpretation (ROME Method)</h4>
-      <div class="saarthi-callout">
-        <strong>Normal Reference Values:</strong><br/>
-        • pH: <strong>7.35 – 7.45</strong> (Acidic &lt; 7.35 | Alkalotic &gt; 7.45)<br/>
-        • PaCO<sub>2</sub>: <strong>35 – 45 mmHg</strong> (Respiratory parameter)<br/>
-        • HCO<sub>3</sub><sup>-</sup>: <strong>22 – 26 mEq/L</strong> (Metabolic parameter)
-      </div>
-      <p><strong>The ROME Rule:</strong></p>
-      <ul>
-        <li><strong>R-O (Respiratory Opposite):</strong> If pH is high and PaCO<sub>2</sub> is low → <em>Respiratory Alkalosis</em> (Hyperventilation, panic). If pH is low and PaCO<sub>2</sub> is high → <em>Respiratory Acidosis</em> (COPD, hypoventilation).</li>
-        <li><strong>M-E (Metabolic Equal):</strong> If pH is low and HCO<sub>3</sub> is low → <em>Metabolic Acidosis</em> (DKA, shock, renal failure). If pH is high and HCO<sub>3</sub> is high → <em>Metabolic Alkalosis</em> (Severe vomiting, NG suctioning).</li>
-      </ul>
-    `;
-  }
-
-  // General high yield nursing rationale
-  return `
-    <h4>📚 Clinical Guidance &amp; NORCET Concept</h4>
-    <p>Regarding <strong>"${query}"</strong>:</p>
-    <ul>
-      <li><strong>Priority Nursing Action:</strong> Always assess ABCs (Airway, Breathing, Circulation) first unless the patient is in sudden unwitnessed collapse (CAB in CPR).</li>
-      <li><strong>Assessment vs Intervention:</strong> Never select a physician order or intervention before completing a rapid focused nursing assessment unless life-threatening shock or arrest is evident.</li>
-      <li><strong>Client Teaching:</strong> Emphasize compliance, adverse effect recognition (e.g. Digoxin toxicity halos, Lithium tremors, Aminoglycoside ototoxicity), and emergency reporting triggers.</li>
-    </ul>
-    <p>Would you like specific practice questions, dosage calculations, or clinical mnemonics on this topic?</p>
-  `;
 }
 
-function handleSendMessage(text) {
+// Fetch user question history from real NNL backend
+async function loadServerHistory() {
+  const token = getAuthToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/api/ai/question_history/', {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    const items = json?.data || (Array.isArray(json) ? json : null);
+    if (!items || !Array.isArray(items) || items.length === 0) return;
+
+    const serverMsgs = [];
+    serverMsgs.push(INITIAL_GREETING);
+
+    items.forEach(it => {
+      if (it.question) {
+        serverMsgs.push({
+          role: 'user',
+          text: it.question.replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+          timestamp: it.created ? new Date(it.created).getTime() : Date.now()
+        });
+      }
+      if (it.answer) {
+        serverMsgs.push({
+          role: 'bot',
+          text: formatMarkdown(it.answer),
+          timestamp: it.created ? new Date(it.created).getTime() + 500 : Date.now()
+        });
+      }
+    });
+
+    if (serverMsgs.length > 1) {
+      saveHistory(serverMsgs);
+      renderAllMessages();
+    }
+  } catch (e) {
+    console.warn('[Saarthi] History sync note:', e);
+  }
+}
+
+async function handleSendMessage(text) {
   if (!text || !text.trim()) return;
   const userText = text.trim();
+  const token = getAuthToken();
 
   const userMsg = {
     role: 'user',
@@ -260,17 +248,97 @@ function handleSendMessage(text) {
   chatLog.appendChild(typingRow);
   chatLog.scrollTop = chatLog.scrollHeight;
 
-  setTimeout(() => {
+  // Check auth token
+  if (!token) {
     typingRow.remove();
-    const botResponse = {
+    const loginPrompt = {
       role: 'bot',
-      text: generateClinicalResponse(userText),
+      text: `
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+          <h4 style="color: #ef4444; margin: 0 0 6px 0; font-size: 13px;">🔒 Authentication Required</h4>
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: var(--text-secondary);">
+            To communicate with <strong>NNL Saarthi AI</strong>, please log in to your NNL account.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="/" style="background: #ef4444; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none;">Log In with Mobile</a>
+            <a href="https://nnlsaarthi.nnlone.com/" target="_blank" rel="noopener" style="background: rgba(255,255,255,0.1); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none;">Open Saarthi Web Platform ↗</a>
+          </div>
+        </div>
+      `,
       timestamp: Date.now()
     };
+    history.push(loginPrompt);
+    saveHistory(history);
+    renderMessage(loginPrompt);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/api/ai/ask_question/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ question: userText })
+    });
+
+    typingRow.remove();
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      const errMsg = errJson?.error?.message || errJson?.detail || errJson?.message || `Server returned error (${res.status})`;
+      
+      const errorResponse = {
+        role: 'bot',
+        text: `
+          <div style="color: #f87171; background: rgba(239, 68, 68, 0.08); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+            <strong>⚠️ Saarthi AI Response:</strong> ${errMsg}
+            <p style="margin: 6px 0 0 0; font-size: 11px; opacity: 0.85;">
+              If your daily question limit was reached or your session expired, you can also launch the <a href="https://nnlsaarthi.nnlone.com/" target="_blank" rel="noopener" style="color: #60a5fa; text-decoration: underline;">NNL Saarthi Web Platform</a>.
+            </p>
+          </div>
+        `,
+        timestamp: Date.now()
+      };
+      history.push(errorResponse);
+      saveHistory(history);
+      renderMessage(errorResponse);
+      return;
+    }
+
+    const data = await res.json();
+    const rawAnswer = data.answer || data.text || data.data?.answer || '';
+    const formattedAnswer = rawAnswer ? formatMarkdown(rawAnswer) : 'Thank you for your question. I am analyzing this clinical concept.';
+
+    const botResponse = {
+      role: 'bot',
+      text: formattedAnswer,
+      subject: data.subject || data.topic || '',
+      remainingQuestions: data.remainingQuestions,
+      timestamp: Date.now()
+    };
+
     history.push(botResponse);
     saveHistory(history);
     renderMessage(botResponse);
-  }, 450);
+  } catch (err) {
+    typingRow.remove();
+    const netErrResponse = {
+      role: 'bot',
+      text: `
+        <div style="color: #f87171; background: rgba(239, 68, 68, 0.08); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+          <strong>Network Error:</strong> Could not reach NNL AI server (${err.message}).
+          <p style="margin: 6px 0 0 0; font-size: 11px;">Please check your connection or access the <a href="https://nnlsaarthi.nnlone.com/" target="_blank" rel="noopener" style="color: #60a5fa; text-decoration: underline;">Saarthi Web Portal</a> directly.</p>
+        </div>
+      `,
+      timestamp: Date.now()
+    };
+    history.push(netErrResponse);
+    saveHistory(history);
+    renderMessage(netErrResponse);
+  }
 }
 
 // Event Bindings
@@ -309,6 +377,10 @@ if (topicChips) {
 // Initial render on load
 document.addEventListener('DOMContentLoaded', () => {
   renderAllMessages();
+  loadSuggestedQuestions();
+  loadServerHistory();
   chatInput?.focus();
 });
 renderAllMessages();
+loadSuggestedQuestions();
+loadServerHistory();

@@ -7130,18 +7130,20 @@ header.app-header.hide {
 }
 
 .pdf-modal-header {
-  padding: 0.85rem 1.4rem;
-  background: linear-gradient(135deg, rgba(22, 27, 46, 0.96), rgba(31, 24, 52, 0.96));
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+  background: linear-gradient(135deg, rgba(22, 27, 46, 0.98), rgba(31, 24, 52, 0.98));
   border-bottom: 1px solid rgba(167, 139, 250, 0.16);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 8px;
 }
 
 .pdf-modal-title {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
@@ -7152,7 +7154,7 @@ header.app-header.hide {
 .pdf-modal-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 6px;
   flex-shrink: 0;
 }
 
