@@ -962,7 +962,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     min-height: 100dvh !important;
     height: 100vh !important;
     box-sizing: border-box !important;
-    padding: clamp(36px, 5.5vh, 64px) 0 clamp(36px, 5.5vh, 64px) 0 !important;
+    padding: clamp(36px, 5vh, 60px) 0 clamp(90px, 13.5vh, 140px) 0 !important;
     width: 100% !important;
     max-width: 520px !important;
     margin: 0 !important;
