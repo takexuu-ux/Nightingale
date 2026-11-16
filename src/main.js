@@ -416,7 +416,10 @@ function checkLoginState() {
   if (token) {
     // Transition UI to logged-in state
     document.body.classList.remove('apk-is-auth', 'on-login-screen');
+    document.body.classList.add('is-logged-in');
     authScreen.classList.add('hide');
+    const authWrapper = document.querySelector('.auth-hero-wrapper');
+    if (authWrapper) authWrapper.classList.add('hide');
     appHeader.classList.remove('hide');
     classroomDashboard.classList.remove('hide');
     if (cyberHero) cyberHero.classList.add('hide');
@@ -3093,7 +3096,7 @@ function renderHomeDateCalendar(poolClasses) {
 
     // If date has no live/scheduled classes from API, provide high-yield curriculum lectures for this day
     if (matches.length === 0 && RED_SAPPHIRE_DATA) {
-      const isEng = activeBatch === 'batch104_eng';
+      const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
       const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
       if (fallbackList && fallbackList.length > 0) {
         // Deterministic day-based index so the date consistently shows curated classes
@@ -3230,7 +3233,7 @@ function renderClasses(classes) {
   // ── Live tab: filter by activeBatch (so we only show classes for the student's selected batch)
   let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
   if (poolForLive.length === 0 && RED_SAPPHIRE_DATA) {
-    const isEng = activeBatch === 'batch104_eng';
+    const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
     const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
     if (fallbackList && fallbackList.length > 0) {
       poolForLive = fallbackList.map(item => ({
@@ -3304,9 +3307,7 @@ function renderClasses(classes) {
     renderHomeDateCalendar(poolForLive);
     updateHeroGreeting();
     renderContinueWatchingSection();
-    if (IS_HINGLISH_APK) {
-      return; // Handled exclusively by interactive date picker and empty state
-    }
+    return; // Handled exclusively by interactive date picker and empty state across web & apk
     const soonMs = 30 * 60 * 1000;
     const futureLimitMs = 4 * 60 * 60 * 1000;
 
@@ -3792,7 +3793,7 @@ function renderContinueWatchingSection() {
   const recents = getRecentlyWatchedLectures(1);
   let item = recents && recents.length > 0 ? recents[0] : null;
   if (!item && RED_SAPPHIRE_DATA) {
-    const isEng = activeBatch === 'batch104_eng';
+    const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
     const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
     if (fallbackList && fallbackList.length > 0) {
       const topItem = fallbackList[0];
@@ -5293,6 +5294,30 @@ function checkPreloaderCompletion() {
 // Absolute safety net: FORCE-REMOVE preloader after 2 seconds no matter what
 setTimeout(hidePreloader, 2000);
 
+function initHubButtons() {
+  document.getElementById('hub-btn-saarthi')?.addEventListener('click', () => {
+    window.location.href = '/saarthi.html';
+  });
+  document.getElementById('hub-btn-myspace')?.addEventListener('click', () => {
+    window.location.href = '/saved.html';
+  });
+  document.getElementById('hub-btn-scheduled')?.addEventListener('click', () => {
+    const picker = document.getElementById('apk-date-picker-wrap');
+    if (picker) {
+      picker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  document.getElementById('hub-btn-resume')?.addEventListener('click', () => {
+    const resumeBtn = document.querySelector('.continue-watching-resume-btn, .continue-watching-card');
+    if (resumeBtn) {
+      resumeBtn.click();
+    } else {
+      const cw = document.getElementById('continue-watching-section');
+      if (cw) cw.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
 // Pre-load background image silently
 const bgImg = new Image();
 bgImg.src = '/nightingale.jpg';
@@ -5300,6 +5325,7 @@ bgImg.src = '/nightingale.jpg';
 // Initialize on page load
 try { getOrCreateDeviceId(); } catch (e) { console.error('init error:', e); }
 try { checkLoginState(); } catch (e) { console.error('init error:', e); }
+try { initHubButtons(); } catch (e) { console.error('init error:', e); }
 try { updateFavicon(); } catch (e) { console.error('init error:', e); }
 try { initTweaksPanel(); } catch (e) { console.error('init error:', e); }
 try { initBatchSelection(); } catch (e) { console.error('init error:', e); }

@@ -197,59 +197,36 @@ body {
 }
 
 html[data-theme="dark"] #apk-ambient-bg {
-  background-image: url('./bg-app-wallpaper.jpg') !important;
+  background-image: url('./bg-web-landscape-dark.jpg') !important;
   opacity: 1.0 !important;
   filter: none !important;
 }
 
 html[data-theme="light"] #apk-ambient-bg {
-  background-image: url('./bg-app-wallpaper-light.jpg') !important;
+  background-image: url('./bg-web-landscape-light.jpg') !important;
   opacity: 1.0 !important;
   filter: none !important;
 }
 
-/* ── High-Detail 16:9 Botanical Landscape Wallpaper on Desktop Web (>= 1024px) ── */
-@media (min-width: 1024px) {
-  #apk-ambient-bg,
-  html #apk-ambient-bg,
-  html[data-theme="dark"] #apk-ambient-bg,
-  html:not([data-theme="light"]) #apk-ambient-bg,
-  body #apk-ambient-bg,
-  body.apk-shell-active #apk-ambient-bg,
-  html[data-theme="dark"] body.apk-shell-active #apk-ambient-bg {
-    background-image: url('./bg-web-landscape-dark.jpg') !important;
-    background-size: cover !important;
-    background-position: center center !important;
-  }
-
-  html[data-theme="light"] #apk-ambient-bg,
-  html[data-theme="light"] body #apk-ambient-bg,
-  html[data-theme="light"] body.apk-shell-active #apk-ambient-bg {
-    background-image: url('./bg-web-landscape-light.jpg') !important;
-    background-size: cover !important;
-    background-position: center center !important;
-  }
+/* ── Website Landscape Medical Wallpaper (Dark & Light Theme) ── */
+#apk-ambient-bg,
+html #apk-ambient-bg,
+html[data-theme="dark"] #apk-ambient-bg,
+html:not([data-theme="light"]) #apk-ambient-bg,
+body #apk-ambient-bg,
+body.apk-shell-active #apk-ambient-bg,
+html[data-theme="dark"] body.apk-shell-active #apk-ambient-bg {
+  background-image: url('./bg-web-landscape-dark.jpg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
 }
 
-/* ── STRICT GUARANTEE: Mobile & Tablet viewports (< 1024px) ALWAYS preserve original mobile wallpaper ── */
-@media (max-width: 1023px) {
-  #apk-ambient-bg,
-  html[data-theme="dark"] #apk-ambient-bg,
-  body #apk-ambient-bg,
-  body.apk-shell-active #apk-ambient-bg,
-  html[data-theme="dark"] body.apk-shell-active #apk-ambient-bg {
-    background-image: url('./bg-app-wallpaper.jpg') !important;
-    background-size: cover !important;
-    background-position: center center !important;
-  }
-
-  html[data-theme="light"] #apk-ambient-bg,
-  html[data-theme="light"] body #apk-ambient-bg,
-  html[data-theme="light"] body.apk-shell-active #apk-ambient-bg {
-    background-image: url('./bg-app-wallpaper-light.jpg') !important;
-    background-size: cover !important;
-    background-position: center center !important;
-  }
+html[data-theme="light"] #apk-ambient-bg,
+html[data-theme="light"] body #apk-ambient-bg,
+html[data-theme="light"] body.apk-shell-active #apk-ambient-bg {
+  background-image: url('./bg-web-landscape-light.jpg') !important;
+  background-size: cover !important;
+  background-position: center center !important;
 }
 
 /* ── STRICT GUARANTEE: Native Android APK environment ALWAYS preserves original mobile wallpaper ── */
@@ -838,6 +815,75 @@ body:has(#auth-screen:not(.hide)) #apk-home-hub-strip,
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* ABSOLUTE GUARANTEE: When logged in, always display dashboard, hero, hub buttons, date picker, schedule & classes */
+body.is-logged-in #classroom-dashboard,
+body.is-logged-in .dashboard-container,
+body:not(.on-login-screen):not(.apk-is-auth) #classroom-dashboard:not(.hide),
+body:not(.on-login-screen):not(.apk-is-auth) .dashboard-container:not(.hide),
+#classroom-dashboard:not(.hide) {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+}
+
+body.is-logged-in #apk-home-hero,
+#classroom-dashboard:not(.hide) #apk-home-hero {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+}
+
+body.is-logged-in #apk-home-hub-strip,
+#classroom-dashboard:not(.hide) #apk-home-hub-strip,
+.apk-home-hub-strip {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 768px) {
+  body.is-logged-in #apk-home-hub-strip,
+  #classroom-dashboard:not(.hide) #apk-home-hub-strip,
+  .apk-home-hub-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+body.is-logged-in #apk-date-picker-wrap,
+#classroom-dashboard:not(.hide) #apk-date-picker-wrap,
+.apk-date-picker-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+body.is-logged-in #live-tab-layout,
+#classroom-dashboard:not(.hide) #live-tab-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  visibility: visible !important;
+}
+
+body.is-logged-in #class-list-container,
+#classroom-dashboard:not(.hide) #class-list-container {
+  display: grid !important;
+  width: 100% !important;
+  visibility: visible !important;
 }
 
 /* Strictly hide Option Button, Drawer & Nav on Login / Auth Screen */

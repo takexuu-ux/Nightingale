@@ -29,6 +29,7 @@
         try {
           if (localStorage.getItem('nnl_access_token')) {
             document.body.classList.remove('apk-is-auth', 'on-login-screen');
+            document.body.classList.add('is-logged-in');
           }
         } catch(e) {}
       })();
@@ -242,11 +243,10 @@
             </div>
           </section>
         </div>
+      </div>
 
-        <!-- Right Column (Empty spacer to keep background artwork clean) -->
-        <div class="right-column-spacer"></div>
-
-        <section id="classroom-dashboard" class="dashboard-container hide">
+      <!-- MAIN CLASSROOM DASHBOARD (Full width, direct child of main#app) -->
+      <section id="classroom-dashboard" class="dashboard-container hide">
           <!-- Dashboard Alert Container -->
           <div id="dashboard-alert-container" class="hide"></div>
 
@@ -357,18 +357,20 @@
           (function(){
             try {
               if (localStorage.getItem('nnl_access_token')) {
+                document.body.classList.remove('apk-is-auth', 'on-login-screen');
+                document.body.classList.add('is-logged-in');
                 var d = document.getElementById('classroom-dashboard');
                 if (d) d.classList.remove('hide');
                 var a = document.getElementById('auth-screen');
                 if (a) a.classList.add('hide');
+                var w = document.querySelector('.auth-hero-wrapper');
+                if (w) w.classList.add('hide');
                 var h = document.getElementById('app-header');
                 if (h) h.classList.remove('hide');
               }
             } catch(e) {}
           })();
         </script>
-
-      </div>
     </main>
 
     <!-- CLASSROOM VIEWER (Hidden by default) -->
