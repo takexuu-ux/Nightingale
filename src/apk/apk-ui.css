@@ -181,7 +181,7 @@ body {
   color: #0f172a !important;
 }
 
-/* Ambient Vector Landscape Background Layer: Strictly ONE single unified wallpaper */
+/* Ambient Landscape Wallpaper Layer: Default Base (Mobile Wallpaper) */
 #apk-ambient-bg {
   position: fixed;
   inset: 0;
@@ -196,51 +196,69 @@ body {
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
-[data-theme="dark"] #apk-ambient-bg {
+html[data-theme="dark"] #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper.jpg') !important;
   opacity: 1.0 !important;
   filter: none !important;
 }
 
-[data-theme="light"] #apk-ambient-bg {
+html[data-theme="light"] #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper-light.jpg') !important;
   opacity: 1.0 !important;
   filter: none !important;
 }
 
-/* ── High-Detail 16:9 Botanical Landscape Wallpaper on Desktop Web (> 1024px) ── */
+/* ── High-Detail 16:9 Botanical Landscape Wallpaper on Desktop Web (>= 1024px) ── */
 @media (min-width: 1024px) {
-  body:not(.apk-shell-active) [data-theme="dark"] #apk-ambient-bg,
-  body:not(.apk-shell-active) #apk-ambient-bg {
+  #apk-ambient-bg,
+  html #apk-ambient-bg,
+  html[data-theme="dark"] #apk-ambient-bg,
+  html:not([data-theme="light"]) #apk-ambient-bg,
+  body #apk-ambient-bg,
+  body.apk-shell-active #apk-ambient-bg,
+  html[data-theme="dark"] body.apk-shell-active #apk-ambient-bg {
     background-image: url('./bg-web-landscape-dark.jpg') !important;
     background-size: cover !important;
     background-position: center center !important;
   }
 
-  body:not(.apk-shell-active) [data-theme="light"] #apk-ambient-bg {
+  html[data-theme="light"] #apk-ambient-bg,
+  html[data-theme="light"] body #apk-ambient-bg,
+  html[data-theme="light"] body.apk-shell-active #apk-ambient-bg {
     background-image: url('./bg-web-landscape-light.jpg') !important;
     background-size: cover !important;
     background-position: center center !important;
   }
 }
 
-/* ── STRICT GUARANTEE: Mobile, Tablet (< 1024px) & APK Shell ALWAYS preserve the original wallpaper ── */
+/* ── STRICT GUARANTEE: Mobile & Tablet viewports (< 1024px) ALWAYS preserve original mobile wallpaper ── */
 @media (max-width: 1023px) {
   #apk-ambient-bg,
-  [data-theme="dark"] #apk-ambient-bg {
+  html[data-theme="dark"] #apk-ambient-bg,
+  body #apk-ambient-bg,
+  body.apk-shell-active #apk-ambient-bg,
+  html[data-theme="dark"] body.apk-shell-active #apk-ambient-bg {
     background-image: url('./bg-app-wallpaper.jpg') !important;
+    background-size: cover !important;
+    background-position: center center !important;
   }
-  [data-theme="light"] #apk-ambient-bg {
+
+  html[data-theme="light"] #apk-ambient-bg,
+  html[data-theme="light"] body #apk-ambient-bg,
+  html[data-theme="light"] body.apk-shell-active #apk-ambient-bg {
     background-image: url('./bg-app-wallpaper-light.jpg') !important;
+    background-size: cover !important;
+    background-position: center center !important;
   }
 }
 
-body.apk-shell-active #apk-ambient-bg,
-body.apk-shell-active [data-theme="dark"] #apk-ambient-bg {
+/* ── STRICT GUARANTEE: Native Android APK environment ALWAYS preserves original mobile wallpaper ── */
+body.is-native-android-apk #apk-ambient-bg,
+html[data-theme="dark"] body.is-native-android-apk #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper.jpg') !important;
 }
 
-body.apk-shell-active [data-theme="light"] #apk-ambient-bg {
+html[data-theme="light"] body.is-native-android-apk #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper-light.jpg') !important;
 }
 
@@ -4272,8 +4290,8 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   pointer-events: none;
   transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
   opacity: 0;
-  animation: apkFlowerCursorBloom 0.95s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-  filter: drop-shadow(0 2px 7px rgba(168, 85, 247, 0.4));
+  animation: apkFlowerCursorBloom 1.05s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  filter: drop-shadow(0 3px 8px rgba(168, 85, 247, 0.55)) drop-shadow(0 0 5px rgba(244, 114, 182, 0.45));
   z-index: 10;
   will-change: transform, opacity;
 }
@@ -4283,17 +4301,17 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
   }
-  20% {
+  18% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(var(--target-scale, 1)) rotate(calc(var(--target-rot, 35deg) * 0.3));
+    transform: translate(-50%, -50%) scale(var(--target-scale, 1.2)) rotate(calc(var(--target-rot, 35deg) * 0.3));
   }
   65% {
-    opacity: 0.9;
-    transform: translate(calc(-50% + var(--target-x) * 0.7), calc(-50% + var(--target-y) * 0.7)) scale(calc(var(--target-scale, 1) * 0.95)) rotate(calc(var(--target-rot, 35deg) * 0.7));
+    opacity: 0.95;
+    transform: translate(calc(-50% + var(--target-x) * 0.7), calc(-50% + var(--target-y) * 0.7)) scale(calc(var(--target-scale, 1.2) * 0.96)) rotate(calc(var(--target-rot, 35deg) * 0.7));
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--target-x)), calc(-50% + var(--target-y))) scale(0.35) rotate(var(--target-rot, 70deg));
+    transform: translate(calc(-50% + var(--target-x)), calc(-50% + var(--target-y))) scale(0.4) rotate(var(--target-rot, 70deg));
   }
 }
 
