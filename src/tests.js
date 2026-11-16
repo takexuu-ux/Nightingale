@@ -707,7 +707,7 @@ function bindTestAttemptButtons(container) {
       const duration = parseInt(btn.getAttribute('data-duration') || '1800', 10);
       const isBatchTest = btn.getAttribute('data-batch') === '1';
       const mode = btn.getAttribute('data-mode') || 'practice';
-      openTestOverviewModal({ id: testId, title, duration, isBatchTest, mode });
+      loadAndStartTest({ id: testId, title, duration, isBatchTest, mode });
     });
   });
 

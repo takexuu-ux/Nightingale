@@ -252,65 +252,8 @@
             <h2 id="apk-hero-greeting" class="apk-home-title">Welcome, NNL ke Papa</h2>
           </div>
 
-          <!-- Class Hub 4 Action Cards (NNL Saarthi, MySpace, Scheduled, Resume) -->
-          <div id="apk-home-hub-strip" class="apk-home-hub-strip">
-            <button type="button" id="hub-btn-saarthi" class="apk-hub-card" aria-label="NNL Saarthi AI Tutor">
-              <div class="apk-hub-icon-wrap saarthi-glow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2a8 8 0 0 0-8 8c0 3.37 2.1 6.25 5.08 7.37L9 22l4-2 4 2-.08-4.63A8 8 0 0 0 12 2z"/>
-                  <path d="M12 6v6l4 2"/>
-                </svg>
-              </div>
-              <div class="apk-hub-text-wrap">
-                <span class="apk-hub-title">NNL Saarthi</span>
-                <span class="apk-hub-sub">AI Study Tutor</span>
-              </div>
-            </button>
-
-            <button type="button" id="hub-btn-myspace" class="apk-hub-card" aria-label="MySpace Bookmarks and Downloads">
-              <div class="apk-hub-icon-wrap myspace-glow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-                </svg>
-              </div>
-              <div class="apk-hub-text-wrap">
-                <span class="apk-hub-title">MySpace</span>
-                <span class="apk-hub-sub">Saved & Offline</span>
-              </div>
-            </button>
-
-            <button type="button" id="hub-btn-scheduled" class="apk-hub-card" aria-label="Scheduled Timetable">
-              <div class="apk-hub-icon-wrap scheduled-glow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              </div>
-              <div class="apk-hub-text-wrap">
-                <span class="apk-hub-title">Scheduled</span>
-                <span class="apk-hub-sub">Batch Timetable</span>
-              </div>
-            </button>
-
-            <button type="button" id="hub-btn-resume" class="apk-hub-card" aria-label="Resume In-Progress Lectures">
-              <div class="apk-hub-icon-wrap resume-glow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polygon points="10 8 16 12 10 16 10 8"/>
-                </svg>
-              </div>
-              <div class="apk-hub-text-wrap">
-                <span class="apk-hub-title">Resume</span>
-                <span class="apk-hub-sub" id="hub-resume-badge-text">Continue Watching</span>
-              </div>
-            </button>
-          </div>
-
           <!-- Minimal Resume Last Watched Lecture Card -->
-          <div id="continue-watching-section" class="hide" style="width:100%;margin-top:10px;margin-bottom:28px;">
+          <div id="continue-watching-section" class="hide" style="width:100%;margin-top:4px;margin-bottom:24px;">
             <div id="continue-watching-grid" class="continue-watching-grid" style="margin-top:0;"></div>
           </div>
 
@@ -584,22 +527,20 @@
     <div id="quiz-viewer" class="quiz-viewer-overlay hide">
       <div class="quiz-viewer-box">
         <div class="quiz-viewer-header">
-          <div class="quiz-viewer-title-area">
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
-              <span id="quiz-badge-type" class="cyber-hero-badge">// DAILY TAT ASSESSMENT</span>
-              <button id="quiz-mode-toggle-btn" class="quiz-mode-toggle-pill" title="Toggle Practice / Exam Mode">
-                <span id="quiz-mode-icon" style="display:inline-flex;align-items:center;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </span>
-                <span id="quiz-mode-label">Practice Mode</span>
-              </button>
+          <div class="quiz-viewer-header-left" style="display:flex;align-items:center;gap:12px;">
+            <button id="quiz-top-back-btn" class="btn-quiz-back" title="Back to Tests" aria-label="Back">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Back</span>
+            </button>
+            <div class="quiz-viewer-title-area">
+              <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Test</h2>
+              <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);">Total Questions: 0 • Duration: 0 mins</span>
             </div>
-            <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Practice Quiz</h2>
-            <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
           </div>
-          <div class="quiz-header-controls" style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="quiz-header-controls" style="display: flex; align-items: center; gap: 0.65rem;">
             <div id="quiz-timer-container" class="quiz-timer-container">
-              <div id="quiz-timer" class="quiz-timer">00:00</div>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #38bdf8;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div id="quiz-timer" class="quiz-timer">30:00</div>
             </div>
             <button id="quiz-top-close-btn" class="btn-close-quiz" title="Close Test" aria-label="Close test">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -612,39 +553,78 @@
             <div class="question-header">
               <span id="question-number-badge" class="question-number-badge">Question 1 of 30</span>
               <span id="question-level-badge" class="question-level-badge">Medium</span>
-              <button id="quiz-explain-btn" class="quiz-explain-pill" title="Toggle Clinical Explanation">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Explain</span>
-              </button>
+              <span id="question-timer-pill" class="question-timer-pill" style="margin-left: auto; font-size: 11.5px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="question-time-elapsed">0s</span>
+              </span>
             </div>
             <div id="question-text" class="question-text">Question content goes here...</div>
             <div id="quiz-options-list" class="quiz-options-list">
               <!-- Choices populated dynamically -->
             </div>
             <div id="question-explanation" class="question-explanation hide">
-              <h4>// CLINICAL EXPLANATION & RATIONALE</h4>
+              <h4>// CLINICAL EXPLANATION &amp; RATIONALE</h4>
               <div id="explanation-text">Detailed explanation...</div>
             </div>
           </div>
 
+          <!-- Dedicated CBT Assessment Analysis Report View -->
           <div id="quiz-result-view" class="quiz-result-view hide">
-            <div class="result-summary">
-              <div class="result-glow"></div>
-              <h3 style="font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.05em; margin-bottom: 1rem; color: var(--primary);">Assessment Completed</h3>
-              <div class="score-circle">
-                <span id="result-percentage" style="font-size: 2.2rem; font-family: var(--font-display); font-weight: 900; color: #00f3d0; text-shadow: 0 0 15px rgba(0,243,208,0.4);">80%</span>
-                <span id="result-ratio" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">24 / 30 Correct</span>
+            <!-- Header Summary Card -->
+            <div class="analysis-summary-card">
+              <div class="analysis-hero">
+                <div class="analysis-score-circle">
+                  <span id="result-percentage" class="analysis-percent">0%</span>
+                  <span id="result-ratio" class="analysis-ratio">0 / 0</span>
+                </div>
+                <div class="analysis-meta">
+                  <h3 id="analysis-test-title" class="analysis-title">Assessment Report</h3>
+                  <div class="analysis-time-metrics">
+                    <span class="analysis-time-badge">
+                      ⏱ Total Time: <strong id="analysis-total-time">0m 0s</strong>
+                    </span>
+                    <span class="analysis-time-badge">
+                      ⚡ Avg / Question: <strong id="analysis-avg-time">0s</strong>
+                    </span>
+                  </div>
+                </div>
+                <div class="analysis-actions" style="display: flex; gap: 8px;">
+                  <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Try Again</button>
+                  <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Exit Test</button>
+                </div>
               </div>
-              <p id="result-feedback" style="color: var(--text-secondary); font-size: 0.9rem; max-width: 320px; line-height: 1.5; margin: 1.5rem auto;">Excellent score! You are well prepared for the exam. Review your incorrect answers in the explorer.</p>
-              <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
-                <button id="quiz-review-btn" class="btn btn-zoom" style="display:inline-flex;align-items:center;gap:0.45rem;font-size: 0.8rem; padding: 0.5rem 1.2rem; background: #00f3d0; color: #000; font-weight: 700;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                  <span>Review with Explanations</span>
-                </button>
-                <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Try Again</button>
-                <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Close Test</button>
+
+              <!-- 4 KPI Blocks -->
+              <div class="analysis-kpi-grid">
+                <div class="analysis-kpi-box" style="border-color: rgba(168, 85, 247, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-total-q" style="color: #c084fc;">0</span>
+                  <span class="analysis-kpi-lbl">Total Questions</span>
+                </div>
+                <div class="analysis-kpi-box" style="border-color: rgba(34, 197, 94, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-correct-q" style="color: #4ade80;">0</span>
+                  <span class="analysis-kpi-lbl">Correct</span>
+                </div>
+                <div class="analysis-kpi-box" style="border-color: rgba(239, 68, 68, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-incorrect-q" style="color: #f87171;">0</span>
+                  <span class="analysis-kpi-lbl">Incorrect</span>
+                </div>
+                <div class="analysis-kpi-box" style="border-color: rgba(234, 179, 8, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-skipped-q" style="color: #facc15;">0</span>
+                  <span class="analysis-kpi-lbl">Left (Skipped)</span>
+                </div>
               </div>
             </div>
+
+            <!-- Filter Tabs -->
+            <div class="analysis-filter-tabs">
+              <button type="button" class="analysis-filter-btn active" data-filter="all">All (<span id="count-filter-all">0</span>)</button>
+              <button type="button" class="analysis-filter-btn filter-correct" data-filter="correct">Correct (<span id="count-filter-correct">0</span>)</button>
+              <button type="button" class="analysis-filter-btn filter-incorrect" data-filter="incorrect">Incorrect (<span id="count-filter-incorrect">0</span>)</button>
+              <button type="button" class="analysis-filter-btn filter-left" data-filter="left">Left (<span id="count-filter-left">0</span>)</button>
+            </div>
+
+            <!-- Questions Review List -->
+            <div id="analysis-questions-list" class="analysis-questions-list"></div>
           </div>
           
           <div id="quiz-sidebar" class="quiz-sidebar">
@@ -681,69 +661,6 @@
         </div>
         <div class="cyber-dialog-footer" id="cyber-dialog-footer">
           <!-- Dynamically populated buttons -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Dedicated Resume In-Progress Lectures Drawer -->
-    <div id="apk-resume-drawer" class="apk-drawer-modal hide" role="dialog" aria-label="Resume In-Progress Lectures">
-      <div class="apk-drawer-backdrop" id="resume-drawer-backdrop"></div>
-      <div class="apk-drawer-panel">
-        <div class="apk-drawer-header">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="apk-hub-icon-wrap resume-glow" style="width:34px;height:34px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-            </div>
-            <div>
-              <h3 class="apk-drawer-title">Resume Watching</h3>
-              <p class="apk-drawer-sub">Pick up exactly where you left off</p>
-            </div>
-          </div>
-          <button type="button" id="close-resume-drawer-btn" class="apk-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div id="resume-drawer-list" class="apk-drawer-list">
-          <!-- Populated dynamically via JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- NNL Saarthi AI Tutor & Doubt Solver Modal -->
-    <div id="apk-saarthi-modal" class="apk-drawer-modal hide" role="dialog" aria-label="NNL Saarthi AI Tutor">
-      <div class="apk-drawer-backdrop" id="saarthi-modal-backdrop"></div>
-      <div class="apk-drawer-panel apk-saarthi-panel">
-        <div class="apk-drawer-header">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="apk-hub-icon-wrap saarthi-glow" style="width:34px;height:34px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a8 8 0 0 0-8 8c0 3.37 2.1 6.25 5.08 7.37L9 22l4-2 4 2-.08-4.63A8 8 0 0 0 12 2z"/></svg>
-            </div>
-            <div>
-              <h3 class="apk-drawer-title">NNL Saarthi AI Tutor</h3>
-              <p class="apk-drawer-sub">Instant Clinical Doubts & NORCET Mentor</p>
-            </div>
-          </div>
-          <button type="button" id="close-saarthi-modal-btn" class="apk-drawer-close" aria-label="Close">&times;</button>
-        </div>
-        <div class="apk-saarthi-body">
-          <div class="saarthi-quick-topics">
-            <span class="saarthi-topic-pill" data-ask="Explain Glasgow Coma Scale with scoring and clinical interpretation">🧠 GCS Scale</span>
-            <span class="saarthi-topic-pill" data-ask="Give a high-yield summary of Burn Parkland formula with an example">🔥 Parkland Formula</span>
-            <span class="saarthi-topic-pill" data-ask="What are the key NORCET priority signs for Digoxin Toxicity?">💊 Digoxin Toxicity</span>
-            <span class="saarthi-topic-pill" data-ask="Explain Fetal Heart Rate decelerations (Early, Late, Variable)">👶 FHR Decelerations</span>
-          </div>
-          <div id="saarthi-chat-log" class="saarthi-chat-log">
-            <div class="saarthi-msg bot-msg">
-              <div class="saarthi-msg-avatar">🩺</div>
-              <div class="saarthi-msg-text">
-                <strong>Namaste Rajit!</strong> I am your NNL Saarthi AI Tutor. Ask me any nursing concept, NCLEX-style priority question, drug calculation, or NORCET clinical doubt!
-              </div>
-            </div>
-          </div>
-          <form id="saarthi-ask-form" class="saarthi-ask-form">
-            <input type="text" id="saarthi-ask-input" class="saarthi-ask-input" placeholder="Ask a doubt or clinical concept..." required autocomplete="off" />
-            <button type="submit" id="saarthi-ask-btn" class="saarthi-ask-btn" aria-label="Send Doubt">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-          </form>
         </div>
       </div>
     </div>

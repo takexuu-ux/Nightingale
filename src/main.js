@@ -6801,42 +6801,28 @@ let quizTimerInterval = null;
 let currentTestId = null;
 let currentTestTitle = '';
 let currentTestDuration = 1800;
+let totalTimeElapsed = 0;
+let timeSpentPerQuestion = [];
+let currentAnalysisFilter = 'all';
 
 async function loadQuiz(testId, testTitle, duration, initialMode = 'practice') {
   const viewer = document.getElementById('quiz-viewer');
   const titleEl = document.getElementById('quiz-title');
   const metaEl = document.getElementById('quiz-meta');
-  const badgeTypeEl = document.getElementById('quiz-badge-type');
-  const modeLabelEl = document.getElementById('quiz-mode-label');
-  const modeIconEl = document.getElementById('quiz-mode-icon');
-  const modeToggleBtn = document.getElementById('quiz-mode-toggle-btn');
   const loader = document.getElementById('dashboard-loader');
   
   if (!viewer) return;
   
   currentTestId = testId;
   currentTestTitle = testTitle;
-  currentTestDuration = duration;
+  currentTestDuration = duration || 1800;
   currentQuizMode = initialMode;
   quizAnswers = {};
   currentQuestionIndex = 0;
+  totalTimeElapsed = 0;
+  timeSpentPerQuestion = [];
   
   if (titleEl) titleEl.textContent = testTitle;
-  
-  // Set badge type
-  if (badgeTypeEl) {
-    const tUpper = (testTitle || '').toUpperCase();
-    if (tUpper.includes('TAT')) {
-      badgeTypeEl.textContent = '// DAILY TOPIC ASSESSMENT (TAT)';
-    } else if (tUpper.includes('CSAT') || tUpper.includes('CTAT')) {
-      badgeTypeEl.textContent = '// CUMULATIVE SUBJECT ASSESSMENT (CTAT)';
-    } else {
-      badgeTypeEl.textContent = '// CBT PRACTICE ASSESSMENT';
-    }
-  }
-
-  // Update mode toggle styling
-  updateQuizModePill();
   
   const token = localStorage.getItem('nnl_access_token');
   if (!token) {
@@ -6875,45 +6861,56 @@ async function loadQuiz(testId, testTitle, duration, initialMode = 'practice') {
       showCustomAlert('No questions available in this test from the server.', 'NOTICE');
       return;
     }
+
+    timeSpentPerQuestion = new Array(quizQuestions.length).fill(0);
     
     if (metaEl) {
-      metaEl.textContent = `Total Questions: ${quizQuestions.length} • Standard Duration: ${Math.floor(duration / 60)} mins`;
+      metaEl.textContent = `Total Questions: ${quizQuestions.length} • Standard Duration: ${Math.max(1, Math.round(duration / 60))} mins`;
     }
     
     viewer.classList.remove('hide');
-    document.getElementById('quiz-question-view').classList.remove('hide');
-    document.getElementById('quiz-result-view').classList.add('hide');
-    document.getElementById('quiz-prev-btn').classList.remove('hide');
-    document.getElementById('quiz-next-btn').classList.remove('hide');
-    document.getElementById('quiz-show-ans-btn').classList.remove('hide');
-    document.getElementById('quiz-submit-btn').classList.remove('hide');
+    document.getElementById('quiz-question-view')?.classList.remove('hide');
+    document.getElementById('quiz-result-view')?.classList.add('hide');
+    document.getElementById('quiz-prev-btn')?.classList.remove('hide');
+    document.getElementById('quiz-next-btn')?.classList.remove('hide');
+    document.getElementById('quiz-show-ans-btn')?.classList.remove('hide');
+    document.getElementById('quiz-submit-btn')?.classList.remove('hide');
     
+    window.dispatchEvent(new CustomEvent('nnl:test-started', { detail: { title: title || 'Practice Test', mode: currentQuizMode } }));
+
     renderQuestion();
     updateQuizNavigator();
     
-    // Timer handling based on mode
+    // Timer handling with always-visible ticking countdown
     if (quizTimerInterval) clearInterval(quizTimerInterval);
-    
-    if (currentQuizMode === 'exam') {
-      quizTimeRemaining = duration;
-      updateTimerDisplay();
-      quizTimerInterval = setInterval(() => {
+    quizTimeRemaining = duration || 1800;
+    updateTimerDisplay();
+
+    quizTimerInterval = setInterval(() => {
+      totalTimeElapsed++;
+      if (timeSpentPerQuestion[currentQuestionIndex] === undefined) {
+        timeSpentPerQuestion[currentQuestionIndex] = 0;
+      }
+      timeSpentPerQuestion[currentQuestionIndex]++;
+
+      const qTimeEl = document.getElementById('question-time-elapsed');
+      if (qTimeEl) {
+        qTimeEl.textContent = `${timeSpentPerQuestion[currentQuestionIndex]}s`;
+      }
+
+      if (timeSpentPerQuestion[currentQuestionIndex] === 60) {
+        window.dispatchEvent(new CustomEvent('nnl:question-slow'));
+      }
+
+      if (quizTimeRemaining > 0) {
         quizTimeRemaining--;
         updateTimerDisplay();
         if (quizTimeRemaining <= 0) {
           clearInterval(quizTimerInterval);
           submitQuiz();
         }
-      }, 1000);
-    } else {
-      // In practice mode, untimed
-      const timerEl = document.getElementById('quiz-timer');
-      if (timerEl) {
-        timerEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>PRACTICE';
-        timerEl.style.color = '#00f3d0';
-        timerEl.style.borderColor = 'rgba(0, 243, 208, 0.35)';
       }
-    }
+    }, 1000);
     
   } catch (err) {
     console.error('Quiz initialization failed:', err);
@@ -7047,6 +7044,11 @@ function renderQuestion() {
         // Practice mode: re-render question immediately to show green/red + explanation
         renderQuestion();
         updateQuizNavigator();
+        if (isCorrect) {
+          window.dispatchEvent(new CustomEvent('nnl:test-correct'));
+        } else {
+          window.dispatchEvent(new CustomEvent('nnl:test-incorrect'));
+        }
       } else {
         // Exam mode: simply mark selection
         optionsList.querySelectorAll('.quiz-option-btn').forEach(btn => btn.classList.remove('selected'));
@@ -7179,42 +7181,188 @@ function updateQuizNavigator() {
   });
 }
 
+function renderAnalysisQuestions(filter = 'all') {
+  currentAnalysisFilter = filter;
+  const container = document.getElementById('analysis-questions-list');
+  if (!container) return;
+
+  document.querySelectorAll('.analysis-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-filter') === filter);
+  });
+
+  const cardsHtml = quizQuestions.map((q, idx) => {
+    const userChoiceId = quizAnswers[idx];
+    const choices = q.choices || q.options || [];
+    const correctChoice = choices.find(c => c.is_correct || c.isCorrect);
+    const isAnswered = userChoiceId !== undefined;
+    const isCorrect = isAnswered && userChoiceId === correctChoice?.id;
+    const isIncorrect = isAnswered && !isCorrect;
+    const isLeft = !isAnswered;
+
+    if (filter === 'correct' && !isCorrect) return '';
+    if (filter === 'incorrect' && !isIncorrect) return '';
+    if (filter === 'left' && !isLeft) return '';
+
+    let statusBadge = '<span class="analysis-q-status-badge left">Left / Skipped</span>';
+    if (isCorrect) {
+      statusBadge = '<span class="analysis-q-status-badge correct">✓ Correct</span>';
+    } else if (isIncorrect) {
+      statusBadge = '<span class="analysis-q-status-badge incorrect">✗ Incorrect</span>';
+    }
+
+    const timeSpent = timeSpentPerQuestion[idx] || 0;
+    const markers = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    const choicesHtml = choices.map((c, cIdx) => {
+      const isUserChoice = c.id === userChoiceId;
+      const isChoiceCorrect = Boolean(c.is_correct || c.isCorrect);
+      let cls = 'analysis-choice-item';
+      let icon = `<strong style="width:18px;">${markers[cIdx] || cIdx + 1}.</strong>`;
+      let note = '';
+
+      if (isChoiceCorrect) {
+        cls += ' correct-choice';
+        note = '<span style="margin-left:auto;font-size:11px;font-weight:700;">(Correct Answer)</span>';
+      }
+      if (isUserChoice && !isChoiceCorrect) {
+        cls += ' wrong-choice';
+        note = '<span style="margin-left:auto;font-size:11px;font-weight:700;">(Your Answer)</span>';
+      } else if (isUserChoice && isChoiceCorrect) {
+        note = '<span style="margin-left:auto;font-size:11px;font-weight:700;">(Your Answer ✓)</span>';
+      }
+
+      return `
+        <div class="${cls}">
+          ${icon}
+          <span>${c.title || c.text || c.choice_text || ''}</span>
+          ${note}
+        </div>
+      `;
+    }).join('');
+
+    const explanation = correctChoice?.correct_explanation || correctChoice?.explanation || q.correct_explanation || q.explanation || 'Detailed clinical rationale for this concept is provided in NORCET review lectures.';
+
+    return `
+      <div class="analysis-q-card" data-q-idx="${idx}">
+        <div class="analysis-q-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <strong style="color:var(--text-primary);font-size:13px;">Question ${idx + 1}</strong>
+            ${statusBadge}
+          </div>
+          <span class="analysis-q-time-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${timeSpent}s
+          </span>
+        </div>
+        <div class="analysis-q-title">${q.title || q.question || q.question_text || ''}</div>
+        <div class="analysis-q-choices">${choicesHtml}</div>
+        <button type="button" class="analysis-explain-btn" data-toggle-expl="${idx}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>View Rationale &amp; Explanation</span>
+        </button>
+        <div class="analysis-explanation-box hide" id="analysis-expl-${idx}">
+          ${explanation}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = cardsHtml || '<div style="padding:2rem;text-align:center;color:var(--text-secondary);">No questions in this category.</div>';
+
+  container.querySelectorAll('[data-toggle-expl]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qIdx = btn.getAttribute('data-toggle-expl');
+      const box = document.getElementById(`analysis-expl-${qIdx}`);
+      if (box) {
+        box.classList.toggle('hide');
+        const sp = btn.querySelector('span');
+        if (sp) {
+          sp.textContent = box.classList.contains('hide')
+            ? 'View Rationale & Explanation'
+            : 'Hide Rationale & Explanation';
+        }
+      }
+    });
+  });
+}
+
 function submitQuiz() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
   
-  // Calculate score
   let correctCount = 0;
+  let incorrectCount = 0;
+  let attemptedCount = 0;
+
   quizQuestions.forEach((q, idx) => {
     const ans = quizAnswers[idx];
-    const correctChoice = (q.choices || q.options || []).find(c => c.is_correct || c.isCorrect);
-    if (correctChoice && ans === correctChoice.id) {
-      correctCount++;
+    if (ans !== undefined) {
+      attemptedCount++;
+      const correctChoice = (q.choices || q.options || []).find(c => c.is_correct || c.isCorrect);
+      if (correctChoice && ans === correctChoice.id) {
+        correctCount++;
+      } else {
+        incorrectCount++;
+      }
     }
   });
   
-  const pct = Math.round((correctCount / quizQuestions.length) * 100);
+  const total = quizQuestions.length;
+  const leftCount = total - attemptedCount;
+  const pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+  const totalMins = Math.floor(totalTimeElapsed / 60);
+  const totalSecs = totalTimeElapsed % 60;
+  const totalTimeStr = `${totalMins}m ${totalSecs}s`;
+  const avgSecs = Math.round(totalTimeElapsed / Math.max(1, total));
+
+  document.getElementById('quiz-question-view')?.classList.add('hide');
+  document.getElementById('quiz-result-view')?.classList.remove('hide');
   
+  document.getElementById('quiz-prev-btn')?.classList.add('hide');
+  document.getElementById('quiz-next-btn')?.classList.add('hide');
+  document.getElementById('quiz-show-ans-btn')?.classList.add('hide');
+  document.getElementById('quiz-submit-btn')?.classList.add('hide');
+
+  const titleEl = document.getElementById('analysis-test-title');
+  if (titleEl) titleEl.textContent = currentTestTitle ? `${currentTestTitle} — Assessment Report` : 'Assessment Report';
+
   const pctEl = document.getElementById('result-percentage');
   const ratioEl = document.getElementById('result-ratio');
-  const feedbackEl = document.getElementById('result-feedback');
+  const totalTimeEl = document.getElementById('analysis-total-time');
+  const avgTimeEl = document.getElementById('analysis-avg-time');
 
   if (pctEl) pctEl.textContent = `${pct}%`;
-  if (ratioEl) ratioEl.textContent = `${correctCount} / ${quizQuestions.length} Correct`;
-  
-  let feedback = 'Practice more to master these clinical concepts!';
-  if (pct >= 85) feedback = 'Sensational mastery! You demonstrated top-tier readiness for the NORCET board.';
-  else if (pct >= 70) feedback = 'Excellent performance! Review your incorrect questions to target a single-digit rank.';
-  else if (pct >= 50) feedback = 'Solid attempt! Revisit the recorded lecture and class notes to clarify rationales.';
-  
-  if (feedbackEl) feedbackEl.textContent = feedback;
-  
-  document.getElementById('quiz-question-view').classList.add('hide');
-  document.getElementById('quiz-result-view').classList.remove('hide');
-  
-  document.getElementById('quiz-prev-btn').classList.add('hide');
-  document.getElementById('quiz-next-btn').classList.add('hide');
-  document.getElementById('quiz-show-ans-btn').classList.add('hide');
-  document.getElementById('quiz-submit-btn').classList.add('hide');
+  if (ratioEl) ratioEl.textContent = `${correctCount} / ${total}`;
+  if (totalTimeEl) totalTimeEl.textContent = totalTimeStr;
+  if (avgTimeEl) avgTimeEl.textContent = `${avgSecs}s / question`;
+
+  const kpiTotal = document.getElementById('kpi-total-q');
+  const kpiCorrect = document.getElementById('kpi-correct-q');
+  const kpiIncorrect = document.getElementById('kpi-incorrect-q');
+  const kpiSkipped = document.getElementById('kpi-skipped-q');
+
+  if (kpiTotal) kpiTotal.textContent = total;
+  if (kpiCorrect) kpiCorrect.textContent = correctCount;
+  if (kpiIncorrect) kpiIncorrect.textContent = incorrectCount;
+  if (kpiSkipped) kpiSkipped.textContent = leftCount;
+
+  const countAll = document.getElementById('count-filter-all');
+  const countCorr = document.getElementById('count-filter-correct');
+  const countIncorr = document.getElementById('count-filter-incorrect');
+  const countLeft = document.getElementById('count-filter-left');
+
+  if (countAll) countAll.textContent = total;
+  if (countCorr) countCorr.textContent = correctCount;
+  if (countIncorr) countIncorr.textContent = incorrectCount;
+  if (countLeft) countLeft.textContent = leftCount;
+
+  renderAnalysisQuestions('all');
+
+  document.querySelectorAll('.analysis-filter-btn').forEach(btn => {
+    btn.onclick = () => {
+      const filter = btn.getAttribute('data-filter') || 'all';
+      renderAnalysisQuestions(filter);
+    };
+  });
 }
 
 function closeQuiz() {
@@ -7246,19 +7394,9 @@ if (qNextBtn) {
   });
 }
 
-const qExplainPill = document.getElementById('quiz-explain-btn');
-if (qExplainPill) {
-  qExplainPill.addEventListener('click', toggleExplanation);
-}
-
 const qShowAnsBtn = document.getElementById('quiz-show-ans-btn');
 if (qShowAnsBtn) {
   qShowAnsBtn.addEventListener('click', toggleExplanation);
-}
-
-const qModeToggleBtn = document.getElementById('quiz-mode-toggle-btn');
-if (qModeToggleBtn) {
-  qModeToggleBtn.addEventListener('click', toggleQuizMode);
 }
 
 const qSubmitBtn = document.getElementById('quiz-submit-btn');
@@ -7281,6 +7419,11 @@ if (qTopCloseBtn) {
   qTopCloseBtn.addEventListener('click', closeQuiz);
 }
 
+const qTopBackBtn = document.getElementById('quiz-top-back-btn');
+if (qTopBackBtn) {
+  qTopBackBtn.addEventListener('click', closeQuiz);
+}
+
 const qCloseBtn = document.getElementById('quiz-close-btn');
 if (qCloseBtn) {
   qCloseBtn.addEventListener('click', closeQuiz);
@@ -7290,25 +7433,6 @@ const qRestartBtn = document.getElementById('quiz-restart-btn');
 if (qRestartBtn) {
   qRestartBtn.addEventListener('click', () => {
     loadQuiz(currentTestId, currentTestTitle, currentTestDuration, currentQuizMode);
-  });
-}
-
-const qReviewBtn = document.getElementById('quiz-review-btn');
-if (qReviewBtn) {
-  qReviewBtn.addEventListener('click', () => {
-    currentQuizMode = 'review';
-    currentQuestionIndex = 0;
-    updateQuizModePill();
-    updateTimerDisplay();
-
-    document.getElementById('quiz-result-view').classList.add('hide');
-    document.getElementById('quiz-question-view').classList.remove('hide');
-    document.getElementById('quiz-prev-btn').classList.remove('hide');
-    document.getElementById('quiz-next-btn').classList.remove('hide');
-    document.getElementById('quiz-show-ans-btn').classList.remove('hide');
-
-    renderQuestion();
-    updateQuizNavigator();
   });
 }
 

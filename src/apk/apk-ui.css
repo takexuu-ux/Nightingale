@@ -208,6 +208,15 @@ html[data-theme="light"] #apk-ambient-bg {
   filter: none !important;
 }
 
+html[data-theme="light"] #apk-ambient-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 18% 25%, rgba(224, 210, 255, 0.40) 0%, rgba(240, 230, 255, 0.22) 50%, rgba(215, 230, 255, 0.30) 100%),
+              linear-gradient(135deg, rgba(235, 222, 255, 0.28) 0%, rgba(220, 230, 255, 0.18) 100%);
+  pointer-events: none;
+}
+
 /* ── Website Landscape Medical Wallpaper (Dark & Light Theme) ── */
 #apk-ambient-bg,
 html #apk-ambient-bg,
@@ -823,13 +832,13 @@ body:not(.on-login-screen):not(.apk-is-auth) .dashboard-container:not(.hide),
 #classroom-dashboard:not(.hide) {
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
+  align-items: stretch !important;
   justify-content: flex-start !important;
   visibility: visible !important;
   pointer-events: auto !important;
   opacity: 1 !important;
   width: 100% !important;
-  max-width: 1040px !important;
+  max-width: 1560px !important;
   margin: 0 auto !important;
   padding: 0 16px !important;
   box-sizing: border-box !important;
@@ -854,29 +863,12 @@ body.is-logged-in #apk-home-hero,
   width: 100% !important;
 }
 
-body.is-logged-in #apk-home-hub-strip,
-#classroom-dashboard:not(.hide) #apk-home-hub-strip,
-.apk-home-hub-strip {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 14px !important;
+body.is-logged-in #continue-watching-section,
+#classroom-dashboard:not(.hide) #continue-watching-section,
+.continue-watching-section {
   width: 100% !important;
-  max-width: 960px !important;
+  max-width: 1560px !important;
   margin: 0 auto 20px auto !important;
-  justify-content: center !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  opacity: 1 !important;
-}
-
-@media (max-width: 768px) {
-  body.is-logged-in #apk-home-hub-strip,
-  #classroom-dashboard:not(.hide) #apk-home-hub-strip,
-  .apk-home-hub-strip {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    max-width: 100% !important;
-  }
 }
 
 body.is-logged-in #apk-date-picker-wrap,
@@ -887,7 +879,7 @@ body.is-logged-in #apk-date-picker-wrap,
   align-items: center !important;
   justify-content: center !important;
   width: 100% !important;
-  max-width: 960px !important;
+  max-width: 1560px !important;
   margin: 10px auto 18px auto !important;
   visibility: visible !important;
   pointer-events: auto !important;
@@ -926,9 +918,9 @@ body.is-logged-in #live-tab-layout,
 #classroom-dashboard:not(.hide) #live-tab-layout {
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
+  align-items: stretch !important;
   width: 100% !important;
-  max-width: 960px !important;
+  max-width: 1560px !important;
   margin: 0 auto !important;
   visibility: visible !important;
 }
@@ -937,10 +929,10 @@ body.is-logged-in #class-list-container,
 #classroom-dashboard:not(.hide) #class-list-container {
   display: grid !important;
   width: 100% !important;
-  max-width: 960px !important;
+  max-width: 1560px !important;
   margin: 0 auto !important;
-  justify-content: center !important;
-  visibility: visible !important;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+  gap: 16px !important;
 }
 
 /* Strictly hide Option Button, Drawer & Nav on Login / Auth Screen */
@@ -3887,9 +3879,9 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   [data-theme="light"] .app-header {
-    background: rgba(255, 255, 255, 0.88) !important;
-    border: 1px solid rgba(108, 79, 214, 0.20) !important;
-    box-shadow: 0 14px 34px rgba(45, 34, 72, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    background: linear-gradient(160deg, rgba(238, 230, 255, 0.90) 0%, rgba(220, 208, 252, 0.82) 100%) !important;
+    border: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 14px 34px rgba(109, 40, 217, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   }
 
   .app-header .header-nav-tabs,
@@ -4101,9 +4093,9 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   [data-theme="light"] .app-header {
-    background: rgba(255, 255, 255, 0.58) !important;
-    border: 1px solid rgba(255, 255, 255, 0.85) !important;
-    box-shadow: 0 14px 34px rgba(45, 34, 72, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    background: linear-gradient(160deg, rgba(238, 230, 255, 0.90) 0%, rgba(220, 208, 252, 0.82) 100%) !important;
+    border: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 14px 34px rgba(109, 40, 217, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   }
 
   .app-header .header-nav-tabs,
@@ -4166,9 +4158,29 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   [data-theme="light"] .app-header {
-    background: rgba(255, 255, 255, 0.55) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 16px 40px rgba(45, 34, 72, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    background: linear-gradient(160deg, rgba(238, 230, 255, 0.88) 0%, rgba(220, 208, 252, 0.78) 100%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border: 1.5px solid rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 16px 36px rgba(109, 40, 217, 0.16), 0 2px 10px rgba(109, 40, 217, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  }
+
+  [data-theme="light"] .app-header .nav-tab {
+    color: #4c1d95 !important;
+  }
+
+  [data-theme="light"] .app-header .nav-tab svg {
+    stroke: #4c1d95 !important;
+  }
+
+  [data-theme="light"] .app-header .nav-tab.active {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35) !important;
+  }
+
+  [data-theme="light"] .app-header .nav-tab.active svg {
+    stroke: #ffffff !important;
   }
 
   .app-header .header-nav-tabs,
@@ -4207,17 +4219,48 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     background: rgba(255, 255, 255, 0.08) !important;
   }
 
+  [data-theme="light"] .app-header .apk-hamburger-btn,
+  [data-theme="light"] .app-header #apk-hamburger-btn {
+    background: rgba(124, 58, 237, 0.12) !important;
+    color: #4c1d95 !important;
+    border: 1px solid rgba(139, 92, 246, 0.28) !important;
+  }
+
+  [data-theme="light"] .app-header .apk-hamburger-btn svg,
+  [data-theme="light"] .app-header #apk-hamburger-btn svg {
+    stroke: #4c1d95 !important;
+  }
+
   main#app,
   .main-content {
     margin-left: 96px !important;
     width: calc(100% - 96px) !important;
     max-width: calc(100% - 96px) !important;
     padding-left: 24px !important;
-    padding-right: 28px !important;
+    padding-right: 32px !important;
     padding-top: 24px !important;
     padding-bottom: 36px !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
+  }
+
+  .dashboard-container,
+  .notes-page-container,
+  .tests-page-container,
+  #classroom-dashboard:not(.hide),
+  .notes-catalog-view {
+    width: 100% !important;
+    max-width: 1560px !important;
+    margin: 0 auto !important;
+  }
+
+  .notes-subject-grid,
+  .tests-grid,
+  .test-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
   }
 }
 
@@ -5949,47 +5992,130 @@ main#app,
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
-[data-theme="light"] .subject-card,
-[data-theme="light"] .subject-card.curated-highlight {
-  background: radial-gradient(circle at 0% 0%, rgba(142, 116, 229, 0.18) 0%, transparent 68%),
-              linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 242, 254, 0.94) 100%) !important;
-  border: 1px solid rgba(142, 116, 229, 0.22) !important;
-}
-
-/* Notes & Documents: Royal Violet / Slate Orchid Theme Gradient (Zero Cyan/Light Blue) */
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUBJECT & TEST CARDS: Corner Gradient (Dark in top-left fading down-right)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.subject-card,
 .note-doc-card,
 .doc-card,
-.brochure-card {
-  position: relative !important;
-  overflow: hidden !important;
-  background: radial-gradient(circle at 0% 0%, rgba(142, 116, 229, 0.22) 0%, transparent 65%),
-              linear-gradient(148deg, rgba(28, 22, 52, 0.94) 0%, rgba(18, 14, 34, 0.96) 60%, rgba(12, 9, 22, 0.98) 100%) !important;
-  border: 1px solid rgba(142, 116, 229, 0.24) !important;
-  border-top-left-radius: 20px !important;
-}
-
-[data-theme="light"] .note-doc-card,
-[data-theme="light"] .doc-card,
-[data-theme="light"] .brochure-card {
-  background: radial-gradient(circle at 0% 0%, rgba(108, 79, 214, 0.14) 0%, transparent 68%),
-              linear-gradient(145deg, #FFFFFF 0%, #F8F5FF 48%, #EFE8FD 100%) !important;
-  border: 1px solid rgba(124, 92, 224, 0.22) !important;
-}
-
-/* Tests & Question Banks: Electric Indigo / Sapphire Corner */
 .test-card {
   position: relative !important;
   overflow: hidden !important;
-  background: radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.24) 0%, transparent 65%),
-              linear-gradient(148deg, rgba(24, 18, 48, 0.94) 0%, rgba(16, 12, 34, 0.96) 60%, rgba(10, 8, 24, 0.98) 100%) !important;
-  border: 1px solid rgba(129, 140, 248, 0.26) !important;
-  border-top-left-radius: 20px !important;
+  border-radius: 19px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 
+/* Light Mode: Saturated soft lilac/violet in top-left fading to pure white at bottom-right */
+[data-theme="light"] .subject-card,
+[data-theme="light"] #notes-catalog-view .subject-card,
+[data-theme="light"] #subjects-grid .subject-card,
+[data-theme="light"] #tests-catalog-view .subject-card,
+[data-theme="light"] #tests-grid .subject-card,
+[data-theme="light"] .note-doc-card,
+[data-theme="light"] .doc-card,
 [data-theme="light"] .test-card {
-  background: radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.14) 0%, transparent 68%),
-              linear-gradient(145deg, #FFFFFF 0%, #F5F4FF 48%, #ECEBFE 100%) !important;
-  border: 1px solid rgba(99, 102, 241, 0.22) !important;
+  background: linear-gradient(135deg, #e4d4fc 0%, #efe5fe 32%, #ffffff 82%) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.38) !important;
+  box-shadow: 0 8px 24px rgba(109, 40, 217, 0.10) !important;
+}
+
+/* Light mode text & element visibility fixes (crisp, zero washed out white) */
+[data-theme="light"] .subject-card-title,
+[data-theme="light"] .test-card-title,
+[data-theme="light"] .doc-card-title,
+[data-theme="light"] .note-doc-title {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: initial !important;
+  color: #1e1145 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .subject-card-badge,
+[data-theme="light"] .class-instructor,
+[data-theme="light"] .test-card-meta,
+[data-theme="light"] .doc-card-meta {
+  color: #5b21b6 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .subject-card-count {
+  background: rgba(124, 58, 237, 0.14) !important;
+  color: #4c1d95 !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(124, 58, 237, 0.30) !important;
+}
+
+[data-theme="light"] .subject-card-icon,
+[data-theme="light"] .class-subject-icon,
+[data-theme="light"] .note-doc-icon {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(139, 92, 246, 0.12) 100%) !important;
+  color: #6d28d9 !important;
+  border: 1px solid rgba(124, 58, 237, 0.35) !important;
+}
+
+[data-theme="light"] .subject-card-icon svg,
+[data-theme="light"] .note-doc-icon svg {
+  stroke: #6d28d9 !important;
+}
+
+[data-theme="light"] .subject-card-arrow {
+  background: rgba(124, 58, 237, 0.14) !important;
+  color: #6d28d9 !important;
+}
+
+[data-theme="light"] .subject-card-arrow svg {
+  stroke: #6d28d9 !important;
+}
+
+/* Dark Mode: Deep saturated royal violet in top-left fading to dark midnight down-right */
+[data-theme="dark"] .subject-card,
+[data-theme="dark"] #notes-catalog-view .subject-card,
+[data-theme="dark"] #subjects-grid .subject-card,
+[data-theme="dark"] #tests-catalog-view .subject-card,
+[data-theme="dark"] #tests-grid .subject-card,
+[data-theme="dark"] .note-doc-card,
+[data-theme="dark"] .doc-card,
+[data-theme="dark"] .test-card {
+  background: linear-gradient(135deg, #2c1954 0%, #1c1238 48%, #100c22 100%) !important;
+  border: 1.5px solid rgba(167, 139, 250, 0.28) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-theme="dark"] .subject-card-title,
+[data-theme="dark"] .test-card-title,
+[data-theme="dark"] .doc-card-title,
+[data-theme="dark"] .note-doc-title {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: initial !important;
+  color: #f5f3ff !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="dark"] .subject-card-badge,
+[data-theme="dark"] .class-instructor,
+[data-theme="dark"] .test-card-meta,
+[data-theme="dark"] .doc-card-meta {
+  color: #c4b5fd !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="dark"] .subject-card-count {
+  background: rgba(167, 139, 250, 0.18) !important;
+  color: #e9d5ff !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+}
+
+[data-theme="dark"] .subject-card-icon,
+[data-theme="dark"] .class-subject-icon,
+[data-theme="dark"] .note-doc-icon {
+  background: rgba(167, 139, 250, 0.20) !important;
+  color: #c4b5fd !important;
+  border: 1px solid rgba(167, 139, 250, 0.32) !important;
 }
 
 /* Live & Past Classes (Home): Rose / Indigo Corner */
@@ -8067,6 +8193,13 @@ main#app,
 }
 
 /* ── CBT ANALYSIS REPORT & QUESTION REVIEW ── */
+.quiz-result-view.hide,
+#quiz-result-view.hide {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .quiz-result-view {
   flex: 1 1 auto !important;
   overflow-y: auto !important;
