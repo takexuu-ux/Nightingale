@@ -918,7 +918,60 @@ searchInput?.addEventListener('input', (e) => {
   else if (activeSavedTab === 'tests') renderSavedTests();
 });
 
+function renderMySpaceAnalytics() {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const todayIdx = (new Date().getDay() + 6) % 7; // 0 for Mon, 6 for Sun
+  
+  let streakData = { count: 5, activeDays: [0, 1, 2, 3, 4] };
+  try {
+    const raw = localStorage.getItem('nnl_user_streak');
+    if (raw) streakData = JSON.parse(raw);
+  } catch {}
+
+  const streakNumEl = document.getElementById('myspace-streak-number');
+  if (streakNumEl) streakNumEl.textContent = streakData.count || 5;
+
+  const trackEl = document.getElementById('myspace-days-track');
+  if (trackEl) {
+    trackEl.innerHTML = days.map((d, idx) => {
+      const isCompleted = (streakData.activeDays || [0, 1, 2, 3, 4]).includes(idx);
+      const isToday = idx === todayIdx;
+      return `
+        <div class="myspace-day-item">
+          <div class="myspace-day-bubble ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}">
+            ${isCompleted ? '✓' : ''}
+          </div>
+          <span class="myspace-day-label">${d}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Load performance statistics
+  let perf = {
+    testsAttempted: 14,
+    avgScore: 78,
+    accuracy: 82,
+    questionsSolved: 210
+  };
+  try {
+    const rawPerf = localStorage.getItem('nnl_user_performance');
+    if (rawPerf) perf = { ...perf, ...JSON.parse(rawPerf) };
+  } catch {}
+
+  const elTests = document.getElementById('stat-tests-attempted');
+  const elScore = document.getElementById('stat-avg-score');
+  const elAcc = document.getElementById('stat-accuracy');
+  const elQues = document.getElementById('stat-questions-solved');
+
+  if (elTests) elTests.textContent = perf.testsAttempted;
+  if (elScore) elScore.textContent = `${perf.avgScore}%`;
+  if (elAcc) elAcc.textContent = `${perf.accuracy}%`;
+  if (elQues) elQues.textContent = perf.questionsSolved;
+}
+
 // Initialize
+renderMySpaceAnalytics();
 renderSavedLectures();
 renderSavedNotes();
 renderSavedTests();

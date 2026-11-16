@@ -80,7 +80,7 @@
         <!-- Header -->
         <section class="notes-hero-header">
           <div class="notes-hero-bar">
-            <h1 class="notes-hero-title">Saved</h1>
+            <h1 class="notes-hero-title">MySpace</h1>
             <div id="saved-search-box" class="notes-search-wrapper">
               <svg class="notes-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
@@ -92,6 +92,74 @@
                 placeholder="Search saved..."
                 autocomplete="off"
               />
+            </div>
+          </div>
+        </section>
+
+        <!-- MySpace Streak Tracker & Daily Habit Ring (AllExamMySpaceScreen) -->
+        <section class="myspace-streak-card">
+          <div class="myspace-streak-header">
+            <div class="myspace-streak-flame-box">
+              <span class="myspace-streak-flame-icon">🔥</span>
+              <div>
+                <div class="myspace-streak-count-row">
+                  <span id="myspace-streak-number" class="myspace-streak-number">5</span>
+                  <span class="myspace-streak-label">Day Streak</span>
+                </div>
+                <p class="myspace-streak-sub">Consistency is your superpower! Learn today to keep it burning.</p>
+              </div>
+            </div>
+            <div class="myspace-streak-pill" id="myspace-streak-status-pill">
+              <span class="myspace-pulse-dot"></span> Active Today
+            </div>
+          </div>
+
+          <div class="myspace-days-track" id="myspace-days-track">
+            <!-- 7-Day Mon-Sun dots dynamically generated -->
+          </div>
+        </section>
+
+        <!-- Overall Performance Growth Section (OverallPerformanceGrowthSection) -->
+        <section class="myspace-growth-card">
+          <div class="myspace-growth-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">📊</span>
+              <h2 class="myspace-growth-title">Overall Performance Growth</h2>
+            </div>
+            <span class="myspace-growth-badge">NORCET Analytics</span>
+          </div>
+
+          <div class="myspace-stats-grid">
+            <div class="myspace-stat-box">
+              <div class="myspace-stat-icon-wrap" style="color: #a855f7; background: rgba(168, 85, 247, 0.15);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div class="myspace-stat-val" id="stat-tests-attempted">14</div>
+              <div class="myspace-stat-lbl">Tests Attempted</div>
+            </div>
+
+            <div class="myspace-stat-box">
+              <div class="myspace-stat-icon-wrap" style="color: #22c55e; background: rgba(34, 197, 94, 0.15);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <div class="myspace-stat-val" id="stat-avg-score">78%</div>
+              <div class="myspace-stat-lbl">Average Score</div>
+            </div>
+
+            <div class="myspace-stat-box">
+              <div class="myspace-stat-icon-wrap" style="color: #3b82f6; background: rgba(59, 130, 246, 0.15);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <div class="myspace-stat-val" id="stat-accuracy">82%</div>
+              <div class="myspace-stat-lbl">Accuracy Rate</div>
+            </div>
+
+            <div class="myspace-stat-box">
+              <div class="myspace-stat-icon-wrap" style="color: #f59e0b; background: rgba(245, 158, 11, 0.15);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="myspace-stat-val" id="stat-questions-solved">210</div>
+              <div class="myspace-stat-lbl">Questions Solved</div>
             </div>
           </div>
         </section>
@@ -169,11 +237,12 @@
         <div class="pdf-modal-header">
           <div class="pdf-modal-title" id="pdf-modal-title">Saved PDF</div>
           <div class="pdf-modal-actions">
-            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">
-              <span>Open PDF</span>
+            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              <span>Open Full PDF</span>
             </a>
             <button id="pdf-modal-close-btn" class="btn-close-quiz" title="Close" aria-label="Close">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
           </div>
         </div>

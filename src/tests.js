@@ -980,7 +980,11 @@ function getClinicalFallbackQuestions(testTitle = '', duration = 1800) {
   }));
 }
 
-async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = false, mode = 'practice' }) {
+let totalTimeElapsed = 0;
+let timeSpentPerQuestion = [];
+let currentAnalysisFilter = 'all';
+
+async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = false, mode = 'exam' }) {
   hydrateAndroidAuthSession();
   const token = localStorage.getItem('nnl_access_token');
   if (!token) {
@@ -997,6 +1001,11 @@ async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = fals
   currentQuizMode = mode;
   quizAnswers = {};
   currentQuestionIndex = 0;
+  totalTimeElapsed = 0;
+  timeSpentPerQuestion = [];
+
+  // Notify companion mascot
+  window.dispatchEvent(new CustomEvent('nnl:test-started', { detail: { title, mode } }));
 
   if (titleEl) titleEl.textContent = title;
   if (badgeEl) {
@@ -1017,6 +1026,8 @@ async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = fals
       quizQuestions = getClinicalFallbackQuestions(title, duration);
     }
 
+    timeSpentPerQuestion = new Array(quizQuestions.length).fill(0);
+
     if (metaEl) {
       metaEl.textContent = `Total Questions: ${quizQuestions.length} • Standard Duration: ${Math.max(1, Math.round(duration / 60))} mins`;
     }
@@ -1028,6 +1039,7 @@ async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = fals
   } catch (err) {
     console.warn('[Tests] Question loading fallback:', err);
     quizQuestions = getClinicalFallbackQuestions(title, duration);
+    timeSpentPerQuestion = new Array(quizQuestions.length).fill(0);
     if (metaEl) {
       metaEl.textContent = `Total Questions: ${quizQuestions.length} • Standard Duration: ${Math.max(1, Math.round(duration / 60))} mins`;
     }
@@ -1063,30 +1075,46 @@ function startOrStopTimer() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
   const timerContainer = document.getElementById('quiz-timer-container');
   const timerEl = document.getElementById('quiz-timer');
-  if (currentQuizMode === 'exam') {
-    if (timerContainer) timerContainer.style.display = 'flex';
-    quizTimeRemaining = currentTestConfig?.duration || 1800;
-    const tick = () => {
-      if (timerEl) {
-        const m = Math.floor(quizTimeRemaining / 60).toString().padStart(2, '0');
-        const s = (quizTimeRemaining % 60).toString().padStart(2, '0');
-        timerEl.textContent = `${m}:${s}`;
-        timerEl.style.color = quizTimeRemaining < 60 ? '#f87171' : 'var(--accent, #a78bfa)';
-      }
-    };
-    tick();
-    quizTimerInterval = setInterval(() => {
+  const qTimeElapsedEl = document.getElementById('question-time-elapsed');
+
+  if (timerContainer) timerContainer.style.display = 'inline-flex';
+  quizTimeRemaining = currentTestConfig?.duration || 1800;
+
+  const updateCountdownDisplay = () => {
+    if (timerEl) {
+      const m = Math.floor(Math.max(0, quizTimeRemaining) / 60).toString().padStart(2, '0');
+      const s = (Math.max(0, quizTimeRemaining) % 60).toString().padStart(2, '0');
+      timerEl.textContent = `${m}:${s}`;
+      timerEl.style.color = quizTimeRemaining < 120 ? '#f87171' : '#38bdf8';
+    }
+  };
+
+  updateCountdownDisplay();
+
+  quizTimerInterval = setInterval(() => {
+    totalTimeElapsed++;
+    if (timeSpentPerQuestion[currentQuestionIndex] === undefined) {
+      timeSpentPerQuestion[currentQuestionIndex] = 0;
+    }
+    timeSpentPerQuestion[currentQuestionIndex]++;
+
+    if (qTimeElapsedEl) {
+      qTimeElapsedEl.textContent = `${timeSpentPerQuestion[currentQuestionIndex]}s`;
+    }
+
+    if (timeSpentPerQuestion[currentQuestionIndex] === 60) {
+      window.dispatchEvent(new CustomEvent('nnl:question-slow'));
+    }
+
+    if (quizTimeRemaining > 0) {
       quizTimeRemaining--;
-      tick();
+      updateCountdownDisplay();
       if (quizTimeRemaining <= 0) {
         clearInterval(quizTimerInterval);
         submitTest();
       }
-    }, 1000);
-  } else {
-    // In practice/review mode, timer is untimed — do not crowd header with duplicate neon tags
-    if (timerContainer) timerContainer.style.display = 'none';
-  }
+    }
+  }, 1000);
 }
 
 function renderQuestion() {
@@ -1100,10 +1128,12 @@ function renderQuestion() {
   const explanationTextEl = document.getElementById('explanation-text');
   const explainBtn = document.getElementById('quiz-explain-btn');
   const optionsList = document.getElementById('quiz-options-list');
+  const qTimeElapsedEl = document.getElementById('question-time-elapsed');
 
   if (numBadge) numBadge.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
   if (lvlBadge) lvlBadge.textContent = q.level_str || q.level || 'Medium';
   if (textEl) textEl.innerHTML = q.title || q.question || q.question_text || '';
+  if (qTimeElapsedEl) qTimeElapsedEl.textContent = `${timeSpentPerQuestion[currentQuestionIndex] || 0}s`;
 
   optionsList.innerHTML = '';
   explanationEl?.classList.add('hide');
@@ -1158,6 +1188,11 @@ function renderQuestion() {
       if (currentQuizMode === 'practice') {
         renderQuestion();
         updateQuizNavigator();
+        if (isCorrect) {
+          window.dispatchEvent(new CustomEvent('nnl:test-correct'));
+        } else {
+          window.dispatchEvent(new CustomEvent('nnl:test-incorrect'));
+        }
       } else {
         optionsList.querySelectorAll('.quiz-option-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
@@ -1180,13 +1215,6 @@ function renderQuestion() {
 }
 
 function toggleExplanation() {
-  if (currentQuizMode === 'exam') {
-    currentQuizMode = 'practice';
-    updateQuizModeUi();
-    startOrStopTimer();
-    renderQuestion();
-    return;
-  }
   const explanationEl = document.getElementById('question-explanation');
   const explanationTextEl = document.getElementById('explanation-text');
   const explainBtn = document.getElementById('quiz-explain-btn');
@@ -1224,9 +1252,112 @@ function updateQuizNavigator() {
   });
 }
 
+function renderAnalysisQuestions(filter = 'all') {
+  currentAnalysisFilter = filter;
+  const container = document.getElementById('analysis-questions-list');
+  if (!container) return;
+
+  document.querySelectorAll('.analysis-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-filter') === filter);
+  });
+
+  const cardsHtml = quizQuestions.map((q, idx) => {
+    const userChoiceId = quizAnswers[idx];
+    const choices = q.choices || q.options || [];
+    const correctChoice = choices.find(c => c.is_correct || c.isCorrect);
+    const isAnswered = userChoiceId !== undefined;
+    const isCorrect = isAnswered && userChoiceId === correctChoice?.id;
+    const isIncorrect = isAnswered && !isCorrect;
+    const isLeft = !isAnswered;
+
+    if (filter === 'correct' && !isCorrect) return '';
+    if (filter === 'incorrect' && !isIncorrect) return '';
+    if (filter === 'left' && !isLeft) return '';
+
+    let statusBadge = '<span class="analysis-q-status-badge left">Left / Skipped</span>';
+    if (isCorrect) {
+      statusBadge = '<span class="analysis-q-status-badge correct">✓ Correct</span>';
+    } else if (isIncorrect) {
+      statusBadge = '<span class="analysis-q-status-badge incorrect">✗ Incorrect</span>';
+    }
+
+    const timeSpent = timeSpentPerQuestion[idx] || 0;
+    const markers = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    const choicesHtml = choices.map((c, cIdx) => {
+      const isUserChoice = c.id === userChoiceId;
+      const isChoiceCorrect = Boolean(c.is_correct || c.isCorrect);
+      let cls = 'analysis-choice-item';
+      let icon = `<strong style="width:18px;">${markers[cIdx] || cIdx + 1}.</strong>`;
+      let note = '';
+
+      if (isChoiceCorrect) {
+        cls += ' correct-choice';
+        note = '<span style="margin-left:auto;font-size:11px;font-weight:700;">(Correct Answer)</span>';
+      }
+      if (isUserChoice && !isChoiceCorrect) {
+        cls += ' wrong-choice';
+        note = '<span style="margin-left:auto;font-size:11px;font-weight:700;">(Your Answer)</span>';
+      } else if (isUserChoice && isChoiceCorrect) {
+        note = '<span style="margin-left:auto;font-size:11px;font-weight:700;">(Your Answer ✓)</span>';
+      }
+
+      return `
+        <div class="${cls}">
+          ${icon}
+          <span>${c.title || c.text || c.choice_text || ''}</span>
+          ${note}
+        </div>
+      `;
+    }).join('');
+
+    const explanation = correctChoice?.correct_explanation || correctChoice?.explanation || q.correct_explanation || q.explanation || 'Detailed clinical rationale for this concept is provided in NORCET review lectures.';
+
+    return `
+      <div class="analysis-q-card" data-q-idx="${idx}">
+        <div class="analysis-q-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <strong style="color:var(--text-primary);font-size:13px;">Question ${idx + 1}</strong>
+            ${statusBadge}
+          </div>
+          <span class="analysis-q-time-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${timeSpent}s
+          </span>
+        </div>
+        <div class="analysis-q-title">${q.title || q.question || q.question_text || ''}</div>
+        <div class="analysis-q-choices">${choicesHtml}</div>
+        <button type="button" class="analysis-explain-btn" data-toggle-expl="${idx}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>View Rationale &amp; Explanation</span>
+        </button>
+        <div class="analysis-explanation-box hide" id="analysis-expl-${idx}">
+          ${explanation}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = cardsHtml || '<div style="padding:2rem;text-align:center;color:var(--text-secondary);">No questions in this category.</div>';
+
+  container.querySelectorAll('[data-toggle-expl]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qIdx = btn.getAttribute('data-toggle-expl');
+      const box = document.getElementById(`analysis-expl-${qIdx}`);
+      if (box) {
+        box.classList.toggle('hide');
+        btn.querySelector('span').textContent = box.classList.contains('hide')
+          ? 'View Rationale & Explanation'
+          : 'Hide Rationale & Explanation';
+      }
+    });
+  });
+}
+
 function submitTest() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
   let correct = 0;
+  let incorrect = 0;
   let attempted = 0;
 
   quizQuestions.forEach((q, idx) => {
@@ -1235,25 +1366,94 @@ function submitTest() {
       attempted++;
       const choices = q.choices || q.options || [];
       const chosen = choices.find(c => c.id === sel);
-      if (chosen && (chosen.is_correct || chosen.isCorrect)) correct++;
+      if (chosen && (chosen.is_correct || chosen.isCorrect)) {
+        correct++;
+      } else {
+        incorrect++;
+      }
     }
   });
 
   const total = quizQuestions.length;
+  const left = total - attempted;
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const totalMins = Math.floor(totalTimeElapsed / 60);
+  const totalSecs = totalTimeElapsed % 60;
+  const totalTimeStr = `${totalMins}m ${totalSecs}s`;
+  const avgSecs = Math.round(totalTimeElapsed / Math.max(1, total));
 
   document.getElementById('quiz-question-view')?.classList.add('hide');
   document.getElementById('quiz-result-view')?.classList.remove('hide');
 
+  const titleEl = document.getElementById('analysis-test-title');
+  if (titleEl) titleEl.textContent = currentTestConfig?.title ? `${currentTestConfig.title} — Report` : 'Assessment Report';
+
   const pctEl = document.getElementById('result-percentage');
   const ratioEl = document.getElementById('result-ratio');
-  const fbEl = document.getElementById('result-feedback');
+  const totalTimeEl = document.getElementById('analysis-total-time');
+  const avgTimeEl = document.getElementById('analysis-avg-time');
+
   if (pctEl) pctEl.textContent = `${pct}%`;
-  if (ratioEl) ratioEl.textContent = `${correct} / ${total} Correct (${attempted} Attempted)`;
-  if (fbEl) {
-    fbEl.textContent = pct >= 75
-      ? 'Strong clinical command. Review rationales below to lock in high-yield facts.'
-      : 'Good practice run. Use Review Mode to study explanations for every question.';
+  if (ratioEl) ratioEl.textContent = `${correct} / ${total}`;
+  if (totalTimeEl) totalTimeEl.textContent = totalTimeStr;
+  if (avgTimeEl) avgTimeEl.textContent = `${avgSecs}s / question`;
+
+  const kpiTotal = document.getElementById('kpi-total-q');
+  const kpiCorrect = document.getElementById('kpi-correct-q');
+  const kpiIncorrect = document.getElementById('kpi-incorrect-q');
+  const kpiSkipped = document.getElementById('kpi-skipped-q');
+
+  if (kpiTotal) kpiTotal.textContent = total;
+  if (kpiCorrect) kpiCorrect.textContent = correct;
+  if (kpiIncorrect) kpiIncorrect.textContent = incorrect;
+  if (kpiSkipped) kpiSkipped.textContent = left;
+
+  const countAll = document.getElementById('count-filter-all');
+  const countCorr = document.getElementById('count-filter-correct');
+  const countIncorr = document.getElementById('count-filter-incorrect');
+  const countLeft = document.getElementById('count-filter-left');
+
+  if (countAll) countAll.textContent = total;
+  if (countCorr) countCorr.textContent = correct;
+  if (countIncorr) countIncorr.textContent = incorrect;
+  if (countLeft) countLeft.textContent = left;
+
+  renderAnalysisQuestions('all');
+
+  // Bind filter tab buttons
+  document.querySelectorAll('.analysis-filter-btn').forEach(btn => {
+    btn.onclick = () => {
+      const filter = btn.getAttribute('data-filter') || 'all';
+      renderAnalysisQuestions(filter);
+    };
+  });
+
+  // Save to persistent user performance in localStorage for MySpace
+  try {
+    const rawPerf = localStorage.getItem('nnl_user_performance');
+    let perf = { testsAttempted: 14, avgScore: 78, accuracy: 82, questionsSolved: 210 };
+    if (rawPerf) perf = { ...perf, ...JSON.parse(rawPerf) };
+    perf.testsAttempted = (perf.testsAttempted || 0) + 1;
+    perf.questionsSolved = (perf.questionsSolved || 0) + attempted;
+    perf.avgScore = Math.round(((perf.avgScore || 75) + pct) / 2);
+    if (attempted > 0) {
+      const thisAcc = Math.round((correct / attempted) * 100);
+      perf.accuracy = Math.round(((perf.accuracy || 80) + thisAcc) / 2);
+    }
+    localStorage.setItem('nnl_user_performance', JSON.stringify(perf));
+
+    // Update Streak
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    let streak = { count: 5, activeDays: [0, 1, 2, 3, 4] };
+    const rawStreak = localStorage.getItem('nnl_user_streak');
+    if (rawStreak) streak = JSON.parse(rawStreak);
+    if (!streak.activeDays.includes(todayIdx)) {
+      streak.activeDays.push(todayIdx);
+      streak.count = (streak.count || 0) + 1;
+    }
+    localStorage.setItem('nnl_user_streak', JSON.stringify(streak));
+  } catch (e) {
+    console.warn('[Tests] Performance cache note:', e);
   }
 }
 
@@ -1265,10 +1465,20 @@ function closeQuizViewer() {
 function initEventBindings() {
   document.getElementById('overview-close-btn')?.addEventListener('click', closeTestOverviewModal);
   document.getElementById('overview-cancel-btn')?.addEventListener('click', closeTestOverviewModal);
+  document.getElementById('overview-start-practice-btn')?.addEventListener('click', () => {
+    const cfg = pendingTestLaunch;
+    closeTestOverviewModal();
+    if (cfg) loadAndStartTest({ ...cfg, mode: 'practice' });
+  });
   document.getElementById('overview-start-btn')?.addEventListener('click', () => {
     const cfg = pendingTestLaunch;
     closeTestOverviewModal();
-    if (cfg) loadAndStartTest(cfg);
+    if (cfg) loadAndStartTest({ ...cfg, mode: 'exam' });
+  });
+  document.getElementById('quiz-restart-btn')?.addEventListener('click', () => {
+    if (currentTestConfig) {
+      loadAndStartTest(currentTestConfig);
+    }
   });
 
   document.getElementById('test-tab-series')?.addEventListener('click', () => switchSection('series'));

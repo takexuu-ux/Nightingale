@@ -706,19 +706,25 @@ function normalizeHeaderAndChrome() {
   }
 
   const appHeader = document.getElementById('app-header');
-  if (window.innerWidth >= 768) {
-    if (appHeader && hamBtn.parentElement !== appHeader) {
-      appHeader.insertBefore(hamBtn, appHeader.firstChild);
-    }
-    hamBtn.style.removeProperty('display');
-    hamBtn.style.removeProperty('visibility');
-    hamBtn.style.removeProperty('opacity');
-    hamBtn.style.removeProperty('pointer-events');
-  } else {
-    if (hamBtn.parentElement !== document.body) {
-      document.body.appendChild(hamBtn);
+  function syncHamburgerPlacement() {
+    const isLandscapeIsland = (window.innerWidth >= 880 && window.innerWidth >= window.innerHeight) || (window.innerWidth >= 1024);
+    if (isLandscapeIsland) {
+      if (appHeader && hamBtn.parentElement !== appHeader) {
+        appHeader.insertBefore(hamBtn, appHeader.firstChild);
+      }
+      hamBtn.style.removeProperty('display');
+      hamBtn.style.removeProperty('visibility');
+      hamBtn.style.removeProperty('opacity');
+      hamBtn.style.removeProperty('pointer-events');
+    } else {
+      if (hamBtn.parentElement !== document.body) {
+        document.body.appendChild(hamBtn);
+      }
     }
   }
+  syncHamburgerPlacement();
+  window.addEventListener('resize', syncHamburgerPlacement);
+  window.addEventListener('orientationchange', syncHamburgerPlacement);
 
   if (!window.__nnlBatchClickBound) {
     window.__nnlBatchClickBound = true;

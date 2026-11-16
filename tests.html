@@ -213,8 +213,11 @@
 
         <div class="quiz-overview-footer">
           <button id="overview-cancel-btn" type="button" class="btn btn-secondary">Cancel</button>
+          <button id="overview-start-practice-btn" type="button" class="btn btn-secondary" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+            <span>Practice Mode</span>
+          </button>
           <button id="overview-start-btn" type="button" class="btn btn-start-test-cta">
-            <span>Start Test Now</span>
+            <span>Start Exam Mode</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           </button>
         </div>
@@ -225,28 +228,20 @@
     <div id="quiz-viewer" class="quiz-viewer-overlay hide">
       <div class="quiz-viewer-box">
         <div class="quiz-viewer-header">
-          <div class="quiz-viewer-header-left" style="display:flex;align-items:center;gap:14px;">
+          <div class="quiz-viewer-header-left" style="display:flex;align-items:center;gap:12px;">
             <button id="quiz-top-back-btn" class="btn-quiz-back" title="Back to Tests" aria-label="Back">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               <span>Back</span>
             </button>
             <div class="quiz-viewer-title-area">
-              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.15rem;">
-                <span id="quiz-badge-type" class="quiz-badge-type">Practice Assessment</span>
-                <button id="quiz-mode-toggle-btn" class="quiz-mode-toggle-pill" title="Toggle Practice / Exam Mode">
-                  <span id="quiz-mode-icon" style="display:inline-flex;align-items:center;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  </span>
-                  <span id="quiz-mode-label">Practice Mode</span>
-                </button>
-              </div>
-              <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Practice Test</h2>
-              <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);"></span>
+              <h2 id="quiz-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Test</h2>
+              <span id="quiz-meta" style="font-size: 0.75rem; color: var(--text-secondary);">Total Questions: 0 • Duration: 0 mins</span>
             </div>
           </div>
-          <div class="quiz-header-controls" style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="quiz-header-controls" style="display: flex; align-items: center; gap: 0.65rem;">
             <div id="quiz-timer-container" class="quiz-timer-container">
-              <div id="quiz-timer" class="quiz-timer">PRACTICE</div>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #38bdf8;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div id="quiz-timer" class="quiz-timer">30:00</div>
             </div>
             <button id="quiz-top-close-btn" class="btn-close-quiz" title="Close Test" aria-label="Close test">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -259,10 +254,10 @@
             <div class="question-header">
               <span id="question-number-badge" class="question-number-badge">Question 1</span>
               <span id="question-level-badge" class="question-level-badge">Medium</span>
-              <button id="quiz-explain-btn" class="quiz-explain-pill" title="Toggle Clinical Explanation">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Explain</span>
-              </button>
+              <span id="question-timer-pill" class="question-timer-pill" style="margin-left: auto; font-size: 11.5px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="question-time-elapsed">0s</span>
+              </span>
             </div>
             <div id="question-text" class="question-text">Loading question...</div>
             <div id="quiz-options-list" class="quiz-options-list"></div>
@@ -272,24 +267,63 @@
             </div>
           </div>
 
+          <!-- Dedicated CBT Assessment Analysis Report View -->
           <div id="quiz-result-view" class="quiz-result-view hide">
-            <div class="result-summary">
-              <div class="result-glow"></div>
-              <h3 style="font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.05em; margin-bottom: 1rem; color: var(--primary);">Assessment Completed</h3>
-              <div class="score-circle">
-                <span id="result-percentage" style="font-size: 2.2rem; font-family: var(--font-display); font-weight: 900; color: #00f3d0;">0%</span>
-                <span id="result-ratio" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">0 / 0 Correct</span>
+            <!-- Header Summary Card -->
+            <div class="analysis-summary-card">
+              <div class="analysis-hero">
+                <div class="analysis-score-circle">
+                  <span id="result-percentage" class="analysis-percent">0%</span>
+                  <span id="result-ratio" class="analysis-ratio">0 / 0</span>
+                </div>
+                <div class="analysis-meta">
+                  <h3 id="analysis-test-title" class="analysis-title">Assessment Report</h3>
+                  <div class="analysis-time-metrics">
+                    <span class="analysis-time-badge">
+                      ⏱ Total Time: <strong id="analysis-total-time">0m 0s</strong>
+                    </span>
+                    <span class="analysis-time-badge">
+                      ⚡ Avg / Question: <strong id="analysis-avg-time">0s</strong>
+                    </span>
+                  </div>
+                </div>
+                <div class="analysis-actions" style="display: flex; gap: 8px;">
+                  <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Try Again</button>
+                  <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Exit Test</button>
+                </div>
               </div>
-              <p id="result-feedback" style="color: var(--text-secondary); font-size: 0.9rem; max-width: 340px; line-height: 1.5; margin: 1.5rem auto;"></p>
-              <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
-                <button id="quiz-review-btn" class="btn btn-zoom" style="display:inline-flex;align-items:center;gap:0.45rem;font-size: 0.8rem; padding: 0.5rem 1.2rem; background: #00f3d0; color: #000; font-weight: 700;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                  <span>Review with Explanations</span>
-                </button>
-                <button id="quiz-restart-btn" class="btn btn-zoom" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Try Again</button>
-                <button id="quiz-close-btn" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1.2rem;">Close Test</button>
+
+              <!-- 4 KPI Blocks -->
+              <div class="analysis-kpi-grid">
+                <div class="analysis-kpi-box" style="border-color: rgba(168, 85, 247, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-total-q" style="color: #c084fc;">0</span>
+                  <span class="analysis-kpi-lbl">Total Questions</span>
+                </div>
+                <div class="analysis-kpi-box" style="border-color: rgba(34, 197, 94, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-correct-q" style="color: #4ade80;">0</span>
+                  <span class="analysis-kpi-lbl">Correct</span>
+                </div>
+                <div class="analysis-kpi-box" style="border-color: rgba(239, 68, 68, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-incorrect-q" style="color: #f87171;">0</span>
+                  <span class="analysis-kpi-lbl">Incorrect</span>
+                </div>
+                <div class="analysis-kpi-box" style="border-color: rgba(234, 179, 8, 0.35);">
+                  <span class="analysis-kpi-val" id="kpi-skipped-q" style="color: #facc15;">0</span>
+                  <span class="analysis-kpi-lbl">Left (Skipped)</span>
+                </div>
               </div>
             </div>
+
+            <!-- Filter Tabs -->
+            <div class="analysis-filter-tabs">
+              <button type="button" class="analysis-filter-btn active" data-filter="all">All (<span id="count-filter-all">0</span>)</button>
+              <button type="button" class="analysis-filter-btn filter-correct" data-filter="correct">Correct (<span id="count-filter-correct">0</span>)</button>
+              <button type="button" class="analysis-filter-btn filter-incorrect" data-filter="incorrect">Incorrect (<span id="count-filter-incorrect">0</span>)</button>
+              <button type="button" class="analysis-filter-btn filter-left" data-filter="left">Left (<span id="count-filter-left">0</span>)</button>
+            </div>
+
+            <!-- Questions Review List -->
+            <div id="analysis-questions-list" class="analysis-questions-list"></div>
           </div>
 
           <div id="quiz-sidebar" class="quiz-sidebar">
@@ -319,12 +353,12 @@
         <div class="pdf-modal-header">
           <div class="pdf-modal-title" id="pdf-modal-title">Document Preview</div>
           <div class="pdf-modal-actions">
-            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-              <span>Open in New Tab</span>
+            <a id="pdf-modal-download-btn" href="#" target="_blank" class="btn-note-download">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              <span>Open Full PDF</span>
             </a>
-            <button id="pdf-modal-close-btn" class="btn-note-view" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #fff;">
-              <span>Close (ESC)</span>
+            <button id="pdf-modal-close-btn" class="btn-close-quiz" title="Close Preview" aria-label="Close preview">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
           </div>
         </div>
