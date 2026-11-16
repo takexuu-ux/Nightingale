@@ -925,7 +925,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   body.on-login-screen main#app,
   body:has(#auth-screen:not(.hide)) main#app {
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     justify-content: flex-start !important;
     min-height: 100vh !important;
     padding: 0 !important;
@@ -939,12 +939,12 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   body:has(#auth-screen:not(.hide)) .container {
     display: flex !important;
     flex-direction: row !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     justify-content: flex-start !important;
     width: 100% !important;
     max-width: 100% !important;
     min-height: 100vh !important;
-    padding: 0 0 0 clamp(48px, 8vw, 120px) !important;
+    padding: clamp(40px, 6.5vh, 72px) 0 0 clamp(48px, 7.5vw, 120px) !important;
     margin: 0 !important;
   }
 
@@ -955,14 +955,14 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     min-height: auto !important;
     height: auto !important;
     padding: 0 !important;
     width: 100% !important;
-    max-width: 440px !important;
+    max-width: 520px !important;
     margin: 0 !important;
-    gap: 18px !important;
+    gap: 0 !important;
     z-index: 2 !important;
   }
 
@@ -972,11 +972,11 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     order: 1 !important;
     align-items: flex-start !important;
     text-align: left !important;
-    margin: 0 !important;
+    margin: 0 0 28px 0 !important;
     padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    gap: 12px !important;
+    gap: 14px !important;
   }
 
   body:not(.apk-is-auth) .apk-brand-inline-row,
@@ -993,8 +993,10 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   body:has(#auth-screen:not(.hide)) .apk-showcase-title {
     margin: 0 !important;
     text-align: left !important;
-    font-size: clamp(2.8rem, 4.5vw, 3.8rem) !important;
-    letter-spacing: 0.03em !important;
+    font-size: clamp(3.8rem, 6.2vw, 5.6rem) !important;
+    line-height: 1.05 !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.015em !important;
     text-transform: uppercase !important;
   }
 
@@ -1023,7 +1025,7 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
     margin-top: 0 !important;
     align-self: flex-start !important;
     width: 100% !important;
-    max-width: 400px !important;
+    max-width: 420px !important;
   }
 
   body:not(.apk-is-auth) .apk-auth-botanical,
