@@ -27,7 +27,8 @@ export function getWatchHistory() {
               const existing = map[id];
               const nativePct = Math.min(100, Math.max(0, item.percent || 0));
               const existingPct = existing ? Math.min(100, Math.max(0, existing.percent || 0)) : 0;
-              const shouldUpdate = !existing || nativePct > existingPct || (item.lastWatched || 0) >= (existing.lastWatched || 0);
+              const isNativeNewer = (item.lastWatched || 0) >= (existing?.lastWatched || 0);
+              const shouldUpdate = !existing || isNativeNewer || nativePct > existingPct;
               if (shouldUpdate) {
                 map[id] = {
                   recId: id,
@@ -35,7 +36,7 @@ export function getWatchHistory() {
                   instructor: item.instructor || existing?.instructor || 'NNL Faculty',
                   currentTime: item.currentTime || existing?.currentTime || 0,
                   duration: item.duration || existing?.duration || 0,
-                  percent: Math.max(nativePct, existingPct),
+                  percent: isNativeNewer ? nativePct : Math.max(nativePct, existingPct),
                   lastWatched: Math.max(item.lastWatched || 0, existing?.lastWatched || 0) || Date.now()
                 };
                 updated = true;
@@ -73,7 +74,7 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
     thumb: thumb || prev.thumb || '',
     currentTime: Math.round(currentTime || prev.currentTime || 0),
     duration: Math.round(duration || prev.duration || 0),
-    percent: Math.min(100, Math.max(calcPercent, prev.percent || 1)),
+    percent: calcPercent > 0 ? Math.min(100, calcPercent) : (prev.percent || 1),
     lastWatched: Date.now()
   };
 
@@ -102,6 +103,36 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('nnl:watch-progress-updated', { detail: map[id] }));
   }
+}
+
+export function getLastWatchedLecture() {
+  const map = getWatchHistory();
+  let nativeLastId = '';
+  if (typeof window !== 'undefined' && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.getLastWatchedRecId === 'function') {
+    try {
+      nativeLastId = window.AndroidVideoBridge.getLastWatchedRecId() || '';
+    } catch (_) {}
+  }
+  if (nativeLastId) {
+    try {
+      localStorage.setItem('nnl_last_watched_rec_id', nativeLastId);
+    } catch (_) {}
+  }
+  let lastId = nativeLastId;
+  if (!lastId) {
+    try {
+      lastId = localStorage.getItem('nnl_last_watched_rec_id') || '';
+    } catch (_) {}
+  }
+
+  if (lastId && map[String(lastId)]) {
+    return map[String(lastId)];
+  }
+
+  const list = Object.values(map);
+  if (list.length === 0) return null;
+  list.sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
+  return list[0] || null;
 }
 
 export function getRecentlyWatchedLectures(limit = 8) {

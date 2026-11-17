@@ -3,7 +3,9 @@ import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/ap
 import { fetchFreshVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import {
   getRecentlyWatchedLectures,
+  getLastWatchedLecture,
   getLectureProgress,
+  saveLectureProgress,
   getSavedLecturesList
 } from './services/lectureWatchService.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
@@ -3571,7 +3573,35 @@ async function resumeLecture(recId, btnEl) {
     }
   }
 
-  // 2. Route seamlessly to All Videos library with autoPlay & seek (which automatically acquires fresh OTP)
+  // 2. In Android APK, try fetching fresh OTP directly first so there is ZERO redirect flicker
+  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    try {
+      const fresh = await fetchFreshVdoCipherOtp(recId, { isBatch103: true }).catch(() => null);
+      if (fresh && fresh.otp && fresh.playbackInfo) {
+        window.AndroidVideoBridge.playVideoWithAuth(
+          fresh.otp,
+          fresh.playbackInfo,
+          item?.title || 'Recorded Lecture',
+          item?.instructor || 'NNL Faculty',
+          String(recId),
+          tk,
+          true,
+          item?.notePdfUrl || '',
+          item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF'),
+          item?.currentTime || 0
+        );
+        if (btnEl) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = '<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span>';
+        }
+        return;
+      }
+    } catch (e) {
+      console.warn('[Resume] Fast direct OTP resume failed:', e);
+    }
+  }
+
+  // 3. Route seamlessly to All Videos library with autoPlay & seek (which automatically acquires fresh OTP)
   if (item) {
     try {
       sessionStorage.setItem('nnl_auto_play_item', JSON.stringify({
@@ -3845,18 +3875,21 @@ function renderContinueWatchingSection() {
 
   if (!section || !grid) return;
 
-  // Find the single latest in-progress, UNFINISHED lecture from watch history
-  const recents = getRecentlyWatchedLectures(25);
-  let item = recents.find(r => {
-    if (!r) return false;
-    const pct = Math.min(100, Math.max(0, Math.round(r.percent || 0)));
-    const curTime = Number(r.currentTime || 0);
-    // Watched at least 5 seconds or > 0%, and less than 90% (not finished)
-    return (curTime >= 5 || pct > 0) && pct < 90 && !r.isCompleted;
-  });
+  const item = getLastWatchedLecture();
 
-  // If no lecture was left in-progress or if completed, do NOT show
+  // If no lecture was ever watched, hide
   if (!item) {
+    section.classList.add('hide');
+    grid.innerHTML = '';
+    return;
+  }
+
+  const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+  const curTime = Number(item.currentTime || 0);
+
+  // If completed (>= 90% or isCompleted flag), DO NOT SHOW:
+  // "if i completed lecture then dont show"
+  if (pct >= 90 || item.isCompleted) {
     section.classList.add('hide');
     grid.innerHTML = '';
     return;
@@ -3871,12 +3904,12 @@ function renderContinueWatchingSection() {
 
   section.classList.remove('hide');
 
-  const pct = Math.min(99, Math.max(1, Math.round(item.percent || 0)));
-  const curTimeFormatted = formatWatchTime(item.currentTime || 0);
+  const displayPct = Math.min(99, Math.max(1, pct));
+  const curTimeFormatted = formatWatchTime(curTime);
   const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
-  const timeLabel = item.currentTime > 5
-    ? `Resume from ${curTimeFormatted}${durFormatted ? ` / ${durFormatted}` : ''} • ${pct}%`
-    : `${pct}% Watched`;
+  const timeLabel = curTime > 5
+    ? `Resume from ${curTimeFormatted}${durFormatted ? ` / ${durFormatted}` : ''} • ${displayPct}%`
+    : `${displayPct}% Watched`;
 
   grid.innerHTML = `
     <div class="continue-watching-card minimal-resume-card" data-rec-id="${escapeHtml(recId)}" role="button" tabindex="0">
@@ -3886,7 +3919,7 @@ function renderContinueWatchingSection() {
       <div class="resume-card-body">
         <div class="resume-card-top-row">
           <h4 class="resume-card-title" title="${escapeHtml(item.title || 'Recorded Lecture')}">${escapeHtml(item.title || 'Recorded Lecture')}</h4>
-          <span class="lecture-progress-text" style="font-size:11px;font-weight:700;color:var(--accent);">${pct}%</span>
+          <span class="lecture-progress-text" style="font-size:11px;font-weight:700;color:var(--accent);">${displayPct}%</span>
         </div>
         <div class="resume-card-meta">
           <span>${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</span>
@@ -3894,7 +3927,7 @@ function renderContinueWatchingSection() {
           <span class="resume-card-time">${escapeHtml(timeLabel)}</span>
         </div>
         <div class="resume-card-progress-track">
-          <div class="resume-card-progress-fill" style="width: ${pct}%"></div>
+          <div class="resume-card-progress-fill" style="width: ${displayPct}%"></div>
         </div>
       </div>
       <button class="continue-watching-resume-btn resume-pill-btn" type="button" aria-label="Resume Lecture">
@@ -5805,6 +5838,15 @@ function openRecordingPlayer(recording) {
           const tk = localStorage.getItem('nnl_access_token') || '';
           if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
             viewer.classList.add('hide');
+            try {
+              saveLectureProgress(recId, {
+                title: recording.title || 'Recorded Lecture',
+                instructor: facultyName || 'NNL Faculty',
+                subject: recording.subject || '',
+                thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
+                percent: getLectureProgress(recId)?.percent || 1
+              });
+            } catch (_) {}
             window.AndroidVideoBridge.playVideoWithAuth(
               data.otp,
               data.playbackInfo,
