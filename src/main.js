@@ -1394,6 +1394,15 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       zoomFallbackBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
     }
 
+    const connectingBtn = document.getElementById('connecting-zoom-app-btn');
+    if (connectingBtn && meetingId) {
+      connectingBtn.href = `https://zoom.us/j/${meetingId}?pwd=${passcode}`;
+    }
+    const connectingSubtitle = document.getElementById('classroom-connecting-subtitle');
+    if (connectingSubtitle) {
+      connectingSubtitle.textContent = `${title} • Meeting ID: ${meetingId}`;
+    }
+
     // Make sure bottom floating helper is completely removed/hidden
     const floatingHelper = document.getElementById('classroom-floating-helper');
     if (floatingHelper) {
@@ -1643,6 +1652,15 @@ async function exitClassroom() {
   document.body.classList.remove('in-classroom');
   loadDashboard();
 }
+window.exitClassroom = exitClassroom;
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (classroomViewer && !classroomViewer.classList.contains('hide')) {
+      exitClassroom();
+    }
+  }
+});
 
 // Check iframe DOM to see if Zoom's panels are open and update custom header buttons
 function updateHeaderPanelButtons() {
@@ -4011,25 +4029,20 @@ function createClassCard(c, isCurrentlyLive) {
     badgeHtml = '<div class="live-indicator status-upcoming" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Upcoming</div>';
   }
 
-  const subjectTag = c.subject || c.topic || 'NORCET Masterclass';
-
   card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; width: 100%; gap: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; width: 100%; gap: 10px;">
       ${badgeHtml}
-      <div class="class-instructor" style="margin-bottom: 0; font-size: 0.8rem; font-weight: 700; color: var(--accent); display: inline-flex; align-items: center; gap: 4px;">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      <div class="class-instructor" style="margin-bottom: 0; font-size: 0.82rem; font-weight: 700; color: var(--accent); display: inline-flex; align-items: center; gap: 5px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         <span>${escapeHtml(instructor)}</span>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-      <span class="class-subject-tag" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.14);color:var(--accent);">${escapeHtml(subjectTag)}</span>
-      <span style="font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:4px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        ${formattedTime}
-      </span>
-    </div>
-    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 0.15rem;">
-      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.18rem; font-weight: 800; line-height: 1.35;">${title}</h3>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 6px;">
+      <h3 class="class-title" style="margin: 0 0 8px 0; font-size: 1.15rem; font-weight: 800; line-height: 1.4; color: var(--text-primary);">${title}</h3>
+      <div class="class-time-row" style="font-size: 12px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 5px; margin-bottom: 12px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>${formattedTime}</span>
+      </div>
     </div>
     ${buttonsHtml}
   `;
@@ -4050,12 +4063,17 @@ async function handleJoinClassroomClick(e) {
 
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width: 14px; height: 14px;"></div> Entering...';
+  btn.innerHTML = '<span class="btn-entering-state"><span class="spinner"></span><span>Entering...</span></span>';
 
   try {
     await joinEmbeddedClassroom(classId, title, instructor);
   } catch (error) {
     console.error('Error entering class:', error);
+    // UI Rollback guarantee: ensure user is never left on a blank wallpaper screen
+    if (appHeader) appHeader.classList.remove('hide');
+    if (classroomDashboard) classroomDashboard.classList.remove('hide');
+    if (classroomViewer) classroomViewer.classList.add('hide');
+    document.body.classList.remove('in-classroom');
     await showCustomAlert(error.message || 'Failed to enter class. Verify connection.', 'Connection Error');
   } finally {
     btn.disabled = false;

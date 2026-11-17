@@ -10495,3 +10495,255 @@ main#app,
 .saarthi-send-btn:active {
   transform: scale(0.96);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   BUTTON ENTERING STATE & SPINNER CENTERING FIX
+   ══════════════════════════════════════════════════════════════════════════════ */
+.btn-entering-state {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+.btn-entering-state .spinner,
+.btn .spinner,
+.join-embedded-btn .spinner,
+.btn-zoom .spinner {
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.btn-entering-state .spinner {
+  width: 15px !important;
+  height: 15px !important;
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  border-top-color: #ffffff !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CLEAN SPACIOUS CLASS CARDS (NO CROWDED IDS OR BATCH TEXT)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.class-card {
+  padding: 20px 22px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  min-height: 180px !important;
+  box-sizing: border-box !important;
+  border-radius: 20px !important;
+}
+
+.class-card .class-title {
+  margin: 0 0 8px 0 !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.4 !important;
+  color: var(--text-primary) !important;
+}
+
+.class-card .class-time-row {
+  font-size: 12.5px !important;
+  color: var(--text-secondary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 14px !important;
+}
+
+.class-card .class-instructor {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LIVE EMBEDDED CLASSROOM VIEWER (FULLSCREEN STAGE & ZOOM INTEGRATION)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.classroom-viewer-container {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  background: #080614 !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  color: #ffffff !important;
+}
+
+.classroom-viewer-container.hide {
+  display: none !important;
+}
+
+.classroom-header {
+  height: 52px !important;
+  min-height: 52px !important;
+  background: rgba(13, 9, 26, 0.96) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 16px !important;
+  z-index: 100 !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+.classroom-header-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+.classroom-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+#classroom-title {
+  font-family: var(--font-sans) !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  overflow: hidden !important;
+  max-width: 45vw !important;
+}
+
+.instructor-pill-box {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: rgba(124, 58, 237, 0.18) !important;
+  border: 1px solid rgba(167, 139, 250, 0.35) !important;
+  border-radius: 6px !important;
+  padding: 2px 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #c4b5fd !important;
+  white-space: nowrap !important;
+}
+
+.instructor-pill-box svg {
+  color: #a78bfa !important;
+}
+
+.classroom-header-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.btn-header-action {
+  height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-header-action:hover {
+  background: rgba(124, 58, 237, 0.25) !important;
+  border-color: rgba(167, 139, 250, 0.45) !important;
+  color: #ffffff !important;
+}
+
+#close-classroom-btn {
+  background: rgba(239, 68, 68, 0.14) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #fca5a5 !important;
+}
+
+#close-classroom-btn:hover {
+  background: rgba(239, 68, 68, 0.28) !important;
+  color: #ffffff !important;
+}
+
+.classroom-content {
+  flex: 1 !important;
+  display: flex !important;
+  position: relative !important;
+  width: 100% !important;
+  height: calc(100% - 52px) !important;
+  overflow: hidden !important;
+  background: #000000 !important;
+}
+
+.player-viewport {
+  flex: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  background: #05040a !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.zoom-sdk-container,
+#classroom-iframe {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  z-index: 10 !important;
+  background: #000000 !important;
+}
+
+.classroom-connecting-backdrop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: radial-gradient(circle at 50% 50%, rgba(28, 18, 54, 0.85) 0%, rgba(8, 6, 18, 0.98) 100%);
+  color: #ffffff;
+  z-index: 5;
+  text-align: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.classroom-connecting-card {
+  max-width: 440px;
+  width: 100%;
+  padding: 24px 28px;
+  border-radius: 20px;
+  background: rgba(24, 18, 44, 0.9);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}

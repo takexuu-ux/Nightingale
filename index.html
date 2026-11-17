@@ -355,6 +355,24 @@
       <div class="classroom-content">
         <!-- Video Player viewport container -->
         <div class="player-viewport" id="player-viewport">
+          <!-- Connecting Backdrop (Shown behind iframe to prevent blank screen) -->
+          <div id="classroom-connecting-backdrop" class="classroom-connecting-backdrop">
+            <div class="classroom-connecting-card">
+              <div class="spinner" style="width: 28px; height: 28px; border-width: 3px; border-top-color: var(--accent);"></div>
+              <div style="font-size: 15px; font-weight: 700; color: #f8fafc;">Connecting to Live Classroom...</div>
+              <div id="classroom-connecting-subtitle" style="font-size: 12px; color: var(--text-secondary);">Syncing encrypted Zoom stream</div>
+              <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center;">
+                <a id="connecting-zoom-app-btn" class="btn btn-header-action" style="background: rgba(124, 58, 237, 0.4); border-color: rgba(167, 139, 250, 0.5); color: #ffffff;" target="_blank" rel="noopener noreferrer">
+                  <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                  <span>Launch in Zoom App</span>
+                </a>
+                <button type="button" class="btn btn-header-action" onclick="window.exitClassroom && window.exitClassroom()">
+                  <span>Exit Class</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Main Zoom Element (iframe) -->
           <iframe id="classroom-iframe" class="zoom-sdk-container" src="about:blank" allow="camera; microphone; display-capture; autoplay; clipboard-write; clipboard-read" style="border: none;"></iframe>
 
