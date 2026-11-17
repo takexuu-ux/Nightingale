@@ -315,24 +315,25 @@ function buildSidePanel() {
 
       <!-- App Version & Updates Card -->
       <div class="apk-side-card apk-ota-update-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div class="apk-side-section-title" style="margin:0;">App Updates</div>
           <span id="apk-side-ver-tag" class="apk-ota-badge" style="font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.18);color:var(--accent);border:1px solid rgba(167,139,250,0.3);">v1.0.30</span>
         </div>
-        <p style="font-size:12px;color:var(--text-secondary);margin:0 0 10px 0;line-height:1.4;">
-          Nightingale Tablet &amp; Mobile Hybrid Architecture. Stay synced with latest classes and features.
-        </p>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-          <button type="button" id="apk-side-check-update-btn" class="apk-theme-btn" style="flex:1;justify-content:center;height:36px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text-primary);border-radius:10px;cursor:pointer;">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+          <button type="button" id="apk-side-check-update-btn" class="apk-theme-btn" style="flex:1;justify-content:center;height:38px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:var(--text-primary);border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span id="apk-side-check-txt">Check for Updates</span>
           </button>
-          <a id="apk-side-install-apk-btn" href="https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk" download class="apk-theme-btn" style="flex:1;justify-content:center;height:36px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;text-decoration:none;display:none;align-items:center;gap:6px;">
+          <button type="button" id="apk-side-apply-btn" class="apk-theme-btn" style="display:none;flex:1;justify-content:center;height:38px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #10b981 0%, #059669 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;align-items:center;gap:6px;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span id="apk-side-apply-txt">Download &amp; Install Update</span>
+          </button>
+          <button type="button" id="apk-side-install-apk-btn" class="apk-theme-btn" style="display:none;flex:1;justify-content:center;height:38px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;align-items:center;gap:6px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Install APK</span>
-          </a>
+            <span id="apk-side-install-txt">Download &amp; Install APK</span>
+          </button>
         </div>
-        <div id="apk-update-status-msg" style="font-size:11.5px;color:#10b981;font-weight:600;display:block;margin-top:6px;text-align:center;">✓ App is up to date (v1.0.30)</div>
+        <div id="apk-update-status-msg" style="font-size:11.5px;color:var(--text-secondary);font-weight:600;display:none;margin-top:6px;text-align:center;"></div>
       </div>
 
       <!-- Bottom Pinned Footer: Sign Out -->
@@ -396,53 +397,204 @@ function buildSidePanel() {
   panel.querySelector('#apk-theme-light-btn')?.addEventListener('click', () => applySystemTheme(false, true));
   panel.querySelector('#apk-theme-dark-btn')?.addEventListener('click', () => applySystemTheme(true, true));
 
-  // App Update Check Button
+  // App Update Check & Live Apply System
   const sideCheckBtn = panel.querySelector('#apk-side-check-update-btn');
   const sideCheckTxt = panel.querySelector('#apk-side-check-txt');
+  const sideApplyBtn = panel.querySelector('#apk-side-apply-btn');
+  const sideApplyTxt = panel.querySelector('#apk-side-apply-txt');
+  const sideInstallBtn = panel.querySelector('#apk-side-install-apk-btn');
+  const sideInstallTxt = panel.querySelector('#apk-side-install-txt');
   const sideStatusMsg = panel.querySelector('#apk-update-status-msg');
-  if (sideCheckBtn) {
-    sideCheckBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      sideCheckBtn.disabled = true;
-      if (sideCheckTxt) sideCheckTxt.textContent = 'Checking...';
-      if (sideStatusMsg) {
-        sideStatusMsg.style.display = 'block';
-        sideStatusMsg.style.color = 'var(--text-secondary)';
-        sideStatusMsg.textContent = 'Checking academic server for updates...';
-      }
+  const sideVerTag = panel.querySelector('#apk-side-ver-tag');
 
-      try {
-        const res = await fetch(`/__ota/check?t=${Date.now()}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.hasNativeUpdate || data.hasWebUpdate) {
-            if (sideStatusMsg) {
-              sideStatusMsg.style.color = '#10b981';
-              sideStatusMsg.textContent = '🚀 New update available! Tap Install APK.';
-            }
-          } else {
-            if (sideStatusMsg) {
-              sideStatusMsg.style.color = '#10b981';
-              sideStatusMsg.textContent = '✓ You are running the latest version (v1.0.30)';
-            }
+  async function performOtaCheck(isAuto = false) {
+    if (sideCheckBtn && !isAuto) sideCheckBtn.disabled = true;
+    if (sideCheckTxt && !isAuto) sideCheckTxt.textContent = 'Checking...';
+    if (sideStatusMsg) {
+      sideStatusMsg.style.display = 'block';
+      sideStatusMsg.style.color = 'var(--text-secondary)';
+      sideStatusMsg.textContent = 'Checking academic server for updates...';
+    }
+
+    try {
+      const res = await fetch(`/__ota/check?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        const hasWeb = Boolean(data.hasWebUpdate);
+        const hasNative = Boolean(data.hasNativeUpdate);
+
+        if (hasWeb) {
+          if (sideVerTag) {
+            sideVerTag.textContent = 'Update Available';
+            sideVerTag.style.background = 'rgba(239, 68, 68, 0.16)';
+            sideVerTag.style.color = '#ef4444';
+            sideVerTag.style.borderColor = 'rgba(239, 68, 68, 0.3)';
           }
-        } else {
           if (sideStatusMsg) {
             sideStatusMsg.style.color = '#10b981';
-            sideStatusMsg.textContent = '✓ You are running the latest version (v1.0.30)';
+            sideStatusMsg.textContent = `🚀 Update ready (v${data.remoteWebVersion || 86})! Tap below to install.`;
           }
+          if (sideApplyBtn) {
+            sideApplyBtn.style.display = 'inline-flex';
+            sideApplyBtn.disabled = false;
+            if (sideApplyTxt) sideApplyTxt.textContent = 'Download & Install Update';
+          }
+          if (sideInstallBtn) sideInstallBtn.style.display = 'none';
+        } else if (hasNative) {
+          if (sideVerTag) {
+            sideVerTag.textContent = 'APK Update';
+            sideVerTag.style.background = 'rgba(139, 92, 246, 0.16)';
+            sideVerTag.style.color = '#8b5cf6';
+            sideVerTag.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+          }
+          if (sideStatusMsg) {
+            sideStatusMsg.style.color = '#8b5cf6';
+            sideStatusMsg.textContent = `New Native APK v1.0.${data.remoteNativeVersionCode} available!`;
+          }
+          if (sideInstallBtn) {
+            sideInstallBtn.style.display = 'inline-flex';
+            sideInstallBtn.disabled = false;
+            if (sideInstallTxt) sideInstallTxt.textContent = 'Download & Install APK';
+          }
+          if (sideApplyBtn) sideApplyBtn.style.display = 'none';
+        } else {
+          if (sideVerTag) {
+            sideVerTag.textContent = 'Up to date';
+            sideVerTag.style.background = 'rgba(16, 185, 129, 0.16)';
+            sideVerTag.style.color = '#10b981';
+            sideVerTag.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+          }
+          if (sideStatusMsg) {
+            sideStatusMsg.style.color = '#10b981';
+            sideStatusMsg.textContent = '✓ App is up to date';
+          }
+          if (sideApplyBtn) sideApplyBtn.style.display = 'none';
+          if (sideInstallBtn) sideInstallBtn.style.display = 'none';
         }
-      } catch (_) {
+      } else {
+        if (sideVerTag) {
+          sideVerTag.textContent = 'Up to date';
+          sideVerTag.style.background = 'rgba(16, 185, 129, 0.16)';
+          sideVerTag.style.color = '#10b981';
+          sideVerTag.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        }
         if (sideStatusMsg) {
           sideStatusMsg.style.color = '#10b981';
-          sideStatusMsg.textContent = '✓ App is up to date (v1.0.30)';
+          sideStatusMsg.textContent = '✓ App is up to date';
         }
-      } finally {
-        sideCheckBtn.disabled = false;
-        if (sideCheckTxt) sideCheckTxt.textContent = 'Check for Updates';
+      }
+    } catch (_) {
+      if (sideVerTag) {
+        sideVerTag.textContent = 'Up to date';
+        sideVerTag.style.background = 'rgba(16, 185, 129, 0.16)';
+        sideVerTag.style.color = '#10b981';
+        sideVerTag.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+      }
+      if (sideStatusMsg) {
+        sideStatusMsg.style.color = '#10b981';
+        sideStatusMsg.textContent = '✓ App is up to date';
+      }
+    } finally {
+      if (sideCheckBtn) sideCheckBtn.disabled = false;
+      if (sideCheckTxt) sideCheckTxt.textContent = 'Check for Updates';
+    }
+  }
+
+  if (sideCheckBtn) {
+    sideCheckBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      performOtaCheck(false);
+    });
+  }
+
+  // Live Web Update Trigger
+  if (sideApplyBtn) {
+    sideApplyBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      sideApplyBtn.disabled = true;
+      if (sideApplyTxt) {
+        sideApplyTxt.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;margin-right:6px;vertical-align:middle;"></span><span>Applying update...</span>';
+      }
+      if (sideStatusMsg) {
+        sideStatusMsg.style.color = 'var(--accent)';
+        sideStatusMsg.textContent = 'Downloading live update bundle (15 MB)... please wait.';
+      }
+      try {
+        const applyRes = await fetch('/__ota/apply', { method: 'POST' });
+        const applyJson = await applyRes.json();
+        if (applyJson.ok) {
+          if (sideStatusMsg) {
+            sideStatusMsg.style.color = '#10b981';
+            sideStatusMsg.textContent = '✓ Update applied successfully! Reloading...';
+          }
+          if (sideApplyTxt) sideApplyTxt.textContent = 'Done! Reloading...';
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          throw new Error(applyJson.error || 'Failed to extract bundle');
+        }
+      } catch (err) {
+        if (sideStatusMsg) {
+          sideStatusMsg.style.color = '#ef4444';
+          sideStatusMsg.textContent = 'Update failed: ' + err.message;
+        }
+        sideApplyBtn.disabled = false;
+        if (sideApplyTxt) sideApplyTxt.textContent = 'Retry Live Update';
       }
     });
   }
+
+  // Native APK Update Trigger
+  if (sideInstallBtn) {
+    sideInstallBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      sideInstallBtn.disabled = true;
+      if (sideInstallTxt) {
+        sideInstallTxt.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;margin-right:6px;vertical-align:middle;"></span><span>Downloading APK...</span>';
+      }
+      if (sideStatusMsg) {
+        sideStatusMsg.style.color = 'var(--accent)';
+        sideStatusMsg.textContent = 'Downloading APK installer...';
+      }
+      try {
+        const preCheck = await fetch(`/__ota/apk-progress?t=${Date.now()}`);
+        if (preCheck.ok) {
+          const st = await preCheck.json();
+          if (st.ready) {
+            await fetch('/__ota/launch-installer', { method: 'POST' });
+            return;
+          }
+        }
+        await fetch('/__ota/start-apk-download', { method: 'POST' });
+        while (true) {
+          await new Promise(r => setTimeout(r, 350));
+          const pRes = await fetch(`/__ota/apk-progress?t=${Date.now()}`);
+          if (!pRes.ok) break;
+          const status = await pRes.json();
+          if (sideStatusMsg) {
+            sideStatusMsg.textContent = `Downloading APK: ${status.percent || 0}%`;
+          }
+          if (status.state === 'ready') {
+            if (sideStatusMsg) sideStatusMsg.textContent = '✓ Ready to install! Opening installer...';
+            await fetch('/__ota/launch-installer', { method: 'POST' });
+            break;
+          }
+          if (status.state === 'error') {
+            throw new Error(status.error || 'Download error');
+          }
+        }
+      } catch (err) {
+        if (sideStatusMsg) {
+          sideStatusMsg.style.color = '#ef4444';
+          sideStatusMsg.textContent = 'Download failed: ' + err.message;
+        }
+        sideInstallBtn.disabled = false;
+        if (sideInstallTxt) sideInstallTxt.textContent = 'Retry Install APK';
+      }
+    });
+  }
+
+  // Auto-check on sidebar render
+  setTimeout(() => performOtaCheck(true), 1200);
 
   // Sign out
   panel.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {

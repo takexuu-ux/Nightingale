@@ -1500,18 +1500,25 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
     const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
-    // Background Render proxy verification: ensure Render is awake before loading iframe to avoid raw terminal screen
-    let isRenderAwake = false;
-    try {
-      const abortCtrl = new AbortController();
-      const tId = setTimeout(() => abortCtrl.abort(), 2000);
-      const pingRes = await fetch('https://nightingale-9n2c.onrender.com/health', {
-        signal: abortCtrl.signal,
-        cache: 'no-store'
-      });
-      clearTimeout(tId);
-      if (pingRes.ok) isRenderAwake = true;
-    } catch (_) {}
+    // Background Render proxy verification: ensure Render is truly awake (JSON status ok) before loading iframe to avoid raw terminal screen
+    async function checkRenderAwake(timeoutMs = 2500) {
+      try {
+        const abortCtrl = new AbortController();
+        const tId = setTimeout(() => abortCtrl.abort(), timeoutMs);
+        const res = await fetch('https://nightingale-9n2c.onrender.com/health', {
+          signal: abortCtrl.signal,
+          cache: 'no-store'
+        });
+        clearTimeout(tId);
+        if (!res.ok) return false;
+        const text = await res.text();
+        return text.includes('"status":"ok"') || text.includes('"status": "ok"');
+      } catch (_) {
+        return false;
+      }
+    }
+
+    let isRenderAwake = await checkRenderAwake(2000);
 
     if (isRenderAwake) {
       console.log('Render proxy is responsive. Loading Zoom Web Client in proxy iframe:', zoomWebLink);
@@ -1528,22 +1535,14 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       let wakePollCount = 0;
       const pollInterval = setInterval(async () => {
         wakePollCount++;
-        try {
-          const pollRes = await fetch('https://nightingale-9n2c.onrender.com/health', { cache: 'no-store' });
-          if (pollRes.ok || wakePollCount >= 18) {
-            clearInterval(pollInterval);
-            if (connectingSubtitle) {
-              connectingSubtitle.textContent = 'Connecting to Live Classroom...';
-            }
-            classroomIframe.src = zoomWebLink;
-            classroomIframe.classList.remove('hide');
+        const awake = await checkRenderAwake(2500);
+        if (awake || wakePollCount >= 25) {
+          clearInterval(pollInterval);
+          if (connectingSubtitle) {
+            connectingSubtitle.textContent = 'Connecting to Live Classroom...';
           }
-        } catch (_) {
-          if (wakePollCount >= 18) {
-            clearInterval(pollInterval);
-            classroomIframe.src = zoomWebLink;
-            classroomIframe.classList.remove('hide');
-          }
+          classroomIframe.src = zoomWebLink;
+          classroomIframe.classList.remove('hide');
         }
       }, 2000);
     }
@@ -3515,7 +3514,7 @@ function renderClasses(classes) {
 function updateHeroGreeting() {
   const greetingEl = document.getElementById('apk-hero-greeting');
   if (!greetingEl) return;
-  greetingEl.textContent = 'Welcome, NNL ke Papa 👑';
+  greetingEl.textContent = 'Welcome, NNL ke Papa';
 }
 
 function formatWatchTime(sec) {
