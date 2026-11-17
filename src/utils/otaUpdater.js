@@ -249,8 +249,8 @@ async function applyUpdate(isNative, applyBtn, statusLabel) {
 }
 
 function attachUpdateTriggers(checkFn) {
-  // 1. Attach inside Settings panel on both index.html (.tweaks-body) & subpages (.tweaks-panel)
-  const panel = document.querySelector('.tweaks-panel, .tweaks-body');
+  // 1. Attach inside Settings panel or side drawer slot
+  const panel = document.getElementById('apk-sheet-ota-slot') || document.querySelector('.tweaks-panel, .tweaks-body');
   if (panel && !document.getElementById('apk-ota-settings-box')) {
     const box = document.createElement('div');
     box.id = 'apk-ota-settings-box';
