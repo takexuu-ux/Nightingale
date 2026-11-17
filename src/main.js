@@ -3831,34 +3831,31 @@ function renderContinueWatchingSection() {
     heroSavedCount.textContent = saved.length;
   }
 
+  const map = getWatchHistory();
+  const allHistory = Object.values(map);
+
   const hubResumeBadge = document.getElementById('hub-resume-badge-text');
-  const allHistory = Object.values(getWatchHistory());
   if (hubResumeBadge) {
-    hubResumeBadge.textContent = allHistory.length > 0 ? `In-Progress (${allHistory.length})` : 'Continue Watching';
+    const inProgressCount = allHistory.filter(h => {
+      const p = Math.min(100, Math.max(0, Math.round(h.percent || 0)));
+      return (Number(h.currentTime || 0) >= 5 || p > 0) && p < 90 && !h.isCompleted;
+    }).length;
+    hubResumeBadge.textContent = inProgressCount > 0 ? `In-Progress (${inProgressCount})` : 'Continue Watching';
   }
 
   if (!section || !grid) return;
 
-  // Show strictly the single last watched lecture or high-yield resume recommendation
-  const recents = getRecentlyWatchedLectures(1);
-  let item = recents && recents.length > 0 ? recents[0] : null;
-  if (!item && RED_SAPPHIRE_DATA) {
-    const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
-    const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
-    if (fallbackList && fallbackList.length > 0) {
-      const topItem = fallbackList[0];
-      item = {
-        recId: String(topItem.id || 'rs-orientation'),
-        title: topItem.title || 'Orientation Session',
-        instructor: topItem.faculty || 'Mr Sachin Goswami',
-        subject: 'Red Sapphire Batch',
-        percent: 15,
-        currentTime: 720,
-        duration: 3600
-      };
-    }
-  }
+  // Find the single latest in-progress, UNFINISHED lecture from watch history
+  const recents = getRecentlyWatchedLectures(25);
+  let item = recents.find(r => {
+    if (!r) return false;
+    const pct = Math.min(100, Math.max(0, Math.round(r.percent || 0)));
+    const curTime = Number(r.currentTime || 0);
+    // Watched at least 5 seconds or > 0%, and less than 90% (not finished)
+    return (curTime >= 5 || pct > 0) && pct < 90 && !r.isCompleted;
+  });
 
+  // If no lecture was left in-progress or if completed, do NOT show
   if (!item) {
     section.classList.add('hide');
     grid.innerHTML = '';
@@ -3874,13 +3871,12 @@ function renderContinueWatchingSection() {
 
   section.classList.remove('hide');
 
-  const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
-  const isCompleted = pct >= 90;
+  const pct = Math.min(99, Math.max(1, Math.round(item.percent || 0)));
   const curTimeFormatted = formatWatchTime(item.currentTime || 0);
   const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
-  const timeLabel = isCompleted
-    ? 'Completed'
-    : (item.currentTime > 5 ? `Resume from ${curTimeFormatted}${durFormatted ? ` • ${durFormatted}` : ''}` : `${pct}% Watched`);
+  const timeLabel = item.currentTime > 5
+    ? `Resume from ${curTimeFormatted}${durFormatted ? ` / ${durFormatted}` : ''} • ${pct}%`
+    : `${pct}% Watched`;
 
   grid.innerHTML = `
     <div class="continue-watching-card minimal-resume-card" data-rec-id="${escapeHtml(recId)}" role="button" tabindex="0">
@@ -3890,7 +3886,7 @@ function renderContinueWatchingSection() {
       <div class="resume-card-body">
         <div class="resume-card-top-row">
           <h4 class="resume-card-title" title="${escapeHtml(item.title || 'Recorded Lecture')}">${escapeHtml(item.title || 'Recorded Lecture')}</h4>
-          <span class="lecture-progress-text ${isCompleted ? 'is-completed' : ''}" style="font-size:11px;font-weight:700;color:var(--accent);">${pct}%</span>
+          <span class="lecture-progress-text" style="font-size:11px;font-weight:700;color:var(--accent);">${pct}%</span>
         </div>
         <div class="resume-card-meta">
           <span>${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</span>
@@ -3898,12 +3894,12 @@ function renderContinueWatchingSection() {
           <span class="resume-card-time">${escapeHtml(timeLabel)}</span>
         </div>
         <div class="resume-card-progress-track">
-          <div class="resume-card-progress-fill ${isCompleted ? 'is-completed' : ''}" style="width: ${pct}%"></div>
+          <div class="resume-card-progress-fill" style="width: ${pct}%"></div>
         </div>
       </div>
       <button class="continue-watching-resume-btn resume-pill-btn" type="button" aria-label="Resume Lecture">
         <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <span>${isCompleted ? 'Rewatch' : 'Resume'}</span>
+        <span>Resume</span>
       </button>
     </div>
   `;

@@ -313,27 +313,27 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- App Version & Updates Card -->
-      <div class="apk-side-card apk-ota-update-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div class="apk-side-section-title" style="margin:0;">App Updates</div>
-          <span id="apk-side-ver-tag" class="apk-ota-badge" style="font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.18);color:var(--accent);border:1px solid rgba(167,139,250,0.3);">v1.0.30</span>
+      <!-- App Version & Updates Card (Compact) -->
+      <div class="apk-side-card apk-ota-update-card" style="padding:10px 14px; margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div class="apk-side-section-title" style="margin:0;font-size:12.5px;">App Updates</div>
+          <span id="apk-side-ver-tag" class="apk-ota-badge" style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(124,58,237,0.18);color:var(--accent);border:1px solid rgba(167,139,250,0.3);">v1.0.31</span>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
-          <button type="button" id="apk-side-check-update-btn" class="apk-theme-btn" style="flex:1;justify-content:center;height:38px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:var(--text-primary);border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;">
+          <button type="button" id="apk-side-check-update-btn" class="apk-theme-btn" style="flex:1;justify-content:center;height:32px;font-size:11.5px;font-weight:700;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:var(--text-primary);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:0 8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span id="apk-side-check-txt">Check for Updates</span>
           </button>
-          <button type="button" id="apk-side-apply-btn" class="apk-theme-btn" style="display:none;flex:1;justify-content:center;height:38px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #10b981 0%, #059669 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;align-items:center;gap:6px;">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            <span id="apk-side-apply-txt">Download &amp; Install Update</span>
+          <button type="button" id="apk-side-apply-btn" class="apk-theme-btn" style="display:none;flex:1;justify-content:center;height:32px;font-size:11.5px;font-weight:700;background:linear-gradient(135deg, #10b981 0%, #059669 100%);border:none;color:#ffffff;border-radius:8px;cursor:pointer;align-items:center;gap:5px;padding:0 8px;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span id="apk-side-apply-txt">Install Update</span>
           </button>
-          <button type="button" id="apk-side-install-apk-btn" class="apk-theme-btn" style="display:none;flex:1;justify-content:center;height:38px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;align-items:center;gap:6px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span id="apk-side-install-txt">Download &amp; Install APK</span>
+          <button type="button" id="apk-side-install-apk-btn" class="apk-theme-btn" style="display:none;flex:1;justify-content:center;height:32px;font-size:11.5px;font-weight:700;background:linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);border:none;color:#ffffff;border-radius:8px;cursor:pointer;align-items:center;gap:5px;padding:0 8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span id="apk-side-install-txt">Install APK</span>
           </button>
         </div>
-        <div id="apk-update-status-msg" style="font-size:11.5px;color:var(--text-secondary);font-weight:600;display:none;margin-top:6px;text-align:center;"></div>
+        <div id="apk-update-status-msg" style="font-size:11px;color:var(--text-secondary);font-weight:600;display:none;margin-top:4px;text-align:center;"></div>
       </div>
 
       <!-- Bottom Pinned Footer: Sign Out -->

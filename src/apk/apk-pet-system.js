@@ -20,65 +20,70 @@ export function getShinchanSvg(expr = 'default') {
     case 'happy':
       faceContent = `
         <!-- High Arched Classic Thick Eyebrows -->
-        <path d="M 19 19 Q 27 12 34 18" stroke="#0F172A" stroke-width="5.2" stroke-linecap="round" fill="none" />
-        <path d="M 43 18 Q 50 12 57 19" stroke="#0F172A" stroke-width="5.2" stroke-linecap="round" fill="none" />
-        <!-- Happy Curved Smiling Eye Arcs (Classic Anime Happy Eyes) -->
-        <path d="M 23 29 Q 28 22 33 29" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round" fill="none" />
-        <path d="M 44 29 Q 49 22 54 29" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round" fill="none" />
+        <path d="M 18 19 Q 26 11 34 18" stroke="#0A0A0A" stroke-width="5.4" stroke-linecap="round" fill="none" />
+        <path d="M 43 18 Q 51 11 58 19" stroke="#0A0A0A" stroke-width="5.4" stroke-linecap="round" fill="none" />
+        <!-- Happy Curved Smiling Eye Arcs -->
+        <path d="M 22 29 Q 28 21 34 29" stroke="#0A0A0A" stroke-width="3.8" stroke-linecap="round" fill="none" />
+        <path d="M 44 29 Q 50 21 56 29" stroke="#0A0A0A" stroke-width="3.8" stroke-linecap="round" fill="none" />
         <!-- Big Laughing Open Mouth with Pink Tongue -->
-        <path d="M 33 36 Q 39 47 46 36 Z" fill="#E11D48" stroke="#1E293B" stroke-width="1.4" />
-        <ellipse cx="39.5" cy="41" rx="4.5" ry="2.2" fill="#FDA4AF" />
+        <path d="M 33 36 Q 39.5 48 46 36 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.6" />
+        <ellipse cx="39.5" cy="42" rx="4.5" ry="2.5" fill="#FDA4AF" />
+        <!-- Soft Anime Rosy Cheek Blush -->
+        <ellipse cx="19" cy="35" rx="3.5" ry="2" fill="#F43F5E" opacity="0.45" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#F43F5E" opacity="0.45" />
       `;
       break;
 
     case 'shocked':
       faceContent = `
         <!-- Wavy Worried Eyebrows -->
-        <path d="M 21 21 Q 26 25 32 20" stroke="#0F172A" stroke-width="4.8" stroke-linecap="round" fill="none" />
-        <path d="M 44 20 Q 50 25 55 21" stroke="#0F172A" stroke-width="4.8" stroke-linecap="round" fill="none" />
-        <!-- Shocked Wide White Eyes with Tiny Black Pupils -->
-        <ellipse cx="28" cy="29" rx="5.5" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="2" />
-        <circle cx="28" cy="29" r="1.8" fill="#0F172A" />
-        <ellipse cx="49" cy="29" rx="5.5" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="2" />
-        <circle cx="49" cy="29" r="1.8" fill="#0F172A" />
+        <path d="M 20 21 Q 26 26 33 20" stroke="#0A0A0A" stroke-width="5.0" stroke-linecap="round" fill="none" />
+        <path d="M 44 20 Q 51 26 56 21" stroke="#0A0A0A" stroke-width="5.0" stroke-linecap="round" fill="none" />
+        <!-- Shocked Wide White Eyes with Small Black Pupils -->
+        <ellipse cx="28" cy="29" rx="5.5" ry="6.2" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="2" />
+        <circle cx="28" cy="29" r="2.2" fill="#0A0A0A" />
+        <ellipse cx="49" cy="29" rx="5.5" ry="6.2" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="2" />
+        <circle cx="49" cy="29" r="2.2" fill="#0A0A0A" />
         <!-- O-Shaped Shocked Mouth -->
-        <ellipse cx="39" cy="40" rx="3.5" ry="5" fill="#E11D48" stroke="#1E293B" stroke-width="1.3" />
+        <ellipse cx="39" cy="40.5" rx="4" ry="5.5" fill="#E11D48" stroke="#0F172A" stroke-width="1.5" />
         <!-- Anime Blue Sweat Drop on Temple -->
-        <path d="M 14 22 C 14 19, 18 16, 18 16 C 18 16, 22 19, 22 22 C 22 24.5, 20 26.5, 18 26.5 C 16 26.5, 14 24.5, 14 22 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8" />
-        <circle cx="16.5" cy="22" r="0.8" fill="#FFFFFF" />
+        <path d="M 13 22 C 13 18, 17 15, 17 15 C 17 15, 21 18, 21 22 C 21 24.5, 19 26.5, 17 26.5 C 15 26.5, 13 24.5, 13 22 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8" />
+        <circle cx="15.5" cy="22" r="0.8" fill="#FFFFFF" />
       `;
       break;
 
     case 'wink':
       faceContent = `
         <!-- High Arched Eyebrows -->
-        <path d="M 19 20 Q 26 13 33 19" stroke="#0F172A" stroke-width="5.2" stroke-linecap="round" fill="none" />
-        <path d="M 43 19 Q 50 13 57 20" stroke="#0F172A" stroke-width="5.2" stroke-linecap="round" fill="none" />
+        <path d="M 18 19 Q 26 12 33 19" stroke="#0A0A0A" stroke-width="5.4" stroke-linecap="round" fill="none" />
+        <path d="M 43 19 Q 50 12 58 19" stroke="#0A0A0A" stroke-width="5.4" stroke-linecap="round" fill="none" />
         <!-- Left Wink (> Line) -->
-        <path d="M 23 28 L 29 31 L 23 34" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <path d="M 23 27 L 30 30.5 L 23 34" stroke="#0A0A0A" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
         <!-- Right Open Eye -->
-        <ellipse cx="49" cy="29" rx="4.8" ry="5.8" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="48" cy="29" r="2.8" fill="#0F172A" />
-        <circle cx="47" cy="27.8" r="0.9" fill="#FFFFFF" />
+        <ellipse cx="49" cy="29" rx="5.2" ry="6.2" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.8" />
+        <circle cx="48.5" cy="29" r="3.2" fill="#0A0A0A" />
+        <circle cx="47.2" cy="27.5" r="1.1" fill="#FFFFFF" />
         <!-- Playful Cat Smirk 3 -->
-        <path d="M 33 38 Q 36 36 39 38 Q 42 36 45 38" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
+        <path d="M 33 38 Q 36 35.5 39 38 Q 42 35.5 45 38" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#F43F5E" opacity="0.45" />
       `;
       break;
 
     case 'focus':
       faceContent = `
-        <!-- White Headband -->
-        <path d="M 17 17 L 59 17 L 58 22 L 18 22 Z" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.9" />
-        <rect x="36" y="18" width="4" height="3" fill="#EF4444" />
-        <rect x="37" y="17.5" width="2" height="4" fill="#EF4444" />
+        <!-- White Student Headband with Red Rising Sun Emblem -->
+        <path d="M 16 16 L 60 16 L 59 22 L 17 22 Z" fill="#FFFFFF" stroke="#64748B" stroke-width="1" />
+        <circle cx="38.5" cy="19" r="2.4" fill="#EF4444" />
         <!-- Determined Slanted Eyebrows -->
-        <line x1="20" y1="24" x2="33" y2="20" stroke="#0F172A" stroke-width="5.4" stroke-linecap="round" />
-        <line x1="56" y1="24" x2="43" y2="20" stroke="#0F172A" stroke-width="5.4" stroke-linecap="round" />
+        <line x1="19" y1="24" x2="33" y2="19.5" stroke="#0A0A0A" stroke-width="5.5" stroke-linecap="round" />
+        <line x1="57" y1="24" x2="43" y2="19.5" stroke="#0A0A0A" stroke-width="5.5" stroke-linecap="round" />
         <!-- Focused Eyes -->
-        <ellipse cx="28" cy="29" rx="4.5" ry="5.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="28" cy="29" r="2.6" fill="#0F172A" />
-        <ellipse cx="48" cy="29" rx="4.5" ry="5.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="48" cy="29" r="2.6" fill="#0F172A" />
+        <ellipse cx="27.5" cy="29" rx="4.8" ry="5.6" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.8" />
+        <circle cx="27.5" cy="29" r="2.8" fill="#0A0A0A" />
+        <circle cx="26.3" cy="27.8" r="0.9" fill="#FFFFFF" />
+        <ellipse cx="48.5" cy="29" rx="4.8" ry="5.6" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.8" />
+        <circle cx="48.5" cy="29" r="2.8" fill="#0A0A0A" />
+        <circle cx="47.3" cy="27.8" r="0.9" fill="#FFFFFF" />
         <!-- Determined Grin -->
         <path d="M 34 38 Q 39 42 45 38" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
       `;
@@ -87,18 +92,21 @@ export function getShinchanSvg(expr = 'default') {
     case 'buri':
     default:
       faceContent = `
-        <!-- SIGNATURE ULTRA-THICK ARCHED SHIN-CHAN EYEBROWS -->
-        <path d="M 19 20 Q 26 13 33 19" stroke="#0F172A" stroke-width="5.4" stroke-linecap="round" fill="none" />
-        <path d="M 43 19 Q 50 13 57 20" stroke="#0F172A" stroke-width="5.4" stroke-linecap="round" fill="none" />
-        <!-- Classic Shin-chan Eyes: White eye with round black pupil, no eyelashes/blush -->
-        <ellipse cx="27" cy="29" rx="4.8" ry="5.8" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="26.5" cy="29" r="2.8" fill="#0F172A" />
-        <circle cx="25.5" cy="27.8" r="0.9" fill="#FFFFFF" />
-        <ellipse cx="48" cy="29" rx="4.8" ry="5.8" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="47.5" cy="29" r="2.8" fill="#0F172A" />
-        <circle cx="46.5" cy="27.8" r="0.9" fill="#FFFFFF" />
+        <!-- SIGNATURE ULTRA-THICK ARCHED CRAYON SHIN-CHAN EYEBROWS -->
+        <path d="M 18 19 Q 26 11 34 18" stroke="#0A0A0A" stroke-width="5.5" stroke-linecap="round" fill="none" />
+        <path d="M 43 18 Q 51 11 58 19" stroke="#0A0A0A" stroke-width="5.5" stroke-linecap="round" fill="none" />
+        <!-- Classic Shin-chan Eyes: Oval whites with big black pupils and top-left gleam -->
+        <ellipse cx="27" cy="28.5" rx="5.2" ry="6.2" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.8" />
+        <circle cx="26.5" cy="28.5" r="3.2" fill="#0A0A0A" />
+        <circle cx="25.2" cy="27" r="1.1" fill="#FFFFFF" />
+        <ellipse cx="48.5" cy="28.5" rx="5.2" ry="6.2" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.8" />
+        <circle cx="48" cy="28.5" r="3.2" fill="#0A0A0A" />
+        <circle cx="46.7" cy="27" r="1.1" fill="#FFFFFF" />
         <!-- Iconic Mischievous Sideways Smirk -->
-        <path d="M 33 38 Q 39 43 46 38" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
+        <path d="M 33 37 Q 39 42 46 37" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
+        <!-- Soft Anime Rosy Cheek Blush -->
+        <ellipse cx="19" cy="35" rx="3.5" ry="2" fill="#F43F5E" opacity="0.45" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#F43F5E" opacity="0.45" />
       `;
       break;
   }
@@ -114,36 +122,38 @@ export function getShinchanSvg(expr = 'default') {
       <!-- Soft Ground Shadow -->
       <ellipse cx="40" cy="76" rx="22" ry="3.8" fill="rgba(0,0,0,0.22)" />
 
-      <!-- Yellow Shoes with Outlines -->
-      <ellipse cx="29" cy="73" rx="7.5" ry="4" fill="#FACC15" stroke="#1E293B" stroke-width="1.4" />
-      <ellipse cx="51" cy="73" rx="7.5" ry="4" fill="#FACC15" stroke="#1E293B" stroke-width="1.4" />
+      <!-- Yellow Shoes with Clean Outlines -->
+      <ellipse cx="28.5" cy="73.5" rx="7.5" ry="4" fill="#FACC15" stroke="#0F172A" stroke-width="1.5" />
+      <ellipse cx="51.5" cy="73.5" rx="7.5" ry="4" fill="#FACC15" stroke="#0F172A" stroke-width="1.5" />
 
-      <!-- Chubby Legs -->
-      <rect x="26" y="61" width="6.5" height="10" rx="3" fill="#FED7AA" stroke="#1E293B" stroke-width="1.4" />
-      <rect x="47.5" y="61" width="6.5" height="10" rx="3" fill="#FED7AA" stroke="#1E293B" stroke-width="1.4" />
+      <!-- Chubby Short Legs -->
+      <rect x="25.5" y="61" width="6.5" height="10" rx="3" fill="#FED7AA" stroke="#0F172A" stroke-width="1.4" />
+      <rect x="47.5" y="61" width="6.5" height="10" rx="3" fill="#FED7AA" stroke="#0F172A" stroke-width="1.4" />
 
       <!-- Iconic Bright Yellow Shorts -->
-      <path d="M 22 51 L 58 51 L 60 63 L 44 63 L 40 58 L 36 63 L 20 63 Z" fill="#FACC15" stroke="#1E293B" stroke-width="1.6" stroke-linejoin="round" />
+      <path d="M 21 51 L 59 51 L 61 63 L 45 63 L 40 58 L 35 63 L 19 63 Z" fill="#FACC15" stroke="#0F172A" stroke-width="1.7" stroke-linejoin="round" />
 
-      <!-- Iconic Red Short-Sleeved T-Shirt -->
-      <path d="M 21 38 L 59 38 L 61 53 L 19 53 Z" fill="#EF4444" stroke="#1E293B" stroke-width="1.6" stroke-linejoin="round" />
+      <!-- Iconic Cherry-Red T-Shirt -->
+      <path d="M 21 38 L 59 38 L 61 53 L 19 53 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.7" stroke-linejoin="round" />
+      <!-- Round Yellow T-Shirt Collar -->
+      <path d="M 33 38 Q 40 43 47 38" fill="none" stroke="#FACC15" stroke-width="2.4" stroke-linecap="round" />
       <!-- Left & Right Sleeves -->
-      <path d="M 21 38 L 12 46 L 17 50 L 23 44 Z" fill="#EF4444" stroke="#1E293B" stroke-width="1.6" stroke-linejoin="round" />
-      <path d="M 59 38 L 68 46 L 63 50 L 57 44 Z" fill="#EF4444" stroke="#1E293B" stroke-width="1.6" stroke-linejoin="round" />
+      <path d="M 21 38 L 12 45 L 16 50 L 23 44 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round" />
+      <path d="M 59 38 L 68 45 L 64 50 L 57 44 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round" />
 
-      <!-- Chubby Hands -->
-      <circle cx="14" cy="48" r="4.2" fill="#FED7AA" stroke="#1E293B" stroke-width="1.4" />
-      <circle cx="66" cy="48" r="4.2" fill="#FED7AA" stroke="#1E293B" stroke-width="1.4" />
+      <!-- Chubby Little Hands -->
+      <circle cx="13.5" cy="48" r="4.2" fill="#FED7AA" stroke="#0F172A" stroke-width="1.4" />
+      <circle cx="66.5" cy="48" r="4.2" fill="#FED7AA" stroke="#0F172A" stroke-width="1.4" />
 
-      <!-- Potato Head Contour with Iconic Chubby Cheeks (Anime Shinnosuke Silhouette) -->
-      <path d="M 23 18 C 13 20, 10 31, 14 39 C 17 44, 26 46, 40 46 C 55 46, 65 41, 65 30 C 65 20, 54 15, 40 15 C 30 15, 26 17, 23 18 Z" fill="#FED7AA" stroke="#1E293B" stroke-width="1.8" />
+      <!-- Iconic Potato Head Contour with Classic Round Cheeks -->
+      <path d="M 23 18 C 13 20, 10 31, 14 39 C 17 44, 26 46, 40 46 C 55 46, 65 41, 65 30 C 65 20, 54 15, 40 15 C 30 15, 26 17, 23 18 Z" fill="#FED7AA" stroke="#0F172A" stroke-width="1.8" />
 
-      <!-- Buzz-cut Cropped Black Hair on Top/Back -->
+      <!-- Buzz-cut Cropped Jet-Black Hair on Top & Back -->
       <path d="M 23 18 C 27 13, 38 13, 52 15 C 62 17, 65 24, 65 29 C 64 24, 56 18, 44 17 C 32 16, 26 19, 23 18 Z" fill="#0A0A0A" />
 
-      <!-- Classic Right Ear -->
-      <ellipse cx="64" cy="31" rx="3.5" ry="4.5" fill="#FED7AA" stroke="#1E293B" stroke-width="1.4" />
-      <path d="M 63 29 Q 66 31 63 33" fill="none" stroke="#1E293B" stroke-width="1.1" />
+      <!-- Classic Right Ear with Inner Ridge -->
+      <ellipse cx="64.5" cy="31" rx="3.5" ry="4.5" fill="#FED7AA" stroke="#0F172A" stroke-width="1.4" />
+      <path d="M 63.5 29 Q 66.5 31 63.5 33" fill="none" stroke="#0F172A" stroke-width="1.1" stroke-linecap="round" />
 
       <!-- Facial Features -->
       ${faceContent}
