@@ -8,7 +8,7 @@ import {
   getActivePetId,
   setActivePetId,
   getAvailablePets,
-  getNurseSvg
+  getShinchanSvg
 } from './apk-pet-system.js';
 
 function detectSystemDark() {
@@ -98,6 +98,10 @@ function stripEmojisAndShorten(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
   let node;
   while ((node = walker.nextNode())) {
+    // Preserve emojis in user greeting and student name headers
+    if (node.parentElement?.closest('#apk-hero-greeting, .apk-home-title, #user-phone, .apk-side-name')) {
+      continue;
+    }
     if (emojiTestRe.test(node.nodeValue)) {
       node.nodeValue = node.nodeValue.replace(emojiReplaceRe, '').replace(/\s{2,}/g, ' ');
     }
@@ -258,38 +262,26 @@ function buildSidePanel() {
             <span style="font-size:12.5px;color:var(--text-secondary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="apk-side-batch-label">Red Sapphire (Hinglish)</span>
           </div>
           <button type="button" id="apk-side-batch-btn" class="apk-icon-btn" aria-label="Switch Batch" style="width:32px;height:32px;border-radius:9px;flex-shrink:0;background:rgba(142,116,229,0.18);border:1px solid rgba(142,116,229,0.3);color:var(--accent);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17h16M16 13l4 4-4 4M20 7H4M8 3L4 7l4 4"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Study Companion Card -->
-      <div class="apk-side-card apk-companion-setting-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div>
-            <div class="apk-side-section-title" style="margin:0;">Shin-chan Mascot</div>
-            <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">Interactive Study Buddy &amp; Class Timer</div>
+      <!-- Study Companion Card (Compact) -->
+      <div class="apk-side-card apk-companion-setting-card" style="padding:10px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${getShinchanSvg('default')}
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:13.5px;color:var(--text-primary);">Shin-chan</div>
+              <div style="font-size:11px;color:var(--text-secondary);">Interactive Companion</div>
+            </div>
           </div>
           <button type="button" id="apk-pet-toggle-btn" class="apk-switch-btn" aria-label="Toggle Companion Pet">
             <span class="apk-switch-thumb"></span>
           </button>
-        </div>
-
-        <div class="apk-companion-preview-box">
-          <div class="apk-companion-avatar-large">
-            ${getNurseSvg('default')}
-          </div>
-          <div class="apk-companion-details">
-            <div class="apk-companion-name-row">
-              <strong style="color:var(--text-primary);font-size:13.5px;">Shin-chan (Nohara)</strong>
-              <span class="apk-companion-status-pill">Active 🍑</span>
-            </div>
-            <ul class="apk-companion-features">
-              <li>✓ Interactive website &amp; test body reactions</li>
-              <li>✓ Signature Buri-Buri dance &amp; cheerful emotes</li>
-              <li>✓ 10-min upcoming live class notifications</li>
-            </ul>
-          </div>
         </div>
       </div>
 
@@ -335,21 +327,20 @@ function buildSidePanel() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span id="apk-side-check-txt">Check for Updates</span>
           </button>
-          <a id="apk-side-install-apk-btn" href="https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk" download class="apk-theme-btn" style="flex:1;justify-content:center;height:36px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          <a id="apk-side-install-apk-btn" href="https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk" download class="apk-theme-btn" style="flex:1;justify-content:center;height:36px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);border:none;color:#ffffff;border-radius:10px;cursor:pointer;text-decoration:none;display:none;align-items:center;gap:6px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Install APK</span>
           </a>
         </div>
-        <div id="apk-update-status-msg" style="font-size:11.5px;color:var(--accent);font-weight:600;display:none;margin-top:6px;text-align:center;"></div>
+        <div id="apk-update-status-msg" style="font-size:11.5px;color:#10b981;font-weight:600;display:block;margin-top:6px;text-align:center;">✓ App is up to date (v1.0.30)</div>
       </div>
 
-      <!-- Bottom Pinned Footer: Sign Out & OTA Updates -->
+      <!-- Bottom Pinned Footer: Sign Out -->
       <div class="apk-side-footer">
         <button id="apk-sheet-logout-btn" type="button" class="apk-signout-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           <span>Sign Out</span>
         </button>
-        <div id="apk-sheet-ota-slot"></div>
       </div>
     </div>
   `;

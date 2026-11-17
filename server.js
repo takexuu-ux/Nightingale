@@ -65,6 +65,16 @@ const server = http.createServer(async (req, res) => {
   const pathname = parsedUrl.pathname || '';
   req.path = pathname;
 
+  // Handle CORS preflight for all endpoints
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.end();
+    return;
+  }
+
   // Lightweight health & keep-alive ping endpoint (CORS-enabled)
   if (pathname === '/health' || pathname === '/ping') {
     res.statusCode = 200;

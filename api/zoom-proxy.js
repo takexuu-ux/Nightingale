@@ -707,14 +707,30 @@ export default function handler(req, res) {
             // Force the browser to bypass cache for the security scripts
             bodyString = bodyString.replace(/src=['"]\/csrf_js([^'"]*)['"]/gi, `src="/csrf_js$1&_cb=${Date.now()}"`);
 
-            // 2. For HTML responses, inject our auto-joining script
+            // 2. For HTML responses, inject header suppression CSS & our auto-joining script
+            const cssOverrideTag = `<style id="nnl-zoom-suppress-header">
+              .zm-header, #wc-header, .wc-header,
+              header, [class*="zm-header" i],
+              [class*="meeting-info" i], [class*="header__content" i],
+              [class*="meeting-header" i], .header__logo-container,
+              .zoom-logo, .header-logo, .meeting-info-icon__container,
+              .meeting-info-container, .header-logo-container {
+                display: none !important;
+                height: 0 !important;
+                min-height: 0 !important;
+                overflow: hidden !important;
+                pointer-events: none !important;
+                opacity: 0 !important;
+              }
+            </style>`;
             const scriptTag = `<script>\n${INJECTED_SCRIPT}\n</script>`;
+            const combinedInjection = `${cssOverrideTag}\n${scriptTag}`;
             if (bodyString.includes('<head>')) {
-              bodyString = bodyString.replace('<head>', `<head>\n${scriptTag}`);
+              bodyString = bodyString.replace('<head>', `<head>\n${combinedInjection}`);
             } else if (bodyString.includes('<body>')) {
-              bodyString = bodyString.replace('<body>', `<body>\n${scriptTag}`);
+              bodyString = bodyString.replace('<body>', `<body>\n${combinedInjection}`);
             } else {
-              bodyString = scriptTag + bodyString;
+              bodyString = combinedInjection + bodyString;
             }
           }
 

@@ -281,6 +281,22 @@
         border-color: rgba(52, 211, 153, 0.45);
         color: #34d399;
       }
+      .sd-mini-pill.btn-open-lec-test {
+        background: rgba(16, 185, 129, 0.16);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #34d399;
+        text-decoration: none;
+      }
+      .sd-mini-pill.btn-open-lec-test:hover {
+        background: rgba(16, 185, 129, 0.28);
+        border-color: rgba(16, 185, 129, 0.55);
+        color: #6ee7b7;
+      }
+      [data-theme="light"] .sd-mini-pill.btn-open-lec-test {
+        background: rgba(16, 185, 129, 0.14) !important;
+        border: 1px solid rgba(16, 185, 129, 0.38) !important;
+        color: #047857 !important;
+      }
     </style>
   </head>
   <body class="notes-theme-page">
@@ -478,6 +494,25 @@
                 <a id="rpn-download-btn" href="#" target="_blank" rel="noopener noreferrer" class="rpn-btn rpn-dl-btn" download>
                   <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                   <span>Download</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Embedded Integrated Attached Test inside the same card -->
+            <div id="recording-portrait-test" class="recording-portrait-notes hide" style="margin-top: 10px;">
+              <div class="rpn-meta-wrap">
+                <div class="rpn-icon-box" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); color: #10b981;">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 11l3 3L22 4"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <div class="rpn-text-wrap">
+                  <span class="rpn-badge" style="background: rgba(16, 185, 129, 0.18); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35);">ATTACHED TOPIC TEST</span>
+                  <h4 id="rpt-title" class="rpn-title">Topic Assessment Test</h4>
+                </div>
+              </div>
+              <div class="rpn-actions">
+                <a id="rpt-start-btn" href="#" class="rpn-btn rpn-view-btn" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #fff; border: none; text-decoration: none;">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Attempt Test</span>
                 </a>
               </div>
             </div>

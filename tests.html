@@ -208,6 +208,21 @@
             </div>
           </div>
 
+          <!-- Previous Result Box (if test was already attempted) -->
+          <div id="overview-prev-result" class="overview-instructions-box hide" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); margin-bottom: 12px; padding: 12px 14px; border-radius: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <div>
+                <span style="font-size: 10.5px; font-weight: 800; color: #10b981; letter-spacing: 0.05em; text-transform: uppercase;">Previous Attempt Result</span>
+                <div style="font-size: 15px; font-weight: 800; color: #f8fafc; margin-top: 2px;">
+                  Score: <span id="overview-prev-score">0%</span> (<span id="overview-prev-ratio">0/0</span>)
+                </div>
+              </div>
+              <button id="overview-view-report-btn" type="button" class="btn btn-secondary" style="font-size: 11.5px; padding: 4px 10px; height: 32px; border-color: rgba(16, 185, 129, 0.4); color: #34d399;">
+                View Report
+              </button>
+            </div>
+          </div>
+
           <div class="overview-instructions-box">
             <h4>Instructions &amp; Guidelines:</h4>
             <ul>
@@ -425,6 +440,20 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- Test Submission Confirmation Modal -->
+    <div id="quiz-confirm-modal" class="pdf-modal-overlay hide" style="z-index: 10060;">
+      <div style="background: linear-gradient(145deg, #13182b, #1d1633); border: 1px solid rgba(167,139,250,0.3); border-radius: 16px; padding: 1.5rem 1.75rem; max-width: 420px; width: 92%; box-shadow: 0 24px 60px rgba(0,0,0,0.65);">
+        <h3 style="margin:0 0 0.65rem 0; font-family:var(--font-display); font-size:1.05rem; letter-spacing:0.04em; color:#ede9fe;">Submit Assessment?</h3>
+        <p id="quiz-confirm-msg" style="margin:0 0 1.25rem 0; font-size:0.88rem; color:#cbd5e1; line-height:1.55;">
+          Are you sure you want to finish and generate your performance report?
+        </p>
+        <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
+          <button id="quiz-confirm-cancel-btn" type="button" class="btn btn-secondary" style="padding:0.48rem 1.15rem;">Review Questions</button>
+          <button id="quiz-confirm-ok-btn" type="button" class="btn btn-primary" style="padding:0.48rem 1.15rem; background: linear-gradient(135deg, #059669 0%, #10b981 100%);">Submit Test</button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="/src/tests.js"></script>

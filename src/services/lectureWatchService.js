@@ -25,15 +25,18 @@ export function getWatchHistory() {
             if (item && item.recId) {
               const id = String(item.recId);
               const existing = map[id];
-              if (!existing || (item.lastWatched || 0) > (existing.lastWatched || 0)) {
+              const nativePct = Math.min(100, Math.max(0, item.percent || 0));
+              const existingPct = existing ? Math.min(100, Math.max(0, existing.percent || 0)) : 0;
+              const shouldUpdate = !existing || nativePct > existingPct || (item.lastWatched || 0) >= (existing.lastWatched || 0);
+              if (shouldUpdate) {
                 map[id] = {
                   recId: id,
                   title: item.title || existing?.title || 'Lecture',
                   instructor: item.instructor || existing?.instructor || 'NNL Faculty',
-                  currentTime: item.currentTime || 0,
-                  duration: item.duration || 0,
-                  percent: Math.min(100, Math.max(0, item.percent || 0)),
-                  lastWatched: item.lastWatched || Date.now()
+                  currentTime: item.currentTime || existing?.currentTime || 0,
+                  duration: item.duration || existing?.duration || 0,
+                  percent: Math.max(nativePct, existingPct),
+                  lastWatched: Math.max(item.lastWatched || 0, existing?.lastWatched || 0) || Date.now()
                 };
                 updated = true;
               }
@@ -68,9 +71,9 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
     instructor: instructor || prev.instructor || 'NNL Faculty',
     subject: subject || prev.subject || '',
     thumb: thumb || prev.thumb || '',
-    currentTime: Math.round(currentTime),
-    duration: Math.round(duration),
-    percent: Math.min(100, Math.max(1, calcPercent)),
+    currentTime: Math.round(currentTime || prev.currentTime || 0),
+    duration: Math.round(duration || prev.duration || 0),
+    percent: Math.min(100, Math.max(calcPercent, prev.percent || 1)),
     lastWatched: Date.now()
   };
 
@@ -123,16 +126,13 @@ export function getRecentlyWatchedLectures(limit = 8) {
 
   const list = Object.values(map);
   list.sort((a, b) => {
-    const timeA = a.lastWatched || 0;
-    const timeB = b.lastWatched || 0;
-    if (timeA !== timeB) {
-      return timeB - timeA;
-    }
     if (lastId) {
       if (String(a.recId) === String(lastId)) return -1;
       if (String(b.recId) === String(lastId)) return 1;
     }
-    return 0;
+    const timeA = a.lastWatched || 0;
+    const timeB = b.lastWatched || 0;
+    return timeB - timeA;
   });
   return list.slice(0, limit);
 }

@@ -690,7 +690,101 @@ function openTestOverviewModal({ id, title, duration = 1800, isBatchTest = false
   if (marksEl) marksEl.textContent = `${questionsCount || 20} Marks`;
   if (countEl) countEl.textContent = questionsCount ? String(questionsCount) : '20-50';
 
+  // Check and display previous test attempt if available
+  const prevResultBox = document.getElementById('overview-prev-result');
+  const prevScoreEl = document.getElementById('overview-prev-score');
+  const prevRatioEl = document.getElementById('overview-prev-ratio');
+  const viewReportBtn = document.getElementById('overview-view-report-btn');
+  const startBtn = document.getElementById('overview-start-btn');
+  const startBtnText = startBtn?.querySelector('span');
+
+  let savedResult = null;
+  try {
+    const raw = localStorage.getItem(`nnl_test_result_${id}`);
+    if (raw) savedResult = JSON.parse(raw);
+  } catch (_) {}
+
+  if (savedResult && prevResultBox) {
+    prevResultBox.classList.remove('hide');
+    if (prevScoreEl) prevScoreEl.textContent = `${savedResult.pct || 0}%`;
+    if (prevRatioEl) prevRatioEl.textContent = `${savedResult.correct || 0}/${savedResult.total || 0}`;
+    if (startBtnText) startBtnText.textContent = 'Retake Exam';
+    if (viewReportBtn) {
+      viewReportBtn.onclick = () => {
+        closeTestOverviewModal();
+        displaySavedReport(savedResult);
+      };
+    }
+  } else if (prevResultBox) {
+    prevResultBox.classList.add('hide');
+    if (startBtnText) startBtnText.textContent = 'Start Exam';
+  }
+
   modal.classList.remove('hide');
+}
+
+function displaySavedReport(data) {
+  if (!data) return;
+  document.getElementById('quiz-viewer')?.classList.add('hide');
+  const reportPage = document.getElementById('cbt-report-page');
+  if (reportPage) {
+    reportPage.classList.remove('hide');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const titleEl = document.getElementById('analysis-test-title');
+  if (titleEl) titleEl.textContent = data.title ? `${data.title} — Report` : 'Assessment Report';
+
+  const pctEl = document.getElementById('result-percentage');
+  const ratioEl = document.getElementById('result-ratio');
+  const totalTimeEl = document.getElementById('analysis-total-time');
+  const avgTimeEl = document.getElementById('analysis-avg-time');
+
+  if (pctEl) pctEl.textContent = `${data.pct || 0}%`;
+  if (ratioEl) ratioEl.textContent = `${data.correct || 0} / ${data.total || 0}`;
+  if (totalTimeEl) totalTimeEl.textContent = data.totalTimeStr || '0m 0s';
+  if (avgTimeEl) avgTimeEl.textContent = `${data.avgSecs || 0}s / question`;
+
+  const kpiTotal = document.getElementById('kpi-total-q');
+  const kpiCorrect = document.getElementById('kpi-correct-q');
+  const kpiIncorrect = document.getElementById('kpi-incorrect-q');
+  const kpiSkipped = document.getElementById('kpi-skipped-q');
+
+  if (kpiTotal) kpiTotal.textContent = data.total || 0;
+  if (kpiCorrect) kpiCorrect.textContent = data.correct || 0;
+  if (kpiIncorrect) kpiIncorrect.textContent = data.incorrect || 0;
+  if (kpiSkipped) kpiSkipped.textContent = data.left || 0;
+
+  const countAll = document.getElementById('count-filter-all');
+  const countCorr = document.getElementById('count-filter-correct');
+  const countIncorr = document.getElementById('count-filter-incorrect');
+  const countLeft = document.getElementById('count-filter-left');
+
+  if (countAll) countAll.textContent = data.total || 0;
+  if (countCorr) countCorr.textContent = data.correct || 0;
+  if (countIncorr) countIncorr.textContent = data.incorrect || 0;
+  if (countLeft) countLeft.textContent = data.left || 0;
+
+  if (Array.isArray(data.quizQuestions) && data.quizQuestions.length > 0) {
+    quizQuestions = data.quizQuestions;
+    quizAnswers = data.quizAnswers || {};
+    renderAnalysisQuestions('all');
+  }
+
+  // Hook Try Again button to retake test
+  const retryBtn = document.getElementById('quiz-restart-btn');
+  if (retryBtn) {
+    retryBtn.onclick = () => {
+      reportPage?.classList.add('hide');
+      loadAndStartTest({
+        id: data.testId,
+        title: data.title,
+        duration: data.duration || 1800,
+        isBatchTest: Boolean(data.isBatchTest),
+        mode: data.mode || 'exam'
+      });
+    };
+  }
 }
 
 function closeTestOverviewModal() {
@@ -1299,6 +1393,68 @@ function submitTest() {
   } catch (e) {
     console.warn('[Tests] Performance cache note:', e);
   }
+
+  // Save specific test attempt result to localStorage so re-entering displays previous result
+  if (currentTestConfig?.id) {
+    try {
+      const resultData = {
+        testId: String(currentTestConfig.id),
+        title: currentTestConfig.title,
+        duration: currentTestConfig.duration,
+        isBatchTest: currentTestConfig.isBatchTest,
+        mode: currentTestConfig.mode,
+        correct,
+        incorrect,
+        attempted,
+        total,
+        left,
+        pct,
+        totalTimeStr,
+        avgSecs,
+        totalTimeElapsed,
+        submittedAt: Date.now(),
+        quizQuestions,
+        quizAnswers
+      };
+      localStorage.setItem(`nnl_test_result_${currentTestConfig.id}`, JSON.stringify(resultData));
+    } catch (_) {}
+  }
+}
+
+function promptSubmitConfirmation() {
+  let attempted = 0;
+  quizQuestions.forEach((q, idx) => {
+    if (quizAnswers[idx] !== undefined) attempted++;
+  });
+  const total = quizQuestions.length;
+  const left = total - attempted;
+
+  const modal = document.getElementById('quiz-confirm-modal');
+  const msgEl = document.getElementById('quiz-confirm-msg');
+  const cancelBtn = document.getElementById('quiz-confirm-cancel-btn');
+  const okBtn = document.getElementById('quiz-confirm-ok-btn');
+
+  if (!modal) {
+    submitTest();
+    return;
+  }
+
+  if (msgEl) {
+    msgEl.innerHTML = `You have answered <strong>${attempted}</strong> of <strong>${total}</strong> questions.<br>${left > 0 ? `<span style="color:#f87171;font-weight:600;">⚠️ ${left} question${left > 1 ? 's' : ''} remain unanswered.</span>` : '<span style="color:#34d399;font-weight:600;">✓ All questions answered!</span>'}<br><br>Are you sure you want to finish and generate your performance report?`;
+  }
+
+  modal.classList.remove('hide');
+
+  if (cancelBtn) {
+    cancelBtn.onclick = () => modal.classList.add('hide');
+  }
+
+  if (okBtn) {
+    okBtn.onclick = () => {
+      modal.classList.add('hide');
+      submitTest();
+    };
+  }
 }
 
 function closeQuizViewer() {
@@ -1309,7 +1465,13 @@ function closeQuizViewer() {
 
 function initEventBindings() {
   document.getElementById('report-back-btn')?.addEventListener('click', closeQuizViewer);
-  document.getElementById('report-print-btn')?.addEventListener('click', () => window.print());
+  document.getElementById('report-print-btn')?.addEventListener('click', () => {
+    if (window.AndroidBridge && typeof window.AndroidBridge.printPage === 'function') {
+      window.AndroidBridge.printPage();
+    } else {
+      window.print();
+    }
+  });
   document.getElementById('overview-close-btn')?.addEventListener('click', closeTestOverviewModal);
   document.getElementById('overview-cancel-btn')?.addEventListener('click', closeTestOverviewModal);
   document.getElementById('overview-start-practice-btn')?.addEventListener('click', () => {
@@ -1395,7 +1557,7 @@ function initEventBindings() {
   });
   document.getElementById('quiz-explain-btn')?.addEventListener('click', toggleExplanation);
   document.getElementById('quiz-show-ans-btn')?.addEventListener('click', toggleExplanation);
-  document.getElementById('quiz-submit-btn')?.addEventListener('click', submitTest);
+  document.getElementById('quiz-submit-btn')?.addEventListener('click', promptSubmitConfirmation);
   document.getElementById('quiz-mode-toggle-btn')?.addEventListener('click', () => {
     currentQuizMode = currentQuizMode === 'exam' ? 'practice' : 'exam';
     updateQuizModeUi();

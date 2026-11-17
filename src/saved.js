@@ -531,23 +531,13 @@ function renderSavedLectures() {
   }
 
   lecturesContainer.innerHTML = filtered.map((lec, idx) => {
-    const thumb = lec.thumb || '/nightingale.png';
     const duration = formatDurationLabel(lec.duration);
     const recIdClean = String(lec.id || lec.recId || '');
     const off = localOfflineMap.get(recIdClean);
-    const isOfflineHere = Boolean(off && off.completed && !off.expired);
     const isDownloadingHere = Boolean(off && (off.status === 'downloading' || off.status === 'pending'));
 
     let offlineBadgeHtml = '';
-    if (isOfflineHere) {
-      const mb = off.totalSizeBytes > 0 ? ` • ${(off.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '';
-      offlineBadgeHtml = `
-        <span class="sd-device-offline-tag is-downloaded" data-rec-id="${recIdClean}">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Downloaded on this Device${mb}</span>
-        </span>
-      `;
-    } else if (isDownloadingHere) {
+    if (isDownloadingHere) {
       const pct = Math.round(off.percent || 0);
       offlineBadgeHtml = `
         <span class="sd-device-offline-tag is-downloading" data-rec-id="${recIdClean}">
@@ -555,27 +545,26 @@ function renderSavedLectures() {
           <span>Downloading ${pct}%</span>
         </span>
       `;
-    } else if (hasNativeOfflineBridge()) {
+    } else {
+      const mb = (off && off.totalSizeBytes > 0) ? ` • ${(off.totalSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '';
       offlineBadgeHtml = `
-        <span class="sd-device-offline-tag is-cloud" data-rec-id="${recIdClean}">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-          <span>Cloud Bookmark</span>
+        <span class="sd-device-offline-tag is-downloaded" data-rec-id="${recIdClean}">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Offline Download${mb}</span>
         </span>
       `;
     }
 
-    const downloadBtnHtml = (!isOfflineHere && !isDownloadingHere && hasNativeOfflineBridge()) ? `
-      <button type="button" class="sd-mini-pill btn-download-this-device" data-rec-id="${recIdClean}" title="Download to this device">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Download</span>
-      </button>
-    ` : '';
+    const hasValidThumb = Boolean(lec.thumb && !lec.thumb.includes('nightingale.png'));
+    const thumbHtml = hasValidThumb
+      ? `<img src="${escapeHtml(lec.thumb)}" alt="${escapeHtml(lec.title)}" class="sd-lecture-thumb" loading="lazy" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" /><div class="sd-lecture-thumb" style="display:none;align-items:center;justify-content:center;background:rgba(124,58,237,0.18);color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`
+      : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;background:rgba(124,58,237,0.18);color:#a78bfa;"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
 
     return `
       <div class="sd-lecture-card apk-card-arrange" data-rec-id="${recIdClean}" style="--card-i: ${idx};">
         <span class="sd-lecture-num">${idx + 1}</span>
         <div class="sd-lecture-thumb-wrap">
-          <img src="${thumb}" alt="${lec.title}" class="sd-lecture-thumb" loading="lazy" onerror="this.src='/nightingale.png'" />
+          ${thumbHtml}
           <div class="sd-thumb-play-overlay">
             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -584,18 +573,21 @@ function renderSavedLectures() {
           <div class="sd-lecture-topic-row">
             <span class="sd-lecture-topic-pill">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              <span>${lec.subject || 'Saved Lecture'}</span>
+              <span>${escapeHtml(lec.subject || 'Saved Lecture')}</span>
             </span>
             ${offlineBadgeHtml}
           </div>
           <div class="sd-lecture-top-line">
-            <span class="sd-lecture-title" title="${lec.title}">${lec.title}</span>
+            <span class="sd-lecture-title" title="${escapeHtml(lec.title)}">${escapeHtml(lec.title)}</span>
           </div>
           <div class="sd-lecture-sub-line">
-            <span class="sd-lecture-progress-label">${duration}</span>
+            <span class="sd-lecture-progress-label">${escapeHtml(duration)}</span>
             <div class="sd-lecture-actions">
-              ${downloadBtnHtml}
-              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${recIdClean}" title="Remove from saved" style="padding: 6px 12px; font-size: 12px; font-weight: 600; min-height: 28px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.32); border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
+              <button type="button" class="sd-mini-pill btn-play-saved-rec" data-rec-id="${recIdClean}" style="background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span>Play</span>
+              </button>
+              <button type="button" class="sd-mini-pill btn-unsave-rec" data-rec-id="${recIdClean}" title="Remove from offline downloads" style="padding: 6px 12px; font-size: 12px; font-weight: 600; min-height: 28px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.32); border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 <span>Remove</span>
               </button>
@@ -606,9 +598,18 @@ function renderSavedLectures() {
     `;
   }).join('');
 
+  lecturesContainer.querySelectorAll('.btn-play-saved-rec').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-rec-id');
+      const rec = list.find(r => String(r.id || r.recId) === String(id));
+      if (rec) openLectureViewer(rec);
+    });
+  });
+
   lecturesContainer.querySelectorAll('.sd-lecture-card[data-rec-id]').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (e.target.closest('.btn-unsave-rec') || e.target.closest('.btn-download-this-device')) return;
+      if (e.target.closest('.btn-unsave-rec') || e.target.closest('.btn-play-saved-rec')) return;
       const id = el.getAttribute('data-rec-id');
       const rec = list.find(r => String(r.id || r.recId) === String(id));
       if (rec) openLectureViewer(rec);

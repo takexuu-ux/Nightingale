@@ -198,6 +198,48 @@ function normalizeSubjTitle(t) {
   return String(t).toLowerCase().replace(/\s*\([^)]*\)\s*$/, '').replace(/[^a-z0-9]/g, ' ').trim();
 }
 
+function findMatchingTopicTest(subjectTests, videoTopic, videoTitle) {
+  if (!Array.isArray(subjectTests) || subjectTests.length === 0) return null;
+  const vTopicClean = (videoTopic || '').trim().toLowerCase();
+  if (vTopicClean) {
+    const match = subjectTests.find(t => t.topic && String(t.topic).trim().toLowerCase() === vTopicClean);
+    if (match) return match;
+  }
+  const dayMatch = (videoTopic || videoTitle || '').match(/day\s*(\d+)/i);
+  if (dayMatch) {
+    const dayNum = parseInt(dayMatch[1], 10);
+    const match = subjectTests.find(t => {
+      const tDay = (t.topic || t.title || '').match(/(?:day|tat)\s*(\d+)/i);
+      return tDay && parseInt(tDay[1], 10) === dayNum;
+    });
+    if (match) return match;
+  }
+  return null;
+}
+
+function enrichVideosWithTests(videos, subject) {
+  if (!Array.isArray(videos) || videos.length === 0) return videos;
+  let tests = subject?.tests || [];
+  if (!tests.length && subject?.id) {
+    const b103 = BATCH_103_SUBJECTS.find(s => String(s.id) === String(subject.id));
+    if (b103 && b103.tests) tests = b103.tests;
+  }
+  if (!tests.length) return videos;
+  return videos.map(v => {
+    if (v.testId) return v;
+    const match = findMatchingTopicTest(tests, v.topic, v.title);
+    if (!match) return v;
+    return {
+      ...v,
+      testId: match.id,
+      testTitle: match.title,
+      testDuration: match.duration || 1800,
+      testQuestions: match.totalQuestions || 30,
+      isBatchTest: true
+    };
+  });
+}
+
 const loadedVideosBySubjectTitle = new Map();
 
 // Pre-seed all BATCH_103_SUBJECTS immediately (Anatomy, Pediatrics, Microbiology, etc.)
@@ -205,10 +247,16 @@ BATCH_103_SUBJECTS.forEach(sub => {
   if (Array.isArray(sub.videos) && sub.videos.length > 0) {
     const enriched = sub.videos.map(v => {
       const note = findMatchingNotePdf(v.subtopicId, v.title);
+      const test = findMatchingTopicTest(sub.tests, v.topic, v.title);
       return {
         ...v,
         notePdfUrl: v.notePdfUrl || note?.url || '',
-        notePdfTitle: v.notePdfTitle || note?.title || ''
+        notePdfTitle: v.notePdfTitle || note?.title || '',
+        testId: v.testId || test?.id || null,
+        testTitle: v.testTitle || test?.title || null,
+        testDuration: v.testDuration || test?.duration || 1800,
+        testQuestions: v.testQuestions || test?.totalQuestions || 30,
+        isBatchTest: true
       };
     });
     loadedVideosBySubjectId.set(String(sub.id), enriched);
@@ -881,8 +929,8 @@ async function openSubjectPage(subject) {
   }
 
   if (preloaded && preloaded.length > 0) {
-    currentOpenSubject.videos = preloaded;
-    if (countEl) countEl.textContent = `${preloaded.length} Videos`;
+    currentOpenSubject.videos = enrichVideosWithTests(preloaded, currentOpenSubject);
+    if (countEl) countEl.textContent = `${currentOpenSubject.videos.length} Videos`;
     renderSubjectLecturesList();
     return;
   }
@@ -907,7 +955,7 @@ async function openSubjectPage(subject) {
     </div>
   `;
   const fetched = await fetchSubjectVideosOnDemand(currentOpenSubject);
-  currentOpenSubject.videos = fetched;
+  currentOpenSubject.videos = enrichVideosWithTests(fetched, currentOpenSubject);
   if (countEl) countEl.textContent = `${currentOpenSubject.videos.length} Videos`;
   renderSubjectLecturesList();
 }
@@ -1058,6 +1106,13 @@ function renderSubjectLecturesList() {
       </button>
     `;
 
+    const testBtnHtml = rec.testId ? `
+      <a class="sd-mini-pill btn-open-lec-test" href="/tests.html?batchTestId=${encodeURIComponent(rec.testId)}&title=${encodeURIComponent(rec.testTitle || rec.title)}" title="Attempt Attached Test: ${escapeHtml(rec.testTitle || 'Topic Test')}">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Test</span>
+      </a>
+    ` : '';
+
     const pdfBtnHtml = rec.notePdfUrl ? `
       <button class="sd-mini-pill btn-open-lec-pdf" data-title="${encodeURIComponent(rec.notePdfTitle || rec.title)}" data-url="${encodeURIComponent(rec.notePdfUrl)}" title="View Class Notes PDF">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -1102,6 +1157,7 @@ function renderSubjectLecturesList() {
               </span>
             </div>
             <div class="sd-lecture-actions">
+              ${testBtnHtml}
               ${pdfBtnHtml}
               ${saveBtnHtml}
             </div>
@@ -1110,6 +1166,12 @@ function renderSubjectLecturesList() {
       </div>
     `;
   }).join('');
+
+  subjectLecturesContainer.querySelectorAll('.btn-open-lec-test').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  });
 
   subjectLecturesContainer.querySelectorAll('.btn-open-lec-pdf').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1257,6 +1319,7 @@ function initRecordingsViewer() {
     document.getElementById('recording-cipher-iframe')?.remove();
     document.getElementById('recording-cipher-loader')?.remove();
     document.getElementById('recording-portrait-notes')?.classList.add('hide');
+    document.getElementById('recording-portrait-test')?.classList.add('hide');
   });
 }
 
@@ -1363,6 +1426,21 @@ async function openRecordingPlayer(recording) {
     portraitNotesEl?.classList.remove('hide');
   } else {
     portraitNotesEl?.classList.add('hide');
+  }
+
+  // Configure Attached Test Bar if available
+  const portraitTestEl = document.getElementById('recording-portrait-test');
+  const rptTitle = document.getElementById('rpt-title');
+  const rptStartBtn = document.getElementById('rpt-start-btn');
+  if (recording.testId) {
+    const testTitle = recording.testTitle || (recording.title ? `${recording.title} Test` : 'Topic Assessment Test');
+    if (rptTitle) rptTitle.textContent = testTitle;
+    if (rptStartBtn) {
+      rptStartBtn.href = `/tests.html?batchTestId=${encodeURIComponent(recording.testId)}&title=${encodeURIComponent(testTitle)}`;
+    }
+    portraitTestEl?.classList.remove('hide');
+  } else {
+    portraitTestEl?.classList.add('hide');
   }
 
   viewer.classList.remove('hide');

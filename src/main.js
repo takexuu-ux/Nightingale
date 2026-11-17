@@ -3515,7 +3515,7 @@ function renderClasses(classes) {
 function updateHeroGreeting() {
   const greetingEl = document.getElementById('apk-hero-greeting');
   if (!greetingEl) return;
-  greetingEl.textContent = 'Welcome, NNL ke Papa';
+  greetingEl.textContent = 'Welcome, NNL ke Papa 👑';
 }
 
 function formatWatchTime(sec) {
@@ -3544,12 +3544,12 @@ async function resumeLecture(recId, btnEl) {
     btnEl.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;margin-right:6px;vertical-align:middle;"></span><span>Opening...</span>';
   }
 
-  // 1. Native Android player execution
-  if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
-    try {
-      let currentOtp = item?.otp || '';
-      let currentPb = item?.playbackInfo || '';
+  let currentOtp = item?.otp || '';
+  let currentPb = item?.playbackInfo || '';
 
+  // 1. If we already have a valid OTP & playbackInfo, launch native Android player directly
+  if (currentOtp && currentPb && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+    try {
       window.AndroidVideoBridge.playVideoWithAuth(
         currentOtp,
         currentPb,
@@ -3572,7 +3572,7 @@ async function resumeLecture(recId, btnEl) {
     }
   }
 
-  // 2. Direct player payload for Web view
+  // 2. Route seamlessly to All Videos library with autoPlay & seek (which automatically acquires fresh OTP)
   if (item) {
     try {
       sessionStorage.setItem('nnl_auto_play_item', JSON.stringify({
@@ -4146,6 +4146,47 @@ function showBarsTemporarily() {
 // Bind delegated listeners for class lists
 classListContainer.addEventListener('click', handleJoinClassroomClick);
 liveNowContainer.addEventListener('click', handleJoinClassroomClick);
+
+// Periodic auto-check (every 30 seconds) to dynamically update live class cards when a class concludes
+setInterval(() => {
+  try {
+    if (activeTab === 'live' && typeof poolForLive !== 'undefined' && poolForLive && poolForLive.length > 0) {
+      const now = new Date();
+      document.querySelectorAll('.class-card').forEach(card => {
+        const joinBtn = card.querySelector('.join-embedded-btn');
+        if (joinBtn) {
+          const classId = joinBtn.getAttribute('data-class-id');
+          const c = poolForLive.find(item => String(item.id) === String(classId));
+          if (c) {
+            const endVal = c.end || c.endTime || '';
+            const startVal = c.start || c.startTime || '';
+            const start = startVal ? parseApiDate(startVal) : null;
+            const end = endVal ? parseApiDate(endVal) : (start && !isNaN(start.getTime()) ? new Date(start.getTime() + 2 * 3600000) : null);
+            if (end && !isNaN(end.getTime()) && now.getTime() > end.getTime()) {
+              card.classList.remove('live-card-border');
+              const indicator = card.querySelector('.live-indicator');
+              if (indicator) {
+                indicator.className = 'live-indicator status-ended';
+                indicator.innerHTML = '<div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Completed';
+              }
+              const actionContainer = card.querySelector('.zoom-action-container') || joinBtn.parentElement;
+              if (actionContainer) {
+                actionContainer.innerHTML = `
+                  <div class="apk-upcoming-pill" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 14px;border-radius:12px;background:var(--bg-subtle);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:700;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Class Completed</span>
+                  </div>
+                `;
+              }
+            }
+          }
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('Periodic live class status check failed:', err);
+  }
+}, 30000);
 
 // Classroom control buttons listeners
 closeClassroomBtn.addEventListener('click', exitClassroom);

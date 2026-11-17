@@ -349,11 +349,15 @@ function normalizeTopicNotes(topic, baseSubTitle, batchId) {
   return notes;
 }
 
-function normalizeTopicVideos(topic, baseSubTitle, topicNotes) {
+function normalizeTopicVideos(topic, baseSubTitle, topicNotes, topicTests) {
   if (!Array.isArray(topic.video)) return [];
   const topicTitle = topic.title || baseSubTitle;
   const dateStr = (topic.date || topic.created || '').slice(0, 10);
   const firstNote = Array.isArray(topicNotes) && topicNotes.length > 0 ? topicNotes[0] : null;
+  const testsList = Array.isArray(topicTests) && topicTests.length > 0
+    ? topicTests
+    : (Array.isArray(topic.test) && topic.test.length > 0 ? topic.test : []);
+  const firstTest = testsList.length > 0 ? testsList[0] : null;
 
   return topic.video
     .filter(v => v && v.id)
@@ -368,7 +372,12 @@ function normalizeTopicVideos(topic, baseSubTitle, topicNotes) {
       date: dateStr || (v.schedule_start_time || v.created || '').slice(0, 10),
       thumb: v.thumbnails?.[1]?.url || v.thumbnails?.[0]?.url || '',
       notePdfUrl: firstNote?.url || '',
-      notePdfTitle: firstNote?.title || ''
+      notePdfTitle: firstNote?.title || '',
+      testId: firstTest?.id || null,
+      testTitle: (firstTest?.test_display_name || firstTest?.title || '').trim() || null,
+      testDuration: firstTest?.duration || 1800,
+      testQuestions: firstTest?.total_question || firstTest?.total_questions || 30,
+      isBatchTest: true
     }));
 }
 
@@ -548,7 +557,7 @@ export async function syncBatchLive(batchId = 104, { force = false, onUpdate } =
           topics.forEach(top => {
             const topNotes = normalizeTopicNotes(top, cleanTitle, id);
             notes.push(...topNotes);
-            videos.push(...normalizeTopicVideos(top, cleanTitle, topNotes));
+            videos.push(...normalizeTopicVideos(top, cleanTitle, topNotes, top.test));
             tests.push(...normalizeTopicTests(top, cleanTitle));
           });
 
