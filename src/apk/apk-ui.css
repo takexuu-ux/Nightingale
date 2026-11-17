@@ -3914,8 +3914,8 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   position: fixed;
   left: 0;
   top: 0;
-  width: 58px !important;
-  height: 58px !important;
+  width: 62px !important;
+  height: 62px !important;
   z-index: 9400;
   display: flex;
   flex-direction: column;
@@ -3933,8 +3933,8 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
 
 @media (max-width: 680px) {
   #apk-companion-pet {
-    width: 50px !important;
-    height: 50px !important;
+    width: 54px !important;
+    height: 54px !important;
   }
 }
 
@@ -7988,10 +7988,106 @@ main#app,
   box-shadow: 0 4px 16px rgba(45, 34, 72, 0.14);
 }
 
+/* ── Dynamic Pet Direction & Walking / Running Animations ── */
+#apk-companion-pet.facing-left .apk-pet-avatar {
+  transform: scaleX(-1);
+}
+#apk-companion-pet.facing-left.is-running .apk-pet-avatar {
+  transform: scaleX(-1) rotate(-8deg);
+}
+#apk-companion-pet:not(.facing-left).is-running .apk-pet-avatar {
+  transform: scaleX(1) rotate(8deg);
+}
+
+/* Walking Cycle (Leg & Arm alternate swing with body bob) */
+#apk-companion-pet.is-walking .apk-pet-avatar {
+  animation: shinchanWalkBob 0.36s ease-in-out infinite alternate !important;
+}
+#apk-companion-pet.is-walking .sc-leg-left {
+  transform-origin: 28.5px 61px;
+  animation: shinchanWalkLegL 0.36s ease-in-out infinite alternate !important;
+}
+#apk-companion-pet.is-walking .sc-leg-right {
+  transform-origin: 51.5px 61px;
+  animation: shinchanWalkLegR 0.36s ease-in-out infinite alternate !important;
+}
+#apk-companion-pet.is-walking .sc-arm-left {
+  transform-origin: 21px 40px;
+  animation: shinchanWalkArmL 0.36s ease-in-out infinite alternate !important;
+}
+#apk-companion-pet.is-walking .sc-arm-right {
+  transform-origin: 59px 40px;
+  animation: shinchanWalkArmR 0.36s ease-in-out infinite alternate !important;
+}
+
+@keyframes shinchanWalkBob {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(1.8deg); }
+  100% { transform: translateY(0px) rotate(-1.8deg); }
+}
+@keyframes shinchanWalkLegL {
+  0% { transform: rotate(-22deg) translateY(-2px); }
+  100% { transform: rotate(22deg) translateY(2px); }
+}
+@keyframes shinchanWalkLegR {
+  0% { transform: rotate(22deg) translateY(2px); }
+  100% { transform: rotate(-22deg) translateY(-2px); }
+}
+@keyframes shinchanWalkArmL {
+  0% { transform: rotate(26deg); }
+  100% { transform: rotate(-26deg); }
+}
+@keyframes shinchanWalkArmR {
+  0% { transform: rotate(-26deg); }
+  100% { transform: rotate(26deg); }
+}
+
+/* Running Sprint Cycle (Rapid leg cycles & pumping arms with forward sprint lean) */
+#apk-companion-pet.is-running .apk-pet-avatar {
+  animation: shinchanRunBob 0.17s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
+}
+#apk-companion-pet.is-running .sc-leg-left {
+  transform-origin: 28.5px 61px;
+  animation: shinchanRunLegL 0.17s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
+}
+#apk-companion-pet.is-running .sc-leg-right {
+  transform-origin: 51.5px 61px;
+  animation: shinchanRunLegR 0.17s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
+}
+#apk-companion-pet.is-running .sc-arm-left {
+  transform-origin: 21px 40px;
+  animation: shinchanRunArmL 0.17s ease-in-out infinite alternate !important;
+}
+#apk-companion-pet.is-running .sc-arm-right {
+  transform-origin: 59px 40px;
+  animation: shinchanRunArmR 0.17s ease-in-out infinite alternate !important;
+}
+
+@keyframes shinchanRunBob {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-6px); }
+}
+@keyframes shinchanRunLegL {
+  0% { transform: rotate(-38deg) translateY(-4px); }
+  100% { transform: rotate(38deg) translateY(3px); }
+}
+@keyframes shinchanRunLegR {
+  0% { transform: rotate(38deg) translateY(3px); }
+  100% { transform: rotate(-38deg) translateY(-4px); }
+}
+@keyframes shinchanRunArmL {
+  0% { transform: rotate(44deg); }
+  100% { transform: rotate(-44deg); }
+}
+@keyframes shinchanRunArmR {
+  0% { transform: rotate(-44deg); }
+  100% { transform: rotate(44deg); }
+}
+
 /* ── Dynamic Pet Body Expression Animations ── */
 #apk-companion-pet.is-wiggle .apk-pet-avatar,
 #apk-companion-pet.is-buri .apk-pet-avatar {
-  animation: shinchanBuri 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+  animation: shinchanBuri 0.72s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
 }
 #apk-companion-pet.is-shock .apk-pet-avatar {
   animation: shinchanShock 0.55s ease-in-out !important;
@@ -8014,12 +8110,13 @@ main#app,
 
 @keyframes shinchanBuri {
   0% { transform: scale(1) rotate(0deg); }
-  15% { transform: scale(1.06) rotate(-14deg) translateX(-5px); }
-  30% { transform: scale(1.06) rotate(14deg) translateX(5px); }
-  45% { transform: scale(1.06) rotate(-14deg) translateX(-5px); }
-  60% { transform: scale(1.06) rotate(14deg) translateX(5px); }
-  75% { transform: scale(1.03) rotate(-8deg) translateX(-2px); }
-  90% { transform: scale(1.03) rotate(8deg) translateX(2px); }
+  12% { transform: scale(1.08) rotate(-16deg) translateX(-6px); }
+  25% { transform: scale(1.08) rotate(16deg) translateX(6px); }
+  37% { transform: scale(1.08) rotate(-16deg) translateX(-6px); }
+  50% { transform: scale(1.08) rotate(16deg) translateX(6px); }
+  62% { transform: scale(1.05) rotate(-10deg) translateX(-3px); }
+  75% { transform: scale(1.05) rotate(10deg) translateX(3px); }
+  88% { transform: scale(1.02) rotate(-4deg) translateX(-1px); }
   100% { transform: scale(1) rotate(0deg) translateX(0); }
 }
 
