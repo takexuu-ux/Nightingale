@@ -325,7 +325,7 @@ function buildSidePanel() {
       <div class="apk-side-card apk-ota-update-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <div class="apk-side-section-title" style="margin:0;">App Updates</div>
-          <span id="apk-side-ver-tag" class="apk-ota-badge" style="font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.18);color:var(--accent);border:1px solid rgba(167,139,250,0.3);">v1.0.24</span>
+          <span id="apk-side-ver-tag" class="apk-ota-badge" style="font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.18);color:var(--accent);border:1px solid rgba(167,139,250,0.3);">v1.0.30</span>
         </div>
         <p style="font-size:12px;color:var(--text-secondary);margin:0 0 10px 0;line-height:1.4;">
           Nightingale Tablet &amp; Mobile Hybrid Architecture. Stay synced with latest classes and features.
@@ -432,19 +432,19 @@ function buildSidePanel() {
           } else {
             if (sideStatusMsg) {
               sideStatusMsg.style.color = '#10b981';
-              sideStatusMsg.textContent = '✓ You are running the latest version (v1.0.24)';
+              sideStatusMsg.textContent = '✓ You are running the latest version (v1.0.30)';
             }
           }
         } else {
           if (sideStatusMsg) {
             sideStatusMsg.style.color = '#10b981';
-            sideStatusMsg.textContent = '✓ You are running the latest version (v1.0.24)';
+            sideStatusMsg.textContent = '✓ You are running the latest version (v1.0.30)';
           }
         }
       } catch (_) {
         if (sideStatusMsg) {
           sideStatusMsg.style.color = '#10b981';
-          sideStatusMsg.textContent = '✓ App is up to date (v1.0.24)';
+          sideStatusMsg.textContent = '✓ App is up to date (v1.0.30)';
         }
       } finally {
         sideCheckBtn.disabled = false;

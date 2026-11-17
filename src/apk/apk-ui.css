@@ -5421,10 +5421,23 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 @media (min-width: 768px) {
-  .apk-hamburger-btn {
+  #app-header .apk-hamburger-btn {
     position: static !important;
-    margin: 10px auto 6px !important;
+    margin: 0 0 6px 0 !important;
     z-index: 8500 !important;
+  }
+
+  body > .apk-hamburger-btn {
+    position: fixed !important;
+    top: max(14px, env(safe-area-inset-top)) !important;
+    left: 14px !important;
+    width: 38px !important;
+    height: 38px !important;
+    z-index: 8500 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
 
