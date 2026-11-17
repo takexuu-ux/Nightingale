@@ -267,8 +267,8 @@ function buildSidePanel() {
       <div class="apk-side-card apk-companion-setting-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div>
-            <div class="apk-side-section-title" style="margin:0;">Tamagotchi Companion</div>
-            <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">Interactive AI Study Buddy &amp; Class Timer</div>
+            <div class="apk-side-section-title" style="margin:0;">Shin-chan Mascot</div>
+            <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">Interactive Study Buddy &amp; Class Timer</div>
           </div>
           <button type="button" id="apk-pet-toggle-btn" class="apk-switch-btn" aria-label="Toggle Companion Pet">
             <span class="apk-switch-thumb"></span>
@@ -281,13 +281,13 @@ function buildSidePanel() {
           </div>
           <div class="apk-companion-details">
             <div class="apk-companion-name-row">
-              <strong style="color:var(--text-primary);font-size:13.5px;">Nurse Tamagotchi</strong>
-              <span class="apk-companion-status-pill">Active 🩺</span>
+              <strong style="color:var(--text-primary);font-size:13.5px;">Shin-chan (Nohara)</strong>
+              <span class="apk-companion-status-pill">Active 🍑</span>
             </div>
             <ul class="apk-companion-features">
-              <li>✓ Real-time test reactions &amp; celebrations</li>
+              <li>✓ Interactive website &amp; test body reactions</li>
+              <li>✓ Signature Buri-Buri dance &amp; cheerful emotes</li>
               <li>✓ 10-min upcoming live class notifications</li>
-              <li>✓ Tap companion for high-yield clinical pearls</li>
             </ul>
           </div>
         </div>

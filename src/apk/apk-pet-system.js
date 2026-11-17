@@ -1,208 +1,188 @@
-// Nightingale Companion Mascot: Tamagotchi Nurse
-// 100% Pure Code-Generated Pixel-Vector Companion with Responsive Facial & Body Expressions
-// Interacts contextually with tests, questions, and scheduled live class reminders.
-// STRICT RULE: Tamagotchi is NEVER shown on the Login / Authentication screen.
+// Nightingale Companion Mascot: Shin-chan (Shinnosuke Nohara)
+// 100% Code-Generated Vector Companion with Iconic Expressions & Interactive Website Body Animations
+// STRICT RULE: Shin-chan is NEVER shown on the Login / Authentication screen.
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
 
 export function getPetSvg(petId, expression = 'default') {
-  return getNurseSvg(expression);
+  return getShinchanSvg(expression);
 }
 
-export function getNurseSvg(expr) {
+export function getNurseSvg(expression = 'default') {
+  return getShinchanSvg(expression);
+}
+
+export function getShinchanSvg(expr = 'default') {
   let faceContent = '';
+
   switch (expr) {
     case 'happy':
       faceContent = `
-        <!-- Joyful Laughing Curved Eyes -->
-        <path d="M26 29 Q30 24 34 29" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" />
-        <path d="M38 29 Q42 24 46 29" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" />
-        <!-- Rosy Cheek Blush -->
-        <ellipse cx="25" cy="33" rx="3.5" ry="2" fill="#FB7185" opacity="0.85" />
-        <ellipse cx="47" cy="33" rx="3.5" ry="2" fill="#FB7185" opacity="0.85" />
-        <!-- Cheerful Open Mouth -->
-        <path d="M33 34 Q36 41 39 34 Z" fill="#E11D48" />
+        <!-- High Arched Eyebrows -->
+        <path d="M 21 21 Q 28 14 34 20" stroke="#0F172A" stroke-width="4.8" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 48 14 55 21" stroke="#0F172A" stroke-width="4.8" stroke-linecap="round" fill="none" />
+        <!-- Happy Curved Arcs for Eyes -->
+        <path d="M 23 31 Q 28 23 33 31" stroke="#0F172A" stroke-width="3.6" stroke-linecap="round" fill="none" />
+        <path d="M 43 31 Q 48 23 53 31" stroke="#0F172A" stroke-width="3.6" stroke-linecap="round" fill="none" />
+        <!-- Big Open Laughing Mouth with Tongue -->
+        <path d="M 33 37 Q 39 48 46 37 Z" fill="#E11D48" stroke="#1E293B" stroke-width="1.2" />
+        <ellipse cx="39" cy="42" rx="4.5" ry="2.5" fill="#FDA4AF" />
         <!-- Celebration Sparkles -->
-        <path d="M15 15 L17 19 L21 21 L17 23 L15 27 L13 23 L9 21 L13 19 Z" fill="#FBBF24" opacity="0.95" />
-        <path d="M57 15 L59 18 L62 19 L59 20 L57 23 L55 20 L52 19 L55 18 Z" fill="#FBBF24" opacity="0.95" />
+        <path d="M 12 16 L 14 19 L 17 21 L 14 23 L 12 26 L 10 23 L 7 21 L 10 19 Z" fill="#FACC15" />
+        <path d="M 64 16 L 66 19 L 69 21 L 66 23 L 64 26 L 62 23 L 59 21 L 62 19 Z" fill="#FACC15" />
       `;
       break;
 
-    case 'thinking':
     case 'shocked':
       faceContent = `
-        <!-- Curious Tilted Eyebrows -->
-        <line x1="26" y1="25" x2="33" y2="24" stroke="#3E2723" stroke-width="2.2" stroke-linecap="round" />
-        <line x1="39" y1="24" x2="46" y2="26" stroke="#3E2723" stroke-width="2.2" stroke-linecap="round" />
-        <!-- Thoughtful Looking Up Eyes -->
-        <ellipse cx="31" cy="30" rx="3.5" ry="4" fill="#0F172A" />
-        <circle cx="32" cy="28" r="1.4" fill="#FFFFFF" />
-        <ellipse cx="43" cy="30" rx="3.5" ry="4" fill="#0F172A" />
-        <circle cx="44" cy="28" r="1.4" fill="#FFFFFF" />
-        <ellipse cx="25" cy="34" rx="2.5" ry="1.5" fill="#FB7185" opacity="0.6" />
-        <ellipse cx="47" cy="34" rx="2.5" ry="1.5" fill="#FB7185" opacity="0.6" />
-        <!-- Puzzled Cute Mouth -->
-        <ellipse cx="36" cy="36.5" rx="1.8" ry="2.2" fill="#E11D48" />
-        <!-- Hand on Chin -->
-        <circle cx="32" cy="40" r="2.8" fill="#FED7AA" />
-        <!-- Floating Idea Sparkle -->
-        <circle cx="56" cy="18" r="3" fill="#38BDF8" opacity="0.8" />
-        <circle cx="61" cy="13" r="4.5" fill="#38BDF8" opacity="0.9" />
-      `;
-      break;
-
-    case 'focus':
-      faceContent = `
-        <!-- Determined Eyebrows -->
-        <line x1="25" y1="25" x2="33" y2="27" stroke="#3E2723" stroke-width="2.4" stroke-linecap="round" />
-        <line x1="47" y1="25" x2="39" y2="27" stroke="#3E2723" stroke-width="2.4" stroke-linecap="round" />
-        <!-- Study Glasses with Blue Glint -->
-        <circle cx="30" cy="31" r="5.2" fill="rgba(224,242,254,0.3)" stroke="#38BDF8" stroke-width="1.4" />
-        <circle cx="42" cy="31" r="5.2" fill="rgba(224,242,254,0.3)" stroke="#38BDF8" stroke-width="1.4" />
-        <line x1="35.2" y1="31" x2="36.8" y2="31" stroke="#38BDF8" stroke-width="1.4" />
-        <!-- Focused Eyes -->
-        <circle cx="30" cy="31" r="2.4" fill="#0F172A" />
-        <circle cx="29" cy="30" r="1" fill="#FFFFFF" />
-        <circle cx="42" cy="31" r="2.4" fill="#0F172A" />
-        <circle cx="41" cy="30" r="1" fill="#FFFFFF" />
-        <path d="M33 37 Q36 39 39 37" stroke="#E11D48" stroke-width="1.8" fill="none" stroke-linecap="round" />
-      `;
-      break;
-
-    case 'alert':
-      faceContent = `
-        <!-- Alert Wide Eyes -->
-        <circle cx="30" cy="30" r="4.2" fill="#0F172A" />
-        <circle cx="28.8" cy="28.8" r="1.6" fill="#FFFFFF" />
-        <circle cx="42" cy="30" r="4.2" fill="#0F172A" />
-        <circle cx="40.8" cy="28.8" r="1.6" fill="#FFFFFF" />
-        <ellipse cx="24" cy="34" rx="3" ry="1.8" fill="#FB7185" opacity="0.8" />
-        <ellipse cx="48" cy="34" rx="3" ry="1.8" fill="#FB7185" opacity="0.8" />
-        <!-- Surprised O Mouth -->
-        <ellipse cx="36" cy="37.5" rx="2.5" ry="3.2" fill="#E11D48" />
-        <!-- Notification Alert Bell above Cap -->
-        <path d="M12 8 C12 4, 18 4, 18 8 L19 11 L11 11 Z" fill="#FBBF24" stroke="#D97706" stroke-width="0.8" />
-        <circle cx="15" cy="12" r="1.2" fill="#D97706" />
-        <path d="M9 8 Q7 10 9 12" stroke="#FBBF24" stroke-width="1.2" fill="none" />
+        <!-- Worried Wavy Eyebrows -->
+        <path d="M 22 22 Q 27 26 33 21" stroke="#0F172A" stroke-width="4.6" stroke-linecap="round" fill="none" />
+        <path d="M 43 21 Q 49 26 54 22" stroke="#0F172A" stroke-width="4.6" stroke-linecap="round" fill="none" />
+        <!-- Wide White Shocked Eyes with Tiny Pupils -->
+        <circle cx="28" cy="31" r="5.5" fill="#FFFFFF" stroke="#0F172A" stroke-width="2" />
+        <circle cx="28" cy="31" r="1.8" fill="#0F172A" />
+        <circle cx="48" cy="31" r="5.5" fill="#FFFFFF" stroke="#0F172A" stroke-width="2" />
+        <circle cx="48" cy="31" r="1.8" fill="#0F172A" />
+        <!-- Big O Shaped Shocked Mouth -->
+        <ellipse cx="39" cy="41" rx="3.5" ry="4.8" fill="#E11D48" stroke="#1E293B" stroke-width="1.2" />
+        <!-- Giant Blue Anime Sweat Drop -->
+        <path d="M 14 24 C 14 21, 18 18, 18 18 C 18 18, 22 21, 22 24 C 22 26.5, 20 28.5, 18 28.5 C 16 28.5, 14 26.5, 14 24 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8" />
+        <circle cx="16.5" cy="24" r="0.8" fill="#FFFFFF" />
       `;
       break;
 
     case 'wink':
       faceContent = `
-        <!-- Left Wink -->
-        <path d="M26 31 Q29.5 27 33 31" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" />
-        <circle cx="25" cy="27" r="1.2" fill="#FBBF24" />
-        <!-- Right Open Eye -->
-        <ellipse cx="42" cy="30" rx="3.5" ry="4.4" fill="#0F172A" />
-        <circle cx="40.8" cy="28.5" r="1.6" fill="#FFFFFF" />
-        <ellipse cx="25" cy="34" rx="3" ry="1.8" fill="#FB7185" opacity="0.8" />
-        <ellipse cx="47" cy="34" rx="3" ry="1.8" fill="#FB7185" opacity="0.8" />
-        <path d="M33 36 Q36 39.5 39 36" stroke="#E11D48" stroke-width="2" fill="none" stroke-linecap="round" />
+        <!-- Confident High Eyebrows -->
+        <path d="M 20 22 Q 26 15 33 20" stroke="#0F172A" stroke-width="4.8" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 48 15 54 22" stroke="#0F172A" stroke-width="4.8" stroke-linecap="round" fill="none" />
+        <!-- Left Wink (< Line) -->
+        <path d="M 24 30 L 29 33 L 24 36" stroke="#0F172A" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <!-- Right Open Eye with Star -->
+        <ellipse cx="48" cy="31" rx="4.8" ry="6" fill="#0F172A" />
+        <circle cx="46.5" cy="29" r="2.2" fill="#FFFFFF" />
+        <!-- Playful 3 Smirk -->
+        <path d="M 34 39 Q 37 37 40 39 Q 43 37 46 39" stroke="#E11D48" stroke-width="2.6" fill="none" stroke-linecap="round" />
       `;
       break;
 
-    default: // Friendly Default Smile
+    case 'focus':
       faceContent = `
-        <!-- Large Glossy Anime Eyes with Catchlight -->
-        <ellipse cx="30" cy="30" rx="3.6" ry="4.6" fill="#0F172A" />
-        <circle cx="28.8" cy="28.4" r="1.6" fill="#FFFFFF" />
-        <circle cx="31.2" cy="32.2" r="1" fill="#7C3AED" />
-        <ellipse cx="42" cy="30" rx="3.6" ry="4.6" fill="#0F172A" />
-        <circle cx="40.8" cy="28.4" r="1.6" fill="#FFFFFF" />
-        <circle cx="43.2" cy="32.2" r="1" fill="#7C3AED" />
-        <!-- Soft Blush -->
-        <ellipse cx="24.5" cy="34" rx="3.2" ry="1.8" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="47.5" cy="34" rx="3.2" ry="1.8" fill="#FB7185" opacity="0.75" />
-        <!-- Sweet Smile -->
-        <path d="M33 36 Q36 39 39 36" stroke="#E11D48" stroke-width="2" fill="none" stroke-linecap="round" />
+        <!-- White NORCET Medical Headband with Red Cross -->
+        <path d="M 18 19 L 58 19 L 57 24 L 19 24 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.8" />
+        <rect x="36" y="20" width="4" height="3" fill="#EF4444" />
+        <rect x="37" y="19.5" width="2" height="4" fill="#EF4444" />
+        <!-- Determined Fierce Eyebrows -->
+        <line x1="21" y1="26" x2="33" y2="22" stroke="#0F172A" stroke-width="5" stroke-linecap="round" />
+        <line x1="53" y1="26" x2="41" y2="22" stroke="#0F172A" stroke-width="5" stroke-linecap="round" />
+        <!-- Concentrating Eyes -->
+        <ellipse cx="28" cy="31" rx="4.2" ry="5.2" fill="#0F172A" />
+        <circle cx="27" cy="29.5" r="1.6" fill="#FFFFFF" />
+        <ellipse cx="46" cy="31" rx="4.2" ry="5.2" fill="#0F172A" />
+        <circle cx="45" cy="29.5" r="1.6" fill="#FFFFFF" />
+        <!-- Confident Smirk -->
+        <path d="M 34 38 Q 39 42 45 38" stroke="#E11D48" stroke-width="2.6" fill="none" stroke-linecap="round" />
+      `;
+      break;
+
+    case 'sleepy':
+      faceContent = `
+        <!-- Relaxed Eyebrows -->
+        <path d="M 21 24 Q 27 20 33 24" stroke="#0F172A" stroke-width="4.2" stroke-linecap="round" fill="none" />
+        <path d="M 42 24 Q 48 20 54 24" stroke="#0F172A" stroke-width="4.2" stroke-linecap="round" fill="none" />
+        <!-- Closed Straight Sleepy Eyes -->
+        <line x1="23" y1="32" x2="33" y2="32" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+        <line x1="43" y1="32" x2="53" y2="32" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+        <!-- Small Calm Smile -->
+        <path d="M 36 39 Q 39 42 42 39" stroke="#E11D48" stroke-width="2.2" fill="none" stroke-linecap="round" />
+        <!-- Expanding Blue Snot Bubble -->
+        <circle cx="43" cy="38" r="5" fill="rgba(56,189,248,0.55)" stroke="#38BDF8" stroke-width="1.2" />
+        <circle cx="41.5" cy="36.5" r="1.5" fill="#FFFFFF" />
+      `;
+      break;
+
+    case 'buri':
+    default:
+      faceContent = `
+        <!-- Iconic Thick Curved Shin-chan Eyebrows -->
+        <path d="M 19 23 Q 26 16 33 21" stroke="#0F172A" stroke-width="5" stroke-linecap="round" fill="none" />
+        <path d="M 41 21 Q 48 16 55 23" stroke="#0F172A" stroke-width="5" stroke-linecap="round" fill="none" />
+        <!-- Large Mischievous Eyes with Catchlights -->
+        <ellipse cx="27" cy="31" rx="4.8" ry="6.2" fill="#0F172A" />
+        <circle cx="25.5" cy="28.8" r="2.2" fill="#FFFFFF" />
+        <ellipse cx="48" cy="31" rx="4.8" ry="6.2" fill="#0F172A" />
+        <circle cx="46.5" cy="28.8" r="2.2" fill="#FFFFFF" />
+        <!-- Signature Cheeky Grin -->
+        <path d="M 33 39 Q 39 44 45 39" stroke="#E11D48" stroke-width="2.8" fill="none" stroke-linecap="round" />
       `;
       break;
   }
 
   return `
-    <svg viewBox="0 0 72 72" width="100%" height="100%" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 80 80" width="100%" height="100%" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <filter id="pet-drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0,0,0,0.25)" />
+        <filter id="sc-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="rgba(0,0,0,0.3)" />
         </filter>
-        <linearGradient id="scrub-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#8B5CF6" />
-          <stop offset="100%" stop-color="#6D28D9" />
-        </linearGradient>
-        <linearGradient id="hair-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#5D4037" />
-          <stop offset="100%" stop-color="#3E2723" />
-        </linearGradient>
       </defs>
 
       <!-- Soft Ground Shadow -->
-      <ellipse cx="36" cy="69" rx="18" ry="3" fill="rgba(0,0,0,0.20)" />
+      <ellipse cx="40" cy="76" rx="22" ry="3.8" fill="rgba(0,0,0,0.22)" />
 
-      <!-- Back Hair -->
-      <path d="M22 22 C22 13, 50 13, 50 22 C54 28, 55 42, 49 46 C47 47, 44 40, 44 36 C44 34, 28 34, 28 36 C28 40, 25 47, 23 46 C17 42, 18 28, 22 22 Z" fill="url(#hair-grad)" />
+      <!-- Yellow Shoes with Black Outlines -->
+      <ellipse cx="29" cy="73" rx="7.5" ry="4" fill="#FACC15" stroke="#1E293B" stroke-width="1.3" />
+      <ellipse cx="51" cy="73" rx="7.5" ry="4" fill="#FACC15" stroke="#1E293B" stroke-width="1.3" />
 
-      <!-- Medical Scrubs Uniform -->
-      <path d="M24 43 L48 43 L52 61 L20 61 Z" fill="url(#scrub-grad)" />
-      <!-- V-Neck Skin Inset -->
-      <polygon points="32,43 40,43 36,49" fill="#FED7AA" />
-      <!-- White Undershirt Trim -->
-      <path d="M31 43 L36 49 L41 43" stroke="#EDE9FE" stroke-width="1.4" fill="none" />
+      <!-- Chubby Little Legs -->
+      <rect x="26" y="62" width="6" height="9" rx="3" fill="#FFE0B2" stroke="#1E293B" stroke-width="1.3" />
+      <rect x="48" y="62" width="6" height="9" rx="3" fill="#FFE0B2" stroke="#1E293B" stroke-width="1.3" />
 
-      <!-- Stethoscope: Binaural Tubing around neck & Silver Bell on chest -->
-      <path d="M28 45 C27 53, 31 58, 38 56" stroke="#0ea5e9" stroke-width="2.4" stroke-linecap="round" fill="none" />
-      <circle cx="38" cy="56" r="3.2" fill="#CBD5E1" stroke="#94A3B8" stroke-width="1" />
-      <circle cx="38" cy="56" r="1.2" fill="#0EA5E9" />
+      <!-- Iconic Bright Yellow Shorts -->
+      <path d="M 23 53 L 57 53 L 59 64 L 44 64 L 40 59 L 36 64 L 21 64 Z" fill="#FACC15" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
 
-      <!-- Scrub Pocket with Red Cross ID Badge -->
-      <rect x="23" y="50" width="7" height="6" rx="1" fill="#FFFFFF" opacity="0.9" />
-      <rect x="26" y="51.5" width="1.2" height="3" fill="#EF4444" />
-      <rect x="25.1" y="52.4" width="3" height="1.2" fill="#EF4444" />
+      <!-- Iconic Red Short-Sleeved T-Shirt -->
+      <path d="M 22 39 L 58 39 L 60 55 L 20 55 Z" fill="#EF4444" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+      <!-- Left & Right Sleeves -->
+      <path d="M 22 39 L 13 47 L 18 51 L 24 45 Z" fill="#EF4444" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+      <path d="M 58 39 L 67 47 L 62 51 L 56 45 Z" fill="#EF4444" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
 
-      <!-- Cute Peach Hands -->
-      <circle cx="19" cy="51" r="3.2" fill="#FED7AA" />
-      <circle cx="53" cy="51" r="3.2" fill="#FED7AA" />
+      <!-- Chubby Little Hands -->
+      <circle cx="15" cy="49" r="4.2" fill="#FFE0B2" stroke="#1E293B" stroke-width="1.3" />
+      <circle cx="65" cy="49" r="4.2" fill="#FFE0B2" stroke="#1E293B" stroke-width="1.3" />
 
-      <!-- Scrub Pants -->
-      <rect x="25" y="61" width="9" height="6" fill="#4C1D95" rx="1" />
-      <rect x="38" y="61" width="9" height="6" fill="#4C1D95" rx="1" />
+      <!-- Medical Stethoscope on Shoulders (NORCET Academy Mascot Touch) -->
+      <path d="M 25 41 Q 20 48 30 55 Q 38 59 46 55 Q 56 48 51 41" fill="none" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" />
+      <!-- Silver Stethoscope Chest Piece -->
+      <circle cx="38" cy="57" r="3.4" fill="#E2E8F0" stroke="#475569" stroke-width="1.2" />
+      <circle cx="38" cy="57" r="1.6" fill="#38BDF8" />
 
-      <!-- White Clinical Shoes -->
-      <path d="M23 66 Q28 64 34 66 L34 68.5 L23 68.5 Z" fill="#FFFFFF" />
-      <path d="M38 66 Q44 64 49 66 L49 68.5 L38 68.5 Z" fill="#FFFFFF" />
+      <!-- Potato-Shaped Head (The Classic Shin-chan Head with chubby left cheek curve) -->
+      <path d="M 23 20 C 13 22, 10 33, 14 41 C 17 46, 26 48, 40 48 C 55 48, 65 42, 65 31 C 65 21, 54 16, 40 16 C 30 16, 26 18, 23 20 Z" fill="#FFE0B2" stroke="#1E293B" stroke-width="1.7" />
 
-      <!-- Chibi Head Base -->
-      <path d="M22 25 C22 17, 50 17, 50 25 C50 36, 45 44, 36 44 C27 44, 22 36, 22 25 Z" fill="#FED7AA" />
-      <!-- Cute Ears -->
-      <circle cx="22" cy="29" r="3" fill="#FED7AA" />
-      <circle cx="50" cy="29" r="3" fill="#FED7AA" />
+      <!-- Buzz-cut Black Hair on Top/Back -->
+      <path d="M 23 20 C 27 15, 38 15, 52 17 C 62 19, 65 26, 65 31 C 64 26, 56 20, 44 19 C 32 18, 26 21, 23 20 Z" fill="#0F172A" />
 
-      <!-- Front Bangs Hair -->
-      <path d="M22 23 Q36 29 50 23 Q47 32 43 32 Q36 27 29 32 Q24 32 22 23 Z" fill="url(#hair-grad)" />
-      <!-- Soft Hair Highlights -->
-      <path d="M25 20 Q36 25 47 20" stroke="#8D6E63" stroke-width="1.8" fill="none" opacity="0.6" />
+      <!-- Cute Ear on Right Side -->
+      <ellipse cx="64" cy="33" rx="3.5" ry="4.5" fill="#FFE0B2" stroke="#1E293B" stroke-width="1.4" />
+      <path d="M 63 31 Q 66 33 63 35" fill="none" stroke="#1E293B" stroke-width="1.1" />
 
-      <!-- Nurse Cap -->
-      <path d="M24 10 Q36 6 48 10 L50 17 Q36 13 22 17 Z" fill="#FFFFFF" filter="url(#pet-drop-shadow)" />
-      <path d="M23 16 Q36 12 49 16" stroke="#E2E8F0" stroke-width="1.5" fill="none" />
-      <!-- Red Cross Badge on Cap -->
-      <rect x="34.5" y="10" width="3" height="3" fill="#EF4444" rx="0.5" />
-      <rect x="35.3" y="9" width="1.4" height="5" fill="#EF4444" rx="0.4" />
-      <rect x="33.5" y="10.8" width="5" height="1.4" fill="#EF4444" rx="0.4" />
+      <!-- Signature Rosy Cheek Blush -->
+      <ellipse cx="21" cy="39" rx="4.8" ry="2.8" fill="#FB7185" opacity="0.82" />
+      <ellipse cx="54" cy="36" rx="4.8" ry="2.8" fill="#FB7185" opacity="0.82" />
 
-      <!-- Facial Expression Layer -->
+      <!-- Facial Features -->
       ${faceContent}
     </svg>
   `;
 }
 
-// Single Dedicated Tamagotchi Nurse
 export const PET_CATALOG = [
   {
-    id: 'bandage-nurse-realistic',
-    name: 'Nurse Tamagotchi',
-    emoji: '🩺',
-    svg: getNurseSvg('default')
+    id: 'shinchan-buddy',
+    name: 'Shin-chan (Nohara)',
+    emoji: '🍑',
+    svg: getShinchanSvg('default')
   }
 ];
 
@@ -211,18 +191,18 @@ export function getAvailablePets() {
 }
 
 export function getActivePetId() {
-  return 'bandage-nurse-realistic';
+  return 'shinchan-buddy';
 }
 
 export function setActivePetId() {
-  // Single Tamagotchi
+  // Single Shin-chan Mascot
 }
 
 export function isPetEnabled() {
   try {
     const val = localStorage.getItem(STORAGE_ENABLED_KEY);
     if (val === 'false') return false;
-    return true; // Default ON as requested
+    return true; // Default ON
   } catch {}
   return true;
 }
@@ -304,11 +284,11 @@ export function setPetExpression(expr, bodyAnim = null) {
   if (!container) return;
   const avatar = container.querySelector('.apk-pet-avatar');
   if (avatar) {
-    avatar.innerHTML = getNurseSvg(expr);
+    avatar.innerHTML = getShinchanSvg(expr);
   }
 
   if (bodyAnim) {
-    container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod');
+    container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod', 'is-buri', 'is-shock', 'is-wink');
     void container.offsetWidth;
     container.classList.add(bodyAnim);
   }
@@ -318,14 +298,15 @@ export function setPetExpression(expr, bodyAnim = null) {
     expressionResetTimeout = setTimeout(() => {
       const curAvatar = container.querySelector('.apk-pet-avatar');
       if (curAvatar) {
-        curAvatar.innerHTML = getNurseSvg('default');
+        curAvatar.innerHTML = getShinchanSvg('default');
       }
-      container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod');
-    }, 3200);
+      container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod', 'is-buri', 'is-shock', 'is-wink');
+    }, 2800);
   }
 }
 
-export function showTamagotchiBubble(text, duration = 3800) {
+// Ultra-short emote pill: max 1-2 words or emoji, never long text
+export function showTamagotchiBubble(text, duration = 1400) {
   const container = document.getElementById('apk-companion-pet');
   if (!container || !isPetEnabled() || isLoginScreenActive()) return;
 
@@ -374,8 +355,8 @@ function checkUpcomingClassReminder() {
           const remindedKey = `nnl_reminded_class_${cls.id || cls.title}_${new Date().toDateString()}`;
           if (!sessionStorage.getItem(remindedKey)) {
             sessionStorage.setItem(remindedKey, 'true');
-            setPetExpression('alert', 'is-hop');
-            showTamagotchiBubble(`⏰ Reminder: "${cls.title || 'Live Class'}" starts in ${diffMins} mins! Get your notes ready 🩺`, 8000);
+            setPetExpression('focus', 'is-cheer');
+            showTamagotchiBubble(`Class in ${diffMins}m! ⏰`, 4000);
           }
           break;
         }
@@ -383,6 +364,8 @@ function checkUpcomingClassReminder() {
     }
   } catch (e) {}
 }
+
+let lastSiteInteractionTime = 0;
 
 function renderPetElement() {
   if (document.getElementById('apk-companion-pet')) return;
@@ -393,13 +376,13 @@ function renderPetElement() {
   root.className = 'apk-companion-pet';
   root.setAttribute('role', 'button');
   root.setAttribute('tabindex', '0');
-  root.setAttribute('aria-label', `Tamagotchi Nurse Companion`);
+  root.setAttribute('aria-label', `Shin-chan Study Companion`);
   root.style.display = (isPetEnabled() && !isLoginScreenActive()) ? 'flex' : 'none';
 
   root.innerHTML = `
     <div class="apk-pet-bursts" aria-hidden="true"></div>
     <div class="apk-pet-avatar">
-      ${getNurseSvg('default')}
+      ${getShinchanSvg('default')}
     </div>
   `;
 
@@ -412,8 +395,8 @@ function renderPetElement() {
   const getBottomRightDefault = () => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const x = Math.max(16, vw - 76);
-    const y = Math.max(16, vh - 100);
+    const x = Math.max(16, vw - 80);
+    const y = Math.max(16, vh - 105);
     return { x, y };
   };
 
@@ -422,22 +405,23 @@ function renderPetElement() {
 
   const burstsEl = root.querySelector('.apk-pet-bursts');
 
-  const NURSE_STUDY_TIPS = [
-    'Remember ABC priority: Airway > Breathing > Circulation!',
-    'Stay hydrated and keep up your daily streak! 💧',
-    'Normal arterial pH: 7.35 to 7.45. ROME rule!',
-    'GCS score ≤ 8: priority airway intervention needed!',
-    'Take a 5-minute break every hour to lock in memories.'
+  const SHINCHAN_TAP_ACTIONS = [
+    { expr: 'happy', anim: 'is-buri', emote: 'Buri Buri~ 🍑' },
+    { expr: 'wink', anim: 'is-wink', emote: 'Hehe! ✌️' },
+    { expr: 'happy', anim: 'is-cheer', emote: 'Yatta! 🔥' },
+    { expr: 'focus', anim: 'is-nod', emote: 'Yosh! 💪' }
   ];
-  let tipIdx = 0;
+  let tapIndex = 0;
 
   const handleTap = () => {
-    setPetExpression('happy', 'is-hop');
-    showTamagotchiBubble(NURSE_STUDY_TIPS[tipIdx % NURSE_STUDY_TIPS.length]);
-    tipIdx++;
+    const action = SHINCHAN_TAP_ACTIONS[tapIndex % SHINCHAN_TAP_ACTIONS.length];
+    tapIndex++;
+
+    setPetExpression(action.expr, action.anim);
+    showTamagotchiBubble(action.emote, 1200);
 
     if (burstsEl) {
-      const symbols = ['🩺', '✨', '💖', '★'];
+      const symbols = ['🍑', '✨', '🔥', '★'];
       for (let i = 0; i < 4; i++) {
         const p = document.createElement('span');
         p.className = 'apk-pet-burst-item';
@@ -495,19 +479,61 @@ function renderPetElement() {
   root.addEventListener('pointerup', onPointerUp);
   root.addEventListener('pointercancel', onPointerUp);
 
-  // Periodic natural idle micro-blink
+  // ── Global Website Interaction Listener ──
+  // Reacts dynamically to whatever user clicks on the website
+  document.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('#apk-companion-pet')) return;
+    if (isLoginScreenActive() || !isPetEnabled()) return;
+
+    // 1. Navigation Island Clicks
+    if (e.target.closest('.nav-tab, .header-nav-tabs, #tab-live, #tab-videos, #tab-notes, #tab-tests, #tab-saved')) {
+      setPetExpression('happy', 'is-wink');
+      showTamagotchiBubble('Oho! 👀', 1000);
+      return;
+    }
+
+    // 2. Class Cards or "Join Live Classroom" Click
+    if (e.target.closest('.class-card, .join-embedded-btn, .btn-zoom')) {
+      setPetExpression('happy', 'is-cheer');
+      showTamagotchiBubble('Yatta! 🔥', 1200);
+      return;
+    }
+
+    // 3. Date Carousel Click
+    if (e.target.closest('.apk-date-pill')) {
+      setPetExpression('wink', 'is-nod');
+      showTamagotchiBubble('✨', 900);
+      return;
+    }
+
+    // 4. Test start or submit click
+    if (e.target.closest('.start-quiz-hub-btn, #quiz-submit-btn, .btn-report-cta')) {
+      setPetExpression('focus', 'is-cheer');
+      showTamagotchiBubble('Yosh! 💪', 1200);
+      return;
+    }
+
+    // 5. Test Option Selected / Explanations
+    if (e.target.closest('.quiz-option-btn, .analysis-explain-btn')) {
+      setPetExpression('focus', 'is-nod');
+      return;
+    }
+
+    // 6. Occasional subtle nod on general screen clicks
+    const now = Date.now();
+    if (now - lastSiteInteractionTime > 4000) {
+      lastSiteInteractionTime = now;
+      setPetExpression('default', 'is-nod');
+    }
+  }, { passive: true });
+
+  // Natural idle wiggle / wink
   setInterval(() => {
     if (isDragging || isLoginScreenActive() || !isPetEnabled()) return;
-    if (Math.random() < 0.4) {
-      const curAvatar = root.querySelector('.apk-pet-avatar');
-      if (curAvatar) {
-        curAvatar.innerHTML = getNurseSvg('wink');
-        setTimeout(() => {
-          if (curAvatar) curAvatar.innerHTML = getNurseSvg('default');
-        }, 240);
-      }
+    if (Math.random() < 0.45) {
+      setPetExpression('wink', 'is-buri');
     }
-  }, 22000);
+  }, 24000);
 
   window.addEventListener('resize', () => {
     pos.x = Math.max(10, Math.min(window.innerWidth - 68, pos.x));
@@ -517,25 +543,24 @@ function renderPetElement() {
 }
 
 // Reactive Test & Question Event Listeners
-window.addEventListener('nnl:test-started', (e) => {
+window.addEventListener('nnl:test-started', () => {
   setPetExpression('focus', 'is-nod');
-  const title = e?.detail?.title || 'Practice Test';
-  showTamagotchiBubble(`Starting "${title}". Focus mode on! 🩺`);
+  showTamagotchiBubble('Focus! 🎯', 1200);
 });
 
 window.addEventListener('nnl:test-correct', () => {
-  setPetExpression('happy', 'is-cheer');
-  showTamagotchiBubble('Brilliant! Correct answer! ⭐');
+  setPetExpression('happy', 'is-buri');
+  showTamagotchiBubble('Buri Buri~ 🍑', 1400);
 });
 
 window.addEventListener('nnl:test-incorrect', () => {
-  setPetExpression('thinking', 'is-squish');
-  showTamagotchiBubble('Take a breath! Check the rationale below. 💡');
+  setPetExpression('shocked', 'is-shock');
+  showTamagotchiBubble('Oops! 💦', 1200);
 });
 
 window.addEventListener('nnl:question-slow', () => {
-  setPetExpression('thinking', 'is-wiggle');
-  showTamagotchiBubble('Take your time, read each choice carefully! ⏳');
+  setPetExpression('shocked', 'is-shock');
+  showTamagotchiBubble('Tick tock! ⏳', 1200);
 });
 
 // Class reminder polling

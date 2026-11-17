@@ -2880,7 +2880,7 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
   }
 
   // Show prominent loading indicator inside class list if no cards rendered yet
-  if (!hasCache || classListContainer.children.length === 0) {
+  if (!hasCache && (!classesData || classesData.length === 0)) {
     classListContainer.innerHTML = `
       <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;gap:14px;color:var(--text-secondary);width:100%;text-align:center;">
         <div class="spinner" style="width:38px;height:38px;border-width:3.2px;border-color:rgba(124,58,237,0.22);border-top-color:#7c3aed;"></div>
@@ -3128,7 +3128,21 @@ function renderHomeDateCalendar(poolClasses) {
     if (dayClasses.length > 0) {
       if (emptyState) emptyState.classList.add('hide');
       classListContainer.classList.remove('hide');
-      dayClasses.forEach(c => {
+
+      // Sort dayClasses: Live classes first, then upcoming, then completed
+      const sortedDayClasses = [...dayClasses].sort((a, b) => {
+        const startA = parseApiDate(a.start || a.startTime || '');
+        const endA = a.end || a.endTime ? parseApiDate(a.end || a.endTime) : new Date(startA.getTime() + 2 * 3600000);
+        const isLiveA = now >= startA && now <= endA;
+        const startB = parseApiDate(b.start || b.startTime || '');
+        const endB = b.end || b.endTime ? parseApiDate(b.end || b.endTime) : new Date(startB.getTime() + 2 * 3600000);
+        const isLiveB = now >= startB && now <= endB;
+        if (isLiveA && !isLiveB) return -1;
+        if (!isLiveA && isLiveB) return 1;
+        return startA.getTime() - startB.getTime();
+      });
+
+      sortedDayClasses.forEach(c => {
         const start = parseApiDate(c.start || c.startTime || '');
         const end = c.end || c.endTime ? parseApiDate(c.end || c.endTime) : new Date(start.getTime() + 2 * 3600000);
         const isLiveNow = now >= start && now <= end;
@@ -3274,12 +3288,9 @@ function renderClasses(classes) {
       } catch (e) { return false; }
     });
 
-    if (currentlyLive.length > 0) {
-      liveNowSection.classList.remove('hide');
-      currentlyLive.forEach(c => liveNowContainer.appendChild(createClassCard(c, true, false)));
-    } else {
-      liveNowSection.classList.add('hide');
-    }
+    // Live classes are unified directly into Today's Lectures via the date calendar, avoiding duplicate cards
+    liveNowSection.classList.add('hide');
+    liveNowContainer.innerHTML = '';
 
     // 2. Interactive Horizontal Date Selector (Image 2 style with past & future dates)
     renderHomeDateCalendar(poolForLive);
