@@ -1118,6 +1118,7 @@ function renderQuestion() {
     btn.addEventListener('click', () => {
       if (currentQuizMode === 'review') return;
       quizAnswers[currentQuestionIndex] = c.id;
+      saveActiveTestSession();
       if (currentQuizMode === 'practice') {
         renderQuestion();
         updateQuizNavigator();
@@ -1417,6 +1418,7 @@ function submitTest() {
         quizAnswers
       };
       localStorage.setItem(`nnl_test_result_${currentTestConfig.id}`, JSON.stringify(resultData));
+      clearActiveTestSession();
     } catch (_) {}
   }
 }
@@ -1509,8 +1511,33 @@ function promptExitConfirmation() {
   }
 }
 
+function saveActiveTestSession() {
+  if (!currentTestConfig || !quizQuestions || !quizQuestions.length) return;
+  try {
+    const payload = {
+      testConfig: currentTestConfig,
+      quizMode: currentQuizMode,
+      quizQuestions,
+      quizAnswers,
+      currentQuestionIndex,
+      quizTimeRemaining,
+      totalTimeElapsed,
+      timeSpentPerQuestion,
+      savedAt: Date.now()
+    };
+    sessionStorage.setItem('nnl_active_cbt_session', JSON.stringify(payload));
+  } catch (_) {}
+}
+
+function clearActiveTestSession() {
+  try {
+    sessionStorage.removeItem('nnl_active_cbt_session');
+  } catch (_) {}
+}
+
 function closeQuizViewer() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
+  clearActiveTestSession();
   document.getElementById('quiz-confirm-modal')?.classList.add('hide');
   document.getElementById('quiz-exit-modal')?.classList.add('hide');
   document.getElementById('quiz-viewer')?.classList.add('hide');
@@ -1634,14 +1661,42 @@ function initEventBindings() {
     }
   });
 
+  window.__nnlHandleBackPressed = () => {
+    const modalConfirm = document.getElementById('quiz-confirm-modal');
+    if (modalConfirm && !modalConfirm.classList.contains('hide')) {
+      modalConfirm.classList.add('hide');
+      return true;
+    }
+    const modalExit = document.getElementById('quiz-exit-modal');
+    if (modalExit && !modalExit.classList.contains('hide')) {
+      modalExit.classList.add('hide');
+      return true;
+    }
+    const qv = document.getElementById('quiz-viewer');
+    if (qv && !qv.classList.contains('hide')) {
+      promptExitConfirmation();
+      return true;
+    }
+    const report = document.getElementById('cbt-report-page');
+    if (report && !report.classList.contains('hide')) {
+      closeQuizViewer();
+      return true;
+    }
+    const overview = document.getElementById('test-overview-modal');
+    if (overview && !overview.classList.contains('hide')) {
+      closeTestOverviewModal();
+      return true;
+    }
+    if (currentOpenItem) {
+      closeDetailView();
+      return true;
+    }
+    return false;
+  };
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      const qv = document.getElementById('quiz-viewer');
-      if (qv && !qv.classList.contains('hide')) {
-        promptExitConfirmation();
-      } else if (currentOpenItem) {
-        closeDetailView();
-      }
+      if (window.__nnlHandleBackPressed && window.__nnlHandleBackPressed()) return;
     }
   });
 }

@@ -1545,13 +1545,21 @@ function initEventListeners() {
     });
   }
 
+  window.__nnlHandleBackPressed = () => {
+    if (pdfModal && !pdfModal.classList.contains('hide')) {
+      closePdfModal();
+      return true;
+    }
+    if (currentOpenSubject) {
+      closeSubjectView();
+      return true;
+    }
+    return false;
+  };
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (pdfModal && !pdfModal.classList.contains('hide')) {
-        closePdfModal();
-      } else if (currentOpenSubject) {
-        closeSubjectView();
-      }
+      if (window.__nnlHandleBackPressed && window.__nnlHandleBackPressed()) return;
     }
   });
 }

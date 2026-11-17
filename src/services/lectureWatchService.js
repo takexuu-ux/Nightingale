@@ -125,14 +125,32 @@ export function getLastWatchedLecture() {
     } catch (_) {}
   }
 
-  if (lastId && map[String(lastId)]) {
-    return map[String(lastId)];
-  }
-
   const list = Object.values(map);
   if (list.length === 0) return null;
-  list.sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
-  return list[0] || null;
+
+  // Filter in-progress lectures only (<90% and not completed):
+  // "like if i was watchign a lecture and left it somewhere then show that lecture on home page above dates with resume button"
+  // "update it if i start other lecture if i completed lecture then dont show"
+  const inProgressList = list.filter(item => {
+    if (!item) return false;
+    const p = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+    const curTime = Number(item.currentTime || 0);
+    return !item.isCompleted && p < 90 && (p > 0 || curTime > 5);
+  });
+
+  if (inProgressList.length === 0) {
+    return null;
+  }
+
+  // If the last tracked ID is in progress, prefer it:
+  if (lastId) {
+    const match = inProgressList.find(x => String(x.recId) === String(lastId));
+    if (match) return match;
+  }
+
+  // Otherwise pick the most recently watched in-progress lecture:
+  inProgressList.sort((a, b) => (b.lastWatched || 0) - (a.lastWatched || 0));
+  return inProgressList[0] || null;
 }
 
 export function getRecentlyWatchedLectures(limit = 8) {

@@ -3959,6 +3959,38 @@ window.addEventListener('nnl:watch-progress-updated', () => {
 window.__nnlRefreshWatchProgress = () => {
   renderContinueWatchingSection();
 };
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    renderContinueWatchingSection();
+  }
+});
+window.__nnlHandleBackPressed = () => {
+  const saarthiModal = document.getElementById('apk-saarthi-modal');
+  if (saarthiModal && !saarthiModal.classList.contains('hide')) {
+    saarthiModal.classList.add('hide');
+    return true;
+  }
+  const resumeDrawer = document.getElementById('apk-resume-drawer');
+  if (resumeDrawer && !resumeDrawer.classList.contains('hide')) {
+    resumeDrawer.classList.add('hide');
+    return true;
+  }
+  const updateModal = document.getElementById('apk-update-modal');
+  if (updateModal && !updateModal.classList.contains('hide')) {
+    updateModal.classList.add('hide');
+    return true;
+  }
+  const quizViewer = document.getElementById('quiz-viewer');
+  if (quizViewer && !quizViewer.classList.contains('hide')) {
+    if (typeof promptExitConfirmation === 'function') {
+      promptExitConfirmation();
+    } else {
+      quizViewer.classList.add('hide');
+    }
+    return true;
+  }
+  return false;
+};
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(renderContinueWatchingSection, 150);

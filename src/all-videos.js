@@ -1373,6 +1373,17 @@ async function openRecordingPlayer(recording) {
       }
     }
 
+    // Pre-record progress immediately so Continue Watching on home page updates seamlessly
+    try {
+      saveLectureProgress(recId, {
+        title: recording.title || 'Recorded Lecture',
+        instructor: recording.instructor || 'NNL Faculty',
+        subject: currentOpenSubject?.title || '',
+        percent: getLectureProgress(recId)?.percent || 1,
+        currentTime: getLectureProgress(recId)?.currentTime || 0
+      });
+    } catch (_) {}
+
     // Directly launch native player immediately (VdoPlayerActivity will stream natively with valid credentials)
     window.AndroidVideoBridge.playVideoWithAuth(
       currentOtp,
@@ -1639,10 +1650,31 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSubjectLecturesList();
   });
 
+  window.__nnlHandleBackPressed = () => {
+    const viewer = document.getElementById('recording-viewer');
+    if (viewer && !viewer.classList.contains('hide')) {
+      const videoEl = document.getElementById('recording-video');
+      if (videoEl) {
+        try { videoEl.pause(); } catch (_) {}
+        videoEl.removeAttribute('src');
+      }
+      viewer.classList.add('hide');
+      return true;
+    }
+    if (pdfModal && !pdfModal.classList.contains('hide')) {
+      closePdfModal();
+      return true;
+    }
+    if (currentOpenSubject) {
+      closeSubjectPage();
+      return true;
+    }
+    return false;
+  };
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (pdfModal && !pdfModal.classList.contains('hide')) closePdfModal();
-      else if (currentOpenSubject) closeSubjectPage();
+      if (window.__nnlHandleBackPressed && window.__nnlHandleBackPressed()) return;
     }
   });
 
