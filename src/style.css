@@ -5561,10 +5561,11 @@ body:has(#auth-screen.hide) .dashboard-container {
   padding: 2rem;
 }
 
-/* Big Screen Mode - shifts Zoom iframe further up to completely hide top participant videos/names without cutting bottom */
-.classroom-viewer-container.big-screen-mode .zoom-sdk-container {
-  top: -210px !important;
-  height: calc(100% + 214px) !important;
+/* Clean viewport layout with zero arbitrary cropping */
+.classroom-viewer-container.big-screen-mode .zoom-sdk-container,
+.classroom-viewer-container .zoom-sdk-container {
+  top: 0 !important;
+  height: 100% !important;
 }
 
 /* Add a transition to make the shift smooth */

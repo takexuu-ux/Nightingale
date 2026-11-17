@@ -18,6 +18,19 @@
             document.head.appendChild(s);
           }
         } catch(e) {}
+
+        // Immediate background wakeup ping for Render proxy server
+        (function wakeRenderProxy() {
+          function ping() {
+            try {
+              fetch('https://nightingale-9n2c.onrender.com/health', { mode: 'no-cors', cache: 'no-store' }).catch(function(){});
+            } catch(e) {}
+          }
+          ping();
+          // Keep-alive background heartbeat every 8 minutes
+          setInterval(ping, 8 * 60 * 1000);
+          window.__wakeRenderProxy = ping;
+        })();
       })();
     </script>
     <meta name="description" content="Access Nightingale premium nursing preparation classes directly from your PC browser and join live interactive sessions." />
@@ -324,30 +337,26 @@
             </div>
           </div>
         </div>
-        <div class="classroom-header-right" style="display: flex; align-items: center; gap: 0.45rem;">
-          <button id="toggle-big-screen-btn" class="btn btn-header-action" title="Toggle Big Screen Mode">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="14" rx="2"></rect>
-              <line x1="8" y1="21" x2="16" y2="21"></line>
-              <line x1="12" y1="18" x2="12" y2="21"></line>
-            </svg>
-          </button>
+        <div class="classroom-header-right" style="display: flex; align-items: center; gap: 0.5rem;">
           <button id="header-fullscreen-btn" class="btn btn-header-action" title="Toggle Fullscreen">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg id="fullscreen-action-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 8V5a1 1 0 011-1h3m8 0h3a1 1 0 011 1v3m0 8v3a1 1 0 01-1 1h-3m-8 0H5a1 1 0 01-1-1v-3"></path>
             </svg>
+            <span id="fullscreen-btn-label">Fullscreen</span>
           </button>
           <button id="zoom-passcode-display" class="btn btn-header-action" style="display: none;" title="Copy Zoom Passcode">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="7.5" cy="15.5" r="4.5"></circle>
               <path d="M11 12l8.5-8.5M16 7l2.5 2.5M14 9l2 2"></path>
             </svg>
+            <span id="passcode-text">Passcode</span>
           </button>
-          <a id="zoom-fallback-btn" class="btn-header-action" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab">
+          <a id="zoom-fallback-btn" class="btn btn-header-action" target="_blank" rel="noopener noreferrer" title="Launch Zoom in App / Tab">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="5" width="13" height="14" rx="2"></rect>
               <polygon points="15 10 21 6.5 21 17.5 15 14"></polygon>
             </svg>
+            <span>Launch Zoom App</span>
           </a>
         </div>
       </div>

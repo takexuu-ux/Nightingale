@@ -1500,9 +1500,53 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
     const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
-    console.log('Loading Zoom Web Client in proxy iframe:', zoomWebLink);
-    classroomIframe.src = zoomWebLink;
-    classroomIframe.classList.remove('hide');
+    // Background Render proxy verification: ensure Render is awake before loading iframe to avoid raw terminal screen
+    let isRenderAwake = false;
+    try {
+      const abortCtrl = new AbortController();
+      const tId = setTimeout(() => abortCtrl.abort(), 2000);
+      const pingRes = await fetch('https://nightingale-9n2c.onrender.com/health', {
+        signal: abortCtrl.signal,
+        cache: 'no-store'
+      });
+      clearTimeout(tId);
+      if (pingRes.ok) isRenderAwake = true;
+    } catch (_) {}
+
+    if (isRenderAwake) {
+      console.log('Render proxy is responsive. Loading Zoom Web Client in proxy iframe:', zoomWebLink);
+      classroomIframe.src = zoomWebLink;
+      classroomIframe.classList.remove('hide');
+    } else {
+      console.log('Render proxy waking up in background. Keeping clean Nightingale backdrop active...');
+      if (connectingSubtitle) {
+        connectingSubtitle.textContent = 'Waking up secure classroom server in background (~15s)...';
+      }
+      classroomIframe.src = 'about:blank';
+      classroomIframe.classList.add('hide');
+
+      let wakePollCount = 0;
+      const pollInterval = setInterval(async () => {
+        wakePollCount++;
+        try {
+          const pollRes = await fetch('https://nightingale-9n2c.onrender.com/health', { cache: 'no-store' });
+          if (pollRes.ok || wakePollCount >= 18) {
+            clearInterval(pollInterval);
+            if (connectingSubtitle) {
+              connectingSubtitle.textContent = 'Connecting to Live Classroom...';
+            }
+            classroomIframe.src = zoomWebLink;
+            classroomIframe.classList.remove('hide');
+          }
+        } catch (_) {
+          if (wakePollCount >= 18) {
+            clearInterval(pollInterval);
+            classroomIframe.src = zoomWebLink;
+            classroomIframe.classList.remove('hide');
+          }
+        }
+      }, 2000);
+    }
 
     // Update and show passcode display button in the header
     const passcodeDisplay = document.getElementById('zoom-passcode-display');
@@ -4154,28 +4198,7 @@ if (closeChatPanelBtn) {
   });
 }
 
-// Toggle big screen mode (crops/hides top participant videos)
-if (toggleBigScreenBtn) {
-  toggleBigScreenBtn.addEventListener('click', () => {
-    if (!classroomViewer) return;
-    const isBigScreen = classroomViewer.classList.contains('big-screen-mode');
-    classroomViewer.classList.toggle('big-screen-mode', !isBigScreen);
-    toggleBigScreenBtn.classList.toggle('btn-active', !isBigScreen);
-    
-    // Propagate big-screen-mode class to the iframe body immediately
-    const iframe = document.getElementById('classroom-iframe');
-    if (iframe) {
-      try {
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        if (doc && doc.body) {
-          doc.body.classList.toggle('big-screen-mode', !isBigScreen);
-        }
-      } catch (e) {
-        console.warn('Failed to toggle big-screen-mode class on iframe body:', e.message);
-      }
-    }
-  });
-}
+// Big Screen cropping removed per user request: full viewport is always displayed cleanly without cropping
 
 // Hover / movement listener on viewport to show bars temporarily when collapsed
 const playerViewport = document.getElementById('player-viewport');
@@ -4309,16 +4332,17 @@ if (toggleSidebarBtn) {
 }
 // No separate close-sidebar-btn anymore — pull-tab handles both open and close
 
-// Fullscreen toggle handler
+// Fullscreen toggle handler (fullscreen whole classroom view cleanly without cropping)
 function toggleClassroomFullscreen() {
-  const viewport = document.getElementById('player-viewport');
-  if (!viewport) return;
+  const target = document.getElementById('classroom-viewer') || document.documentElement;
   if (!document.fullscreenElement) {
-    viewport.requestFullscreen().catch(err =>
-      console.error('Fullscreen error:', err.message)
-    );
+    if (target.requestFullscreen) {
+      target.requestFullscreen().catch(err => console.error('Fullscreen error:', err));
+    }
   } else {
-    document.exitFullscreen();
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(err => console.error('Exit fullscreen error:', err));
+    }
   }
 }
 if (headerFullscreenBtn) {
@@ -4328,28 +4352,24 @@ if (bottomFullscreenBtn) {
   bottomFullscreenBtn.addEventListener('click', toggleClassroomFullscreen);
 }
 
-// Automatically trigger Big Screen Mode when entering browser fullscreen to hide participants
+// Clean fullscreen listener: toggle icon & label without cropping the video
 document.addEventListener('fullscreenchange', () => {
-  if (!classroomViewer) return;
   const isFullscreen = !!document.fullscreenElement;
+  const label = document.getElementById('fullscreen-btn-label');
+  const icon = document.getElementById('fullscreen-action-icon');
   
-  if (isFullscreen) {
-    classroomViewer.classList.add('big-screen-mode');
-    if (toggleBigScreenBtn) {
-      toggleBigScreenBtn.classList.add('btn-active');
+  if (label) {
+    label.textContent = isFullscreen ? 'Exit Fullscreen' : 'Fullscreen';
+  }
+  if (icon) {
+    if (isFullscreen) {
+      icon.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
+    } else {
+      icon.innerHTML = '<path d="M4 8V5a1 1 0 011-1h3m8 0h3a1 1 0 011 1v3m0 8v3a1 1 0 01-1 1h-3m-8 0H5a1 1 0 01-1-1v-3"></path>';
     }
   }
-  
-  // Propagate class state to the iframe body
-  const iframe = document.getElementById('classroom-iframe');
-  if (iframe) {
-    try {
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      if (doc && doc.body) {
-        const isBigScreen = classroomViewer.classList.contains('big-screen-mode');
-        doc.body.classList.toggle('big-screen-mode', isBigScreen);
-      }
-    } catch (e) {}
+  if (headerFullscreenBtn) {
+    headerFullscreenBtn.classList.toggle('btn-active', isFullscreen);
   }
 });
 

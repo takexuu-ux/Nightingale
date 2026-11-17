@@ -65,6 +65,17 @@ const server = http.createServer(async (req, res) => {
   const pathname = parsedUrl.pathname || '';
   req.path = pathname;
 
+  // Lightweight health & keep-alive ping endpoint (CORS-enabled)
+  if (pathname === '/health' || pathname === '/ping') {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.end(JSON.stringify({ status: 'ok', server: 'render', uptime: process.uptime(), timestamp: Date.now() }));
+    return;
+  }
+
   const isZoom = pathname.startsWith('/zoom') || 
                  pathname.startsWith('/zoom-subdomain') || 
                  pathname.startsWith('/captcha') || 
