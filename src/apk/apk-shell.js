@@ -432,12 +432,20 @@ function buildSidePanel() {
           }
           if (sideStatusMsg) {
             sideStatusMsg.style.color = '#10b981';
-            sideStatusMsg.textContent = `🚀 Update ready (v${data.remoteWebVersion || 86})! Tap below to install.`;
+            sideStatusMsg.textContent = `🚀 Update v${data.remoteWebVersion || 86} ready! Tap button below to install.`;
+          }
+          if (sideCheckBtn && sideCheckTxt) {
+            sideCheckTxt.textContent = `Install Update (v${data.remoteWebVersion || 86})`;
+            sideCheckBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            sideCheckBtn.style.borderColor = '#10b981';
+            sideCheckBtn.style.color = '#ffffff';
+            sideCheckBtn.__hasPendingUpdate = true;
           }
           if (sideApplyBtn) {
             sideApplyBtn.style.display = 'inline-flex';
+            sideApplyBtn.style.width = '100%';
             sideApplyBtn.disabled = false;
-            if (sideApplyTxt) sideApplyTxt.textContent = 'Download & Install Update';
+            if (sideApplyTxt) sideApplyTxt.textContent = `Install Live Update (v${data.remoteWebVersion || 86})`;
           }
           if (sideInstallBtn) sideInstallBtn.style.display = 'none';
         } else if (hasNative) {
@@ -451,10 +459,18 @@ function buildSidePanel() {
             sideStatusMsg.style.color = '#8b5cf6';
             sideStatusMsg.textContent = `New Native APK v1.0.${data.remoteNativeVersionCode} available!`;
           }
+          if (sideCheckBtn && sideCheckTxt) {
+            sideCheckTxt.textContent = `Install APK (v1.0.${data.remoteNativeVersionCode})`;
+            sideCheckBtn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)';
+            sideCheckBtn.style.borderColor = '#7c3aed';
+            sideCheckBtn.style.color = '#ffffff';
+            sideCheckBtn.__hasPendingApk = true;
+          }
           if (sideInstallBtn) {
             sideInstallBtn.style.display = 'inline-flex';
+            sideInstallBtn.style.width = '100%';
             sideInstallBtn.disabled = false;
-            if (sideInstallTxt) sideInstallTxt.textContent = 'Download & Install APK';
+            if (sideInstallTxt) sideInstallTxt.textContent = `Download & Install APK (v1.0.${data.remoteNativeVersionCode})`;
           }
           if (sideApplyBtn) sideApplyBtn.style.display = 'none';
         } else {
