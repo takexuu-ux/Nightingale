@@ -426,16 +426,38 @@
 
     </div>
 
-    <!-- Test Submission Confirmation Modal -->
-    <div id="quiz-confirm-modal" class="pdf-modal-overlay hide" style="z-index: 10060;">
-      <div style="background: linear-gradient(145deg, #13182b, #1d1633); border: 1px solid rgba(167,139,250,0.3); border-radius: 16px; padding: 1.5rem 1.75rem; max-width: 420px; width: 92%; box-shadow: 0 24px 60px rgba(0,0,0,0.65);">
-        <h3 style="margin:0 0 0.65rem 0; font-family:var(--font-display); font-size:1.05rem; letter-spacing:0.04em; color:#ede9fe;">Submit Assessment?</h3>
-        <p id="quiz-confirm-msg" style="margin:0 0 1.25rem 0; font-size:0.88rem; color:#cbd5e1; line-height:1.55;">
+    <!-- 1. Test Submission Confirmation Modal (Submit vs Review) -->
+    <div id="quiz-confirm-modal" class="pdf-modal-overlay hide" style="z-index: 10000005 !important;">
+      <div class="quiz-modal-box">
+        <h3 class="quiz-modal-title">Submit Assessment?</h3>
+        <p id="quiz-confirm-msg" class="quiz-modal-msg">
           Are you sure you want to finish and generate your performance report?
         </p>
-        <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
-          <button id="quiz-confirm-cancel-btn" type="button" class="btn btn-secondary" style="padding:0.48rem 1.15rem;">Review Questions</button>
-          <button id="quiz-confirm-ok-btn" type="button" class="btn btn-primary" style="padding:0.48rem 1.15rem; background: linear-gradient(135deg, #059669 0%, #10b981 100%);">Submit Test</button>
+        <div class="quiz-modal-actions">
+          <button id="quiz-confirm-cancel-btn" type="button" class="btn-quiz-modal-btn btn-quiz-modal-review">Review Questions</button>
+          <button id="quiz-confirm-ok-btn" type="button" class="btn-quiz-modal-btn btn-quiz-modal-submit">Submit Test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Test Cancel / Exit Modal (Cancel vs Submit) -->
+    <div id="quiz-exit-modal" class="pdf-modal-overlay hide" style="z-index: 10000005 !important;">
+      <div class="quiz-modal-box">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 0.75rem;">
+          <h3 class="quiz-modal-title" style="margin:0;">Exit Assessment?</h3>
+          <button id="quiz-exit-resume-x-btn" type="button" class="btn-close-quiz" style="width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); cursor:pointer;" title="Resume Test" aria-label="Resume Test">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <p id="quiz-exit-msg" class="quiz-modal-msg">
+          Do you want to cancel and leave this test, or submit your answers now?
+        </p>
+        <div class="quiz-modal-actions">
+          <button id="quiz-exit-cancel-btn" type="button" class="btn-quiz-modal-btn btn-quiz-modal-danger">Cancel Test</button>
+          <button id="quiz-exit-submit-btn" type="button" class="btn-quiz-modal-btn btn-quiz-modal-submit">Submit Test</button>
+        </div>
+        <div style="margin-top: 0.85rem; text-align: center;">
+          <button id="quiz-exit-resume-btn" type="button" style="background:none; border:none; color:var(--text-secondary); font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline;">Resume Test</button>
         </div>
       </div>
     </div>

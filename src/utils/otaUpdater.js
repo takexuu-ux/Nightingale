@@ -258,7 +258,7 @@ function attachUpdateTriggers(checkFn) {
     box.innerHTML = `
       <div class="apk-ota-settings-head">
         <span class="apk-ota-settings-label">App Update</span>
-        <span id="apk-ota-ver-label">Version 1.0.30</span>
+        <span id="apk-ota-ver-label">Version 1.0.31</span>
       </div>
       <div id="apk-ota-settings-progress-wrap" style="display:none;">
         <div id="apk-ota-settings-progress-bar"></div>

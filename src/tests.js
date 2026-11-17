@@ -1457,8 +1457,62 @@ function promptSubmitConfirmation() {
   }
 }
 
+function promptExitConfirmation() {
+  const qv = document.getElementById('quiz-viewer');
+  if (!qv || qv.classList.contains('hide')) {
+    closeQuizViewer();
+    return;
+  }
+  const report = document.getElementById('cbt-report-page');
+  if (report && !report.classList.contains('hide')) {
+    closeQuizViewer();
+    return;
+  }
+
+  const modal = document.getElementById('quiz-exit-modal');
+  const cancelBtn = document.getElementById('quiz-exit-cancel-btn');
+  const submitBtn = document.getElementById('quiz-exit-submit-btn');
+  const resumeBtn = document.getElementById('quiz-exit-resume-btn');
+  const resumeXBtn = document.getElementById('quiz-exit-resume-x-btn');
+
+  if (!modal) {
+    if (confirm('Are you sure you want to exit and cancel this test?')) {
+      closeQuizViewer();
+    }
+    return;
+  }
+
+  modal.classList.remove('hide');
+
+  const hideExitModal = () => modal.classList.add('hide');
+
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      hideExitModal();
+      closeQuizViewer();
+    };
+  }
+
+  if (submitBtn) {
+    submitBtn.onclick = () => {
+      hideExitModal();
+      submitTest();
+    };
+  }
+
+  if (resumeBtn) {
+    resumeBtn.onclick = hideExitModal;
+  }
+
+  if (resumeXBtn) {
+    resumeXBtn.onclick = hideExitModal;
+  }
+}
+
 function closeQuizViewer() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
+  document.getElementById('quiz-confirm-modal')?.classList.add('hide');
+  document.getElementById('quiz-exit-modal')?.classList.add('hide');
   document.getElementById('quiz-viewer')?.classList.add('hide');
   document.getElementById('cbt-report-page')?.classList.add('hide');
 }
@@ -1538,8 +1592,8 @@ function initEventBindings() {
   }
 
   // Quiz Viewer Controls
-  document.getElementById('quiz-top-close-btn')?.addEventListener('click', closeQuizViewer);
-  document.getElementById('quiz-top-back-btn')?.addEventListener('click', closeQuizViewer);
+  document.getElementById('quiz-top-close-btn')?.addEventListener('click', promptExitConfirmation);
+  document.getElementById('quiz-top-back-btn')?.addEventListener('click', promptExitConfirmation);
   document.getElementById('quiz-close-btn')?.addEventListener('click', closeQuizViewer);
   document.getElementById('quiz-prev-btn')?.addEventListener('click', () => {
     if (currentQuestionIndex > 0) {
@@ -1584,7 +1638,7 @@ function initEventBindings() {
     if (e.key === 'Escape') {
       const qv = document.getElementById('quiz-viewer');
       if (qv && !qv.classList.contains('hide')) {
-        closeQuizViewer();
+        promptExitConfirmation();
       } else if (currentOpenItem) {
         closeDetailView();
       }

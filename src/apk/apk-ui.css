@@ -3716,11 +3716,9 @@ body:not(.apk-is-auth) {
 
   [data-theme="light"] #auth-screen,
   [data-theme="light"] .auth-container {
-    background: rgba(255, 255, 255, 0.96) !important;
-    border: 1.5px solid rgba(108, 79, 214, 0.25) !important;
-    box-shadow: 0 16px 42px rgba(108, 79, 214, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
-    backdrop-filter: blur(24px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+    background: rgba(255, 255, 255, 0.70) !important;
+    border: 1px solid rgba(108, 79, 214, 0.18) !important;
+    box-shadow: 0 12px 32px rgba(45, 34, 72, 0.12) !important;
   }
 
   [data-theme="light"] #auth-screen .brand-title {
@@ -5524,11 +5522,6 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     margin-bottom: 12px !important;
     display: flex !important;
     align-items: center !important;
-  }
-
-  body.notes-theme-page .apk-hamburger-btn,
-  body.tests-theme-page .apk-hamburger-btn {
-    display: none !important;
   }
 }
 
@@ -7571,6 +7564,130 @@ main#app,
 }
 .quiz-viewer-overlay.hide {
   display: none !important;
+}
+
+/* ── CBT Quiz Modals (Submit Assessment & Cancel / Exit Assessment) ── */
+#quiz-confirm-modal,
+#quiz-exit-modal {
+  z-index: 10000005 !important;
+  background: rgba(10, 8, 20, 0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#quiz-confirm-modal.hide,
+#quiz-exit-modal.hide {
+  display: none !important;
+}
+
+.quiz-modal-box {
+  background: linear-gradient(145deg, #181428 0%, #100c1e 100%) !important;
+  border: 1.5px solid rgba(167, 139, 250, 0.28) !important;
+  border-radius: 20px !important;
+  padding: 1.6rem 1.8rem !important;
+  max-width: 440px !important;
+  width: 92% !important;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-sizing: border-box !important;
+  animation: apkModalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+[data-theme="light"] .quiz-modal-box {
+  background: linear-gradient(145deg, #ffffff 0%, #f6f2ff 100%) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 24px 50px rgba(76, 29, 149, 0.18) !important;
+}
+
+.quiz-modal-title {
+  margin: 0 0 0.65rem 0 !important;
+  font-family: var(--font-display, inherit) !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  color: #ede9fe !important;
+}
+
+[data-theme="light"] .quiz-modal-title {
+  color: #1e1b4b !important;
+}
+
+.quiz-modal-msg {
+  margin: 0 0 1.35rem 0 !important;
+  font-size: 0.92rem !important;
+  color: #cbd5e1 !important;
+  line-height: 1.58 !important;
+}
+
+[data-theme="light"] .quiz-modal-msg {
+  color: #475569 !important;
+}
+
+.quiz-modal-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+}
+
+.btn-quiz-modal-btn {
+  flex: 1 1 0 !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  border-radius: 12px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  padding: 0 12px !important;
+  white-space: nowrap !important;
+}
+
+.btn-quiz-modal-btn:active {
+  transform: scale(0.97) !important;
+}
+
+/* Secondary / Review: sleek dark purple glass, NEVER white */
+.btn-quiz-modal-review {
+  background: rgba(139, 92, 246, 0.18) !important;
+  color: #ddd6fe !important;
+  border: 1.5px solid rgba(167, 139, 250, 0.35) !important;
+}
+
+[data-theme="light"] .btn-quiz-modal-review {
+  background: #f3e8ff !important;
+  color: #6d28d9 !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Danger / Cancel: clear destructive red accent */
+.btn-quiz-modal-danger {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #fca5a5 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+[data-theme="light"] .btn-quiz-modal-danger {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Primary / Submit: rich emerald green */
+.btn-quiz-modal-submit {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35) !important;
 }
 
 /* ── Tablet Sidebar: Active Button Background Exactly Behind Its Button ── */

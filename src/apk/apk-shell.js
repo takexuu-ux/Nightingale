@@ -943,27 +943,33 @@ function normalizeHeaderAndChrome() {
     hamBtn.type = 'button';
     hamBtn.setAttribute('aria-label', 'Open Menu & Settings');
     hamBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+  }
+  if (hamBtn && !hamBtn.__bound) {
+    hamBtn.__bound = true;
     hamBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       openSidePanel();
     });
   }
 
+  // Delegated global click listener to guarantee Options Button ALWAYS opens drawer
+  if (!window.__nnlHamBound) {
+    window.__nnlHamBound = true;
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target && target.closest('#apk-hamburger-btn, .apk-hamburger-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        openSidePanel();
+      }
+    }, true);
+  }
+
   const appHeader = document.getElementById('app-header');
   function syncHamburgerPlacement() {
-    const isLandscapeIsland = (window.innerWidth >= 880 && window.innerWidth >= window.innerHeight) || (window.innerWidth >= 1024);
-    if (isLandscapeIsland) {
-      if (appHeader && hamBtn.parentElement !== appHeader) {
-        appHeader.insertBefore(hamBtn, appHeader.firstChild);
-      }
-      hamBtn.style.removeProperty('display');
-      hamBtn.style.removeProperty('visibility');
-      hamBtn.style.removeProperty('opacity');
-      hamBtn.style.removeProperty('pointer-events');
-    } else {
-      if (hamBtn.parentElement !== document.body) {
-        document.body.appendChild(hamBtn);
-      }
+    if (appHeader && hamBtn && hamBtn.parentElement !== appHeader) {
+      appHeader.insertBefore(hamBtn, appHeader.firstChild);
     }
   }
   syncHamburgerPlacement();
