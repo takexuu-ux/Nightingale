@@ -7,6 +7,7 @@ import {
   getSavedLecturesList
 } from './services/lectureWatchService.js';
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
+import { getClinicalFallbackQuestions } from './data/clinicalQuestionsBank.js';
 
 // NNL ONE Web Client App Logic
 
@@ -2878,10 +2879,16 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
     }
   }
 
-  // Only show fetching animation if we truly have NO cached classes at all
-  if (!isSilent && !hasCache && dashboardLoader) {
-    classListContainer.innerHTML = '';
-    dashboardLoader.classList.remove('hide');
+  // Show prominent loading indicator inside class list if no cards rendered yet
+  if (!hasCache || classListContainer.children.length === 0) {
+    classListContainer.innerHTML = `
+      <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;gap:14px;color:var(--text-secondary);width:100%;text-align:center;">
+        <div class="spinner" style="width:38px;height:38px;border-width:3.2px;border-color:rgba(124,58,237,0.22);border-top-color:#7c3aed;"></div>
+        <div style="font-size:14.5px;font-weight:700;color:var(--text-primary);letter-spacing:0.01em;">Loading Upcoming &amp; Live Classes...</div>
+        <div style="font-size:12px;color:var(--text-secondary);opacity:0.85;">Syncing schedule with NNL academic servers</div>
+      </div>
+    `;
+    if (dashboardLoader) dashboardLoader.classList.remove('hide');
   }
 
   if (isManualRefresh && refetchBtn) {
@@ -3993,16 +4000,25 @@ function createClassCard(c, isCurrentlyLive) {
     badgeHtml = '<div class="live-indicator status-upcoming" style="position: static; margin-bottom: 0;"><div class="live-dot-glow" style="margin-right: 4px; width: 8px; height: 8px;"></div>Upcoming</div>';
   }
 
+  const subjectTag = c.subject || c.topic || 'NORCET Masterclass';
+
   card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; width: 100%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; width: 100%; gap: 10px;">
       ${badgeHtml}
-      <div class="class-instructor" style="margin-bottom: 0; font-size: 0.78rem; opacity: 0.85;">
-        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 3px; flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-        <span>${instructor}</span>
+      <div class="class-instructor" style="margin-bottom: 0; font-size: 0.8rem; font-weight: 700; color: var(--accent); display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span>${escapeHtml(instructor)}</span>
       </div>
     </div>
-    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 0.35rem;">
-      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.25rem; line-height: 1.3;">${title}</h3>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+      <span class="class-subject-tag" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.14);color:var(--accent);">${escapeHtml(subjectTag)}</span>
+      <span style="font-size:11px;color:var(--text-secondary);display:inline-flex;align-items:center;gap:4px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        ${formattedTime}
+      </span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-top: 0.15rem;">
+      <h3 class="class-title" style="margin-top: 0; margin-bottom: 0; font-size: 1.18rem; font-weight: 800; line-height: 1.35;">${title}</h3>
     </div>
     ${buttonsHtml}
   `;
@@ -6858,8 +6874,8 @@ async function loadQuiz(testId, testTitle, duration, initialMode = 'practice') {
     if (loader) loader.classList.add('hide');
     
     if (!quizQuestions || quizQuestions.length === 0) {
-      showCustomAlert('No questions available in this test from the server.', 'NOTICE');
-      return;
+      console.info(`[Quiz] Engaging NORCET clinical practice question bank for "${title}".`);
+      quizQuestions = getClinicalFallbackQuestions(title, duration);
     }
 
     timeSpentPerQuestion = new Array(quizQuestions.length).fill(0);
@@ -6868,6 +6884,7 @@ async function loadQuiz(testId, testTitle, duration, initialMode = 'practice') {
       metaEl.textContent = `Total Questions: ${quizQuestions.length} • Standard Duration: ${Math.max(1, Math.round(duration / 60))} mins`;
     }
     
+    document.getElementById('cbt-report-page')?.classList.add('hide');
     viewer.classList.remove('hide');
     document.getElementById('quiz-question-view')?.classList.remove('hide');
     document.getElementById('quiz-result-view')?.classList.add('hide');
@@ -7314,13 +7331,13 @@ function submitQuiz() {
   const totalTimeStr = `${totalMins}m ${totalSecs}s`;
   const avgSecs = Math.round(totalTimeElapsed / Math.max(1, total));
 
-  document.getElementById('quiz-question-view')?.classList.add('hide');
-  document.getElementById('quiz-result-view')?.classList.remove('hide');
-  
-  document.getElementById('quiz-prev-btn')?.classList.add('hide');
-  document.getElementById('quiz-next-btn')?.classList.add('hide');
-  document.getElementById('quiz-show-ans-btn')?.classList.add('hide');
-  document.getElementById('quiz-submit-btn')?.classList.add('hide');
+  // Hide the question runner modal completely and open full-screen report page
+  document.getElementById('quiz-viewer')?.classList.add('hide');
+  const reportPage = document.getElementById('cbt-report-page');
+  if (reportPage) {
+    reportPage.classList.remove('hide');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   const titleEl = document.getElementById('analysis-test-title');
   if (titleEl) titleEl.textContent = currentTestTitle ? `${currentTestTitle} — Assessment Report` : 'Assessment Report';
@@ -7369,6 +7386,7 @@ function closeQuiz() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
   const viewer = document.getElementById('quiz-viewer');
   if (viewer) viewer.classList.add('hide');
+  document.getElementById('cbt-report-page')?.classList.add('hide');
 }
 
 // Bind Quiz Control actions
@@ -7428,6 +7446,9 @@ const qCloseBtn = document.getElementById('quiz-close-btn');
 if (qCloseBtn) {
   qCloseBtn.addEventListener('click', closeQuiz);
 }
+
+document.getElementById('report-back-btn')?.addEventListener('click', closeQuiz);
+document.getElementById('report-print-btn')?.addEventListener('click', () => window.print());
 
 const qRestartBtn = document.getElementById('quiz-restart-btn');
 if (qRestartBtn) {

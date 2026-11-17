@@ -7,7 +7,8 @@ import {
   setPetEnabled,
   getActivePetId,
   setActivePetId,
-  getAvailablePets
+  getAvailablePets,
+  getNurseSvg
 } from './apk-pet-system.js';
 
 function detectSystemDark() {
@@ -198,6 +199,12 @@ function syncPetSelectionUI() {
     toggleBtn.classList.toggle('is-on', petEnabled);
   }
 
+  const statusPill = panel.querySelector('.apk-companion-status-pill');
+  if (statusPill) {
+    statusPill.textContent = petEnabled ? 'Active 🩺' : 'Disabled';
+    statusPill.classList.toggle('disabled', !petEnabled);
+  }
+
   panel.querySelectorAll('.apk-pet-card, .apk-pet-avatar-item').forEach(card => {
     const id = card.getAttribute('data-pet-id');
     card.classList.toggle('active', id === activePetId && petEnabled);
@@ -256,25 +263,33 @@ function buildSidePanel() {
         </div>
       </div>
 
-      <!-- Companion Pet Card -->
-      <div class="apk-side-card">
+      <!-- Study Companion Card -->
+      <div class="apk-side-card apk-companion-setting-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span class="apk-side-section-title" style="margin:0;">Study Companion</span>
+          <div>
+            <div class="apk-side-section-title" style="margin:0;">Tamagotchi Companion</div>
+            <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">Interactive AI Study Buddy &amp; Class Timer</div>
+          </div>
           <button type="button" id="apk-pet-toggle-btn" class="apk-switch-btn" aria-label="Toggle Companion Pet">
             <span class="apk-switch-thumb"></span>
           </button>
         </div>
-        <div class="apk-pet-row-selector">
-          ${availablePets.map(p => `
-            <div class="apk-pet-avatar-item" data-pet-id="${p.id}" role="button" tabindex="0">
-              <div class="apk-pet-avatar-ring">
-                <div class="apk-pet-avatar-graphic">
-                  ${p.svg || p.emoji}
-                </div>
-              </div>
-              <span class="apk-pet-avatar-name">${p.name}</span>
+
+        <div class="apk-companion-preview-box">
+          <div class="apk-companion-avatar-large">
+            ${getNurseSvg('default')}
+          </div>
+          <div class="apk-companion-details">
+            <div class="apk-companion-name-row">
+              <strong style="color:var(--text-primary);font-size:13.5px;">Nurse Tamagotchi</strong>
+              <span class="apk-companion-status-pill">Active 🩺</span>
             </div>
-          `).join('')}
+            <ul class="apk-companion-features">
+              <li>✓ Real-time test reactions &amp; celebrations</li>
+              <li>✓ 10-min upcoming live class notifications</li>
+              <li>✓ Tap companion for high-yield clinical pearls</li>
+            </ul>
+          </div>
         </div>
       </div>
 

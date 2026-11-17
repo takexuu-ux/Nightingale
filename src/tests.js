@@ -3,6 +3,7 @@ import './apk/apk-shell.js';
 import { PRACTICE_TEST_SERIES, QBANK_SUBJECTS, TESTS_CATALOG_TOTALS } from './data/allTestsCatalog.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
+import { getClinicalFallbackQuestions } from './data/clinicalQuestionsBank.js';
 
 hydrateAndroidAuthSession();
 
@@ -817,169 +818,6 @@ async function fetchTestQuestionsPaginated(testId, isBatchTest) {
   return [];
 }
 
-function getClinicalFallbackQuestions(testTitle = '', duration = 1800) {
-  const qBank = [
-    {
-      title: 'Which heart valve prevents the backflow of blood from the left ventricle into the left atrium during ventricular systole?',
-      choices: [
-        { id: 101, title: 'Tricuspid valve', is_correct: false },
-        { id: 102, title: 'Mitral (Bicuspid) valve', is_correct: true },
-        { id: 103, title: 'Aortic semilunar valve', is_correct: false },
-        { id: 104, title: 'Pulmonary semilunar valve', is_correct: false }
-      ],
-      explanation: 'The Mitral (Bicuspid) valve is located between the left atrium and left ventricle. It closes during ventricular systole to prevent regurgitation into the left atrium.'
-    },
-    {
-      title: 'What is the primary physiological pacemaker of the human heart responsible for initiating normal electrical impulses?',
-      choices: [
-        { id: 105, title: 'Atrioventricular (AV) node', is_correct: false },
-        { id: 106, title: 'Bundle of His', is_correct: false },
-        { id: 107, title: 'Sinoatrial (SA) node', is_correct: true },
-        { id: 108, title: 'Purkinje fibers', is_correct: false }
-      ],
-      explanation: 'The SA node, located in the posterosuperior wall of the right atrium, initiates action potentials at 60-100 bpm, serving as the primary cardiac pacemaker.'
-    },
-    {
-      title: 'Which cranial nerve is primarily responsible for sensory innervation of the face and motor innervation of the muscles of mastication?',
-      choices: [
-        { id: 109, title: 'Cranial Nerve V (Trigeminal)', is_correct: true },
-        { id: 110, title: 'Cranial Nerve VII (Facial)', is_correct: false },
-        { id: 111, title: 'Cranial Nerve IX (Glossopharyngeal)', is_correct: false },
-        { id: 112, title: 'Cranial Nerve XII (Hypoglossal)', is_correct: false }
-      ],
-      explanation: 'CN V (Trigeminal) provides sensory innervation to the face and motor control for mastication. CN VII controls muscles of facial expression.'
-    },
-    {
-      title: 'During assessment of a patient with suspected hypocalcemia, light tapping over the facial nerve anterior to the earlobe elicits facial muscle twitching. This is documented as:',
-      choices: [
-        { id: 113, title: 'Trousseau sign', is_correct: false },
-        { id: 114, title: 'Chvostek sign', is_correct: true },
-        { id: 115, title: 'Kernig sign', is_correct: false },
-        { id: 116, title: 'Brudzinski sign', is_correct: false }
-      ],
-      explanation: 'Chvostek sign is elicited by tapping over the facial nerve, causing ipsilateral facial muscle spasm characteristic of neuromuscular hyperexcitability in hypocalcemia.'
-    },
-    {
-      title: 'Which electrocardiogram (ECG) abnormality is classic for acute hyperkalemia with serum potassium levels exceeding 6.0 mEq/L?',
-      choices: [
-        { id: 117, title: 'Prominent U waves and ST-segment depression', is_correct: false },
-        { id: 118, title: 'Tall, narrow, peaked T waves', is_correct: true },
-        { id: 119, title: 'Prolonged QT interval and flattened T waves', is_correct: false },
-        { id: 120, title: 'Shortened PR interval with delta waves', is_correct: false }
-      ],
-      explanation: 'Hyperkalemia classically produces tall, narrow, symmetrical peaked T waves, followed by PR interval prolongation and QRS widening as toxicity progresses.'
-    },
-    {
-      title: 'What specific pharmacological reversal agent is administered for active bleeding secondary to unfractionated heparin toxicity?',
-      choices: [
-        { id: 121, title: 'Vitamin K1 (Phytonadione)', is_correct: false },
-        { id: 122, title: 'Protamine sulfate', is_correct: true },
-        { id: 123, title: 'Naloxone hydrochloride', is_correct: false },
-        { id: 124, title: 'Aminocaproic acid', is_correct: false }
-      ],
-      explanation: 'Protamine sulfate is a strongly basic polycationic peptide that electrostatically complexes with acidic heparin molecules, neutralizing its anticoagulant effects immediately.'
-    },
-    {
-      title: 'According to AHA/BLS guidelines for adult cardiopulmonary resuscitation, what is the target chest compression rate?',
-      choices: [
-        { id: 125, title: '80 to 100 compressions per minute', is_correct: false },
-        { id: 126, title: '100 to 120 compressions per minute', is_correct: true },
-        { id: 127, title: '120 to 140 compressions per minute', is_correct: false },
-        { id: 128, title: 'At least 150 compressions per minute', is_correct: false }
-      ],
-      explanation: 'AHA guidelines mandate 100-120 chest compressions per minute with a depth of at least 2 inches (5 cm) but no more than 2.4 inches (6 cm).'
-    },
-    {
-      title: 'An arterial blood gas (ABG) report shows: pH 7.27, PaCO2 42 mmHg, HCO3- 17 mEq/L. This clinical pattern represents:',
-      choices: [
-        { id: 129, title: 'Uncompensated metabolic acidosis', is_correct: true },
-        { id: 130, title: 'Fully compensated respiratory acidosis', is_correct: false },
-        { id: 131, title: 'Uncompensated respiratory alkalosis', is_correct: false },
-        { id: 132, title: 'Partially compensated metabolic alkalosis', is_correct: false }
-      ],
-      explanation: 'A pH below 7.35 with normal PaCO2 (35-45 mmHg) and subnormal bicarbonate (HCO3- < 22 mEq/L) confirms uncompensated metabolic acidosis.'
-    },
-    {
-      title: 'Following a percutaneous liver biopsy, which post-procedure position is vital to prevent puncture site hemorrhage and bile leakage?',
-      choices: [
-        { id: 133, title: 'Left lateral position with head elevated 30 degrees', is_correct: false },
-        { id: 134, title: 'Right lateral decubitus position with pressure dressing applied', is_correct: true },
-        { id: 135, title: 'Prone position with pillow under abdomen', is_correct: false },
-        { id: 136, title: 'Dorsal recumbent with knees elevated', is_correct: false }
-      ],
-      explanation: 'The patient is positioned on their right side for at least 2 hours to apply direct mechanical tamponade to the liver puncture site via body weight.'
-    },
-    {
-      title: 'Which insulin preparation demonstrates the most rapid onset of action (10-15 minutes) and is intended for mealtime bolus coverage?',
-      choices: [
-        { id: 137, title: 'Regular Insulin (Humulin R)', is_correct: false },
-        { id: 138, title: 'Insulin Lispro (Humalog) or Aspart (NovoLog)', is_correct: true },
-        { id: 139, title: 'Isophane NPH Insulin', is_correct: false },
-        { id: 140, title: 'Insulin Detemir (Levemir)', is_correct: false }
-      ],
-      explanation: 'Rapid-acting analogs (Lispro, Aspart, Glulisine) take effect in 10-15 minutes, peak in 60-90 minutes, and should be administered immediately prior to meal consumption.'
-    },
-    {
-      title: 'Prior to administering oral digoxin (Lanoxin) to an adult patient, the nurse assesses the apical pulse for 1 full minute. The dose is safely held if the rate is below:',
-      choices: [
-        { id: 141, title: '50 beats per minute', is_correct: false },
-        { id: 142, title: '60 beats per minute', is_correct: true },
-        { id: 143, title: '70 beats per minute', is_correct: false },
-        { id: 144, title: '80 beats per minute', is_correct: false }
-      ],
-      explanation: 'Digoxin decreases conduction velocity through the AV node. In adults, the standard nursing cutoff to withhold digoxin and notify the physician is an apical rate < 60 bpm.'
-    },
-    {
-      title: 'Which neurohormone synthesized by hypothalamic magnocellular neurons is released by the posterior pituitary to stimulate renal water retention?',
-      choices: [
-        { id: 145, title: 'Aldosterone', is_correct: false },
-        { id: 146, title: 'Antidiuretic Hormone (Vasopressin)', is_correct: true },
-        { id: 147, title: 'Atrial Natriuretic Peptide', is_correct: false },
-        { id: 148, title: 'Angiotensin II', is_correct: false }
-      ],
-      explanation: 'ADH (Vasopressin) acts on V2 receptors in the renal medullary collecting ducts to trigger translocation of aquaporin-2 water channels, facilitating water reabsorption.'
-    },
-    {
-      title: 'The Glasgow Coma Scale (GCS) provides a standardized scoring system for neurological assessment by grading which three specific categories of patient responses?',
-      choices: [
-        { id: 149, title: 'Eye opening, verbal response, and motor response', is_correct: true },
-        { id: 150, title: 'Pupil reaction, reflex status, and speech clarity', is_correct: false },
-        { id: 151, title: 'Orientation, tactile response, and deep tendon reflexes', is_correct: false },
-        { id: 152, title: 'Motor strength, sensory level, and cranial nerve function', is_correct: false }
-      ],
-      explanation: 'GCS grades Eye response (1-4), Verbal response (1-5), and Motor response (1-6), yielding an overall clinical severity score from 3 to 15.'
-    },
-    {
-      title: 'In patients with end-stage COPD and chronic carbon dioxide retention, why must supplemental oxygen flow rates be carefully controlled?',
-      choices: [
-        { id: 153, title: 'High flow causes immediate pulmonary interstitial fibrosis', is_correct: false },
-        { id: 154, title: 'Excessive oxygen dampens peripheral chemoreceptor hypoxic ventilatory drive', is_correct: true },
-        { id: 155, title: 'Oxygen at high concentrations accelerates bronchial mucus plug formation', is_correct: false },
-        { id: 156, title: 'It induces sudden coronary artery vasospasm', is_correct: false }
-      ],
-      explanation: 'Chronic hypercapnia desensitizes central medullary chemoreceptors; respiration becomes dependent on carotid and aortic body hypoxia. Abrupt hyperoxia can induce respiratory depression.'
-    },
-    {
-      title: 'What definitive diagnostic laboratory procedure confirms the diagnosis of active pulmonary tuberculosis by detecting Mycobacterium tuberculosis?',
-      choices: [
-        { id: 157, title: 'Mantoux tuberculin skin test (PPD)', is_correct: false },
-        { id: 158, title: 'Sputum smear and culture for Acid-Fast Bacilli (AFB)', is_correct: true },
-        { id: 159, title: 'High-resolution chest computed tomography scan', is_correct: false },
-        { id: 160, title: 'Serum erythrocyte sedimentation rate (ESR)', is_correct: false }
-      ],
-      explanation: 'Definitive confirmation of active tuberculosis requires microscopic demonstration of acid-fast bacilli on Ziehl-Neelsen stain and isolation on culture.'
-    }
-  ];
-
-  return qBank.map((q, idx) => ({
-    id: `fb-q-${idx + 1}`,
-    title: q.title,
-    level_str: 'Medium',
-    choices: q.choices,
-    explanation: q.explanation
-  }));
-}
-
 let totalTimeElapsed = 0;
 let timeSpentPerQuestion = [];
 let currentAnalysisFilter = 'all';
@@ -1013,6 +851,7 @@ async function loadAndStartTest({ id, title, duration = 1800, isBatchTest = fals
   }
   if (metaEl) metaEl.textContent = 'Loading test questions...';
 
+  document.getElementById('cbt-report-page')?.classList.add('hide');
   viewer?.classList.remove('hide');
   document.getElementById('quiz-question-view')?.classList.remove('hide');
   document.getElementById('quiz-result-view')?.classList.add('hide');
@@ -1382,8 +1221,13 @@ function submitTest() {
   const totalTimeStr = `${totalMins}m ${totalSecs}s`;
   const avgSecs = Math.round(totalTimeElapsed / Math.max(1, total));
 
-  document.getElementById('quiz-question-view')?.classList.add('hide');
-  document.getElementById('quiz-result-view')?.classList.remove('hide');
+  // Hide the quiz runner box modal and transition to dedicated full-page report screen
+  document.getElementById('quiz-viewer')?.classList.add('hide');
+  const reportPage = document.getElementById('cbt-report-page');
+  if (reportPage) {
+    reportPage.classList.remove('hide');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   const titleEl = document.getElementById('analysis-test-title');
   if (titleEl) titleEl.textContent = currentTestConfig?.title ? `${currentTestConfig.title} — Report` : 'Assessment Report';
@@ -1460,9 +1304,12 @@ function submitTest() {
 function closeQuizViewer() {
   if (quizTimerInterval) clearInterval(quizTimerInterval);
   document.getElementById('quiz-viewer')?.classList.add('hide');
+  document.getElementById('cbt-report-page')?.classList.add('hide');
 }
 
 function initEventBindings() {
+  document.getElementById('report-back-btn')?.addEventListener('click', closeQuizViewer);
+  document.getElementById('report-print-btn')?.addEventListener('click', () => window.print());
   document.getElementById('overview-close-btn')?.addEventListener('click', closeTestOverviewModal);
   document.getElementById('overview-cancel-btn')?.addEventListener('click', closeTestOverviewModal);
   document.getElementById('overview-start-practice-btn')?.addEventListener('click', () => {
