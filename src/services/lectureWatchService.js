@@ -143,14 +143,14 @@ export function getLastWatchedLecture() {
     const curTime = Number(item.currentTime || 0);
     let p = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
     // If dur and curTime exist, ensure p accurately reflects ratio
-    if (dur > 0 && curTime > 0) {
+    if (dur > 60 && curTime > 0) {
       const realP = Math.round((curTime / dur) * 100);
       if (realP < 90 && p >= 90) {
         p = realP;
       }
     }
-    const isCompleted = Boolean(item.isCompleted) || (dur > 0 && curTime >= dur * 0.9) || (dur <= 0 && p >= 95);
-    return !isCompleted && p < 90;
+    const isCompleted = Boolean(item.isCompleted) || (dur > 60 && curTime >= dur * 0.9) || (dur <= 0 && p >= 95);
+    return !isCompleted && p < 90 && (curTime >= 3 || p > 0);
   });
 
   if (inProgressList.length === 0) {

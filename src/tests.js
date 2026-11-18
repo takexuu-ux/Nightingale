@@ -1584,13 +1584,32 @@ function initEventBindings() {
 
   if (btnBackTests) btnBackTests.addEventListener('click', closeDetailView);
 
-  const searchToggleBtn = document.getElementById('btn-toggle-test-search');
+  const searchToggleBtn = document.getElementById('tests-search-toggle') || document.getElementById('btn-toggle-test-search');
   const searchBox = document.getElementById('tests-search-box');
-  searchToggleBtn?.addEventListener('click', () => {
-    if (searchBox) {
-      searchBox.classList.toggle('active');
+  const searchCloseBtn = document.getElementById('tests-search-close');
+  const testsHeroBar = document.querySelector('.notes-hero-bar');
+
+  searchToggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = searchBox?.classList.toggle('search-open');
+    testsHeroBar?.classList.toggle('search-active', isOpen);
+    if (isOpen) {
+      testsSearchInput?.focus();
     }
-    testsSearchInput?.focus();
+  });
+
+  searchCloseBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    searchBox?.classList.remove('search-open');
+    testsHeroBar?.classList.remove('search-active');
+    searchQuery = '';
+    if (testsSearchInput) testsSearchInput.value = '';
+    if (testsSearchClear) testsSearchClear.style.display = 'none';
+    if (currentOpenItem) {
+      openDetailView(currentOpenItem.kind, currentOpenItem.data);
+    } else {
+      renderCatalogGrid();
+    }
   });
 
   if (testsSearchInput) {

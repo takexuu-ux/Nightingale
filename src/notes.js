@@ -1482,6 +1482,33 @@ function initEventListeners() {
     btnBackSubjects.addEventListener('click', closeSubjectView);
   }
 
+  const notesSearchToggle = document.getElementById('notes-search-toggle');
+  const notesSearchClose = document.getElementById('notes-search-close');
+  const notesHeroBar = document.querySelector('.notes-hero-bar');
+
+  notesSearchToggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = searchBox?.classList.toggle('search-open');
+    notesHeroBar?.classList.toggle('search-active', isOpen);
+    if (isOpen) {
+      notesSearchInput?.focus();
+    }
+  });
+
+  notesSearchClose?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    searchBox?.classList.remove('search-open');
+    notesHeroBar?.classList.remove('search-active');
+    searchQuery = '';
+    if (notesSearchInput) notesSearchInput.value = '';
+    if (notesSearchClear) notesSearchClear.style.display = 'none';
+    if (currentOpenSubject) {
+      renderSubjectNotesList();
+    } else {
+      renderSubjectCards();
+    }
+  });
+
   if (notesSearchInput) {
     notesSearchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value;

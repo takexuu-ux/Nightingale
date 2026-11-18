@@ -1623,13 +1623,28 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTopStats();
   });
 
-  const searchToggleBtn = document.getElementById('btn-toggle-video-search');
+  const searchToggleBtn = document.getElementById('videos-search-toggle') || document.getElementById('btn-toggle-video-search');
   const searchBox = document.getElementById('videos-search-box');
-  searchToggleBtn?.addEventListener('click', () => {
-    if (searchBox) {
-      searchBox.classList.toggle('active');
+  const searchCloseBtn = document.getElementById('videos-search-close');
+  const heroBar = document.querySelector('.notes-hero-bar');
+
+  searchToggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = searchBox?.classList.toggle('search-open');
+    heroBar?.classList.toggle('search-active', isOpen);
+    if (isOpen) {
+      videosSearchInput?.focus();
     }
-    videosSearchInput?.focus();
+  });
+
+  searchCloseBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    searchBox?.classList.remove('search-open');
+    heroBar?.classList.remove('search-active');
+    searchQuery = '';
+    if (videosSearchInput) videosSearchInput.value = '';
+    if (videosSearchClear) videosSearchClear.style.display = 'none';
+    renderCurrentCatalog();
   });
 
   videosSearchInput?.addEventListener('input', (e) => {

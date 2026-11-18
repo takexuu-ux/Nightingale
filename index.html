@@ -261,8 +261,29 @@
               try {
                 var raw = localStorage.getItem('nnl_watched_lectures');
                 var lastId = localStorage.getItem('nnl_last_watched_rec_id') || '';
-                if (!raw) return;
-                var map = JSON.parse(raw);
+                var map = {};
+                if (raw) {
+                  try { map = JSON.parse(raw); } catch (_) {}
+                }
+                if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.getWatchHistoryJson === 'function') {
+                  try {
+                    var nativeRaw = window.AndroidVideoBridge.getWatchHistoryJson();
+                    if (nativeRaw) {
+                      var nArr = JSON.parse(nativeRaw);
+                      if (Array.isArray(nArr)) {
+                        nArr.forEach(function(item) {
+                          if (item && item.recId) {
+                            var id = String(item.recId);
+                            map[id] = Object.assign({}, map[id] || {}, item);
+                          }
+                        });
+                      }
+                    }
+                    if (!lastId && typeof window.AndroidVideoBridge.getLastWatchedRecId === 'function') {
+                      lastId = window.AndroidVideoBridge.getLastWatchedRecId() || '';
+                    }
+                  } catch (_) {}
+                }
                 var list = Object.values(map);
                 if (!list || list.length === 0) return;
                 var inProg = list.filter(function(it) {
@@ -270,12 +291,12 @@
                   var cur = Number(it.currentTime || 0);
                   var dur = Number(it.duration || 0);
                   var p = Math.min(100, Math.max(0, Math.round(it.percent || 0)));
-                  if (dur > 0 && cur > 0) {
+                  if (dur > 60 && cur > 0) {
                     var rp = Math.round((cur / dur) * 100);
                     if (rp < 90 && p >= 90) p = rp;
                   }
-                  var done = Boolean(it.isCompleted) || (dur > 0 && cur >= dur * 0.9) || (dur <= 0 && p >= 95);
-                  return !done && p < 90 && (cur >= 5 || p > 0);
+                  var done = Boolean(it.isCompleted) || (dur > 60 && cur >= dur * 0.9) || (dur <= 0 && p >= 95);
+                  return !done && p < 90 && (cur >= 3 || p > 0);
                 });
                 if (inProg.length === 0) return;
                 var target = null;
@@ -309,6 +330,22 @@
                 '</div>';
                 sec.classList.remove('hide');
                 sec.style.display = 'block';
+
+                // Immediately bind instant click handler for 0ms functionality
+                var cardEl = grid.querySelector('.minimal-resume-card');
+                if (cardEl) {
+                  cardEl.addEventListener('click', function(ev) {
+                    ev.stopPropagation();
+                    if (typeof window.__nnlDirectResume === 'function') {
+                      window.__nnlDirectResume(target.recId);
+                    } else if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
+                      var tk = localStorage.getItem('nnl_access_token') || '';
+                      window.AndroidVideoBridge.playVideoWithAuth('', '', target.title || 'Recorded Lecture', target.instructor || 'NNL Faculty', String(target.recId), tk, true, '', '', Number(target.currentTime || 0));
+                    } else {
+                      window.location.href = 'all-videos.html?autoPlay=' + encodeURIComponent(target.recId) + '&seek=' + (target.currentTime || 0);
+                    }
+                  });
+                }
               } catch (_) {}
             })();
           </script>

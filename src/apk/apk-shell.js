@@ -398,6 +398,43 @@ function buildSidePanel() {
   let updatePendingType = null; // null | 'web' | 'apk'
   let pendingVersionStr = '';
 
+  function showUpdatePromptModal(type, versionStr) {
+    if (document.getElementById('apk-update-prompt-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'apk-update-prompt-modal';
+    modal.className = 'apk-update-prompt-overlay';
+    modal.innerHTML = `
+      <div class="apk-update-prompt-card">
+        <div class="apk-update-icon-glow">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <h3 class="apk-update-title">Update Ready (${versionStr})</h3>
+        <p class="apk-update-desc">A new version of Nightingale is available with performance improvements and bug fixes.</p>
+        <div class="apk-update-actions">
+          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button">Update Now</button>
+          <button id="apk-update-modal-dismiss" class="apk-update-btn-dismiss" type="button">Later</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const updateBtn = modal.querySelector('#apk-update-modal-btn');
+    const dismissBtn = modal.querySelector('#apk-update-modal-dismiss');
+
+    dismissBtn?.addEventListener('click', () => modal.remove());
+    updateBtn?.addEventListener('click', async () => {
+      updateBtn.disabled = true;
+      if (sideCheckBtn) {
+        sideCheckBtn.click();
+      }
+      modal.remove();
+    });
+  }
+
   async function performOtaCheck(isAuto = false) {
     if (sideCheckBtn && !isAuto) {
       sideCheckBtn.disabled = true;
@@ -427,6 +464,9 @@ function buildSidePanel() {
             sideCheckBtn.style.borderColor = '#10b981';
             sideCheckBtn.style.color = '#ffffff';
           }
+          if (isAuto) {
+            showUpdatePromptModal('web', pendingVersionStr);
+          }
         } else if (hasNative) {
           updatePendingType = 'apk';
           pendingVersionStr = `v1.0.${data.remoteNativeVersionCode}`;
@@ -442,6 +482,9 @@ function buildSidePanel() {
             sideCheckBtn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)';
             sideCheckBtn.style.borderColor = '#7c3aed';
             sideCheckBtn.style.color = '#ffffff';
+          }
+          if (isAuto) {
+            showUpdatePromptModal('apk', pendingVersionStr);
           }
         } else {
           updatePendingType = null;

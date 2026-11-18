@@ -2952,8 +2952,10 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
       if (Array.isArray(cachedData) && cachedData.length > 0) {
         classesData = cachedData;
         renderBatchSelector();
-        // If on live tab and not fetched yet, keep the loading animation active below dates
-        if (activeTab !== 'live') {
+        if (activeTab === 'live') {
+          const poolForLive = getPoolForLive(classesData);
+          renderHomeDateCalendar(poolForLive, false);
+        } else {
           renderClasses(classesData);
         }
         hasCache = true;
@@ -2966,15 +2968,17 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
 
   // Show single short simple loading indicator inside class list if no cards rendered yet
   if (!hasCache && (!classesData || classesData.length === 0)) {
-    if (activeTab !== 'live') {
+    if (activeTab === 'live') {
+      renderHomeDateCalendar([], true);
+    } else {
       classListContainer.innerHTML = `
         <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
           <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
           <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);">Loading classes...</div>
         </div>
       `;
+      if (dashboardLoader) dashboardLoader.classList.remove('hide');
     }
-    if (dashboardLoader && activeTab !== 'live') dashboardLoader.classList.remove('hide');
   }
 
   if (isManualRefresh && refetchBtn) {
@@ -3639,33 +3643,28 @@ async function resumeLecture(recId, btnEl) {
     }
   }
 
-  // 2. In Android APK, try fetching fresh OTP directly first so there is ZERO redirect flicker
+  // 2. In Android APK, immediately launch native player with saved timestamp
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
     try {
-      const fresh = await fetchFreshVdoCipherOtp(recId, { isBatch103: true }).catch(() =>
-        fetchFreshVdoCipherOtp(recId, { isBatch103: false })
-      ).catch(() => null);
-      if (fresh && fresh.otp && fresh.playbackInfo) {
-        window.AndroidVideoBridge.playVideoWithAuth(
-          fresh.otp,
-          fresh.playbackInfo,
-          item?.title || 'Recorded Lecture',
-          item?.instructor || 'NNL Faculty',
-          String(recId),
-          tk,
-          true,
-          item?.notePdfUrl || '',
-          item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF'),
-          item?.currentTime || 0
-        );
-        if (btnEl) {
-          btnEl.disabled = false;
-          btnEl.innerHTML = '<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span>';
-        }
-        return;
+      window.AndroidVideoBridge.playVideoWithAuth(
+        currentOtp || '',
+        currentPb || '',
+        item?.title || 'Recorded Lecture',
+        item?.instructor || 'NNL Faculty',
+        String(recId),
+        tk,
+        true,
+        item?.notePdfUrl || '',
+        item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF'),
+        item?.currentTime || 0
+      );
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = '<svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span>';
       }
+      return;
     } catch (e) {
-      console.warn('[Resume] Fast direct OTP resume failed:', e);
+      console.warn('[Resume] Fast direct launch fallback:', e);
     }
   }
 
@@ -3963,7 +3962,7 @@ function renderContinueWatchingSection() {
 
   // If completed (>= 90% or isCompleted flag), DO NOT SHOW:
   // "if i completed lecture then dont show"
-  if (pct >= 90 || item.isCompleted || (dur > 0 && curTime >= dur * 0.9)) {
+  if (pct >= 90 || item.isCompleted || (dur > 60 && curTime >= dur * 0.9)) {
     section.classList.add('hide');
     section.style.display = 'none';
     grid.innerHTML = '';
@@ -4036,6 +4035,21 @@ window.addEventListener('nnl:watch-progress-updated', () => {
 window.__nnlRefreshWatchProgress = () => {
   renderContinueWatchingSection();
 };
+window.__nnlDirectResume = (recId) => {
+  resumeLecture(recId);
+};
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('.minimal-resume-card, .continue-watching-card, .continue-watching-resume-btn');
+  if (card) {
+    const parent = card.closest('[data-rec-id]') || card;
+    const recId = parent.getAttribute('data-rec-id') || localStorage.getItem('nnl_last_watched_rec_id');
+    if (recId) {
+      e.stopPropagation();
+      const btn = parent.querySelector('.resume-pill-btn') || parent;
+      resumeLecture(recId, btn);
+    }
+  }
+});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     renderContinueWatchingSection();
