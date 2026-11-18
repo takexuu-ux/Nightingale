@@ -256,12 +256,68 @@
           <div id="continue-watching-section" class="hide" style="width:100%;margin-top:4px;margin-bottom:24px;">
             <div id="continue-watching-grid" class="continue-watching-grid" style="margin-top:0;"></div>
           </div>
+          <script>
+            (function hydrateInstantResumeCard() {
+              try {
+                var raw = localStorage.getItem('nnl_watched_lectures');
+                var lastId = localStorage.getItem('nnl_last_watched_rec_id') || '';
+                if (!raw) return;
+                var map = JSON.parse(raw);
+                var list = Object.values(map);
+                if (!list || list.length === 0) return;
+                var inProg = list.filter(function(it) {
+                  if (!it) return false;
+                  var cur = Number(it.currentTime || 0);
+                  var dur = Number(it.duration || 0);
+                  var p = Math.min(100, Math.max(0, Math.round(it.percent || 0)));
+                  if (dur > 0 && cur > 0) {
+                    var rp = Math.round((cur / dur) * 100);
+                    if (rp < 90 && p >= 90) p = rp;
+                  }
+                  var done = Boolean(it.isCompleted) || (dur > 0 && cur >= dur * 0.9) || (dur <= 0 && p >= 95);
+                  return !done && p < 90 && (cur >= 5 || p > 0);
+                });
+                if (inProg.length === 0) return;
+                var target = null;
+                if (lastId) {
+                  target = inProg.find(function(x){ return String(x.recId) === String(lastId); });
+                }
+                if (!target) {
+                  inProg.sort(function(a,b){ return (b.lastWatched||0) - (a.lastWatched||0); });
+                  target = inProg[0];
+                }
+                if (!target) return;
+                var sec = document.getElementById('continue-watching-section');
+                var grid = document.getElementById('continue-watching-grid');
+                if (!sec || !grid) return;
+                var dp = Math.min(99, Math.max(1, Math.round(target.percent || 1)));
+                var curF = Math.floor(target.currentTime / 60) + ':' + ('0' + (target.currentTime % 60)).slice(-2);
+                grid.innerHTML = '<div class="continue-watching-card minimal-resume-card" data-rec-id="' + target.recId + '" role="button" tabindex="0">' +
+                  '<div class="resume-card-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>' +
+                  '<div class="resume-card-body">' +
+                    '<div class="resume-card-top-row">' +
+                      '<h4 class="resume-card-title">' + (target.title || 'Recorded Lecture') + '</h4>' +
+                      '<span class="lecture-progress-text" style="font-size:11px;font-weight:700;color:var(--accent);">' + dp + '%</span>' +
+                    '</div>' +
+                    '<div class="resume-card-meta">' +
+                      '<span>' + (target.instructor || 'NNL Faculty') + '</span><span style="opacity:0.65;">•</span>' +
+                      '<span class="resume-card-time">' + (target.currentTime > 5 ? 'Resume from ' + curF + ' • ' + dp + '%' : dp + '% Watched') + '</span>' +
+                    '</div>' +
+                    '<div class="resume-card-progress-track"><div class="resume-card-progress-fill" style="width:' + dp + '%"></div></div>' +
+                  '</div>' +
+                  '<button class="continue-watching-resume-btn resume-pill-btn" type="button" aria-label="Resume Lecture"><svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span>Resume</span></button>' +
+                '</div>';
+                sec.classList.remove('hide');
+                sec.style.display = 'block';
+              } catch (_) {}
+            })();
+          </script>
 
           <!-- Horizontal Date Selector for Lectures (Image 2 Style) -->
           <div id="apk-date-picker-wrap" class="apk-date-picker-wrap">
             <div id="apk-date-picker-bar" class="apk-date-picker-bar"></div>
-            <div id="apk-date-status-bar" class="apk-date-status-bar hide">
-              <span id="apk-selected-date-label" class="apk-date-heading">Lectures</span>
+            <div id="apk-date-status-bar" class="apk-date-status-bar">
+              <span id="apk-selected-date-label" class="apk-date-heading">Today's Lectures</span>
             </div>
             <!-- Empty Lecture State: short and clean with subtle glowing gradient -->
             <div id="apk-date-empty-state" class="apk-date-empty-state hide">
@@ -269,6 +325,31 @@
               <p class="apk-empty-title">No lectures on this date</p>
             </div>
           </div>
+
+          <!-- Synchronous Immediate 0ms Date Bar Hydration -->
+          <script>
+            (function renderInitialDateBar() {
+              try {
+                var bar = document.getElementById('apk-date-picker-bar');
+                if (!bar || bar.children.length > 0) return;
+                var now = new Date();
+                var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                for (var i = -8; i <= 8; i++) {
+                  var d = new Date(now);
+                  d.setDate(now.getDate() + i);
+                  var isToday = (i === 0);
+                  var pill = document.createElement('div');
+                  pill.className = 'apk-date-pill' + (isToday ? ' active' : '');
+                  pill.setAttribute('data-date-str', d.toDateString());
+                  pill.innerHTML = '<span class="apk-date-pill-dot"></span><span class="apk-date-pill-day">' + days[d.getDay()] + '</span><span class="apk-date-pill-num">' + d.getDate() + '</span>';
+                  bar.appendChild(pill);
+                  if (isToday) {
+                    (function(p){ setTimeout(function(){ p.scrollIntoView({ inline: 'center', block: 'nearest' }); }, 50); })(pill);
+                  }
+                }
+              } catch (_) {}
+            })();
+          </script>
 
           <!-- Live Now Section (Shown only if live classes exist) -->
           <div id="live-now-section" class="live-now-section hide">
@@ -284,7 +365,12 @@
           <!-- Stacked layout: live classes and upcoming classes -->
           <div id="live-tab-layout" style="display:flex; flex-direction:column; gap:1.5rem; width:100%;">
             <!-- Main: live and scheduled classes -->
-            <div id="class-list-container" class="class-grid" style="width: 100%;"></div>
+            <div id="class-list-container" class="class-grid" style="width: 100%;">
+              <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
+                <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
+                <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);">Loading classes...</div>
+              </div>
+            </div>
           </div>
         </section>
         <script>
