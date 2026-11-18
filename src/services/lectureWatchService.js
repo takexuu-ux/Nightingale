@@ -34,6 +34,12 @@ export function getWatchHistory() {
                   recId: id,
                   title: item.title || existing?.title || 'Lecture',
                   instructor: item.instructor || existing?.instructor || 'NNL Faculty',
+                  subject: item.subject || existing?.subject || '',
+                  thumb: item.thumb || existing?.thumb || '',
+                  otp: existing?.otp || '',
+                  playbackInfo: existing?.playbackInfo || '',
+                  notePdfUrl: existing?.notePdfUrl || '',
+                  notePdfTitle: existing?.notePdfTitle || '',
                   currentTime: item.currentTime || existing?.currentTime || 0,
                   duration: item.duration || existing?.duration || 0,
                   percent: isNativeNewer ? nativePct : Math.max(nativePct, existingPct),
@@ -133,9 +139,18 @@ export function getLastWatchedLecture() {
   // "update it if i start other lecture if i completed lecture then dont show"
   const inProgressList = list.filter(item => {
     if (!item) return false;
-    const p = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+    const dur = Number(item.duration || 0);
     const curTime = Number(item.currentTime || 0);
-    return !item.isCompleted && p < 90 && (p > 0 || curTime > 5);
+    let p = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+    // If dur and curTime exist, ensure p accurately reflects ratio
+    if (dur > 0 && curTime > 0) {
+      const realP = Math.round((curTime / dur) * 100);
+      if (realP < 90 && p >= 90) {
+        p = realP;
+      }
+    }
+    const isCompleted = Boolean(item.isCompleted) || (dur > 0 && curTime >= dur * 0.9) || (dur <= 0 && p >= 95);
+    return !isCompleted && p < 90;
   });
 
   if (inProgressList.length === 0) {

@@ -3576,7 +3576,9 @@ async function resumeLecture(recId, btnEl) {
   // 2. In Android APK, try fetching fresh OTP directly first so there is ZERO redirect flicker
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
     try {
-      const fresh = await fetchFreshVdoCipherOtp(recId, { isBatch103: true }).catch(() => null);
+      const fresh = await fetchFreshVdoCipherOtp(recId, { isBatch103: true }).catch(() =>
+        fetchFreshVdoCipherOtp(recId, { isBatch103: false })
+      ).catch(() => null);
       if (fresh && fresh.otp && fresh.playbackInfo) {
         window.AndroidVideoBridge.playVideoWithAuth(
           fresh.otp,
@@ -3880,17 +3882,24 @@ function renderContinueWatchingSection() {
   // If no lecture was ever watched, hide
   if (!item) {
     section.classList.add('hide');
+    section.style.display = 'none';
     grid.innerHTML = '';
     return;
   }
 
-  const pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+  const dur = Number(item.duration || 0);
   const curTime = Number(item.currentTime || 0);
+  let pct = Math.min(100, Math.max(0, Math.round(item.percent || 0)));
+  if (dur > 0 && curTime > 0) {
+    const realP = Math.round((curTime / dur) * 100);
+    if (realP < 90 && pct >= 90) pct = realP;
+  }
 
   // If completed (>= 90% or isCompleted flag), DO NOT SHOW:
   // "if i completed lecture then dont show"
-  if (pct >= 90 || item.isCompleted) {
+  if (pct >= 90 || item.isCompleted || (dur > 0 && curTime >= dur * 0.9)) {
     section.classList.add('hide');
+    section.style.display = 'none';
     grid.innerHTML = '';
     return;
   }
@@ -3898,11 +3907,13 @@ function renderContinueWatchingSection() {
   const recId = String(item.recId || item.id || '');
   if (!recId) {
     section.classList.add('hide');
+    section.style.display = 'none';
     grid.innerHTML = '';
     return;
   }
 
   section.classList.remove('hide');
+  section.style.display = 'block';
 
   const displayPct = Math.min(99, Math.max(1, pct));
   const curTimeFormatted = formatWatchTime(curTime);
