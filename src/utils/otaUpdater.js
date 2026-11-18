@@ -83,7 +83,7 @@ function updateProgressUI(status, activeBtn, statusLabel) {
     btnText = 'Retry';
   }
 
-  banner.style.display = 'flex';
+  banner.style.display = 'none';
   if (msgEl) msgEl.textContent = labelText;
   if (statusLabel) statusLabel.textContent = labelText;
 
@@ -343,7 +343,7 @@ export function initApkOtaUpdater() {
           applyBtn.textContent = isLiveWeb ? 'Update' : 'Install';
           applyBtn.onclick = () => applyUpdate(!isLiveWeb, applyBtn, verLabel);
         }
-        banner.style.display = 'flex';
+        banner.style.display = 'none';
 
         if (headerBtn) {
           headerBtn.disabled = false;
