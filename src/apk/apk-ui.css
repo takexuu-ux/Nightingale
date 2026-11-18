@@ -1439,6 +1439,42 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   transition: transform 0.22s var(--spring-bounce), border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, background-color 0.22s ease;
 }
 
+/* Zero out browser autofill background glitch and selection highlight */
+.otp-box:-webkit-autofill,
+.otp-box:-webkit-autofill:hover,
+.otp-box:-webkit-autofill:focus,
+.otp-box:-webkit-autofill:active,
+.otp-digit-box:-webkit-autofill,
+.otp-digit-box:-webkit-autofill:hover,
+.otp-digit-box:-webkit-autofill:focus,
+.otp-digit-box:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1A132F inset !important;
+  -webkit-text-fill-color: #34D399 !important;
+  caret-color: #34D399 !important;
+  transition: background-color 50000s ease-in-out 0s !important;
+}
+
+[data-theme="light"] .otp-box:-webkit-autofill,
+[data-theme="light"] .otp-box:-webkit-autofill:hover,
+[data-theme="light"] .otp-box:-webkit-autofill:focus,
+[data-theme="light"] .otp-box:-webkit-autofill:active,
+[data-theme="light"] .otp-digit-box:-webkit-autofill,
+[data-theme="light"] .otp-digit-box:-webkit-autofill:hover,
+[data-theme="light"] .otp-digit-box:-webkit-autofill:focus,
+[data-theme="light"] .otp-digit-box:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #10B981 !important;
+  caret-color: #10B981 !important;
+}
+
+.otp-box::selection,
+.otp-box::-moz-selection,
+.otp-digit-box::selection,
+.otp-digit-box::-moz-selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
 /* Dynamic revolving luminous conic emerald green laser around the border of active/focused OTP boxes */
 .otp-box:focus,
 .otp-digit-box:focus,
@@ -4324,11 +4360,18 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     display: inline-block !important;
   }
 
-  .apk-hamburger-btn {
+  .app-header .apk-hamburger-btn,
+  .app-header #apk-hamburger-btn {
+    display: none !important;
+  }
+
+  body > .apk-hamburger-btn,
+  body > #apk-hamburger-btn {
     position: fixed !important;
     top: max(14px, env(safe-area-inset-top)) !important;
-    left: 16px !important;
+    left: 14px !important;
     z-index: 8900 !important;
+    display: inline-flex !important;
   }
 
   main#app,
@@ -5494,14 +5537,25 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 }
 
 @media (max-width: 767px) {
+  /* Strictly suppress option button inside the island dock so it never overlaps Home tab */
+  .app-header .apk-hamburger-btn,
+  .app-header #apk-hamburger-btn {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body > .apk-hamburger-btn,
+  body > #apk-hamburger-btn,
   .apk-hamburger-btn {
     position: fixed !important;
     top: max(14px, env(safe-area-inset-top)) !important;
     left: 14px !important;
     width: 34px !important;
     height: 34px !important;
-    z-index: 8500 !important;
+    z-index: 8900 !important;
     margin: 0 !important;
+    display: inline-flex !important;
   }
 
   /* Universal Header Alignment: Perfectly align greeting/title on Home page where hamburger sits */
@@ -5525,24 +5579,39 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   }
 }
 
-@media (min-width: 768px) {
-  #app-header .apk-hamburger-btn {
-    position: static !important;
-    margin: 0 0 6px 0 !important;
-    z-index: 8500 !important;
+@media (max-width: 879px), (orientation: portrait) {
+  /* On all portrait screens (phone & portrait tablets) the island dock is at the bottom, so hamburger stays at top of screen */
+  .app-header .apk-hamburger-btn,
+  .app-header #apk-hamburger-btn {
+    display: none !important;
   }
 
-  body > .apk-hamburger-btn {
+  body > .apk-hamburger-btn,
+  body > #apk-hamburger-btn {
     position: fixed !important;
     top: max(14px, env(safe-area-inset-top)) !important;
     left: 14px !important;
-    width: 38px !important;
-    height: 38px !important;
-    z-index: 8500 !important;
+    width: 36px !important;
+    height: 36px !important;
+    z-index: 8900 !important;
     margin: 0 !important;
-    display: flex !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+  }
+}
+
+@media (min-width: 880px) and (orientation: landscape), (min-width: 1024px) {
+  #app-header .apk-hamburger-btn,
+  .app-header .apk-hamburger-btn {
+    position: static !important;
+    margin: 0 0 6px 0 !important;
+    z-index: 8500 !important;
+    display: flex !important;
+  }
+
+  body > .apk-hamburger-btn {
+    display: none !important;
   }
 }
 

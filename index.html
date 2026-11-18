@@ -81,15 +81,17 @@
       </script>
     </div>
 
+    <!-- Hamburger / Options Button (Direct child of body: Fixed at Top-Left on Phone & Portrait, zero island overlap) -->
+    <button id="apk-hamburger-btn" class="apk-icon-btn apk-hamburger-btn" type="button" aria-label="Open Menu &amp; Settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
     <!-- App Header (Visible when logged in) -->
     <header id="app-header" class="app-header">
-      <button id="apk-hamburger-btn" class="apk-icon-btn apk-hamburger-btn" type="button" aria-label="Open Menu &amp; Settings">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
       <!-- Primary Navigation Tabs (Floating Island) -->
       <nav class="header-nav-tabs">
         <div class="nav-tabs" style="margin: 0 !important;">
@@ -195,12 +197,12 @@
                   <div class="otp-stage-container">
                     <!-- The 6 OTP Boxes with running laser border glow -->
                     <div id="otp-boxes-container" class="otp-boxes-container">
-                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="0" autocomplete="one-time-code" style="--i:0;" />
-                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="1" style="--i:1;" />
-                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="2" style="--i:2;" />
-                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="3" style="--i:3;" />
-                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="4" style="--i:4;" />
-                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="5" style="--i:5;" />
+                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="0" autocomplete="one-time-code" spellcheck="false" autocorrect="off" autocapitalize="off" style="--i:0;" />
+                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="1" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" style="--i:1;" />
+                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="2" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" style="--i:2;" />
+                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="3" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" style="--i:3;" />
+                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="4" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" style="--i:4;" />
+                      <input type="text" class="otp-box" maxlength="6" inputmode="numeric" pattern="[0-9]*" data-idx="5" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" style="--i:5;" />
                     </div>
 
                     <!-- Single Merged Box with Green Tick (Screenshot 5) -->

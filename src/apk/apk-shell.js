@@ -502,6 +502,12 @@ function buildSidePanel() {
           if (preCheck.ok) {
             const st = await preCheck.json();
             if (st.ready) {
+              sideCheckBtn.disabled = false;
+              if (sideCheckTxt) sideCheckTxt.textContent = 'Install / Saved to Downloads';
+              if (sideStatusMsg) {
+                sideStatusMsg.textContent = 'APK saved to Downloads as Nightingale.apk — tap to install or open from File Manager.';
+                sideStatusMsg.style.display = 'block';
+              }
               await fetch('/__ota/launch-installer', { method: 'POST' });
               return;
             }
@@ -513,7 +519,12 @@ function buildSidePanel() {
             if (!pRes.ok) break;
             const status = await pRes.json();
             if (status.state === 'ready') {
-              if (sideCheckTxt) sideCheckTxt.textContent = 'Opening Installer...';
+              sideCheckBtn.disabled = false;
+              if (sideCheckTxt) sideCheckTxt.textContent = 'Install / Saved to Downloads';
+              if (sideStatusMsg) {
+                sideStatusMsg.textContent = 'APK saved to Downloads as Nightingale.apk — tap to install or open from File Manager.';
+                sideStatusMsg.style.display = 'block';
+              }
               await fetch('/__ota/launch-installer', { method: 'POST' });
               break;
             }
@@ -893,8 +904,19 @@ function normalizeHeaderAndChrome() {
 
   const appHeader = document.getElementById('app-header');
   function syncHamburgerPlacement() {
-    if (appHeader && hamBtn && hamBtn.parentElement !== appHeader) {
-      appHeader.insertBefore(hamBtn, appHeader.firstChild);
+    if (!hamBtn) return;
+    const isSidebarMode = (window.innerWidth >= 880 && window.matchMedia && window.matchMedia('(orientation: landscape)').matches) || window.innerWidth >= 1024;
+    if (isSidebarMode) {
+      if (appHeader && hamBtn.parentElement !== appHeader) {
+        appHeader.insertBefore(hamBtn, appHeader.firstChild);
+      }
+    } else {
+      // In Phone & Portrait Mode: Header is the floating bottom island dock with transform: translateX(-50%).
+      // Having hamBtn inside appHeader traps fixed positioning and overlaps the Home tab (#tab-live)!
+      // Moving hamBtn to document.body ensures it floats cleanly at top-left of screen, completely off the island.
+      if (hamBtn.parentElement !== document.body) {
+        document.body.appendChild(hamBtn);
+      }
     }
   }
   syncHamburgerPlacement();

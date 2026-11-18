@@ -4662,11 +4662,20 @@ function initOtpBoxes() {
     });
 
     const fullVal = syncOtpValue();
-    const targetIdx = Math.min(digits.length, boxes.length - 1);
-    if (boxes[targetIdx]) boxes[targetIdx].focus();
-
     if (digits.length === 6) {
+      boxes.forEach(b => {
+        b.blur();
+      });
+      if (window.getSelection) {
+        try { window.getSelection().removeAllRanges(); } catch (_) {}
+      }
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
       handleCompleteOtp(fullVal);
+    } else {
+      const targetIdx = Math.min(digits.length, boxes.length - 1);
+      if (boxes[targetIdx]) boxes[targetIdx].focus();
     }
   }
 
@@ -4697,6 +4706,15 @@ function initOtpBoxes() {
 
       const fullOtp = syncOtpValue();
       if (fullOtp.length === 6) {
+        boxes.forEach(b => {
+          b.blur();
+        });
+        if (window.getSelection) {
+          try { window.getSelection().removeAllRanges(); } catch (_) {}
+        }
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
         handleCompleteOtp(fullOtp);
       } else {
         if (otpGlowTimeout) {

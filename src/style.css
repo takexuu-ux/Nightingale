@@ -739,6 +739,32 @@ textarea,
   padding: 0 !important;
 }
 
+/* Zero out browser autofill background glitch and selection highlight */
+.otp-box:-webkit-autofill,
+.otp-box:-webkit-autofill:hover,
+.otp-box:-webkit-autofill:focus,
+.otp-box:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1A132F inset !important;
+  -webkit-text-fill-color: #34D399 !important;
+  caret-color: #34D399 !important;
+  transition: background-color 50000s ease-in-out 0s !important;
+}
+
+[data-theme="light"] .otp-box:-webkit-autofill,
+[data-theme="light"] .otp-box:-webkit-autofill:hover,
+[data-theme="light"] .otp-box:-webkit-autofill:focus,
+[data-theme="light"] .otp-box:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #10B981 !important;
+  caret-color: #10B981 !important;
+}
+
+.otp-box::selection,
+.otp-box::-moz-selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
 .otp-box:hover {
   background: rgba(25, 28, 40, 0.95) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
