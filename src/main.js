@@ -2923,6 +2923,31 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
     cachedDataStr = localStorage.getItem('nnl_fallback_classes') || localStorage.getItem('nnl_cache_live_classes_live') || localStorage.getItem('nnl_cache_live_classes_upcoming');
   }
 
+  // For the Live/Home tab: Immediately render the Resume Lecture card and Date Calendar
+  // Never hide dates or resume lecture while classes are being loaded!
+  if (activeTab === 'live') {
+    updateHeroGreeting();
+    renderContinueWatchingSection();
+
+    let initialPool = [];
+    if (classesData && classesData.length > 0) {
+      initialPool = getPoolForLive(classesData);
+    } else if (cachedDataStr) {
+      try {
+        const parsed = JSON.parse(cachedDataStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          initialPool = getPoolForLive(parsed);
+        }
+      } catch (_) {}
+    }
+
+    if (initialPool.length > 0) {
+      renderHomeDateCalendar(initialPool, false);
+    } else {
+      renderHomeDateCalendar([], true);
+    }
+  }
+
   let hasCache = false;
   if (cachedDataStr) {
     try {
@@ -2942,15 +2967,16 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
     }
   }
 
-  // Show prominent loading indicator inside class list if no cards rendered yet
+  // Show single short simple loading indicator inside class list if no cards rendered yet
   if (!hasCache && (!classesData || classesData.length === 0)) {
-    classListContainer.innerHTML = `
-      <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;gap:14px;color:var(--text-secondary);width:100%;text-align:center;">
-        <div class="spinner" style="width:38px;height:38px;border-width:3.2px;border-color:rgba(124,58,237,0.22);border-top-color:#7c3aed;"></div>
-        <div style="font-size:14.5px;font-weight:700;color:var(--text-primary);letter-spacing:0.01em;">Loading Upcoming &amp; Live Classes...</div>
-        <div style="font-size:12px;color:var(--text-secondary);opacity:0.85;">Syncing schedule with NNL academic servers</div>
-      </div>
-    `;
+    if (activeTab !== 'live') {
+      classListContainer.innerHTML = `
+        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
+          <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);">Loading classes...</div>
+        </div>
+      `;
+    }
     if (dashboardLoader) dashboardLoader.classList.remove('hide');
   }
 
@@ -3130,9 +3156,43 @@ function doesClassMatchBatch(c, activeBatch) {
   return isEnglishTarget ? isClassEnglish : !isClassEnglish;
 }
 
+function getPoolForLive(classes) {
+  const cleanClasses = [];
+  if (classes && classes.length > 0) {
+    classes.forEach(item => {
+      if (item.classes && Array.isArray(item.classes)) {
+        cleanClasses.push(...item.classes);
+      } else if (item.liveClass) {
+        cleanClasses.push(item.liveClass);
+      } else {
+        cleanClasses.push(item);
+      }
+    });
+  }
+
+  let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
+  if (poolForLive.length === 0 && RED_SAPPHIRE_DATA) {
+    const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
+    const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
+    if (fallbackList && fallbackList.length > 0) {
+      poolForLive = fallbackList.map(item => ({
+        id: item.id || `rs-${Math.random()}`,
+        title: item.title,
+        instructor: item.faculty || item.instructor || 'NNL Faculty',
+        start: item.start,
+        end: item.end,
+        meetingId: item.meetingId || '814 2901 8820',
+        passcode: item.passcode || '992026',
+        vdoCipherId: item.vdoCipherId || '',
+        subject: item.subject || 'Red Sapphire Batch'
+      }));
+    }
+  }
+  return poolForLive;
+}
 
 // Horizontal Date Selector for Lectures on Home Screen (Image 2 style)
-function renderHomeDateCalendar(poolClasses) {
+function renderHomeDateCalendar(poolClasses, isLoading = false) {
   const pickerBar = document.getElementById('apk-date-picker-bar');
   const statusBar = document.getElementById('apk-date-status-bar');
   const dateLabel = document.getElementById('apk-selected-date-label');
@@ -3155,6 +3215,7 @@ function renderHomeDateCalendar(poolClasses) {
   }
 
   function getClassesForDate(targetDate) {
+    if (!poolClasses || !poolClasses.length) return [];
     const targetStr = targetDate.toDateString();
     let matches = poolClasses.filter(c => {
       try {
@@ -3173,6 +3234,7 @@ function renderHomeDateCalendar(poolClasses) {
   }
 
   function selectDate(targetDate, targetPill) {
+    window.__nnlSelectedDateStr = targetDate.toDateString();
     pickerBar.querySelectorAll('.apk-date-pill').forEach(p => p.classList.remove('active'));
     if (targetPill) targetPill.classList.add('active');
 
@@ -3187,6 +3249,19 @@ function renderHomeDateCalendar(poolClasses) {
     }
 
     classListContainer.innerHTML = '';
+
+    // If classes are currently loading, show single short simple loading description
+    if (isLoading) {
+      if (emptyState) emptyState.classList.add('hide');
+      classListContainer.classList.remove('hide');
+      classListContainer.innerHTML = `
+        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
+          <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);">Loading classes...</div>
+        </div>
+      `;
+      return;
+    }
 
     if (dayClasses.length > 0) {
       if (emptyState) emptyState.classList.add('hide');
@@ -3224,14 +3299,18 @@ function renderHomeDateCalendar(poolClasses) {
     }
   }
 
-  let todayPill = null;
+  let initialActiveTarget = null;
+  let todayTarget = null;
+  const activeDateStr = window.__nnlSelectedDateStr || now.toDateString();
+
   dates.forEach(d => {
     const isToday = d.toDateString() === now.toDateString();
+    const isSelected = d.toDateString() === activeDateStr;
     const dayClasses = getClassesForDate(d);
     const hasLecture = dayClasses.length > 0;
 
     const pill = document.createElement('div');
-    pill.className = `apk-date-pill ${isToday ? 'active' : ''} ${hasLecture ? 'has-lecture' : ''}`;
+    pill.className = `apk-date-pill ${isSelected ? 'active' : ''} ${hasLecture ? 'has-lecture' : ''}`;
     pill.innerHTML = `
       <span class="apk-date-pill-dot"></span>
       <span class="apk-date-pill-day">${dayNames[d.getDay()]}</span>
@@ -3244,14 +3323,16 @@ function renderHomeDateCalendar(poolClasses) {
       pill.scrollIntoView({ inline: 'center', behavior: 'smooth' });
     });
 
-    if (isToday) todayPill = pill;
+    if (isSelected) initialActiveTarget = { date: d, pill };
+    if (isToday) todayTarget = { date: d, pill };
     pickerBar.appendChild(pill);
   });
 
-  if (todayPill) {
-    selectDate(now, todayPill);
+  const chosenTarget = initialActiveTarget || todayTarget;
+  if (chosenTarget) {
+    selectDate(chosenTarget.date, chosenTarget.pill);
     setTimeout(() => {
-      todayPill.scrollIntoView({ inline: 'center', block: 'nearest' });
+      chosenTarget.pill.scrollIntoView({ inline: 'center', block: 'nearest' });
     }, 150);
   }
 }
@@ -3286,24 +3367,7 @@ function renderClasses(classes) {
   }
 
   // ── Live tab: filter by activeBatch (so we only show classes for the student's selected batch)
-  let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
-  if (poolForLive.length === 0 && RED_SAPPHIRE_DATA) {
-    const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
-    const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
-    if (fallbackList && fallbackList.length > 0) {
-      poolForLive = fallbackList.map(item => ({
-        id: item.id || `rs-${Math.random()}`,
-        title: item.title,
-        instructor: item.faculty || item.instructor || 'NNL Faculty',
-        start: item.start,
-        end: item.end,
-        meetingId: item.meetingId || '814 2901 8820',
-        passcode: item.passcode || '992026',
-        vdoCipherId: item.vdoCipherId || '',
-        subject: item.subject || 'Red Sapphire Batch'
-      }));
-    }
-  }
+  let poolForLive = getPoolForLive(cleanClasses);
 
   // ── Upcoming tab: filter by activeBatch
   let batchFiltered = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
@@ -4002,12 +4066,15 @@ window.__nnlHandleBackPressed = () => {
   }
   return false;
 };
+try { renderContinueWatchingSection(); } catch (_) {}
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
+    try { renderContinueWatchingSection(); } catch (_) {}
     setTimeout(renderContinueWatchingSection, 150);
     setTimeout(initClassHubButtons, 150);
   });
 } else {
+  try { renderContinueWatchingSection(); } catch (_) {}
   setTimeout(renderContinueWatchingSection, 150);
   setTimeout(initClassHubButtons, 150);
 }
@@ -5126,6 +5193,20 @@ function setActiveTabNav(tabName) {
       else el.classList.remove('active');
     }
   });
+
+  const cwSection = document.getElementById('continue-watching-section');
+  const datePickerWrap = document.getElementById('apk-date-picker-wrap');
+  if (tabName === 'live') {
+    if (datePickerWrap) datePickerWrap.classList.remove('hide');
+    renderContinueWatchingSection();
+  } else {
+    if (cwSection) {
+      cwSection.classList.add('hide');
+      cwSection.style.display = 'none';
+    }
+    if (datePickerWrap) datePickerWrap.classList.add('hide');
+  }
+
   // Hide live classes section when away from the live tab
   if (liveNowSection && tabName !== 'live') {
     liveNowSection.classList.add('hide');
