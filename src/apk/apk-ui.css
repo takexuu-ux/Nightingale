@@ -5567,15 +5567,17 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     margin: 0 0 10px 0 !important;
   }
 
-  /* Notes & Tests & Videos Headers: Zero awkward left space, fully aligned to left margin */
+  /* Notes & Tests & Videos Headers: Clean 56px left clearance to prevent option button overlap */
   .notes-hero-header,
-  .apk-page-topbar {
-    padding-left: 0 !important;
-    min-height: 34px !important;
+  .apk-page-topbar,
+  .notes-hero-bar {
+    padding-left: 56px !important;
+    min-height: 38px !important;
     margin-top: 0 !important;
     margin-bottom: 12px !important;
     display: flex !important;
     align-items: center !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -5584,6 +5586,13 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   .app-header .apk-hamburger-btn,
   .app-header #apk-hamburger-btn {
     display: none !important;
+  }
+
+  .notes-hero-header,
+  .apk-page-topbar,
+  .notes-hero-bar {
+    padding-left: 56px !important;
+    box-sizing: border-box !important;
   }
 
   body > .apk-hamburger-btn,
@@ -5612,6 +5621,12 @@ body:not(.apk-is-auth) #apk-auth-botanical {
 
   body > .apk-hamburger-btn {
     display: none !important;
+  }
+
+  .notes-hero-header,
+  .apk-page-topbar,
+  .notes-hero-bar {
+    padding-left: 0 !important;
   }
 }
 
@@ -5651,6 +5666,18 @@ body:has(.subject-detail-view:not(.hide)) #apk-hamburger-btn,
 body:has(.subject-detail-view:not(.hide)) .apk-hamburger-btn,
 body:has(#notes-subject-view:not(.hide)) #apk-hamburger-btn,
 body:has(#notes-subject-view:not(.hide)) .apk-hamburger-btn,
+body:has(#tests-detail-view:not(.hide)) #apk-hamburger-btn,
+body:has(#tests-detail-view:not(.hide)) .apk-hamburger-btn,
+body:has(#cbt-quiz-view:not(.hide)) #apk-hamburger-btn,
+body:has(#cbt-quiz-view:not(.hide)) .apk-hamburger-btn,
+body:has(#quiz-viewer:not(.hide)) #apk-hamburger-btn,
+body:has(#quiz-viewer:not(.hide)) .apk-hamburger-btn,
+body:has(#quiz-overview:not(.hide)) #apk-hamburger-btn,
+body:has(#quiz-overview:not(.hide)) .apk-hamburger-btn,
+body:has(#cbt-report-modal:not(.hide)) #apk-hamburger-btn,
+body:has(#cbt-report-modal:not(.hide)) .apk-hamburger-btn,
+body:has(#recording-viewer-modal:not(.hide)) #apk-hamburger-btn,
+body:has(#recording-viewer-modal:not(.hide)) .apk-hamburger-btn,
 #apk-side-panel:not(.hide) ~ #apk-hamburger-btn,
 #apk-side-panel:not(.hide) ~ .apk-hamburger-btn {
   display: none !important;
@@ -5951,7 +5978,7 @@ main#app,
   max-width: 100% !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   gap: 8px !important;
   overflow-x: auto !important;
   padding: 4px 16px 8px 16px !important;
@@ -5960,6 +5987,14 @@ main#app,
   border: none !important;
   box-sizing: border-box !important;
   margin: 0 auto !important;
+}
+
+@media (min-width: 1024px) {
+  .apk-date-picker-bar {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 }
 
 .apk-date-picker-bar::-webkit-scrollbar {

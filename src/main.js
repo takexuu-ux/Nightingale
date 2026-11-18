@@ -2929,38 +2929,35 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
     updateHeroGreeting();
     renderContinueWatchingSection();
 
-    let initialPool = [];
-    if (classesData && classesData.length > 0) {
-      initialPool = getPoolForLive(classesData);
-    } else if (cachedDataStr) {
-      try {
-        const parsed = JSON.parse(cachedDataStr);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          initialPool = getPoolForLive(parsed);
-        }
-      } catch (_) {}
+    const datePickerWrap = document.getElementById('apk-date-picker-wrap');
+    if (datePickerWrap) {
+      datePickerWrap.classList.remove('hide');
+      datePickerWrap.style.display = 'flex';
     }
 
-    if (initialPool.length > 0) {
-      renderHomeDateCalendar(initialPool, false);
+    // If classes were already loaded in this session, render them immediately.
+    // Otherwise, render dates bar right now and show the loading animation below the dates!
+    if (classesFetched && classesData && classesData.length > 0) {
+      const poolForLive = getPoolForLive(classesData);
+      renderHomeDateCalendar(poolForLive, false);
     } else {
       renderHomeDateCalendar([], true);
     }
   }
 
   let hasCache = false;
-  if (cachedDataStr) {
+  if (cachedDataStr && !classesFetched) {
     try {
       const cachedData = JSON.parse(cachedDataStr);
       if (Array.isArray(cachedData) && cachedData.length > 0) {
         classesData = cachedData;
         renderBatchSelector();
-        renderClasses(classesData);
+        // If on live tab and not fetched yet, keep the loading animation active below dates
+        if (activeTab !== 'live') {
+          renderClasses(classesData);
+        }
         hasCache = true;
-        // Content already rendered in 0ms! Hide loader immediately!
-        if (dashboardLoader) dashboardLoader.classList.add('hide');
-        classesFetched = true;
-        checkPreloaderCompletion();
+        classesFetched = false; // Allow network to refresh with fresh schedule
       }
     } catch (e) {
       console.warn('Failed to parse cached classes:', e);
@@ -2977,7 +2974,7 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
         </div>
       `;
     }
-    if (dashboardLoader) dashboardLoader.classList.remove('hide');
+    if (dashboardLoader && activeTab !== 'live') dashboardLoader.classList.remove('hide');
   }
 
   if (isManualRefresh && refetchBtn) {
@@ -3074,7 +3071,10 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
 
     } catch (error) {
       console.error('Error fetching classes:', error);
-      if (!hasCache && activeTab !== 'subjects' && activeTab !== 'notes' && activeTab !== 'tests') {
+      if (activeTab === 'live') {
+        const poolForLive = getPoolForLive(classesData);
+        renderHomeDateCalendar(poolForLive, false);
+      } else if (!hasCache && activeTab !== 'subjects' && activeTab !== 'notes' && activeTab !== 'tests') {
         classesData = [];
         renderBatchSelector();
         renderClasses(classesData);
@@ -3254,6 +3254,7 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
     if (isLoading) {
       if (emptyState) emptyState.classList.add('hide');
       classListContainer.classList.remove('hide');
+      classListContainer.style.display = 'flex';
       classListContainer.innerHTML = `
         <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
           <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
@@ -3266,6 +3267,7 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
     if (dayClasses.length > 0) {
       if (emptyState) emptyState.classList.add('hide');
       classListContainer.classList.remove('hide');
+      classListContainer.style.display = '';
 
       // Sort dayClasses: Live classes first, then upcoming, then completed
       const sortedDayClasses = [...dayClasses].sort((a, b) => {
@@ -4066,15 +4068,24 @@ window.__nnlHandleBackPressed = () => {
   }
   return false;
 };
-try { renderContinueWatchingSection(); } catch (_) {}
+try {
+  renderContinueWatchingSection();
+  if (activeTab === 'live') renderHomeDateCalendar([], true);
+} catch (_) {}
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    try { renderContinueWatchingSection(); } catch (_) {}
+    try {
+      renderContinueWatchingSection();
+      if (activeTab === 'live') renderHomeDateCalendar([], true);
+    } catch (_) {}
     setTimeout(renderContinueWatchingSection, 150);
     setTimeout(initClassHubButtons, 150);
   });
 } else {
-  try { renderContinueWatchingSection(); } catch (_) {}
+  try {
+    renderContinueWatchingSection();
+    if (activeTab === 'live') renderHomeDateCalendar([], true);
+  } catch (_) {}
   setTimeout(renderContinueWatchingSection, 150);
   setTimeout(initClassHubButtons, 150);
 }
