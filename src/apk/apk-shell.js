@@ -319,10 +319,14 @@ function buildSidePanel() {
           <div class="apk-side-section-title" style="margin:0;font-size:12.5px;">App Updates</div>
           <span id="apk-side-ver-tag" class="apk-ota-badge" style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(124,58,237,0.18);color:var(--accent);border:1px solid rgba(167,139,250,0.3);">v1.0.33</span>
         </div>
-        <div style="display:flex;width:100%;align-items:center;">
+        <div style="display:flex;flex-direction:column;width:100%;gap:6px;">
           <button type="button" id="apk-side-check-update-btn" class="apk-theme-btn" style="width:100%;justify-content:center;height:34px;font-size:12px;font-weight:700;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);color:var(--text-primary);border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0 12px;transition:all 0.2s ease;">
             <svg id="apk-side-check-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span id="apk-side-check-txt">Check for Update</span>
+          </button>
+          <button type="button" id="apk-side-download-apk-btn" class="apk-theme-btn" style="width:100%;justify-content:center;height:32px;font-size:11.5px;font-weight:700;background:rgba(124,58,237,0.18);border:1px solid rgba(167,139,250,0.3);color:#DDD6FE;border-radius:9px;cursor:pointer;display:none;align-items:center;gap:6px;padding:0 10px;transition:all 0.2s ease;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download APK (Manual Install)</span>
           </button>
         </div>
         <div id="apk-update-status-msg" style="font-size:11px;color:var(--text-secondary);font-weight:600;display:none;margin-top:4px;text-align:center;"></div>
@@ -392,14 +396,67 @@ function buildSidePanel() {
   // App Update Check & Unified Single Button Install System
   const sideCheckBtn = panel.querySelector('#apk-side-check-update-btn');
   const sideCheckTxt = panel.querySelector('#apk-side-check-txt');
+  const sideDownloadBtn = panel.querySelector('#apk-side-download-apk-btn');
   const sideStatusMsg = panel.querySelector('#apk-update-status-msg');
   const sideVerTag = panel.querySelector('#apk-side-ver-tag');
 
   let updatePendingType = null; // null | 'web' | 'apk'
   let pendingVersionStr = '';
 
+  async function downloadAndSaveApk(targetBtnEl) {
+    if (targetBtnEl) {
+      targetBtnEl.disabled = true;
+      targetBtnEl.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Downloading APK...</span>';
+    }
+    if (sideStatusMsg) {
+      sideStatusMsg.textContent = 'Downloading Nightingale.apk directly to Downloads...';
+      sideStatusMsg.style.display = 'block';
+    }
+
+    try {
+      const preCheck = await fetch(`/__ota/apk-progress?t=${Date.now()}`).then(r => r.json()).catch(() => null);
+      if (!preCheck || !preCheck.ready) {
+        await fetch('/__ota/start-apk-download', { method: 'POST' });
+        while (true) {
+          await new Promise(r => setTimeout(r, 400));
+          const p = await fetch(`/__ota/apk-progress?t=${Date.now()}`).then(r => r.json()).catch(() => null);
+          if (!p) break;
+          if (p.state === 'ready') break;
+          if (p.state === 'error') throw new Error(p.error || 'Download failed');
+          if (p.state === 'downloading' && targetBtnEl) {
+            targetBtnEl.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Downloading ${p.percent || 0}%</span>`;
+          }
+        }
+      }
+
+      await fetch('/__ota/open-downloads', { method: 'POST' }).catch(() => {});
+      if (sideStatusMsg) {
+        sideStatusMsg.textContent = '✓ Saved Nightingale.apk in Downloads! Tap to install or open from File Manager.';
+        sideStatusMsg.style.color = '#10B981';
+        sideStatusMsg.style.display = 'block';
+      }
+      if (targetBtnEl) {
+        targetBtnEl.disabled = false;
+        targetBtnEl.textContent = '✓ Saved in Downloads (Open Files)';
+      }
+    } catch (e) {
+      console.warn('Bridge APK download fallback:', e);
+      // Fallback: direct browser download
+      window.location.href = 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk';
+      if (sideStatusMsg) {
+        sideStatusMsg.textContent = 'Downloading via browser to Downloads...';
+        sideStatusMsg.style.display = 'block';
+      }
+      if (targetBtnEl) {
+        targetBtnEl.disabled = false;
+        targetBtnEl.textContent = 'Download APK (Manual Install)';
+      }
+    }
+  }
+
   function showUpdatePromptModal(type, versionStr) {
     if (document.getElementById('apk-update-prompt-modal')) return;
+    const isApk = (type === 'apk');
     const modal = document.createElement('div');
     modal.id = 'apk-update-prompt-modal';
     modal.className = 'apk-update-prompt-overlay';
@@ -413,16 +470,18 @@ function buildSidePanel() {
           </svg>
         </div>
         <h3 class="apk-update-title">Update Ready (${versionStr})</h3>
-        <p class="apk-update-desc">A new version of Nightingale is available with performance improvements and bug fixes.</p>
-        <div class="apk-update-actions">
-          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button">Update Now</button>
-          <button id="apk-update-modal-dismiss" class="apk-update-btn-dismiss" type="button">Later</button>
+        <p class="apk-update-desc">${isApk ? 'A new version of Nightingale APK is available. You can install it directly or save to your Downloads folder for manual installation.' : 'A new update is available with performance improvements and bug fixes.'}</p>
+        <div class="apk-update-actions" style="flex-direction:column;gap:8px;width:100%;">
+          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button" style="width:100%;">Install Update</button>
+          ${isApk ? '<button id="apk-update-modal-download" class="apk-update-btn-secondary" type="button" style="width:100%;padding:10px 16px;border-radius:12px;background:rgba(124,58,237,0.18);border:1px solid rgba(167,139,250,0.3);color:#DDD6FE;font-size:0.88rem;font-weight:700;cursor:pointer;">Download APK to Files</button>' : ''}
+          <button id="apk-update-modal-dismiss" class="apk-update-btn-dismiss" type="button" style="width:100%;">Later</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
 
     const updateBtn = modal.querySelector('#apk-update-modal-btn');
+    const downloadBtn = modal.querySelector('#apk-update-modal-download');
     const dismissBtn = modal.querySelector('#apk-update-modal-dismiss');
 
     dismissBtn?.addEventListener('click', () => modal.remove());
@@ -433,16 +492,40 @@ function buildSidePanel() {
       }
       modal.remove();
     });
+    downloadBtn?.addEventListener('click', async () => {
+      downloadBtn.disabled = true;
+      await downloadAndSaveApk(downloadBtn);
+      setTimeout(() => modal.remove(), 1200);
+    });
   }
+
+  const sideCheckIcon = panel.querySelector('#apk-side-check-icon');
 
   async function performOtaCheck(isAuto = false) {
     if (sideCheckBtn && !isAuto) {
       sideCheckBtn.disabled = true;
-      if (sideCheckTxt) sideCheckTxt.textContent = 'Checking...';
+      if (sideCheckIcon) {
+        sideCheckIcon.style.animation = 'apkSpin 0.75s linear infinite';
+      }
+      if (sideCheckTxt) {
+        sideCheckTxt.textContent = 'Checking for updates...';
+      }
     }
 
     try {
+      const checkStart = Date.now();
       const res = await fetch(`/__ota/check?t=${Date.now()}`);
+      if (!isAuto) {
+        const elapsed = Date.now() - checkStart;
+        if (elapsed < 650) {
+          await new Promise(r => setTimeout(r, 650 - elapsed));
+        }
+      }
+
+      if (sideCheckIcon) {
+        sideCheckIcon.style.animation = '';
+      }
+
       if (res.ok) {
         const data = await res.json();
         const hasWeb = Boolean(data.hasWebUpdate);
@@ -464,6 +547,7 @@ function buildSidePanel() {
             sideCheckBtn.style.borderColor = '#10b981';
             sideCheckBtn.style.color = '#ffffff';
           }
+          if (sideDownloadBtn) sideDownloadBtn.style.display = 'none';
           if (isAuto) {
             showUpdatePromptModal('web', pendingVersionStr);
           }
@@ -483,25 +567,29 @@ function buildSidePanel() {
             sideCheckBtn.style.borderColor = '#7c3aed';
             sideCheckBtn.style.color = '#ffffff';
           }
+          if (sideDownloadBtn) {
+            sideDownloadBtn.style.display = 'inline-flex';
+          }
           if (isAuto) {
             showUpdatePromptModal('apk', pendingVersionStr);
           }
         } else {
           updatePendingType = null;
           if (sideVerTag) {
-            sideVerTag.textContent = `v1.0.${data.currentNativeVersionCode || 33}`;
+            sideVerTag.textContent = `v1.0.${data.currentNativeVersionCode || 35}`;
             sideVerTag.style.background = 'rgba(124,58,237,0.18)';
             sideVerTag.style.color = 'var(--accent)';
             sideVerTag.style.borderColor = 'rgba(167,139,250,0.3)';
           }
+          if (sideDownloadBtn) sideDownloadBtn.style.display = 'none';
           if (sideCheckBtn && sideCheckTxt) {
             sideCheckBtn.disabled = false;
-            sideCheckTxt.textContent = 'Up to date';
+            sideCheckTxt.textContent = '✓ Up to date';
             sideCheckBtn.style.background = 'rgba(255,255,255,0.08)';
             sideCheckBtn.style.borderColor = 'rgba(255,255,255,0.14)';
             sideCheckBtn.style.color = 'var(--text-primary)';
             setTimeout(() => {
-              if (!updatePendingType && sideCheckTxt.textContent === 'Up to date') {
+              if (!updatePendingType && sideCheckTxt.textContent === '✓ Up to date') {
                 sideCheckTxt.textContent = 'Check for Update';
               }
             }, 2500);
@@ -511,6 +599,9 @@ function buildSidePanel() {
         throw new Error('Check failed');
       }
     } catch (_) {
+      if (sideCheckIcon) {
+        sideCheckIcon.style.animation = '';
+      }
       if (sideCheckBtn && sideCheckTxt) {
         sideCheckBtn.disabled = false;
         sideCheckTxt.textContent = 'Check for Update';
@@ -518,12 +609,19 @@ function buildSidePanel() {
     }
   }
 
+  if (sideDownloadBtn) {
+    sideDownloadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadAndSaveApk(sideDownloadBtn);
+    });
+  }
+
   if (sideCheckBtn) {
     sideCheckBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (updatePendingType === 'web') {
         sideCheckBtn.disabled = true;
-        if (sideCheckTxt) sideCheckTxt.textContent = 'Updating...';
+        if (sideCheckTxt) sideCheckTxt.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Updating...</span>';
         try {
           const applyRes = await fetch('/__ota/apply', { method: 'POST' });
           const applyJson = await applyRes.json();
@@ -539,7 +637,7 @@ function buildSidePanel() {
         }
       } else if (updatePendingType === 'apk') {
         sideCheckBtn.disabled = true;
-        if (sideCheckTxt) sideCheckTxt.textContent = 'Downloading APK...';
+        if (sideCheckTxt) sideCheckTxt.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Downloading APK...</span>';
         try {
           const preCheck = await fetch(`/__ota/apk-progress?t=${Date.now()}`);
           if (preCheck.ok) {
@@ -575,7 +673,7 @@ function buildSidePanel() {
               throw new Error(status.error || 'Download error');
             }
             if (status.state === 'downloading') {
-              if (sideCheckTxt) sideCheckTxt.textContent = `Downloading ${status.percent || 0}%`;
+              if (sideCheckTxt) sideCheckTxt.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Downloading ${status.percent || 0}%</span>`;
             }
           }
         } catch (err) {
@@ -1350,10 +1448,11 @@ function initApkShell() {
         pill.style.transform = `translate3d(${curActive.offsetLeft}px, ${curActive.offsetTop}px, 0)`;
       }
 
-      // Automated safety: If any back button or detail view is active, strictly hide Option button
+      // Automated safety: If any back button or detail view is actually visible, hide Option button; otherwise keep visible
+      const isVisible = (el) => Boolean(el && el.offsetParent !== null && !el.closest('.hide') && !el.classList.contains('hide'));
       const hasBackButton = Boolean(
-        document.querySelector('#btn-back-subjects:not(.hide), #btn-back-to-subjects:not(.hide), #btn-back-tests:not(.hide), .btn-notes-back:not(.hide)') ||
-        document.querySelector('#notes-subject-view:not(.hide), #subject-detail-view:not(.hide), #tests-detail-view:not(.hide), #quiz-viewer:not(.hide), #recording-viewer:not(.hide)') ||
+        [...document.querySelectorAll('#btn-back-subjects, #btn-back-to-subjects, #btn-back-tests, .btn-notes-back')].some(isVisible) ||
+        [...document.querySelectorAll('#notes-subject-view, #subject-detail-view, #tests-detail-view, #quiz-viewer, #recording-viewer')].some(isVisible) ||
         document.body.classList.contains('apk-in-detail')
       );
       const isTablet = window.innerWidth >= 768;

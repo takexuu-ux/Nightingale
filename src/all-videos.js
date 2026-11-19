@@ -1097,17 +1097,17 @@ function renderSubjectLecturesList() {
 
     const saveBtnLabel = isDownloading
       ? `${Math.round(offState.percent || 0)}%`
-      : (isOfflineOnThisDevice ? 'Saved' : 'Save');
+      : (isOfflineOnThisDevice || isSaved ? 'Downloaded' : 'Download');
 
     const saveBtnHtml = `
-      <button class="sd-mini-pill btn-save-lecture ${isOfflineOnThisDevice ? 'is-saved' : ''} ${isDownloading ? 'is-downloading' : ''}" data-rec-idx="${idx}" data-rec-id="${rec.id}" title="${isOfflineOnThisDevice ? 'Remove from Offline & Saved' : 'Download for Offline Watching'}">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="${isOfflineOnThisDevice ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <button class="sd-mini-pill btn-save-lecture btn-download-lecture ${isOfflineOnThisDevice || isSaved ? 'is-saved' : ''} ${isDownloading ? 'is-downloading' : ''}" data-rec-idx="${idx}" data-rec-id="${rec.id}" title="${isOfflineOnThisDevice || isSaved ? 'Remove Offline Download' : 'Download Lecture for Offline'}">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
         <span>${saveBtnLabel}</span>
       </button>
     `;
 
     const testBtnHtml = rec.testId ? `
-      <a class="sd-mini-pill btn-open-lec-test" href="/tests.html?batchTestId=${encodeURIComponent(rec.testId)}&title=${encodeURIComponent(rec.testTitle || rec.title)}" title="Attempt Attached Test: ${escapeHtml(rec.testTitle || 'Topic Test')}">
+      <a class="sd-mini-pill btn-open-lec-test" href="/tests.html?batchTest=${encodeURIComponent(rec.testId)}&batchTestId=${encodeURIComponent(rec.testId)}&testId=${encodeURIComponent(rec.testId)}&title=${encodeURIComponent(rec.testTitle || rec.title)}&section=rb104" title="Attempt Attached Test: ${escapeHtml(rec.testTitle || 'Topic Test')}">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <span>Test</span>
       </a>
@@ -1125,42 +1125,39 @@ function renderSubjectLecturesList() {
         <!-- 1. Serial Number -->
         <span class="sd-lecture-num">${rowNum}</span>
 
-        <!-- 2. Video Thumbnail -->
-        <div class="sd-lecture-thumb-wrap">
-          ${thumb
-            ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
-            : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
-          <div class="sd-thumb-play-overlay">
-            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <!-- 2. Video Thumbnail Column (with Duration and Date directly below thumbnail) -->
+        <div class="sd-lecture-left-col">
+          <div class="sd-lecture-thumb-wrap">
+            ${thumb
+              ? `<img src="${thumb}" class="sd-lecture-thumb" alt="" loading="lazy">`
+              : `<div class="sd-lecture-thumb" style="display:flex;align-items:center;justify-content:center;color:#a78bfa;"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`}
+            <div class="sd-thumb-play-overlay">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="sd-thumb-sub-info">
+            <span class="sd-thumb-dur">${escapeHtml(durClean)}</span>
+            ${dateFormatted ? `<span class="sd-thumb-date">${escapeHtml(dateFormatted)}</span>` : ''}
           </div>
         </div>
 
-        <!-- 3 & 4. Body: Row 1 Topic & Date, Row 2 Lecture Title, Row 3 Progress Bar, Duration, PDF & Save buttons -->
+        <!-- 3. Body: Lecture Title, Right-Aligned Actions, Full-Width Progress Bar -->
         <div class="sd-lecture-body">
-          <div class="sd-lecture-topic-row">
-            <span class="sd-lecture-topic-pill" title="${escapeHtml(rec.topic || currentOpenSubject?.title || 'Topic')}">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              <span>${escapeHtml(rec.topic || currentOpenSubject?.title || 'General Topic')}</span>
-            </span>
-            ${dateFormatted ? `<span class="sd-lecture-date">${escapeHtml(dateFormatted)}</span>` : ''}
-          </div>
           <div class="sd-lecture-top-line">
             <span class="sd-lecture-title" title="${escapeHtml(rec.title || 'Lecture Video')}">${escapeHtml(rec.title || 'Lecture Video')}</span>
           </div>
-          <div class="sd-lecture-sub-line">
-            <div class="sd-lecture-progress-side">
-              <div class="sd-lecture-progress-track" title="${watchPct > 0 ? `${watchPct}% watched` : 'Not opened yet'}">
-                <div class="sd-lecture-progress-fill ${isCompleted ? 'is-completed' : ''}" style="width: ${watchPct}%;"></div>
-              </div>
-              <span class="sd-lecture-progress-label">
-                ${watchPct > 0 ? `<span class="sd-pct-num">${watchPct}%</span> <span class="meta-dot">•</span> ` : ''}${escapeHtml(durClean)}
-              </span>
-            </div>
+          <div class="sd-lecture-actions-row">
             <div class="sd-lecture-actions">
               ${testBtnHtml}
               ${pdfBtnHtml}
               ${saveBtnHtml}
             </div>
+          </div>
+          <div class="sd-lecture-progress-row">
+            <div class="sd-lecture-progress-track-full" title="${watchPct > 0 ? `${watchPct}% watched` : 'Not opened yet'}">
+              <div class="sd-lecture-progress-fill ${isCompleted ? 'is-completed' : ''}" style="width: ${watchPct}%;"></div>
+            </div>
+            ${watchPct > 0 ? `<span class="sd-pct-num" style="font-size:10.5px;font-weight:700;color:var(--accent);">${watchPct}%</span>` : ''}
           </div>
         </div>
       </div>
@@ -1394,7 +1391,10 @@ async function openRecordingPlayer(recording) {
       tk,
       isBatch,
       pdfUrl,
-      pdfTitle
+      pdfTitle,
+      0,
+      recording.testId || '',
+      recording.testTitle || recording.title || ''
     );
     return;
   }

@@ -19,131 +19,131 @@ export function getShinchanSvg(expr = 'default') {
   switch (expr) {
     case 'happy':
       faceContent = `
-        <!-- High Arched Classic Thick Eyebrows -->
-        <path d="M 15 17 Q 25 6 35 16" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
-        <path d="M 41 16 Q 51 6 61 17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
+        <!-- High Arched Classic Thick Eyebrows on Forehead -->
+        <path d="M 17 21 Q 25 13 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 51 13 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
         <!-- Happy Curved Smiling Eye Arcs (⌒ ⌒) -->
-        <path d="M 20 28 Q 26 19 32 28" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
-        <path d="M 43 28 Q 49 19 55 28" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
+        <path d="M 20 30 Q 26 22 32 30" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
+        <path d="M 43 30 Q 49 22 55 30" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
         <!-- Big Laughing Open "D" Mouth with Tongue -->
-        <path d="M 32 36 Q 38.5 49 45 36 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="38.5" cy="43" rx="4.5" ry="2.8" fill="#FDA4AF" />
+        <path d="M 32 38 Q 38.5 49 45 38 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.8" />
+        <ellipse cx="38.5" cy="44" rx="4.5" ry="2.6" fill="#FDA4AF" />
         <!-- Soft Anime Rosy Cheek Blush -->
-        <ellipse cx="15" cy="34" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="57" cy="34" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
       `;
       break;
 
     case 'shocked':
       faceContent = `
-        <!-- Wavy Worried Eyebrows -->
-        <path d="M 16 19 Q 25 25 34 18" stroke="#09090B" stroke-width="6.8" stroke-linecap="round" fill="none" />
-        <path d="M 42 18 Q 51 25 60 19" stroke="#09090B" stroke-width="6.8" stroke-linecap="round" fill="none" />
+        <!-- Wavy Worried Eyebrows on Forehead -->
+        <path d="M 17 21 Q 25 26 34 20" stroke="#09090B" stroke-width="6.0" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 51 26 59 21" stroke="#09090B" stroke-width="6.0" stroke-linecap="round" fill="none" />
         <!-- Shocked Wide White Eyes with Tiny Dot Pupils -->
-        <ellipse cx="25.5" cy="27.5" rx="6.5" ry="7.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="25.5" cy="27.5" r="2.2" fill="#09090B" />
-        <ellipse cx="48.5" cy="27.5" rx="6.5" ry="7.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="48.5" cy="27.5" r="2.2" fill="#09090B" />
+        <ellipse cx="25.5" cy="29.5" rx="6.5" ry="7.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <circle cx="25.5" cy="29.5" r="2.2" fill="#09090B" />
+        <ellipse cx="48.5" cy="29.5" rx="6.5" ry="7.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <circle cx="48.5" cy="29.5" r="2.2" fill="#09090B" />
         <!-- O-Shaped Shocked Mouth -->
-        <ellipse cx="38.5" cy="40" rx="4.2" ry="5.8" fill="#E11D48" stroke="#0F172A" stroke-width="1.6" />
+        <ellipse cx="38.5" cy="41" rx="4.0" ry="5.5" fill="#E11D48" stroke="#0F172A" stroke-width="1.6" />
         <!-- Anime Blue Sweat Drop on Temple -->
-        <path d="M 11 22 C 11 17, 15 14, 15 14 C 15 14, 19 17, 19 22 C 19 24.5, 17 26.5, 15 26.5 C 13 26.5, 11 24.5, 11 22 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="1" />
-        <circle cx="13.5" cy="22" r="1" fill="#FFFFFF" />
+        <path d="M 11 23 C 11 18, 15 15, 15 15 C 15 15, 19 18, 19 23 C 19 25.5, 17 27.5, 15 27.5 C 13 27.5, 11 25.5, 11 23 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="1" />
+        <circle cx="13.5" cy="23" r="1" fill="#FFFFFF" />
       `;
       break;
 
     case 'wink':
       faceContent = `
-        <!-- Playful Arched Eyebrows -->
-        <path d="M 15 17 Q 25 6 35 16" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
-        <path d="M 41 16 Q 51 6 61 17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
+        <!-- Playful Arched Eyebrows on Forehead -->
+        <path d="M 17 21 Q 25 14 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 51 14 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
         <!-- Left Wink (> Line) -->
-        <path d="M 20 25 L 28 28.5 L 20 32" stroke="#09090B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <path d="M 20 27 L 27 30 L 20 33" stroke="#09090B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
         <!-- Right Open Eye with Star Sparkle -->
-        <ellipse cx="48.5" cy="26.5" rx="6.5" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="48" cy="27" rx="4" ry="4.5" fill="#09090B" />
-        <circle cx="46.5" cy="25" r="1.5" fill="#FFFFFF" />
-        <polygon points="50,23 51,25 53,25 51.5,26.5 52,28.5 50,27.2 48,28.5 48.5,26.5 47,25 49,25" fill="#FACC15" />
-        <!-- Playful Cat Smirk 3 -->
-        <path d="M 32 37 Q 35.5 34 38.5 37 Q 41.5 34 45 37" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
+        <ellipse cx="48.5" cy="29" rx="6.2" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <ellipse cx="48" cy="29.5" rx="3.8" ry="4.2" fill="#09090B" />
+        <circle cx="46.5" cy="27.5" r="1.5" fill="#FFFFFF" />
+        <polygon points="50,25 51,27 53,27 51.5,28.5 52,30.5 50,29.2 48,30.5 48.5,28.5 47,27 49,27" fill="#FACC15" />
+        <!-- Playful Cat Smirk -->
+        <path d="M 32 39 Q 35.5 36 38.5 39 Q 41.5 36 45 39" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
         <!-- Blushing Cheek -->
-        <ellipse cx="15" cy="34" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="57" cy="34" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
       `;
       break;
 
     case 'focus':
       faceContent = `
         <!-- Action Kamen / Student Victory Headband with Red Sun -->
-        <path d="M 14 14 L 62 14 L 61 20 L 15 20 Z" fill="#FFFFFF" stroke="#475569" stroke-width="1" />
-        <circle cx="38" cy="17" r="2.6" fill="#EF4444" />
+        <path d="M 14 13 L 62 13 L 61 18 L 15 18 Z" fill="#FFFFFF" stroke="#475569" stroke-width="1" />
+        <circle cx="38" cy="15.5" r="2.2" fill="#EF4444" />
         <!-- Determined Slanted Eyebrows -->
-        <line x1="16" y1="22" x2="33" y2="17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" />
-        <line x1="60" y1="22" x2="43" y2="17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" />
+        <line x1="17" y1="23" x2="33" y2="19" stroke="#09090B" stroke-width="6.5" stroke-linecap="round" />
+        <line x1="59" y1="23" x2="43" y2="19" stroke="#09090B" stroke-width="6.5" stroke-linecap="round" />
         <!-- Focused Eyes -->
-        <ellipse cx="25.5" cy="27" rx="5.8" ry="6.5" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="26" cy="27" r="3.2" fill="#09090B" />
-        <circle cx="24.8" cy="25.8" r="1.1" fill="#FFFFFF" />
-        <ellipse cx="48.5" cy="27" rx="5.8" ry="6.5" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="48" cy="27" r="3.2" fill="#09090B" />
-        <circle cx="46.8" cy="25.8" r="1.1" fill="#FFFFFF" />
+        <ellipse cx="25.5" cy="29" rx="5.8" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <circle cx="26" cy="29" r="3.2" fill="#09090B" />
+        <circle cx="24.8" cy="27.8" r="1.1" fill="#FFFFFF" />
+        <ellipse cx="48.5" cy="29" rx="5.8" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <circle cx="48" cy="29" r="3.2" fill="#09090B" />
+        <circle cx="46.8" cy="27.8" r="1.1" fill="#FFFFFF" />
         <!-- Determined Grin -->
-        <path d="M 32 37 Q 38.5 42 45 37" stroke="#0F172A" stroke-width="2.6" fill="#FFFFFF" />
-        <ellipse cx="15" cy="34" rx="4" ry="2.2" fill="#FB7185" opacity="0.65" />
+        <path d="M 32 39 Q 38.5 44 45 39" stroke="#0F172A" stroke-width="2.6" fill="#FFFFFF" />
+        <ellipse cx="14" cy="35" rx="4" ry="2.2" fill="#FB7185" opacity="0.65" />
       `;
       break;
 
     case 'eating':
       faceContent = `
-        <!-- High Arched Eyebrows -->
-        <path d="M 15 17 Q 25 6 35 16" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
-        <path d="M 41 16 Q 51 6 61 17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
+        <!-- High Arched Eyebrows on Forehead -->
+        <path d="M 17 21 Q 25 14 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 51 14 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
         <!-- Happy Eating Eyes -->
-        <path d="M 20 27 Q 25 20 31 27" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" fill="none" />
-        <path d="M 43 27 Q 48 20 54 27" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" fill="none" />
+        <path d="M 20 29 Q 25 22 31 29" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" fill="none" />
+        <path d="M 43 29 Q 48 22 54 29" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" fill="none" />
         <!-- Chewing Mouth with Puffed Cheeks -->
-        <ellipse cx="38" cy="38" rx="3.8" ry="3.2" fill="#991B1B" />
+        <ellipse cx="38" cy="39" rx="3.8" ry="3.2" fill="#991B1B" />
         <!-- Green Chocobi Star Biscuit -->
-        <polygon points="48,39 50,42 53,42 51,44 52,47 49,45 46,47 47,44 45,42 48,42" fill="#10B981" stroke="#065F46" stroke-width="0.8" />
+        <polygon points="48,40 50,43 53,43 51,45 52,48 49,46 46,48 47,45 45,43 48,43" fill="#10B981" stroke="#065F46" stroke-width="0.8" />
         <!-- Blushing Cheeks -->
-        <ellipse cx="15" cy="34" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="57" cy="34" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
       `;
       break;
 
     case 'buri':
       faceContent = `
-        <!-- Signature Arched Eyebrows -->
-        <path d="M 15 17 Q 25 6 35 16" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
-        <path d="M 41 16 Q 51 6 61 17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
+        <!-- Signature Arched Eyebrows on Forehead -->
+        <path d="M 17 21 Q 25 14 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
+        <path d="M 42 20 Q 51 14 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
         <!-- Blissful Closed Eyes -->
-        <path d="M 20 27 Q 25 19 31 27" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
-        <path d="M 43 27 Q 48 19 54 27" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
+        <path d="M 20 29 Q 25 21 31 29" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
+        <path d="M 43 29 Q 48 21 54 29" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
         <!-- Singing / Dancing Open Smile -->
-        <path d="M 32 37 Q 38.5 45 45 37" stroke="#E11D48" stroke-width="2.6" fill="#FDA4AF" stroke-linecap="round" />
+        <path d="M 32 39 Q 38.5 47 45 39" stroke="#E11D48" stroke-width="2.6" fill="#FDA4AF" stroke-linecap="round" />
         <!-- Rosy Blushing Cheeks -->
-        <ellipse cx="15" cy="34" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.8" />
-        <ellipse cx="57" cy="34" rx="3.5" ry="2" fill="#FB7185" opacity="0.7" />
+        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.8" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.7" />
       `;
       break;
 
     default:
       faceContent = `
-        <!-- SIGNATURE ULTRA-THICK ARCHED CRAYON SHIN-CHAN EYEBROWS -->
-        <path d="M 15 17 Q 25 6 35 16" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
-        <path d="M 41 16 Q 51 6 61 17" stroke="#09090B" stroke-width="7.5" stroke-linecap="round" fill="none" />
+        <!-- SIGNATURE ULTRA-THICK ARCHED CRAYON SHIN-CHAN EYEBROWS (Placed naturally on forehead) -->
+        <path d="M 17 22 Q 25 14 34 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
+        <path d="M 42 21 Q 51 14 59 22" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
         <!-- Classic Shin-chan Eyes: Large white capsules with big black pupils and shine -->
-        <ellipse cx="25.5" cy="26.5" rx="6.5" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="25" cy="27" rx="4" ry="4.5" fill="#09090B" />
-        <circle cx="23.5" cy="25" r="1.5" fill="#FFFFFF" />
-        <ellipse cx="48.5" cy="26.5" rx="6.5" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="48" cy="27" rx="4" ry="4.5" fill="#09090B" />
-        <circle cx="46.5" cy="25" r="1.5" fill="#FFFFFF" />
+        <ellipse cx="25.5" cy="29" rx="6.2" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <ellipse cx="25" cy="29.5" rx="3.8" ry="4.2" fill="#09090B" />
+        <circle cx="23.5" cy="27.8" r="1.4" fill="#FFFFFF" />
+        <ellipse cx="48.5" cy="29" rx="6.2" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
+        <ellipse cx="48" cy="29.5" rx="3.8" ry="4.2" fill="#09090B" />
+        <circle cx="46.5" cy="27.8" r="1.4" fill="#FFFFFF" />
         <!-- Iconic Mischievous Sideways Smirk with Pink Tongue -->
-        <path d="M 32 37 Q 38.5 45 45 37" stroke="#991B1B" stroke-width="2.6" fill="#FDA4AF" stroke-linecap="round" />
+        <path d="M 32 39 Q 38.5 46 45 39" stroke="#991B1B" stroke-width="2.6" fill="#FDA4AF" stroke-linecap="round" />
         <!-- Soft Anime Rosy Cheek Blush on the Potato Cheek -->
-        <ellipse cx="15" cy="34" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="57" cy="34" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
+        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
       `;
       break;
   }
@@ -199,18 +199,18 @@ export function getShinchanSvg(expr = 'default') {
 
       <!-- Head & Facial Features -->
       <g class="sc-head">
-        <!-- Authentic Yoshito Usui Shin-chan Potato Head Contour: Tall dome, bulbous left cheek pouch, round chin -->
-        <path d="M 24 13 C 32 7, 50 7, 60 11 C 66 14, 69 20, 68 28 C 67 34, 63 41, 52 46 C 42 50, 30 49, 22 46 C 13 42, 8 36, 9 27 C 10 19, 16 14, 24 13 Z" fill="#FED7AA" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" />
+        <!-- Authentic Yoshito Usui Shin-chan Potato Head Contour: Clear dome, bulbous left cheek pouch, round chin -->
+        <path d="M 22 10 C 32 4, 52 4, 62 9 C 68 12, 71 18, 70 26 C 69 33, 65 40, 54 45 C 44 49, 32 48, 24 45 C 14 41, 7 35, 8 26 C 9 17, 15 11, 22 10 Z" fill="#FED7AA" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" />
 
-        <!-- Authentic Cropped Buzz-Cut Jet-Black Hair Cap -->
-        <path d="M 21 16 C 28 9, 44 7, 58 9 C 65 11, 68 17, 68 27 C 66 21, 60 14, 48 11 C 34 9, 25 12, 21 16 Z" fill="#09090B" />
-        <path d="M 64 15 C 68 20, 69 27, 66 33 C 65 28, 65 22, 63 16 Z" fill="#09090B" />
+        <!-- Authentic Cropped Buzz-Cut Jet-Black Hair Cap covering crown and temple -->
+        <path d="M 22 10 C 32 4, 52 4, 62 9 C 68 12, 71 18, 70 26 C 67 19, 59 11, 46 9 C 34 8, 25 11, 22 10 Z" fill="#09090B" />
+        <path d="M 64 11 C 69 16, 70 23, 67 30 C 66 24, 65 18, 63 13 Z" fill="#09090B" />
 
         <!-- Classic Right Ear with Inner Ridge -->
-        <ellipse cx="66" cy="29" rx="4.2" ry="5.8" fill="#FED7AA" stroke="#0F172A" stroke-width="1.6" />
-        <path d="M 65 27 Q 68 29 65 31" fill="none" stroke="#0F172A" stroke-width="1.2" stroke-linecap="round" />
+        <ellipse cx="68" cy="28" rx="4.2" ry="5.8" fill="#FED7AA" stroke="#0F172A" stroke-width="1.6" />
+        <path d="M 67 26 Q 70 28 67 30" fill="none" stroke="#0F172A" stroke-width="1.2" stroke-linecap="round" />
 
-        <!-- Facial Features -->
+        <!-- Facial Features (forehead clearly separated above eyebrows) -->
         ${faceContent}
       </g>
     </svg>
@@ -435,8 +435,8 @@ function renderPetElement() {
   const getBottomRightDefault = () => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const x = Math.max(16, vw - 80);
-    const y = Math.max(16, vh - 105);
+    const x = Math.max(16, vw - 76);
+    const y = Math.round(vh * 0.58);
     return { x, y };
   };
 
@@ -446,12 +446,12 @@ function renderPetElement() {
   const burstsEl = root.querySelector('.apk-pet-bursts');
 
   const SHINCHAN_TAP_ACTIONS = [
-    { expr: 'buri', anim: 'is-buri', emote: 'Buri Buri~ 🍑' },
-    { expr: 'happy', anim: 'is-cheer', emote: 'Yatta! 🔥' },
-    { expr: 'wink', anim: 'is-wink', emote: 'Hehe! ✨' },
-    { expr: 'eating', anim: 'is-hop', emote: 'Chocobi! 🍫' },
-    { expr: 'focus', anim: 'is-nod', emote: 'Action Kamen! ⚡' },
-    { expr: 'shocked', anim: 'is-shock', emote: 'Aiyoo! 💦' }
+    { expr: 'buri', anim: 'is-buri' },
+    { expr: 'happy', anim: 'is-cheer' },
+    { expr: 'wink', anim: 'is-wink' },
+    { expr: 'eating', anim: 'is-hop' },
+    { expr: 'focus', anim: 'is-nod' },
+    { expr: 'happy', anim: 'is-spin' }
   ];
   let tapIndex = 0;
 
@@ -459,8 +459,8 @@ function renderPetElement() {
     const action = SHINCHAN_TAP_ACTIONS[tapIndex % SHINCHAN_TAP_ACTIONS.length];
     tapIndex++;
 
+    // Play lively Shin-chan action animation without any ugly text speech bubble
     setPetExpression(action.expr, action.anim);
-    showTamagotchiBubble(action.emote, 1300);
 
     if (burstsEl) {
       const symbols = ['🍑', '✨', '🔥', '★', '🍫'];
@@ -484,14 +484,13 @@ function renderPetElement() {
   let walkTimeout = null;
   let returnTimeout = null;
 
+  // Patrol Walking (Backward & Forward along screen edge)
   function doAutonomousWalk() {
     if (isDragging || isWalking || !isPetEnabled() || isLoginScreenActive()) return;
-    const now = Date.now();
-    if (now - lastSiteInteractionTime < 9000) return; // User is active, don't interrupt
 
     const vw = window.innerWidth;
-    const walkLeft = pos.x > vw / 2;
-    const distance = 55 + Math.random() * 45;
+    const walkLeft = pos.x > 90;
+    const distance = 40 + Math.random() * 35;
     const targetX = walkLeft ? Math.max(16, pos.x - distance) : Math.min(vw - 75, pos.x + distance);
     const originWalkX = pos.x;
 
@@ -503,7 +502,7 @@ function renderPetElement() {
       root.classList.remove('facing-left');
     }
 
-    root.style.transition = 'transform 2.0s linear';
+    root.style.transition = 'transform 1.8s ease-in-out';
     pos.x = targetX;
     setPosition(targetX, pos.y);
 
@@ -512,14 +511,12 @@ function renderPetElement() {
       root.style.transition = '';
 
       const funEmotes = [
-        { expr: 'buri', anim: 'is-buri', emote: 'Buri Buri~ 🍑' },
-        { expr: 'happy', anim: 'is-cheer', emote: 'Yatta! 🔥' },
-        { expr: 'wink', anim: 'is-wink', emote: 'Hehe! ✨' },
-        { expr: 'eating', anim: 'is-hop', emote: 'Chocobi! 🍫' }
+        { expr: 'buri', anim: 'is-buri' },
+        { expr: 'happy', anim: 'is-cheer' },
+        { expr: 'wink', anim: 'is-wink' }
       ];
       const pick = funEmotes[Math.floor(Math.random() * funEmotes.length)];
       setPetExpression(pick.expr, pick.anim);
-      showTamagotchiBubble(pick.emote, 1400);
 
       returnTimeout = setTimeout(() => {
         if (isDragging || !isPetEnabled()) {
@@ -532,7 +529,7 @@ function renderPetElement() {
         } else {
           root.classList.add('facing-left');
         }
-        root.style.transition = 'transform 2.0s linear';
+        root.style.transition = 'transform 1.8s ease-in-out';
         pos.x = originWalkX;
         setPosition(originWalkX, pos.y);
 
@@ -540,14 +537,66 @@ function renderPetElement() {
           root.classList.remove('is-walking', 'facing-left');
           root.style.transition = '';
           isWalking = false;
-        }, 2050);
-      }, 2600);
-    }, 2050);
+          setPetExpression('default');
+        }, 1850);
+      }, 2200);
+    }, 1850);
   }
 
-  setInterval(doAutonomousWalk, 24000);
+  setInterval(doAutonomousWalk, 14000);
+
+  // ── Page Scroll & Click Dynamic Reactions ──
+  let scrollReactionTimeout = null;
+  let lastScrollPos = window.scrollY;
+
+  const handlePageScroll = () => {
+    if (isDragging || !isPetEnabled() || isLoginScreenActive()) return;
+    const curScroll = window.scrollY;
+    const delta = curScroll - lastScrollPos;
+    lastScrollPos = curScroll;
+
+    if (Math.abs(delta) > 2) {
+      root.classList.add('is-walking');
+      if (delta > 0) {
+        root.classList.add('facing-left');
+      } else {
+        root.classList.remove('facing-left');
+      }
+      const avatar = root.querySelector('.apk-pet-avatar');
+      if (avatar && !root.classList.contains('is-cheer') && !root.classList.contains('is-buri')) {
+        avatar.innerHTML = getShinchanSvg('happy');
+      }
+    }
+
+    clearTimeout(scrollReactionTimeout);
+    scrollReactionTimeout = setTimeout(() => {
+      root.classList.remove('is-walking');
+      const avatar = root.querySelector('.apk-pet-avatar');
+      if (avatar && !root.classList.contains('is-cheer') && !root.classList.contains('is-buri')) {
+        avatar.innerHTML = getShinchanSvg('default');
+      }
+    }, 280);
+  };
+  window.addEventListener('scroll', handlePageScroll, { passive: true });
+
+  const handlePageClick = (e) => {
+    if (isDragging || !isPetEnabled() || isLoginScreenActive()) return;
+    if (root.contains(e.target)) return;
+    const targetInteractive = e.target.closest('button, a, .nav-tab, .sd-lecture-card, .class-card, .test-card, .notes-card, [role="button"], .apk-hamburger-btn');
+    if (targetInteractive) {
+      const clickReactions = [
+        { expr: 'happy', anim: 'is-cheer' },
+        { expr: 'wink', anim: 'is-wink' },
+        { expr: 'focus', anim: 'is-nod' }
+      ];
+      const pick = clickReactions[Math.floor(Math.random() * clickReactions.length)];
+      setPetExpression(pick.expr, pick.anim);
+    }
+  };
+  document.addEventListener('click', handlePageClick, { passive: true });
 
   const onPointerDown = (e) => {
+    e.stopPropagation();
     if (isWalking) {
       clearTimeout(walkTimeout);
       clearTimeout(returnTimeout);
@@ -567,6 +616,7 @@ function renderPetElement() {
 
   const onPointerMove = (e) => {
     if (!isDragging) return;
+    e.stopPropagation();
     const cx = e.clientX || (e.touches && e.touches[0].clientX) || 0;
     const cy = e.clientY || (e.touches && e.touches[0].clientY) || 0;
     const dx = cx - startX;
@@ -588,6 +638,7 @@ function renderPetElement() {
   };
 
   const onPointerUp = (e) => {
+    e.stopPropagation();
     if (!isDragging) return;
     isDragging = false;
     root.classList.remove('is-dragging', 'is-running');
@@ -607,6 +658,16 @@ function renderPetElement() {
   root.addEventListener('pointermove', onPointerMove);
   root.addEventListener('pointerup', onPointerUp);
   root.addEventListener('pointercancel', onPointerUp);
+  root.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  root.addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+  }, { passive: false });
+  root.addEventListener('touchend', (e) => {
+    e.stopPropagation();
+  }, { passive: false });
 
   // ── Global Website Interaction Listener ──
   // Reacts dynamically to whatever user clicks on the website

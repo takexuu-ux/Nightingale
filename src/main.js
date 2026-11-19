@@ -2,12 +2,22 @@ import './apk/apk-shell.js';
 import { IS_HINGLISH_APK, persistApkSession, clearApkSession } from './config/appMode.js';
 import { fetchFreshVdoCipherOtp, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import {
+  getWatchHistory,
   getRecentlyWatchedLectures,
   getLastWatchedLecture,
   getLectureProgress,
   saveLectureProgress,
   getSavedLecturesList
 } from './services/lectureWatchService.js';
+
+if (typeof window !== 'undefined') {
+  window.getWatchHistory = getWatchHistory;
+  window.getRecentlyWatchedLectures = getRecentlyWatchedLectures;
+  window.getLastWatchedLecture = getLastWatchedLecture;
+  window.getLectureProgress = getLectureProgress;
+  window.saveLectureProgress = saveLectureProgress;
+  window.getSavedLecturesList = getSavedLecturesList;
+}
 import { RED_SAPPHIRE_DATA } from './data/redSapphireSchedule.js';
 import { getClinicalFallbackQuestions } from './data/clinicalQuestionsBank.js';
 
@@ -2936,12 +2946,13 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
     }
 
     // If classes were already loaded in this session, render them immediately.
-    // Otherwise, render dates bar right now and show the loading animation below the dates!
+    // Otherwise, render dates bar right now with preloaded schedule so the student never waits on an endless loader!
     if (classesFetched && classesData && classesData.length > 0) {
       const poolForLive = getPoolForLive(classesData);
       renderHomeDateCalendar(poolForLive, false);
     } else {
-      renderHomeDateCalendar([], true);
+      const initialPool = getPoolForLive(classesData || []);
+      renderHomeDateCalendar(initialPool, initialPool.length === 0);
     }
   }
 
@@ -2972,9 +2983,8 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
       renderHomeDateCalendar([], true);
     } else {
       classListContainer.innerHTML = `
-        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
-          <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);">Loading classes...</div>
+        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1rem;gap:8px;color:var(--text-secondary);width:100%;text-align:center;">
+          <div class="spinner" style="width:30px;height:30px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
         </div>
       `;
       if (dashboardLoader) dashboardLoader.classList.remove('hide');
@@ -3174,7 +3184,23 @@ function getPoolForLive(classes) {
     });
   }
 
-  let poolForLive = cleanClasses.filter(c => doesClassMatchBatch(c, activeBatch));
+  // Deduplicate by ID and (normalized title + start date)
+  const seenKeys = new Set();
+  const dedupedClasses = [];
+  for (const c of cleanClasses) {
+    if (!c) continue;
+    const startStr = c.start || c.startTime || '';
+    const titleStr = (c.title || c.topic || '').trim().toLowerCase();
+    const idKey = c.id ? `id_${c.id}` : `t_${titleStr}_${startStr}`;
+    const altKey = `t_${titleStr}_${startStr}`;
+    if (!seenKeys.has(idKey) && !seenKeys.has(altKey)) {
+      seenKeys.add(idKey);
+      seenKeys.add(altKey);
+      dedupedClasses.push(c);
+    }
+  }
+
+  let poolForLive = dedupedClasses.filter(c => doesClassMatchBatch(c, activeBatch));
   if (poolForLive.length === 0 && RED_SAPPHIRE_DATA) {
     const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
     const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
@@ -3260,9 +3286,8 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
       classListContainer.classList.remove('hide');
       classListContainer.style.display = 'flex';
       classListContainer.innerHTML = `
-        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:10px;color:var(--text-secondary);width:100%;text-align:center;">
-          <div class="spinner" style="width:32px;height:32px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);">Loading classes...</div>
+        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1rem;gap:8px;color:var(--text-secondary);width:100%;text-align:center;">
+          <div class="spinner" style="width:30px;height:30px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
         </div>
       `;
       return;
@@ -3983,18 +4008,18 @@ function renderContinueWatchingSection() {
   const displayPct = Math.min(99, Math.max(1, pct));
   const curTimeFormatted = formatWatchTime(curTime);
   const durFormatted = item.duration ? formatWatchTime(item.duration) : '';
-  const timeLabel = curTime > 5
-    ? `Resume from ${curTimeFormatted}${durFormatted ? ` / ${durFormatted}` : ''} • ${displayPct}%`
+  const timeLabel = curTime > 5 && durFormatted
+    ? `${curTimeFormatted} / ${durFormatted} (${displayPct}%)`
     : `${displayPct}% Watched`;
 
   grid.innerHTML = `
     <div class="continue-watching-card minimal-resume-card" data-rec-id="${escapeHtml(recId)}" role="button" tabindex="0">
       <div class="resume-card-icon" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       </div>
       <div class="resume-card-body">
         <div class="resume-card-top-row">
-          <h4 class="resume-card-title" title="${escapeHtml(item.title || 'Recorded Lecture')}">${escapeHtml(item.title || 'Recorded Lecture')}</h4>
+          <h4 class="resume-card-title">${escapeHtml(item.title || 'Recorded Lecture')}</h4>
           <span class="lecture-progress-text" style="font-size:11px;font-weight:700;color:var(--accent);">${displayPct}%</span>
         </div>
         <div class="resume-card-meta">
@@ -4007,7 +4032,7 @@ function renderContinueWatchingSection() {
         </div>
       </div>
       <button class="continue-watching-resume-btn resume-pill-btn" type="button" aria-label="Resume Lecture">
-        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         <span>Resume</span>
       </button>
     </div>
@@ -4056,6 +4081,11 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 window.__nnlHandleBackPressed = () => {
+  const classroomViewer = document.getElementById('classroom-viewer');
+  if (classroomViewer && !classroomViewer.classList.contains('hide')) {
+    exitClassroom();
+    return true;
+  }
   const saarthiModal = document.getElementById('apk-saarthi-modal');
   if (saarthiModal && !saarthiModal.classList.contains('hide')) {
     saarthiModal.classList.add('hide');
@@ -4758,6 +4788,12 @@ function initOtpBoxes() {
       boxes.forEach(b => {
         b.blur();
       });
+      setTimeout(() => {
+        boxes.forEach(b => b.blur());
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+      }, 50);
       if (window.getSelection) {
         try { window.getSelection().removeAllRanges(); } catch (_) {}
       }

@@ -1,0 +1,8 @@
+{
+  "webVersion": 98,
+  "nativeVersionCode": 38,
+  "updatedAt": "2026-11-19T16:00:00.000Z",
+  "notes": "v1.0.38 (OTA v98): Shin-chan mascot authentic face geometry & safe mid-screen positioning with click-through prevention; compact back buttons (32px); hidden PDF counter on subject top bar; aligned duration & date under thumbnails; full-width progress bar; right-aligned action buttons; instant quiz launch on Attempt Test deep-link; refined video player action buttons; instant 0ms lecture loading; duplicate live class filter & classroom back-exit.",
+  "zipUrl": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/hinglish-bundle.zip",
+  "apkUrl": "https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk"
+}

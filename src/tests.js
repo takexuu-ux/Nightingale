@@ -1739,24 +1739,17 @@ document.addEventListener('DOMContentLoaded', () => {
     setRbBatchId(getBatchIdFromName(activeBatch), false);
   };
 
-  // Support deep link from Notes page ("Attempt Test")
-  const batchTestId = urlParams.get('batchTest');
+  // Support deep link from Notes or Videos page ("Attempt Test")
+  const batchTestId = urlParams.get('batchTest') || urlParams.get('batchTestId');
   const directTestId = urlParams.get('testId');
-  if (batchTestId) {
+  const targetTestId = batchTestId || directTestId;
+  if (targetTestId) {
     loadAndStartTest({
-      id: batchTestId,
+      id: targetTestId,
       title: urlParams.get('title') || 'Topic Assessment Test',
       duration: parseInt(urlParams.get('duration') || '1800', 10),
-      isBatchTest: true,
-      mode: 'practice'
-    });
-  } else if (directTestId) {
-    loadAndStartTest({
-      id: directTestId,
-      title: urlParams.get('title') || 'Practice Test',
-      duration: parseInt(urlParams.get('duration') || '1800', 10),
-      isBatchTest: false,
-      mode: 'practice'
+      isBatchTest: Boolean(batchTestId || urlParams.get('isBatchTest')),
+      mode: urlParams.get('mode') || 'practice'
     });
   }
 });

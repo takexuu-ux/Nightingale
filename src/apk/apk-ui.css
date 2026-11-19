@@ -880,9 +880,10 @@ body.is-logged-in #apk-date-picker-wrap,
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 100% !important;
-  max-width: 1560px !important;
-  margin: 10px auto 18px auto !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 10px calc(-50vw + 50%) 18px calc(-50vw + 50%) !important;
+  box-sizing: border-box !important;
   visibility: visible !important;
   pointer-events: auto !important;
 }
@@ -893,10 +894,12 @@ body.is-logged-in #apk-date-picker-wrap,
   flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  width: 100% !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
   min-height: 54px !important;
   gap: 8px !important;
-  padding: 6px 16px !important;
+  padding: 6px 16px 10px 16px !important;
+  box-sizing: border-box !important;
   overflow-x: auto !important;
   scrollbar-width: none !important;
   -webkit-overflow-scrolling: touch !important;
@@ -1531,7 +1534,11 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 
 /* Revolving luminous emerald laser activates across ALL boxes when full 6 digits are entered (verification loading) */
 .otp-boxes-container.running-glow .otp-box,
-#auth-screen .otp-boxes-container.running-glow .otp-box {
+.otp-boxes-container.running-glow .otp-box:focus,
+.otp-boxes-container.running-glow .otp-box:active,
+#auth-screen .otp-boxes-container.running-glow .otp-box,
+#auth-screen .otp-boxes-container.running-glow .otp-box:focus,
+#auth-screen .otp-boxes-container.running-glow .otp-box:active {
   border: 2px solid transparent !important;
   border-color: transparent !important;
   background-color: transparent !important;
@@ -1555,7 +1562,11 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 [data-theme="light"] .otp-box.filled:focus,
 [data-theme="light"] #auth-screen .otp-box.filled:focus,
 [data-theme="light"] .otp-boxes-container.running-glow .otp-box,
-[data-theme="light"] #auth-screen .otp-boxes-container.running-glow .otp-box {
+[data-theme="light"] .otp-boxes-container.running-glow .otp-box:focus,
+[data-theme="light"] .otp-boxes-container.running-glow .otp-box:active,
+[data-theme="light"] #auth-screen .otp-boxes-container.running-glow .otp-box,
+[data-theme="light"] #auth-screen .otp-boxes-container.running-glow .otp-box:focus,
+[data-theme="light"] #auth-screen .otp-boxes-container.running-glow .otp-box:active {
   background-image:
     linear-gradient(#FFFFFF, #FFFFFF),
     conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.12) 0deg, rgba(16, 185, 129, 0.12) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.12) 360deg) !important;
@@ -2850,10 +2861,12 @@ body:not(.apk-is-auth) {
 #btn-back-tests,
 .btn-back-pill,
 .btn-notes-back {
-  width: 40px !important;
-  height: 40px !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
   padding: 0 !important;
-  border-radius: 12px !important; /* Perfect square with curved corners matching option button */
+  border-radius: 9px !important; /* Compact square with curved corners */
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   background: rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(14px) !important;
@@ -2873,8 +2886,8 @@ body:not(.apk-is-auth) {
 #btn-back-tests svg,
 .btn-back-pill svg,
 .btn-notes-back svg {
-  width: 18px !important;
-  height: 18px !important;
+  width: 14px !important;
+  height: 14px !important;
 }
 #btn-back-to-subjects span,
 #btn-back-subjects span,
@@ -4186,10 +4199,10 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     padding: 6px 10px !important; /* Equal padding top/bottom and sides */
     border: 1px solid rgba(167, 139, 250, 0.28) !important;
     border-radius: 999px !important; /* Perfectly smooth capsule island */
-    background: rgba(30, 22, 54, 0.75) !important; /* Real Glassmorphism */
+    background: rgba(18, 14, 34, 0.93) !important; /* Reduced transparency per user request */
     backdrop-filter: blur(28px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
     gap: 8px !important;
     z-index: 8500 !important;
     box-sizing: border-box !important;
@@ -4200,7 +4213,7 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   [data-theme="light"] .app-header {
-    background: linear-gradient(160deg, rgba(238, 230, 255, 0.90) 0%, rgba(220, 208, 252, 0.82) 100%) !important;
+    background: linear-gradient(160deg, rgba(246, 242, 255, 0.97) 0%, rgba(236, 228, 255, 0.95) 100%) !important;
     border: 1.5px solid rgba(139, 92, 246, 0.35) !important;
     box-shadow: 0 14px 34px rgba(109, 40, 217, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   }
@@ -4407,10 +4420,10 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     padding: 6px 12px !important;
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     border-radius: 999px !important; /* Smooth capsule island */
-    background: rgba(30, 22, 54, 0.42) !important; /* Transparent Glassmorphism */
+    background: rgba(18, 14, 34, 0.92) !important; /* Reduced transparency per user request */
     backdrop-filter: blur(28px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
     gap: 8px !important;
     z-index: 8500 !important;
     box-sizing: border-box !important;
@@ -4421,7 +4434,7 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   [data-theme="light"] .app-header {
-    background: linear-gradient(160deg, rgba(238, 230, 255, 0.90) 0%, rgba(220, 208, 252, 0.82) 100%) !important;
+    background: linear-gradient(160deg, rgba(246, 242, 255, 0.97) 0%, rgba(236, 228, 255, 0.95) 100%) !important;
     border: 1.5px solid rgba(139, 92, 246, 0.35) !important;
     box-shadow: 0 14px 34px rgba(109, 40, 217, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   }
@@ -4476,7 +4489,7 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     align-items: center !important;
     padding: 12px 6px !important;
     border-radius: 28px !important; /* Sleek vertical island */
-    background: rgba(30, 22, 54, 0.40) !important; /* Transparent Glassmorphic Island */
+    background: rgba(18, 14, 34, 0.92) !important; /* Reduced transparency per user request */
     backdrop-filter: blur(28px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.16) !important;
@@ -5940,9 +5953,9 @@ main#app,
    Squares with curved corners matching option button style (50px x 50px)
    ═══════════════════════════════════════════════════════════════════════════ */
 .apk-date-picker-wrap {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 4px auto 12px auto !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 4px calc(-50vw + 50%) 12px calc(-50vw + 50%) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -6210,24 +6223,22 @@ main#app,
   flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 13px 16px !important;
-  border-radius: 19px !important;
-  background: radial-gradient(circle at 0% 0%, rgba(142, 116, 229, 0.22) 0%, transparent 68%),
-              linear-gradient(155deg, rgba(32, 26, 56, 0.88) 0%, rgba(20, 16, 38, 0.94) 100%) !important;
-  border: 1px solid rgba(167, 139, 250, 0.28) !important;
-  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  gap: 14px !important;
+  padding: 10px 14px !important;
+  border-radius: 16px !important;
+  background: rgba(22, 17, 40, 0.78) !important;
+  border: 1px solid rgba(167, 139, 250, 0.25) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  gap: 12px !important;
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="light"] .minimal-resume-card {
-  background: radial-gradient(circle at 0% 0%, rgba(142, 116, 229, 0.15) 0%, transparent 68%),
-              linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 242, 254, 0.92) 100%) !important;
-  border: 1px solid rgba(142, 116, 229, 0.22) !important;
-  box-shadow: 0 4px 18px rgba(142, 116, 229, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(142, 116, 229, 0.28) !important;
+  box-shadow: 0 4px 18px rgba(142, 116, 229, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 .minimal-resume-card:hover {
@@ -6237,9 +6248,9 @@ main#app,
 }
 
 .resume-card-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 13px;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
   background: linear-gradient(135deg, #7c5ce0 0%, #5b3ee8 100%);
   color: #FFFFFF;
   display: flex;
@@ -6266,17 +6277,19 @@ main#app,
 
 .resume-card-title {
   margin: 0;
-  font-size: 13.5px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.3;
-  white-space: nowrap;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .resume-card-meta {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-secondary);
   font-weight: 600;
   display: flex;
@@ -6320,18 +6333,19 @@ main#app,
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
+  gap: 4px !important;
   width: auto !important;
-  padding: 8px 14px !important;
+  height: 28px !important;
+  padding: 4px 11px !important;
   border-radius: 99px !important;
   background: linear-gradient(135deg, #7c5ce0 0%, #5b3ee8 100%) !important;
   color: #FFFFFF !important;
   border: none !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   font-weight: 800 !important;
   flex-shrink: 0 !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 14px rgba(91, 62, 232, 0.3) !important;
+  box-shadow: 0 3px 10px rgba(91, 62, 232, 0.3) !important;
   transition: transform 0.15s ease, opacity 0.15s ease !important;
 }
 
@@ -6800,16 +6814,12 @@ main#app,
     flex-shrink: 0 !important;
   }
 
-  /* Tests & Notes inline search box: Always visible and aligned beside title */
-  #tests-search-box,
-  #notes-search-box {
-    display: flex !important;
-    align-items: center !important;
-  }
-
-  #videos-search-box:not(.active),
-  #saved-search-box:not(.active) {
-    display: flex !important;
+  /* Search box is strictly controlled by .search-open / .apk-search-toggle-btn */
+  #videos-search-box:not(.search-open),
+  #notes-search-box:not(.search-open),
+  #tests-search-box:not(.search-open),
+  #saved-search-box:not(.search-open) {
+    display: none !important;
   }
 
   /* Keep stats clean on Tests mobile */
@@ -6863,31 +6873,39 @@ main#app,
   flex-shrink: 0 !important;
 }
 
-/* Dedicated Search Icon Button: Square with curved corners matching hamburger / option button */
+/* Dedicated Search Icon Button: Square with curved corners matching hamburger / option button 1:1 */
 .apk-search-toggle-btn {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 12px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  background: rgba(30, 22, 54, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   color: var(--text-primary) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
-  transition: all 0.2s ease !important;
+  box-shadow:
+    2.5px 2.5px 0 0 #8E74E5,
+    0 4px 14px rgba(124, 92, 224, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   margin-left: auto !important;
 }
 
 [data-theme="light"] .apk-search-toggle-btn {
-  background: rgba(255, 255, 255, 0.65) !important;
-  border: 1.2px solid rgba(142, 116, 229, 0.38) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(142, 116, 229, 0.38) !important;
   color: #1E1B4B !important;
-  box-shadow: 0 4px 14px rgba(108, 79, 214, 0.12) !important;
+  box-shadow:
+    2.5px 2.5px 0 0 #8E74E5,
+    0 4px 14px rgba(108, 79, 214, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 /* By default, search box is hidden so header remains clean, minimal, and left-aligned */
@@ -7119,10 +7137,47 @@ main#app,
   flex-shrink: 0 !important;
 }
 
-/* Part 2: Video thumbnail */
+/* Part 2: Video thumbnail column with duration & date underneath */
+.sd-lecture-left-col {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+  width: 76px !important;
+}
+
+.sd-thumb-sub-info {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+  width: 100% !important;
+  text-align: left !important;
+  padding-left: 1px !important;
+}
+
+.sd-thumb-dur {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  line-height: 1.2 !important;
+}
+
+.sd-thumb-date {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 76px !important;
+}
+
 .sd-lecture-card .sd-lecture-thumb-wrap {
-  width: 72px !important;
-  height: 44px !important;
+  width: 76px !important;
+  height: 46px !important;
   border-radius: 8px !important;
   overflow: hidden !important;
   position: relative !important;
@@ -7160,7 +7215,7 @@ main#app,
   justify-content: center !important;
 }
 
-/* Row 1: Title (left) & Date (right) */
+/* Row 1: Title (full width) */
 .sd-lecture-card .sd-lecture-top-line {
   display: flex !important;
   align-items: baseline !important;
@@ -7170,7 +7225,7 @@ main#app,
 }
 
 .sd-lecture-card .sd-lecture-title {
-  font-size: 0.86rem !important;
+  font-size: 0.88rem !important;
   font-weight: 700 !important;
   color: var(--text-primary) !important;
   white-space: nowrap !important;
@@ -7178,6 +7233,57 @@ main#app,
   text-overflow: ellipsis !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
+}
+
+/* Row 2: Actions right-aligned on the right hand side per user request */
+.sd-lecture-card .sd-lecture-actions-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  width: 100% !important;
+  margin-top: 2px !important;
+}
+
+.sd-lecture-card .sd-lecture-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* Row 3: Full-bleed Progress Bar till right border per user request */
+.sd-lecture-card .sd-lecture-progress-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin-top: 3px !important;
+}
+
+.sd-lecture-card .sd-lecture-progress-track-full {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  height: 5px !important;
+  border-radius: 99px !important;
+  background: rgba(142, 116, 229, 0.22) !important;
+  overflow: hidden !important;
+}
+
+[data-theme="light"] .sd-lecture-card .sd-lecture-progress-track-full {
+  background: rgba(124, 92, 224, 0.20) !important;
+}
+
+.sd-lecture-card .sd-lecture-progress-fill {
+  height: 100% !important;
+  border-radius: 99px !important;
+  background: linear-gradient(90deg, #8E74E5 0%, #00f3d0 100%) !important;
+  transition: width 0.3s ease !important;
+}
+
+.sd-lecture-card .sd-lecture-progress-fill.is-completed {
+  background: linear-gradient(90deg, #10B981 0%, #059669 100%) !important;
 }
 
 .sd-lecture-card .sd-lecture-date {
@@ -7206,9 +7312,10 @@ main#app,
 }
 
 .sd-lecture-progress-track {
-  width: 48px !important;
-  min-width: 38px !important;
-  height: 4.5px !important;
+  width: 90px !important;
+  min-width: 60px !important;
+  max-width: 140px !important;
+  height: 5px !important;
   border-radius: 99px !important;
   background: rgba(142, 116, 229, 0.22) !important;
   overflow: hidden !important;
@@ -7623,22 +7730,37 @@ main#app,
   flex-shrink: 0 !important;
 }
 
-/* Compact Back button box in Detail views: Square with curved corners */
+/* Hide PDF Count on Subject Detail top bar per user request */
+#subject-detail-count,
+.subject-detail-count,
+#stat-notes-count-badge {
+  display: none !important;
+}
+
+/* Compact Back button box in Detail views: Small square with curved corners */
 .subject-detail-top-line .btn-notes-back,
 .subject-detail-top-line .btn-back-pill,
 #btn-back-to-subjects,
 #btn-back-subjects,
 #btn-back-tests {
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
-  max-width: 40px !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
   padding: 0 !important;
-  border-radius: 12px !important; /* Square with curved corners matching option button */
+  border-radius: 9px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
+}
+.subject-detail-top-line .btn-notes-back svg,
+.subject-detail-top-line .btn-back-pill svg,
+#btn-back-to-subjects svg,
+#btn-back-subjects svg,
+#btn-back-tests svg {
+  width: 14px !important;
+  height: 14px !important;
 }
 
 .subject-detail-top-line .btn-notes-back span,
