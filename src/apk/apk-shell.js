@@ -463,17 +463,17 @@ function buildSidePanel() {
     modal.innerHTML = `
       <div class="apk-update-prompt-card">
         <div class="apk-update-icon-glow">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
         </div>
         <h3 class="apk-update-title">Update Ready (${versionStr})</h3>
-        <p class="apk-update-desc">${isApk ? 'A new version of Nightingale APK is available. You can install it directly or save to your Downloads folder for manual installation.' : 'A new update is available with performance improvements and bug fixes.'}</p>
-        <div class="apk-update-actions" style="flex-direction:column;gap:8px;width:100%;">
-          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button" style="width:100%;">Install Update</button>
-          ${isApk ? '<button id="apk-update-modal-download" class="apk-update-btn-secondary" type="button" style="width:100%;padding:10px 16px;border-radius:12px;background:rgba(124,58,237,0.18);border:1px solid rgba(167,139,250,0.3);color:#DDD6FE;font-size:0.88rem;font-weight:700;cursor:pointer;">Download APK to Files</button>' : ''}
+        <p class="apk-update-desc">${isApk ? 'A fresh version of Nightingale is available with performance optimizations and stability fixes.' : 'A new update is available with performance improvements and bug fixes.'}</p>
+        <div class="apk-update-actions" style="display:flex;flex-direction:column;gap:8px;width:100%;">
+          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button" style="width:100%;">Update Now</button>
+          ${isApk ? '<button id="apk-update-modal-download" class="apk-update-btn-secondary" type="button" style="width:100%;">Download APK file</button>' : ''}
           <button id="apk-update-modal-dismiss" class="apk-update-btn-dismiss" type="button" style="width:100%;">Later</button>
         </div>
       </div>
@@ -504,12 +504,8 @@ function buildSidePanel() {
   async function performOtaCheck(isAuto = false) {
     if (sideCheckBtn && !isAuto) {
       sideCheckBtn.disabled = true;
-      if (sideCheckIcon) {
-        sideCheckIcon.style.animation = 'apkSpin 0.75s linear infinite';
-      }
-      if (sideCheckTxt) {
-        sideCheckTxt.textContent = 'Checking for updates...';
-      }
+      // Show ONLY a minimal circular loader with NO text
+      sideCheckBtn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;border-color:rgba(167,139,250,0.3);border-top-color:#a78bfa;"></span>';
     }
 
     try {
@@ -520,10 +516,6 @@ function buildSidePanel() {
         if (elapsed < 650) {
           await new Promise(r => setTimeout(r, 650 - elapsed));
         }
-      }
-
-      if (sideCheckIcon) {
-        sideCheckIcon.style.animation = '';
       }
 
       if (res.ok) {
@@ -540,9 +532,9 @@ function buildSidePanel() {
             sideVerTag.style.color = '#10b981';
             sideVerTag.style.borderColor = 'rgba(16, 185, 129, 0.3)';
           }
-          if (sideCheckBtn && sideCheckTxt) {
+          if (sideCheckBtn) {
             sideCheckBtn.disabled = false;
-            sideCheckTxt.textContent = `Install Update (${pendingVersionStr})`;
+            sideCheckBtn.innerHTML = `<span id="apk-side-check-txt">Install Update (${pendingVersionStr})</span>`;
             sideCheckBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
             sideCheckBtn.style.borderColor = '#10b981';
             sideCheckBtn.style.color = '#ffffff';
@@ -560,9 +552,9 @@ function buildSidePanel() {
             sideVerTag.style.color = '#a78bfa';
             sideVerTag.style.borderColor = 'rgba(124, 58, 237, 0.3)';
           }
-          if (sideCheckBtn && sideCheckTxt) {
+          if (sideCheckBtn) {
             sideCheckBtn.disabled = false;
-            sideCheckTxt.textContent = `Install Update (${pendingVersionStr})`;
+            sideCheckBtn.innerHTML = `<span id="apk-side-check-txt">Install Update (${pendingVersionStr})</span>`;
             sideCheckBtn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #6366f1 100%)';
             sideCheckBtn.style.borderColor = '#7c3aed';
             sideCheckBtn.style.color = '#ffffff';
@@ -576,35 +568,39 @@ function buildSidePanel() {
         } else {
           updatePendingType = null;
           if (sideVerTag) {
-            sideVerTag.textContent = `v1.0.${data.currentNativeVersionCode || 35}`;
+            sideVerTag.textContent = `v1.0.${data.currentNativeVersionCode || 39}`;
             sideVerTag.style.background = 'rgba(124,58,237,0.18)';
             sideVerTag.style.color = 'var(--accent)';
             sideVerTag.style.borderColor = 'rgba(167,139,250,0.3)';
           }
           if (sideDownloadBtn) sideDownloadBtn.style.display = 'none';
-          if (sideCheckBtn && sideCheckTxt) {
+          if (sideCheckBtn) {
             sideCheckBtn.disabled = false;
-            sideCheckTxt.textContent = '✓ Up to date';
+            // Up to date: show circular icon with emerald checkmark instead of button text
+            sideCheckBtn.innerHTML = '<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(16,185,129,0.18);border:1px solid rgba(16,185,129,0.4);color:#10b981;font-size:13px;font-weight:900;">✓</span>';
             sideCheckBtn.style.background = 'rgba(255,255,255,0.08)';
             sideCheckBtn.style.borderColor = 'rgba(255,255,255,0.14)';
             sideCheckBtn.style.color = 'var(--text-primary)';
             setTimeout(() => {
-              if (!updatePendingType && sideCheckTxt.textContent === '✓ Up to date') {
-                sideCheckTxt.textContent = 'Check for Update';
+              if (!updatePendingType && sideCheckBtn) {
+                sideCheckBtn.innerHTML = `
+                  <svg id="apk-side-check-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <span id="apk-side-check-txt">Check for Update</span>
+                `;
               }
-            }, 2500);
+            }, 3000);
           }
         }
       } else {
         throw new Error('Check failed');
       }
     } catch (_) {
-      if (sideCheckIcon) {
-        sideCheckIcon.style.animation = '';
-      }
-      if (sideCheckBtn && sideCheckTxt) {
+      if (sideCheckBtn) {
         sideCheckBtn.disabled = false;
-        sideCheckTxt.textContent = 'Check for Update';
+        sideCheckBtn.innerHTML = `
+          <svg id="apk-side-check-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span id="apk-side-check-txt">Check for Update</span>
+        `;
       }
     }
   }
@@ -1163,14 +1159,72 @@ function normalizeHeaderAndChrome() {
       sendOtpSpan.textContent = 'Get OTP';
     }
 
-    // Transparent Botanical Anatomical Heart & Lungs Artwork (Clean, no overpowering particle bloom)
+    // Transparent Botanical Anatomical Heart & Lungs Artwork with delicate, tiny blooming flowers
     if (wrapper && !document.getElementById('apk-auth-botanical')) {
       const bot = document.createElement('div');
       bot.id = 'apk-auth-botanical';
       bot.className = 'apk-auth-botanical';
       bot.innerHTML = `
         <img src="${botanicalImgUrl}" alt="Botanical anatomical heart and lungs illustration" class="apk-botanical-img" draggable="false" />
+        <div class="apk-botanical-sparks" aria-hidden="true"></div>
       `;
+
+      const sparksEl = bot.querySelector('.apk-botanical-sparks');
+      let lastSpawnTime = 0;
+
+      // Delicate micro-blooms (tiny Sakura, Lavender floret, Chamomile, Rose petal)
+      const flowerSVGs = [
+        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-4" r="3" fill="#F472B6"/><circle cx="4" cy="-1.5" r="3" fill="#FBCFE8"/><circle cx="2.5" cy="3.5" r="3" fill="#EC4899"/><circle cx="-2.5" cy="3.5" r="3" fill="#F472B6"/><circle cx="-4" cy="-1.5" r="3" fill="#FBCFE8"/><circle cx="0" cy="0" r="1.8" fill="#FDE047"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="12" height="12" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-3.5" r="2.6" fill="#C084FC"/><circle cx="3.5" cy="1.2" r="2.6" fill="#DDD6FE"/><circle cx="-3.5" cy="1.2" r="2.6" fill="#A855F7"/><circle cx="0" cy="3" r="2" fill="#E9D5FF"/><circle cx="0" cy="0" r="1.5" fill="#FEF08A"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-4.5" rx="1.6" ry="3.2" fill="#FFFFFF"/><ellipse cx="4" cy="-2.2" rx="1.6" ry="3.2" transform="rotate(60 4 -2.2)" fill="#FDF4FF"/><ellipse cx="4" cy="2.2" rx="1.6" ry="3.2" transform="rotate(120 4 2.2)" fill="#FFFFFF"/><ellipse cx="0" cy="4.5" rx="1.6" ry="3.2" fill="#FDF4FF"/><ellipse cx="-4" cy="2.2" rx="1.6" ry="3.2" transform="rotate(60 -4 2.2)" fill="#FFFFFF"/><ellipse cx="-4" cy="-2.2" rx="1.6" ry="3.2" transform="rotate(120 -4 -2.2)" fill="#FDF4FF"/><circle cx="0" cy="0" r="2.2" fill="#FACC15"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="11" height="11" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.9"/></svg>`,
+        `<svg viewBox="0 0 24 24" width="12" height="12" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.92"/></svg>`,
+        `<svg viewBox="0 0 24 24" width="11" height="11" fill="none"><circle cx="12" cy="12" r="3" fill="#FDE047"/><path d="M12 3v18M3 12h18" stroke="#FEF08A" stroke-width="1.6" stroke-linecap="round"/></svg>`
+      ];
+
+      const spawnFlowerAtCursor = (clientX, clientY, isMicro = false) => {
+        if (!sparksEl) return;
+        const rect = bot.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        // Keep active area strictly bounded inside the image
+        if (x < 10 || y < 10 || x > rect.width - 10 || y > rect.height - 10) return;
+
+        const flower = document.createElement('span');
+        flower.className = 'apk-cursor-flower';
+        flower.innerHTML = flowerSVGs[Math.floor(Math.random() * flowerSVGs.length)];
+        flower.style.left = `${x}px`;
+        flower.style.top = `${y}px`;
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 6 + Math.random() * 14;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - (5 + Math.random() * 8);
+        const rot = (Math.random() - 0.5) * 60;
+        const baseScale = isMicro ? (0.45 + Math.random() * 0.15) : (0.6 + Math.random() * 0.15);
+
+        flower.style.setProperty('--target-x', `${dx}px`);
+        flower.style.setProperty('--target-y', `${dy}px`);
+        flower.style.setProperty('--target-rot', `${rot}deg`);
+        flower.style.setProperty('--target-scale', `${baseScale}`);
+
+        sparksEl.appendChild(flower);
+        setTimeout(() => flower.remove(), 800);
+      };
+
+      const onPointerMove = (e) => {
+        const now = Date.now();
+        if (now - lastSpawnTime < 110) return;
+        lastSpawnTime = now;
+        spawnFlowerAtCursor(e.clientX, e.clientY, Math.random() > 0.4);
+      };
+
+      bot.addEventListener('pointermove', onPointerMove);
+      bot.addEventListener('pointerdown', (e) => {
+        spawnFlowerAtCursor(e.clientX, e.clientY, false);
+      });
+
       wrapper.appendChild(bot);
     }
   }

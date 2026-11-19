@@ -1,149 +1,138 @@
-// Nightingale Companion Mascot: Shin-chan (Shinnosuke Nohara)
-// 100% Code-Generated Vector Companion with Iconic Expressions & Interactive Website Body Animations
-// STRICT RULE: Shin-chan is NEVER shown on the Login / Authentication screen.
+// Nightingale Companion Mascot: Lumi (Cyber Tamagotchi Study Companion)
+// 100% Code-Generated Vector Companion with Delightful Expressions & Micro-Interactions
+// STRICT RULE: Mascot is NEVER shown on the Login / Authentication screen.
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
 
 export function getPetSvg(petId, expression = 'default') {
-  return getShinchanSvg(expression);
+  return getLumiSvg(expression);
 }
 
 export function getNurseSvg(expression = 'default') {
-  return getShinchanSvg(expression);
+  return getLumiSvg(expression);
 }
 
-export function getShinchanSvg(expr = 'default') {
+export function getShinchanSvg(expression = 'default') {
+  return getLumiSvg(expression);
+}
+
+export function getLumiSvg(expr = 'default') {
   let faceContent = '';
 
   switch (expr) {
     case 'happy':
       faceContent = `
-        <!-- High Arched Classic Thick Eyebrows on Forehead -->
-        <path d="M 17 21 Q 25 13 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <path d="M 42 20 Q 51 13 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <!-- Happy Curved Smiling Eye Arcs (⌒ ⌒) -->
-        <path d="M 20 30 Q 26 22 32 30" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
-        <path d="M 43 30 Q 49 22 55 30" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
-        <!-- Big Laughing Open "D" Mouth with Tongue -->
-        <path d="M 32 38 Q 38.5 49 45 38 Z" fill="#E11D48" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="38.5" cy="44" rx="4.5" ry="2.6" fill="#FDA4AF" />
-        <!-- Soft Anime Rosy Cheek Blush -->
-        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
-      `;
-      break;
-
-    case 'shocked':
-      faceContent = `
-        <!-- Wavy Worried Eyebrows on Forehead -->
-        <path d="M 17 21 Q 25 26 34 20" stroke="#09090B" stroke-width="6.0" stroke-linecap="round" fill="none" />
-        <path d="M 42 20 Q 51 26 59 21" stroke="#09090B" stroke-width="6.0" stroke-linecap="round" fill="none" />
-        <!-- Shocked Wide White Eyes with Tiny Dot Pupils -->
-        <ellipse cx="25.5" cy="29.5" rx="6.5" ry="7.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="25.5" cy="29.5" r="2.2" fill="#09090B" />
-        <ellipse cx="48.5" cy="29.5" rx="6.5" ry="7.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="48.5" cy="29.5" r="2.2" fill="#09090B" />
-        <!-- O-Shaped Shocked Mouth -->
-        <ellipse cx="38.5" cy="41" rx="4.0" ry="5.5" fill="#E11D48" stroke="#0F172A" stroke-width="1.6" />
-        <!-- Anime Blue Sweat Drop on Temple -->
-        <path d="M 11 23 C 11 18, 15 15, 15 15 C 15 15, 19 18, 19 23 C 19 25.5, 17 27.5, 15 27.5 C 13 27.5, 11 25.5, 11 23 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="1" />
-        <circle cx="13.5" cy="23" r="1" fill="#FFFFFF" />
-      `;
-      break;
-
-    case 'wink':
-      faceContent = `
-        <!-- Playful Arched Eyebrows on Forehead -->
-        <path d="M 17 21 Q 25 14 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <path d="M 42 20 Q 51 14 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <!-- Left Wink (> Line) -->
-        <path d="M 20 27 L 27 30 L 20 33" stroke="#09090B" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-        <!-- Right Open Eye with Star Sparkle -->
-        <ellipse cx="48.5" cy="29" rx="6.2" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="48" cy="29.5" rx="3.8" ry="4.2" fill="#09090B" />
-        <circle cx="46.5" cy="27.5" r="1.5" fill="#FFFFFF" />
-        <polygon points="50,25 51,27 53,27 51.5,28.5 52,30.5 50,29.2 48,30.5 48.5,28.5 47,27 49,27" fill="#FACC15" />
-        <!-- Playful Cat Smirk -->
-        <path d="M 32 39 Q 35.5 36 38.5 39 Q 41.5 36 45 39" stroke="#991B1B" stroke-width="2.6" fill="none" stroke-linecap="round" />
-        <!-- Blushing Cheek -->
-        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <!-- Joy Smiling Curved Eyes (⌒ ⌒) -->
+        <path d="M 23 35 Q 29 27 35 35" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none" />
+        <path d="M 45 35 Q 51 27 57 35" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none" />
+        <!-- Big Happy Open Smile with Pink Tongue -->
+        <path d="M 35 42 Q 40 50 45 42 Z" fill="#F43F5E" stroke="#881337" stroke-width="1.2" />
+        <ellipse cx="40" cy="46" rx="3" ry="1.6" fill="#FDA4AF" />
+        <!-- Rosy Cheeks -->
+        <ellipse cx="18" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.85" />
+        <ellipse cx="62" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.85" />
+        <!-- Floating Micro Joy Sparkles -->
+        <circle cx="28" cy="24" r="1.5" fill="#FDE047" />
+        <circle cx="52" cy="24" r="1.5" fill="#FDE047" />
       `;
       break;
 
     case 'focus':
       faceContent = `
-        <!-- Action Kamen / Student Victory Headband with Red Sun -->
-        <path d="M 14 13 L 62 13 L 61 18 L 15 18 Z" fill="#FFFFFF" stroke="#475569" stroke-width="1" />
-        <circle cx="38" cy="15.5" r="2.2" fill="#EF4444" />
-        <!-- Determined Slanted Eyebrows -->
-        <line x1="17" y1="23" x2="33" y2="19" stroke="#09090B" stroke-width="6.5" stroke-linecap="round" />
-        <line x1="59" y1="23" x2="43" y2="19" stroke="#09090B" stroke-width="6.5" stroke-linecap="round" />
-        <!-- Focused Eyes -->
-        <ellipse cx="25.5" cy="29" rx="5.8" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="26" cy="29" r="3.2" fill="#09090B" />
-        <circle cx="24.8" cy="27.8" r="1.1" fill="#FFFFFF" />
-        <ellipse cx="48.5" cy="29" rx="5.8" ry="6.2" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <circle cx="48" cy="29" r="3.2" fill="#09090B" />
-        <circle cx="46.8" cy="27.8" r="1.1" fill="#FFFFFF" />
-        <!-- Determined Grin -->
-        <path d="M 32 39 Q 38.5 44 45 39" stroke="#0F172A" stroke-width="2.6" fill="#FFFFFF" />
-        <ellipse cx="14" cy="35" rx="4" ry="2.2" fill="#FB7185" opacity="0.65" />
+        <!-- Smart Study Glasses (Cyber Purple/Gold wireframe) -->
+        <rect x="18" y="27" width="18" height="15" rx="5" fill="rgba(147, 197, 253, 0.25)" stroke="#A78BFA" stroke-width="2" />
+        <rect x="44" y="27" width="18" height="15" rx="5" fill="rgba(147, 197, 253, 0.25)" stroke="#A78BFA" stroke-width="2" />
+        <line x1="36" y1="34" x2="44" y2="34" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" />
+        <!-- Determined Sparkling Eyes inside lenses -->
+        <circle cx="27" cy="34" r="3.2" fill="#FFFFFF" />
+        <circle cx="28" cy="33" r="1.4" fill="#38BDF8" />
+        <circle cx="53" cy="34" r="3.2" fill="#FFFFFF" />
+        <circle cx="54" cy="33" r="1.4" fill="#38BDF8" />
+        <!-- Focus Smart Smirk -->
+        <path d="M 36 45 Q 40 48 44 45" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" fill="none" />
+        <!-- Subtle Rosy Cheek Glow -->
+        <ellipse cx="17" cy="41" rx="3.5" ry="1.8" fill="#FB7185" opacity="0.6" />
+        <ellipse cx="63" cy="41" rx="3.5" ry="1.8" fill="#FB7185" opacity="0.6" />
       `;
       break;
 
-    case 'eating':
+    case 'wink':
       faceContent = `
-        <!-- High Arched Eyebrows on Forehead -->
-        <path d="M 17 21 Q 25 14 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <path d="M 42 20 Q 51 14 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <!-- Happy Eating Eyes -->
-        <path d="M 20 29 Q 25 22 31 29" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" fill="none" />
-        <path d="M 43 29 Q 48 22 54 29" stroke="#09090B" stroke-width="4.0" stroke-linecap="round" fill="none" />
-        <!-- Chewing Mouth with Puffed Cheeks -->
-        <ellipse cx="38" cy="39" rx="3.8" ry="3.2" fill="#991B1B" />
-        <!-- Green Chocobi Star Biscuit -->
-        <polygon points="48,40 50,43 53,43 51,45 52,48 49,46 46,48 47,45 45,43 48,43" fill="#10B981" stroke="#065F46" stroke-width="0.8" />
+        <!-- Playful Left Wink (> shape) -->
+        <path d="M 23 32 L 31 35 L 23 38" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <!-- Right Sparkling Eye with Star Glimmer -->
+        <ellipse cx="51" cy="35" rx="5.5" ry="6" fill="#FFFFFF" />
+        <ellipse cx="51" cy="35.5" rx="3.6" ry="4" fill="#1E1B4B" />
+        <circle cx="49" cy="33.5" r="1.6" fill="#FFFFFF" />
+        <polygon points="53,32 54,34 56,34 54.5,35.5 55,37.5 53,36.2 51,37.5 51.5,35.5 50,34 52,34" fill="#FACC15" />
+        <!-- Playful Kitty Mouth -->
+        <path d="M 35 44 Q 38 42 40 44 Q 42 42 45 44" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" fill="none" />
         <!-- Blushing Cheeks -->
-        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <ellipse cx="18" cy="40" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
+        <ellipse cx="62" cy="40" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
       `;
       break;
 
-    case 'buri':
+    case 'love':
       faceContent = `
-        <!-- Signature Arched Eyebrows on Forehead -->
-        <path d="M 17 21 Q 25 14 34 20" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <path d="M 42 20 Q 51 14 59 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <!-- Blissful Closed Eyes -->
-        <path d="M 20 29 Q 25 21 31 29" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
-        <path d="M 43 29 Q 48 21 54 29" stroke="#09090B" stroke-width="4.2" stroke-linecap="round" fill="none" />
-        <!-- Singing / Dancing Open Smile -->
-        <path d="M 32 39 Q 38.5 47 45 39" stroke="#E11D48" stroke-width="2.6" fill="#FDA4AF" stroke-linecap="round" />
-        <!-- Rosy Blushing Cheeks -->
-        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.8" />
-        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.7" />
+        <!-- Big Heart Eyes (♥ ♥) -->
+        <path d="M 27 28 C 24 25, 20 28, 20 32 C 20 37, 27 41, 27 41 C 27 41, 34 37, 34 32 C 34 28, 30 25, 27 28 Z" fill="#F43F5E" />
+        <path d="M 53 28 C 50 25, 46 28, 46 32 C 46 37, 53 41, 53 41 C 53 41, 60 37, 60 32 C 60 28, 56 25, 53 28 Z" fill="#F43F5E" />
+        <!-- Cute Little 'o' Mouth -->
+        <ellipse cx="40" cy="45" rx="2.5" ry="3.2" fill="#FFFFFF" />
+        <!-- Radiant Blushing Cheeks -->
+        <ellipse cx="16" cy="39" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.9" />
+        <ellipse cx="64" cy="39" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.9" />
+      `;
+      break;
+
+    case 'sleepy':
+      faceContent = `
+        <!-- Peaceful Sleeping Eyes (– –) -->
+        <line x1="22" y1="35" x2="33" y2="35" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" />
+        <line x1="47" y1="35" x2="58" y2="35" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" />
+        <!-- Tiny Snooze Mouth with Snot/Sleep Bubble -->
+        <ellipse cx="40" cy="43" rx="2.2" ry="1.6" fill="#FFFFFF" />
+        <circle cx="45" cy="38" r="4.5" fill="rgba(147, 197, 253, 0.45)" stroke="#93C5FD" stroke-width="1.2" />
+        <circle cx="43.5" cy="36.5" r="1.2" fill="#FFFFFF" />
+        <!-- Floating zzz -->
+        <text x="58" y="24" fill="#C4B5FD" font-size="8" font-family="sans-serif" font-weight="800">z</text>
+        <text x="64" y="18" fill="#A78BFA" font-size="10" font-family="sans-serif" font-weight="800">Z</text>
+      `;
+      break;
+
+    case 'shocked':
+      faceContent = `
+        <!-- Wide Cute Shocked Eyes -->
+        <ellipse cx="27" cy="34" rx="6" ry="6.5" fill="#FFFFFF" />
+        <circle cx="27" cy="34" r="2.4" fill="#1E1B4B" />
+        <ellipse cx="53" cy="34" rx="6" ry="6.5" fill="#FFFFFF" />
+        <circle cx="53" cy="34" r="2.4" fill="#1E1B4B" />
+        <!-- O-shaped Mouth -->
+        <ellipse cx="40" cy="45" rx="3.5" ry="4.5" fill="#F43F5E" />
+        <ellipse cx="40" cy="46" rx="2" ry="2" fill="#FDA4AF" />
+        <!-- Anime Blue Sweatdrop -->
+        <path d="M 14 26 C 14 22, 17 20, 17 20 C 17 20, 20 22, 20 26 C 20 28, 18.5 29.5, 17 29.5 C 15.5 29.5, 14 28, 14 26 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8" />
       `;
       break;
 
     default:
       faceContent = `
-        <!-- SIGNATURE ULTRA-THICK ARCHED CRAYON SHIN-CHAN EYEBROWS (Placed naturally on forehead) -->
-        <path d="M 17 22 Q 25 14 34 21" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <path d="M 42 21 Q 51 14 59 22" stroke="#09090B" stroke-width="6.2" stroke-linecap="round" fill="none" />
-        <!-- Classic Shin-chan Eyes: Large white capsules with big black pupils and shine -->
-        <ellipse cx="25.5" cy="29" rx="6.2" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="25" cy="29.5" rx="3.8" ry="4.2" fill="#09090B" />
-        <circle cx="23.5" cy="27.8" r="1.4" fill="#FFFFFF" />
-        <ellipse cx="48.5" cy="29" rx="6.2" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" />
-        <ellipse cx="48" cy="29.5" rx="3.8" ry="4.2" fill="#09090B" />
-        <circle cx="46.5" cy="27.8" r="1.4" fill="#FFFFFF" />
-        <!-- Iconic Mischievous Sideways Smirk with Pink Tongue -->
-        <path d="M 32 39 Q 38.5 46 45 39" stroke="#991B1B" stroke-width="2.6" fill="#FDA4AF" stroke-linecap="round" />
-        <!-- Soft Anime Rosy Cheek Blush on the Potato Cheek -->
-        <ellipse cx="14" cy="35" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.75" />
-        <ellipse cx="56" cy="35" rx="3.5" ry="2" fill="#FB7185" opacity="0.6" />
+        <!-- Big Kawaii Sparkling Eyes -->
+        <ellipse cx="27" cy="34" rx="6" ry="6.8" fill="#FFFFFF" />
+        <ellipse cx="27" cy="34.5" rx="4.2" ry="4.8" fill="#1E1B4B" />
+        <circle cx="25" cy="32" r="2" fill="#FFFFFF" />
+        <circle cx="29" cy="36" r="1" fill="#38BDF8" />
+        <ellipse cx="53" cy="34" rx="6" ry="6.8" fill="#FFFFFF" />
+        <ellipse cx="53" cy="34.5" rx="4.2" ry="4.8" fill="#1E1B4B" />
+        <circle cx="51" cy="32" r="2" fill="#FFFFFF" />
+        <circle cx="55" cy="36" r="1" fill="#38BDF8" />
+        <!-- Cute Curved Smile -->
+        <path d="M 36 43 Q 40 47 44 43" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" fill="none" />
+        <!-- Soft Anime Rosy Cheeks -->
+        <ellipse cx="17" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
+        <ellipse cx="63" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
       `;
       break;
   }
@@ -151,67 +140,80 @@ export function getShinchanSvg(expr = 'default') {
   return `
     <svg viewBox="0 0 80 88" width="100%" height="100%" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <filter id="sc-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="rgba(0,0,0,0.3)" />
+        <radialGradient id="lumi-body-grad" cx="40%" cy="32%" r="68%">
+          <stop offset="0%" stop-color="#A78BFA" />
+          <stop offset="45%" stop-color="#7C3AED" />
+          <stop offset="100%" stop-color="#4C1D95" />
+        </radialGradient>
+        <linearGradient id="lumi-visor-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#1E1B4B" />
+          <stop offset="100%" stop-color="#0F172A" />
+        </linearGradient>
+        <linearGradient id="lumi-ear-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#C4B5FD" />
+          <stop offset="100%" stop-color="#8B5CF6" />
+        </linearGradient>
+        <filter id="lumi-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="rgba(124, 58, 237, 0.45)" />
+        </filter>
+        <filter id="star-glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="1.5" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
       </defs>
 
-      <!-- Soft Ground Shadow -->
-      <ellipse cx="40" cy="83" rx="22" ry="4" fill="rgba(0,0,0,0.22)" class="sc-ground-shadow" />
+      <!-- Soft Ambient Ground Shadow -->
+      <ellipse cx="40" cy="82" rx="20" ry="4" fill="rgba(0,0,0,0.22)" class="lumi-ground-shadow" />
 
-      <!-- Left Leg & Yellow Shoe -->
-      <g class="sc-leg sc-leg-left">
-        <rect x="25" y="65" width="8" height="11" rx="3.5" fill="#FED7AA" stroke="#0F172A" stroke-width="1.6" />
-        <ellipse cx="28.5" cy="79" rx="8" ry="4.5" fill="#FACC15" stroke="#0F172A" stroke-width="1.6" />
-        <ellipse cx="28.5" cy="80" rx="5" ry="1.5" fill="#FFFFFF" opacity="0.6" />
+      <!-- Cute Cyber Cat / Bunny Ears -->
+      <g class="lumi-ears">
+        <!-- Left Ear -->
+        <path d="M 20 22 C 16 10, 22 4, 27 12 C 28 14, 28 18, 26 24 Z" fill="url(#lumi-ear-grad)" stroke="#4C1D95" stroke-width="1.4" />
+        <path d="M 22 17 C 20 11, 23 8, 25 13 C 25.5 14, 25.5 16, 24.5 19 Z" fill="#F472B6" opacity="0.85" />
+        <!-- Right Ear -->
+        <path d="M 60 22 C 64 10, 58 4, 53 12 C 52 14, 52 18, 54 24 Z" fill="url(#lumi-ear-grad)" stroke="#4C1D95" stroke-width="1.4" />
+        <path d="M 58 17 C 60 11, 57 8, 55 13 C 54.5 14, 54.5 16, 55.5 19 Z" fill="#F472B6" opacity="0.85" />
       </g>
 
-      <!-- Right Leg & Yellow Shoe -->
-      <g class="sc-leg sc-leg-right">
-        <rect x="47" y="65" width="8" height="11" rx="3.5" fill="#FED7AA" stroke="#0F172A" stroke-width="1.6" />
-        <ellipse cx="51.5" cy="79" rx="8" ry="4.5" fill="#FACC15" stroke="#0F172A" stroke-width="1.6" />
-        <ellipse cx="51.5" cy="80" rx="5" ry="1.5" fill="#FFFFFF" opacity="0.6" />
+      <!-- Star Antenna in center top -->
+      <g class="lumi-antenna" filter="url(#star-glow)">
+        <line x1="40" y1="16" x2="40" y2="7" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" />
+        <polygon points="40,2 41.5,5.5 45,5.8 42.4,8.2 43.2,11.8 40,10 36.8,11.8 37.6,8.2 35,5.8 38.5,5.5" fill="#FDE047" stroke="#F59E0B" stroke-width="0.8" />
       </g>
 
-      <!-- Body / Outfit -->
-      <g class="sc-body">
-        <!-- Iconic Bright Yellow Shorts -->
-        <path d="M 20 54 L 60 54 L 62 67 L 46 67 L 40 61 L 34 67 L 18 67 Z" fill="#FACC15" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" />
-        <line x1="40" y1="61" x2="40" y2="67" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" />
-
-        <!-- Iconic Cherry-Red T-Shirt -->
-        <path d="M 20 40 L 60 40 L 62 56 L 18 56 Z" fill="#EF4444" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" />
-        <!-- Round Yellow T-Shirt Collar -->
-        <path d="M 32 40 Q 40 45 48 40" fill="none" stroke="#FACC15" stroke-width="2.6" stroke-linecap="round" />
+      <!-- Main Capsule Egg Body -->
+      <g class="lumi-main-body" filter="url(#lumi-glow)">
+        <rect x="12" y="16" width="56" height="58" rx="28" fill="url(#lumi-body-grad)" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" />
+        <!-- Top Light Sheen -->
+        <ellipse cx="40" cy="22" rx="18" ry="4.5" fill="#FFFFFF" opacity="0.25" />
       </g>
 
-      <!-- Left Arm & Hand -->
-      <g class="sc-arm sc-arm-left">
-        <path d="M 20 41 L 10 49 L 14 54 L 22 47 Z" fill="#EF4444" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round" />
-        <circle cx="11.5" cy="52" r="4.5" fill="#FED7AA" stroke="#0F172A" stroke-width="1.5" />
-      </g>
-
-      <!-- Right Arm & Hand -->
-      <g class="sc-arm sc-arm-right">
-        <path d="M 60 41 L 70 49 L 66 54 L 58 47 Z" fill="#EF4444" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round" />
-        <circle cx="68.5" cy="52" r="4.5" fill="#FED7AA" stroke="#0F172A" stroke-width="1.5" />
-      </g>
-
-      <!-- Head & Facial Features -->
-      <g class="sc-head">
-        <!-- Authentic Yoshito Usui Shin-chan Potato Head Contour: Clear dome, bulbous left cheek pouch, round chin -->
-        <path d="M 22 10 C 32 4, 52 4, 62 9 C 68 12, 71 18, 70 26 C 69 33, 65 40, 54 45 C 44 49, 32 48, 24 45 C 14 41, 7 35, 8 26 C 9 17, 15 11, 22 10 Z" fill="#FED7AA" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" />
-
-        <!-- Authentic Cropped Buzz-Cut Jet-Black Hair Cap covering crown and temple -->
-        <path d="M 22 10 C 32 4, 52 4, 62 9 C 68 12, 71 18, 70 26 C 67 19, 59 11, 46 9 C 34 8, 25 11, 22 10 Z" fill="#09090B" />
-        <path d="M 64 11 C 69 16, 70 23, 67 30 C 66 24, 65 18, 63 13 Z" fill="#09090B" />
-
-        <!-- Classic Right Ear with Inner Ridge -->
-        <ellipse cx="68" cy="28" rx="4.2" ry="5.8" fill="#FED7AA" stroke="#0F172A" stroke-width="1.6" />
-        <path d="M 67 26 Q 70 28 67 30" fill="none" stroke="#0F172A" stroke-width="1.2" stroke-linecap="round" />
-
-        <!-- Facial Features (forehead clearly separated above eyebrows) -->
+      <!-- Face Screen / Visor -->
+      <g class="lumi-screen">
+        <rect x="17" y="24" width="46" height="30" rx="15" fill="url(#lumi-visor-grad)" stroke="rgba(167, 139, 250, 0.4)" stroke-width="1.4" />
+        <!-- Visor Glass Glint -->
+        <path d="M 20 28 Q 40 25 58 29" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" fill="none" stroke-linecap="round" />
+        <!-- Interactive Facial Features -->
         ${faceContent}
+      </g>
+
+      <!-- Cute Belly Core Hologram (Study Pulse Core) -->
+      <g class="lumi-belly">
+        <circle cx="40" cy="62" r="5" fill="#1E1B4B" stroke="#A78BFA" stroke-width="1.2" />
+        <circle cx="40" cy="62" r="2.8" fill="#38BDF8" filter="url(#star-glow)" />
+        <circle cx="40" cy="62" r="1.2" fill="#FFFFFF" />
+      </g>
+
+      <!-- Cute Tiny Paws -->
+      <g class="lumi-paws">
+        <!-- Left Paw -->
+        <ellipse cx="14" cy="54" rx="4.5" ry="3.5" fill="#C4B5FD" stroke="#4C1D95" stroke-width="1.2" />
+        <!-- Right Paw -->
+        <ellipse cx="66" cy="54" rx="4.5" ry="3.5" fill="#C4B5FD" stroke="#4C1D95" stroke-width="1.2" />
+        <!-- Left Foot -->
+        <ellipse cx="28" cy="74" rx="6.5" ry="3.8" fill="#8B5CF6" stroke="#4C1D95" stroke-width="1.2" />
+        <!-- Right Foot -->
+        <ellipse cx="52" cy="74" rx="6.5" ry="3.8" fill="#8B5CF6" stroke="#4C1D95" stroke-width="1.2" />
       </g>
     </svg>
   `;
@@ -219,10 +221,10 @@ export function getShinchanSvg(expr = 'default') {
 
 export const PET_CATALOG = [
   {
-    id: 'shinchan-buddy',
-    name: 'Shin-chan (Nohara)',
-    emoji: '🍑',
-    svg: getShinchanSvg('default')
+    id: 'lumi-buddy',
+    name: 'Lumi (Study Companion)',
+    emoji: '✨',
+    svg: getLumiSvg('default')
   }
 ];
 
@@ -231,11 +233,11 @@ export function getAvailablePets() {
 }
 
 export function getActivePetId() {
-  return 'shinchan-buddy';
+  return 'lumi-buddy';
 }
 
 export function setActivePetId() {
-  // Single Shin-chan Mascot
+  // Single Lumi Mascot
 }
 
 export function isPetEnabled() {
@@ -324,11 +326,11 @@ export function setPetExpression(expr, bodyAnim = null) {
   if (!container) return;
   const avatar = container.querySelector('.apk-pet-avatar');
   if (avatar) {
-    avatar.innerHTML = getShinchanSvg(expr);
+    avatar.innerHTML = getLumiSvg(expr);
   }
 
   if (bodyAnim) {
-    container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod', 'is-buri', 'is-shock', 'is-wink', 'is-walking', 'is-running');
+    container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod', 'is-shock', 'is-wink', 'is-walking', 'is-running');
     void container.offsetWidth;
     container.classList.add(bodyAnim);
   }
@@ -338,9 +340,9 @@ export function setPetExpression(expr, bodyAnim = null) {
     expressionResetTimeout = setTimeout(() => {
       const curAvatar = container.querySelector('.apk-pet-avatar');
       if (curAvatar) {
-        curAvatar.innerHTML = getShinchanSvg('default');
+        curAvatar.innerHTML = getLumiSvg('default');
       }
-      container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod', 'is-buri', 'is-shock', 'is-wink', 'is-walking', 'is-running');
+      container.classList.remove('is-hop', 'is-wiggle', 'is-cheer', 'is-spin', 'is-squish', 'is-nod', 'is-shock', 'is-wink', 'is-walking', 'is-running');
     }, 2800);
   }
 }
@@ -416,13 +418,13 @@ function renderPetElement() {
   root.className = 'apk-companion-pet';
   root.setAttribute('role', 'button');
   root.setAttribute('tabindex', '0');
-  root.setAttribute('aria-label', `Shin-chan Study Companion`);
+  root.setAttribute('aria-label', `Lumi Study Companion`);
   root.style.display = (isPetEnabled() && !isLoginScreenActive()) ? 'flex' : 'none';
 
   root.innerHTML = `
     <div class="apk-pet-bursts" aria-hidden="true"></div>
     <div class="apk-pet-avatar">
-      ${getShinchanSvg('default')}
+      ${getLumiSvg('default')}
     </div>
   `;
 
@@ -445,25 +447,23 @@ function renderPetElement() {
 
   const burstsEl = root.querySelector('.apk-pet-bursts');
 
-  const SHINCHAN_TAP_ACTIONS = [
-    { expr: 'buri', anim: 'is-buri' },
+  const LUMI_TAP_ACTIONS = [
     { expr: 'happy', anim: 'is-cheer' },
     { expr: 'wink', anim: 'is-wink' },
-    { expr: 'eating', anim: 'is-hop' },
+    { expr: 'love', anim: 'is-hop' },
     { expr: 'focus', anim: 'is-nod' },
     { expr: 'happy', anim: 'is-spin' }
   ];
   let tapIndex = 0;
 
   const handleTap = () => {
-    const action = SHINCHAN_TAP_ACTIONS[tapIndex % SHINCHAN_TAP_ACTIONS.length];
+    const action = LUMI_TAP_ACTIONS[tapIndex % LUMI_TAP_ACTIONS.length];
     tapIndex++;
 
-    // Play lively Shin-chan action animation without any ugly text speech bubble
     setPetExpression(action.expr, action.anim);
 
     if (burstsEl) {
-      const symbols = ['🍑', '✨', '🔥', '★', '🍫'];
+      const symbols = ['✨', '💖', '⭐', '🌸', '★'];
       for (let i = 0; i < 5; i++) {
         const p = document.createElement('span');
         p.className = 'apk-pet-burst-item';
@@ -484,7 +484,7 @@ function renderPetElement() {
   let walkTimeout = null;
   let returnTimeout = null;
 
-  // Patrol Walking (Backward & Forward along screen edge)
+  // Gentle autonomous hover / patrol along screen edge
   function doAutonomousWalk() {
     if (isDragging || isWalking || !isPetEnabled() || isLoginScreenActive()) return;
 
@@ -511,9 +511,9 @@ function renderPetElement() {
       root.style.transition = '';
 
       const funEmotes = [
-        { expr: 'buri', anim: 'is-buri' },
         { expr: 'happy', anim: 'is-cheer' },
-        { expr: 'wink', anim: 'is-wink' }
+        { expr: 'wink', anim: 'is-wink' },
+        { expr: 'love', anim: 'is-hop' }
       ];
       const pick = funEmotes[Math.floor(Math.random() * funEmotes.length)];
       setPetExpression(pick.expr, pick.anim);
@@ -543,9 +543,9 @@ function renderPetElement() {
     }, 1850);
   }
 
-  setInterval(doAutonomousWalk, 14000);
+  setInterval(doAutonomousWalk, 16000);
 
-  // ── Page Scroll & Click Dynamic Reactions ──
+  // Page Scroll & Click Dynamic Reactions
   let scrollReactionTimeout = null;
   let lastScrollPos = window.scrollY;
 
@@ -563,8 +563,8 @@ function renderPetElement() {
         root.classList.remove('facing-left');
       }
       const avatar = root.querySelector('.apk-pet-avatar');
-      if (avatar && !root.classList.contains('is-cheer') && !root.classList.contains('is-buri')) {
-        avatar.innerHTML = getShinchanSvg('happy');
+      if (avatar && !root.classList.contains('is-cheer')) {
+        avatar.innerHTML = getLumiSvg('happy');
       }
     }
 
@@ -572,8 +572,8 @@ function renderPetElement() {
     scrollReactionTimeout = setTimeout(() => {
       root.classList.remove('is-walking');
       const avatar = root.querySelector('.apk-pet-avatar');
-      if (avatar && !root.classList.contains('is-cheer') && !root.classList.contains('is-buri')) {
-        avatar.innerHTML = getShinchanSvg('default');
+      if (avatar && !root.classList.contains('is-cheer')) {
+        avatar.innerHTML = getLumiSvg('default');
       }
     }, 280);
   };
@@ -597,6 +597,7 @@ function renderPetElement() {
 
   const onPointerDown = (e) => {
     e.stopPropagation();
+    e.preventDefault();
     if (isWalking) {
       clearTimeout(walkTimeout);
       clearTimeout(returnTimeout);
@@ -617,6 +618,7 @@ function renderPetElement() {
   const onPointerMove = (e) => {
     if (!isDragging) return;
     e.stopPropagation();
+    e.preventDefault();
     const cx = e.clientX || (e.touches && e.touches[0].clientX) || 0;
     const cy = e.clientY || (e.touches && e.touches[0].clientY) || 0;
     const dx = cx - startX;
@@ -639,6 +641,7 @@ function renderPetElement() {
 
   const onPointerUp = (e) => {
     e.stopPropagation();
+    e.preventDefault();
     if (!isDragging) return;
     isDragging = false;
     root.classList.remove('is-dragging', 'is-running');
@@ -649,7 +652,7 @@ function renderPetElement() {
       root.classList.add('is-squish');
       setTimeout(() => root.classList.remove('is-squish'), 450);
       if (Math.abs(pos.x - originX) > 40 || Math.abs(pos.y - originY) > 40) {
-        showTamagotchiBubble('Wheee! 💨', 900);
+        showTamagotchiBubble('Wheee! ✨', 900);
       }
     }
   };
@@ -669,8 +672,7 @@ function renderPetElement() {
     e.stopPropagation();
   }, { passive: false });
 
-  // ── Global Website Interaction Listener ──
-  // Reacts dynamically to whatever user clicks on the website
+  // Global Website Interaction Listener
   document.addEventListener('pointerdown', (e) => {
     if (e.target.closest('#apk-companion-pet')) return;
     if (isLoginScreenActive() || !isPetEnabled()) return;
@@ -678,14 +680,14 @@ function renderPetElement() {
     // 1. Navigation Island Clicks
     if (e.target.closest('.nav-tab, .header-nav-tabs, #tab-live, #tab-videos, #tab-notes, #tab-tests, #tab-saved')) {
       setPetExpression('happy', 'is-wink');
-      showTamagotchiBubble('Oho! 👀', 1000);
+      showTamagotchiBubble('Ready! ✨', 1000);
       return;
     }
 
     // 2. Class Cards or "Join Live Classroom" Click
     if (e.target.closest('.class-card, .join-embedded-btn, .btn-zoom')) {
       setPetExpression('happy', 'is-cheer');
-      showTamagotchiBubble('Yatta! 🔥', 1200);
+      showTamagotchiBubble('Study time! 🚀', 1200);
       return;
     }
 
@@ -699,7 +701,7 @@ function renderPetElement() {
     // 4. Test start or submit click
     if (e.target.closest('.start-quiz-hub-btn, #quiz-submit-btn, .btn-report-cta')) {
       setPetExpression('focus', 'is-cheer');
-      showTamagotchiBubble('Yosh! 💪', 1200);
+      showTamagotchiBubble('Good luck! 🎯', 1200);
       return;
     }
 
@@ -721,7 +723,7 @@ function renderPetElement() {
   setInterval(() => {
     if (isDragging || isLoginScreenActive() || !isPetEnabled()) return;
     if (Math.random() < 0.45) {
-      setPetExpression('wink', 'is-buri');
+      setPetExpression('wink', 'is-wiggle');
     }
   }, 24000);
 
@@ -735,17 +737,17 @@ function renderPetElement() {
 // Reactive Test & Question Event Listeners
 window.addEventListener('nnl:test-started', () => {
   setPetExpression('focus', 'is-nod');
-  showTamagotchiBubble('Focus! 🎯', 1200);
+  showTamagotchiBubble('Focus mode! 🎯', 1200);
 });
 
 window.addEventListener('nnl:test-correct', () => {
-  setPetExpression('happy', 'is-buri');
-  showTamagotchiBubble('Buri Buri~ 🍑', 1400);
+  setPetExpression('happy', 'is-cheer');
+  showTamagotchiBubble('Awesome! ⭐', 1400);
 });
 
 window.addEventListener('nnl:test-incorrect', () => {
   setPetExpression('shocked', 'is-shock');
-  showTamagotchiBubble('Oops! 💦', 1200);
+  showTamagotchiBubble('Try again! 💡', 1200);
 });
 
 window.addEventListener('nnl:question-slow', () => {

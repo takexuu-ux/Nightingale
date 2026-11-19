@@ -40,6 +40,8 @@ export function getWatchHistory() {
                   playbackInfo: existing?.playbackInfo || '',
                   notePdfUrl: existing?.notePdfUrl || '',
                   notePdfTitle: existing?.notePdfTitle || '',
+                  testId: existing?.testId || '',
+                  testTitle: existing?.testTitle || '',
                   currentTime: item.currentTime || existing?.currentTime || 0,
                   duration: item.duration || existing?.duration || 0,
                   percent: isNativeNewer ? nativePct : Math.max(nativePct, existingPct),
@@ -65,7 +67,21 @@ export function getLectureProgress(recId) {
   return history[String(recId)] || null;
 }
 
-export function saveLectureProgress(recId, { currentTime = 0, duration = 0, percent = 0, title = '', instructor = '', subject = '', thumb = '' } = {}) {
+export function saveLectureProgress(recId, {
+  currentTime = 0,
+  duration = 0,
+  percent = 0,
+  title = '',
+  instructor = '',
+  subject = '',
+  thumb = '',
+  otp = '',
+  playbackInfo = '',
+  notePdfUrl = '',
+  notePdfTitle = '',
+  testId = '',
+  testTitle = ''
+} = {}) {
   if (!recId) return;
   const map = getWatchHistory();
   const id = String(recId);
@@ -78,6 +94,12 @@ export function saveLectureProgress(recId, { currentTime = 0, duration = 0, perc
     instructor: instructor || prev.instructor || 'NNL Faculty',
     subject: subject || prev.subject || '',
     thumb: thumb || prev.thumb || '',
+    otp: otp || prev.otp || '',
+    playbackInfo: playbackInfo || prev.playbackInfo || '',
+    notePdfUrl: notePdfUrl || prev.notePdfUrl || '',
+    notePdfTitle: notePdfTitle || prev.notePdfTitle || '',
+    testId: testId || prev.testId || '',
+    testTitle: testTitle || prev.testTitle || '',
     currentTime: Math.round(currentTime || prev.currentTime || 0),
     duration: Math.round(duration || prev.duration || 0),
     percent: calcPercent > 0 ? Math.min(100, calcPercent) : (prev.percent || 1),

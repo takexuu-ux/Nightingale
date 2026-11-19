@@ -1022,12 +1022,14 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
 .apk-showcase-title {
   margin: 0;
   text-align: left;
-  font-size: clamp(5.4rem, 8.8vw, 8.2rem);
-  line-height: 0.96;
+  font-size: clamp(2.2rem, 5.5vw, 4.4rem);
+  line-height: 1.15;
   padding: 0;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
   font-weight: 900;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
   flex-shrink: 1;
   min-width: 0;
 }
@@ -1078,6 +1080,60 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   border: 1px solid rgba(167, 139, 250, 0.22) !important;
   box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38) !important;
   animation: apkFadeSlide 0.4s var(--fluid-ease) both;
+}
+
+/* ── Luminous Glassmorphism Auth Number Card for Light Theme (All Devices & Screen Sizes) ── */
+[data-theme="light"] #auth-screen,
+[data-theme="light"] .auth-container {
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.32) !important;
+  box-shadow: 0 16px 40px rgba(109, 40, 217, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  color: #1e1b4b !important;
+}
+
+[data-theme="light"] #auth-screen .brand-title {
+  color: #1e1b4b !important;
+}
+
+[data-theme="light"] #auth-screen .brand-subtitle {
+  color: #334155 !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] #auth-screen .input-wrapper {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(108, 79, 214, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(108, 79, 214, 0.08) !important;
+}
+
+[data-theme="light"] #auth-screen .input-prefix {
+  color: #6d28d9 !important;
+  font-weight: 800 !important;
+  border-right: 1px solid rgba(108, 79, 214, 0.3) !important;
+  background: transparent !important;
+}
+
+[data-theme="light"] #auth-screen .input-field {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] #auth-screen .input-field::placeholder {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+/* High Contrast In-App Update Secondary Buttons in Light Theme */
+[data-theme="light"] .apk-update-btn-secondary,
+[data-theme="light"] #apk-side-download-apk-btn {
+  background: rgba(124, 58, 237, 0.12) !important;
+  border: 1.5px solid rgba(124, 58, 237, 0.35) !important;
+  color: #4C1D95 !important;
+  font-weight: 700 !important;
 }
 
 @media (min-width: 768px) {
@@ -1156,11 +1212,14 @@ body:has(#auth-screen:not(.hide)) #apk-pet-stage {
   body:has(#auth-screen:not(.hide)) .apk-showcase-title {
     margin: 0 !important;
     text-align: left !important;
-    font-size: clamp(5.4rem, 8.8vw, 8.2rem) !important;
-    line-height: 0.96 !important;
+    font-size: clamp(2.2rem, 5.5vw, 4.4rem) !important;
+    line-height: 1.15 !important;
     font-weight: 900 !important;
-    letter-spacing: -0.025em !important;
+    letter-spacing: -0.01em !important;
     text-transform: uppercase !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
   }
 
   body.apk-is-auth .apk-showcase-quote,
@@ -4589,10 +4648,56 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   .notes-page-container,
   .tests-page-container,
   #classroom-dashboard:not(.hide),
-  .notes-catalog-view {
+  .notes-catalog-view,
+  #live-tab-layout {
     width: 100% !important;
     max-width: 1560px !important;
     margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+  }
+
+  /* Tablet Landscape & Desktop: Prevent Date Picker from sliding behind Left Island */
+  body.is-logged-in #apk-date-picker-wrap,
+  #classroom-dashboard:not(.hide) #apk-date-picker-wrap,
+  .apk-date-picker-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 8px auto 16px auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #apk-date-picker-bar,
+  .apk-date-picker-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    padding: 6px 0 10px 0 !important;
+  }
+
+  /* Tablet Landscape & Desktop: Classes Grid (Fully visible, responsive multi-column layout) */
+  body.is-logged-in #class-list-container,
+  #classroom-dashboard:not(.hide) #class-list-container,
+  #class-list-container,
+  .class-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .class-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .notes-subject-grid,
@@ -6814,14 +6919,6 @@ main#app,
     flex-shrink: 0 !important;
   }
 
-  /* Search box is strictly controlled by .search-open / .apk-search-toggle-btn */
-  #videos-search-box:not(.search-open),
-  #notes-search-box:not(.search-open),
-  #tests-search-box:not(.search-open),
-  #saved-search-box:not(.search-open) {
-    display: none !important;
-  }
-
   /* Keep stats clean on Tests mobile */
   .notes-hero-stats {
     gap: 4px !important;
@@ -6832,18 +6929,12 @@ main#app,
   }
 }
 
-@media (min-width: 768px) {
-  .video-search-toggle,
-  .test-search-toggle,
-  .saved-search-toggle {
-    display: none !important;
-  }
-
-  #videos-search-box,
-  #tests-search-box,
-  #saved-search-box {
-    display: flex !important;
-  }
+/* Search box is strictly hidden until opened by .apk-search-toggle-btn on ALL devices */
+#videos-search-box:not(.search-open),
+#notes-search-box:not(.search-open),
+#tests-search-box:not(.search-open),
+#saved-search-box:not(.search-open) {
+  display: none !important;
 }
 
 @keyframes apkFadeIn {
@@ -8296,101 +8387,68 @@ main#app,
   transform: scaleX(1) rotate(8deg);
 }
 
-/* Walking Cycle (Leg & Arm alternate swing with body bob) */
+/* Walking Cycle (Lumi cute hover-walk & ear wiggle) */
 #apk-companion-pet.is-walking .apk-pet-avatar {
-  animation: shinchanWalkBob 0.36s ease-in-out infinite alternate !important;
+  animation: lumiHoverWalk 0.38s ease-in-out infinite alternate !important;
 }
-#apk-companion-pet.is-walking .sc-leg-left {
-  transform-origin: 28.5px 61px;
-  animation: shinchanWalkLegL 0.36s ease-in-out infinite alternate !important;
+#apk-companion-pet.is-walking .lumi-ears {
+  transform-origin: 40px 18px;
+  animation: lumiEarWiggle 0.38s ease-in-out infinite alternate !important;
 }
-#apk-companion-pet.is-walking .sc-leg-right {
-  transform-origin: 51.5px 61px;
-  animation: shinchanWalkLegR 0.36s ease-in-out infinite alternate !important;
-}
-#apk-companion-pet.is-walking .sc-arm-left {
-  transform-origin: 21px 40px;
-  animation: shinchanWalkArmL 0.36s ease-in-out infinite alternate !important;
-}
-#apk-companion-pet.is-walking .sc-arm-right {
-  transform-origin: 59px 40px;
-  animation: shinchanWalkArmR 0.36s ease-in-out infinite alternate !important;
+#apk-companion-pet.is-walking .lumi-paws {
+  transform-origin: 40px 64px;
+  animation: lumiPawStep 0.38s ease-in-out infinite alternate !important;
 }
 
-@keyframes shinchanWalkBob {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-4px) rotate(1.8deg); }
-  100% { transform: translateY(0px) rotate(-1.8deg); }
+@keyframes lumiHoverWalk {
+  0% { transform: translateY(0px) rotate(-1.5deg); }
+  100% { transform: translateY(-5px) rotate(1.5deg); }
 }
-@keyframes shinchanWalkLegL {
-  0% { transform: rotate(-22deg) translateY(-2px); }
-  100% { transform: rotate(22deg) translateY(2px); }
+@keyframes lumiEarWiggle {
+  0% { transform: rotate(-6deg); }
+  100% { transform: rotate(6deg); }
 }
-@keyframes shinchanWalkLegR {
-  0% { transform: rotate(22deg) translateY(2px); }
-  100% { transform: rotate(-22deg) translateY(-2px); }
-}
-@keyframes shinchanWalkArmL {
-  0% { transform: rotate(26deg); }
-  100% { transform: rotate(-26deg); }
-}
-@keyframes shinchanWalkArmR {
-  0% { transform: rotate(-26deg); }
-  100% { transform: rotate(26deg); }
+@keyframes lumiPawStep {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
 }
 
-/* Running Sprint Cycle (Rapid leg cycles & pumping arms with forward sprint lean) */
+/* Running Sprint Cycle (Lumi energetic dash with flying star trail) */
 #apk-companion-pet.is-running .apk-pet-avatar {
-  animation: shinchanRunBob 0.17s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
+  animation: lumiHoverRun 0.18s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
 }
-#apk-companion-pet.is-running .sc-leg-left {
-  transform-origin: 28.5px 61px;
-  animation: shinchanRunLegL 0.17s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
+#apk-companion-pet.is-running .lumi-ears {
+  transform-origin: 40px 18px;
+  animation: lumiEarFlutter 0.18s ease-in-out infinite alternate !important;
 }
-#apk-companion-pet.is-running .sc-leg-right {
-  transform-origin: 51.5px 61px;
-  animation: shinchanRunLegR 0.17s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
-}
-#apk-companion-pet.is-running .sc-arm-left {
-  transform-origin: 21px 40px;
-  animation: shinchanRunArmL 0.17s ease-in-out infinite alternate !important;
-}
-#apk-companion-pet.is-running .sc-arm-right {
-  transform-origin: 59px 40px;
-  animation: shinchanRunArmR 0.17s ease-in-out infinite alternate !important;
+#apk-companion-pet.is-running .lumi-antenna {
+  transform-origin: 40px 8px;
+  animation: lumiAntennaGlow 0.2s ease-in-out infinite alternate !important;
 }
 
-@keyframes shinchanRunBob {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(-6px); }
+@keyframes lumiHoverRun {
+  0% { transform: translateY(0px) scale(0.98, 1.02); }
+  100% { transform: translateY(-7px) scale(1.04, 0.96); }
 }
-@keyframes shinchanRunLegL {
-  0% { transform: rotate(-38deg) translateY(-4px); }
-  100% { transform: rotate(38deg) translateY(3px); }
+@keyframes lumiEarFlutter {
+  0% { transform: rotate(-14deg); }
+  100% { transform: rotate(14deg); }
 }
-@keyframes shinchanRunLegR {
-  0% { transform: rotate(38deg) translateY(3px); }
-  100% { transform: rotate(-38deg) translateY(-4px); }
-}
-@keyframes shinchanRunArmL {
-  0% { transform: rotate(44deg); }
-  100% { transform: rotate(-44deg); }
-}
-@keyframes shinchanRunArmR {
-  0% { transform: rotate(-44deg); }
-  100% { transform: rotate(44deg); }
+@keyframes lumiAntennaGlow {
+  0% { transform: scale(0.9); filter: drop-shadow(0 0 2px #FBBF24); }
+  100% { transform: scale(1.15); filter: drop-shadow(0 0 6px #FDE047); }
 }
 
 /* ── Dynamic Pet Body Expression Animations ── */
 #apk-companion-pet.is-wiggle .apk-pet-avatar,
 #apk-companion-pet.is-buri .apk-pet-avatar {
-  animation: shinchanBuri 0.72s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+  animation: lumiWiggle 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
 }
 #apk-companion-pet.is-shock .apk-pet-avatar {
-  animation: shinchanShock 0.55s ease-in-out !important;
+  animation: lumiShock 0.55s ease-in-out !important;
 }
 #apk-companion-pet.is-wink .apk-pet-avatar {
-  animation: shinchanWink 0.55s ease !important;
+  animation: lumiWink 0.55s ease !important;
 }
 #apk-companion-pet.is-cheer .apk-pet-avatar {
   animation: apkPetCheer 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -8405,25 +8463,22 @@ main#app,
   animation: apkPetNod 0.44s ease !important;
 }
 
-@keyframes shinchanBuri {
+@keyframes lumiWiggle {
   0% { transform: scale(1) rotate(0deg); }
-  12% { transform: scale(1.08) rotate(-16deg) translateX(-6px); }
-  25% { transform: scale(1.08) rotate(16deg) translateX(6px); }
-  37% { transform: scale(1.08) rotate(-16deg) translateX(-6px); }
-  50% { transform: scale(1.08) rotate(16deg) translateX(6px); }
-  62% { transform: scale(1.05) rotate(-10deg) translateX(-3px); }
-  75% { transform: scale(1.05) rotate(10deg) translateX(3px); }
-  88% { transform: scale(1.02) rotate(-4deg) translateX(-1px); }
+  20% { transform: scale(1.08) rotate(-14deg) translateX(-4px); }
+  40% { transform: scale(1.08) rotate(14deg) translateX(4px); }
+  60% { transform: scale(1.06) rotate(-10deg) translateX(-2px); }
+  80% { transform: scale(1.04) rotate(10deg) translateX(2px); }
   100% { transform: scale(1) rotate(0deg) translateX(0); }
 }
 
-@keyframes shinchanShock {
+@keyframes lumiShock {
   0%, 100% { transform: scale(1) translateX(0); }
   15%, 45%, 75% { transform: scale(1.08) translateX(-5px); }
   30%, 60%, 90% { transform: scale(1.08) translateX(5px); }
 }
 
-@keyframes shinchanWink {
+@keyframes lumiWink {
   0%, 100% { transform: scale(1) rotate(0deg); }
   30% { transform: scale(1.12) rotate(-8deg) translateY(-3px); }
   70% { transform: scale(1.05) rotate(4deg) translateY(-1px); }

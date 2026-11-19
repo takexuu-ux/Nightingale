@@ -1346,6 +1346,12 @@ async function openRecordingPlayer(recording) {
       instructor: recording.instructor,
       subject: currentOpenSubject?.title || recording.subject || '',
       thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
+      otp: recording.otp || '',
+      playbackInfo: recording.playbackInfo || '',
+      notePdfUrl: pdfUrl,
+      notePdfTitle: pdfTitle,
+      testId: recording.testId || '',
+      testTitle: recording.testTitle || recording.title || '',
       percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
     });
 
@@ -1375,7 +1381,14 @@ async function openRecordingPlayer(recording) {
       saveLectureProgress(recId, {
         title: recording.title || 'Recorded Lecture',
         instructor: recording.instructor || 'NNL Faculty',
-        subject: currentOpenSubject?.title || '',
+        subject: currentOpenSubject?.title || recording.subject || '',
+        thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
+        otp: currentOtp || recording.otp || '',
+        playbackInfo: currentPb || recording.playbackInfo || '',
+        notePdfUrl: pdfUrl,
+        notePdfTitle: pdfTitle,
+        testId: recording.testId || '',
+        testTitle: recording.testTitle || recording.title || '',
         percent: getLectureProgress(recId)?.percent || 1,
         currentTime: getLectureProgress(recId)?.currentTime || 0
       });
@@ -1477,6 +1490,12 @@ async function openRecordingPlayer(recording) {
     instructor: recording.instructor,
     subject: currentOpenSubject?.title || recording.subject || '',
     thumb: recording.thumb || recording.thumbnails?.[0]?.url || '',
+    otp: recording.otp || '',
+    playbackInfo: recording.playbackInfo || '',
+    notePdfUrl: recording.notePdfUrl || '',
+    notePdfTitle: recording.notePdfTitle || (recording.title ? `${recording.title} Notes` : 'Class Notes PDF'),
+    testId: recording.testId || '',
+    testTitle: recording.testTitle || recording.title || '',
     percent: Math.max(1, getLectureProgress(recId)?.percent || 1)
   });
 

@@ -3632,7 +3632,7 @@ async function resumeLecture(recId, btnEl) {
     hydrateAndroidAuthSession();
   } catch (e) {}
   const map = getWatchHistory();
-  const item = map[String(recId)];
+  const item = map[String(recId)] || {};
   const tk = localStorage.getItem('nnl_access_token') || '';
 
   if (btnEl) {
@@ -3640,8 +3640,47 @@ async function resumeLecture(recId, btnEl) {
     btnEl.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;margin-right:6px;vertical-align:middle;"></span><span>Opening...</span>';
   }
 
-  let currentOtp = item?.otp || '';
-  let currentPb = item?.playbackInfo || '';
+  let currentOtp = item.otp || '';
+  let currentPb = item.playbackInfo || '';
+  let resolvedPdfUrl = item.notePdfUrl || '';
+  let resolvedPdfTitle = item.notePdfTitle || (item.title ? `${item.title} Notes` : 'Class Notes PDF');
+  let resolvedTestId = item.testId || '';
+  let resolvedTestTitle = item.testTitle || item.title || '';
+  let resolvedTitle = item.title || 'Recorded Lecture';
+  let resolvedInstructor = item.instructor || 'NNL Faculty';
+  const seekSec = item.currentTime || 0;
+
+  // Catalog fallback: If notePdfUrl or testId is missing from watch history, scan subject video caches
+  if (!resolvedPdfUrl || !resolvedTestId) {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('nnl_vid_subj_cache_') || k === 'nnl_fallback_classes' || k.startsWith('nnl_cache_classes_'))) {
+          try {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              const list = Array.isArray(parsed) ? parsed : (parsed.data || parsed.results || parsed.classes || []);
+              if (Array.isArray(list)) {
+                const found = list.find(r => r && (String(r.id) === String(recId) || String(r.recId) === String(recId)));
+                if (found) {
+                  if (!resolvedPdfUrl && found.notePdfUrl) resolvedPdfUrl = found.notePdfUrl;
+                  if (found.notePdfTitle) resolvedPdfTitle = found.notePdfTitle;
+                  if (!resolvedTestId && found.testId) resolvedTestId = String(found.testId);
+                  if (found.testTitle) resolvedTestTitle = found.testTitle;
+                  if (!resolvedTitle && found.title) resolvedTitle = found.title;
+                  if (!resolvedInstructor && found.instructor) resolvedInstructor = found.instructor;
+                  if (!currentOtp && found.otp) currentOtp = found.otp;
+                  if (!currentPb && found.playbackInfo) currentPb = found.playbackInfo;
+                  break;
+                }
+              }
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
 
   // 1. If we already have a valid OTP & playbackInfo, launch native Android player directly
   if (currentOtp && currentPb && window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
@@ -3649,14 +3688,16 @@ async function resumeLecture(recId, btnEl) {
       window.AndroidVideoBridge.playVideoWithAuth(
         currentOtp,
         currentPb,
-        item?.title || 'Recorded Lecture',
-        item?.instructor || 'NNL Faculty',
+        resolvedTitle,
+        resolvedInstructor,
         String(recId),
         tk,
         true,
-        item?.notePdfUrl || '',
-        item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF'),
-        item?.currentTime || 0
+        resolvedPdfUrl,
+        resolvedPdfTitle,
+        seekSec,
+        resolvedTestId,
+        resolvedTestTitle
       );
       if (btnEl) {
         btnEl.disabled = false;
@@ -3668,20 +3709,22 @@ async function resumeLecture(recId, btnEl) {
     }
   }
 
-  // 2. In Android APK, immediately launch native player with saved timestamp
+  // 2. In Android APK, launch native player with all resolved PDF and test attachments
   if (window.AndroidVideoBridge && typeof window.AndroidVideoBridge.playVideoWithAuth === 'function') {
     try {
       window.AndroidVideoBridge.playVideoWithAuth(
         currentOtp || '',
         currentPb || '',
-        item?.title || 'Recorded Lecture',
-        item?.instructor || 'NNL Faculty',
+        resolvedTitle,
+        resolvedInstructor,
         String(recId),
         tk,
         true,
-        item?.notePdfUrl || '',
-        item?.notePdfTitle || (item?.title ? `${item.title} Notes` : 'Class Notes PDF'),
-        item?.currentTime || 0
+        resolvedPdfUrl,
+        resolvedPdfTitle,
+        seekSec,
+        resolvedTestId,
+        resolvedTestTitle
       );
       if (btnEl) {
         btnEl.disabled = false;
@@ -3693,22 +3736,26 @@ async function resumeLecture(recId, btnEl) {
     }
   }
 
-  // 3. Route seamlessly to All Videos library with autoPlay & seek (which automatically acquires fresh OTP)
+  // 3. Route seamlessly to All Videos library with autoPlay & seek
   if (item) {
     try {
       sessionStorage.setItem('nnl_auto_play_item', JSON.stringify({
         id: String(recId),
-        title: item.title || 'Recorded Lecture',
-        instructor: item.instructor || 'NNL Faculty',
+        title: resolvedTitle,
+        instructor: resolvedInstructor,
         subject: item.subject || '',
-        currentTime: item.currentTime || 0,
-        vdoCipherId: item.vdoCipherId || ''
+        currentTime: seekSec,
+        vdoCipherId: item.vdoCipherId || '',
+        notePdfUrl: resolvedPdfUrl,
+        notePdfTitle: resolvedPdfTitle,
+        testId: resolvedTestId,
+        testTitle: resolvedTestTitle
       }));
     } catch {}
   }
   sessionStorage.setItem('nnl_auto_play_rec_id', String(recId));
-  sessionStorage.setItem('nnl_auto_play_seek', String(item?.currentTime || 0));
-  window.location.href = `all-videos.html?autoPlay=${encodeURIComponent(recId)}&seek=${item?.currentTime || 0}`;
+  sessionStorage.setItem('nnl_auto_play_seek', String(seekSec));
+  window.location.href = `all-videos.html?autoPlay=${encodeURIComponent(recId)}&seek=${seekSec}`;
 }
 
 function generateSaarthiResponse(query) {
