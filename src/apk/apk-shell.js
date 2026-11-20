@@ -1010,29 +1010,62 @@ function openSavedHubModal() {
 
 function normalizeHeaderAndChrome() {
   // Replace nav tab icons + crisp 1-word labels (Tab 1 is HOME)
-  const tabs = [
-    { id: 'tab-live', icon: NAV_ICONS.home, label: 'Home' },
-    { id: 'tab-videos', icon: NAV_ICONS.videos, label: 'Videos' },
-    { id: 'tab-notes', icon: NAV_ICONS.notes, label: 'Notes' },
-    { id: 'tab-tests', icon: NAV_ICONS.tests, label: 'Tests' },
-    { id: 'tab-saved', icon: NAV_ICONS.saved, label: 'Saved' }
+  // Wire fluid iOS-style tab switching: instant indicator spring + smooth content dissolve
+  const navTargets = [
+    { id: 'tab-live', url: '/', icon: NAV_ICONS.home, label: 'Home' },
+    { id: 'tab-videos', url: '/all-videos.html', icon: NAV_ICONS.videos, label: 'Videos' },
+    { id: 'tab-notes', url: '/notes.html', icon: NAV_ICONS.notes, label: 'Notes' },
+    { id: 'tab-tests', url: '/tests.html', icon: NAV_ICONS.tests, label: 'Tests' },
+    { id: 'tab-saved', url: '/saved.html', icon: NAV_ICONS.saved, label: 'Saved' }
   ];
-  tabs.forEach(({ id, icon, label }) => {
+
+  navTargets.forEach(({ id, url, icon, label }) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = `${icon}<span>${label}</span>`;
-  });
+    el.removeAttribute('onclick');
 
-  // Attach saved tab click listener -> Navigates directly to dedicated Saved page
-  const savedTab = document.getElementById('tab-saved');
-  if (savedTab && !savedTab.__nnlBound) {
-    savedTab.__nnlBound = true;
-    savedTab.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      window.location.href = '/saved.html';
-    });
-  }
+    if (!el.__nnlFluidNavBound) {
+      el.__nnlFluidNavBound = true;
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const curNorm = (window.location.pathname.replace(/^\//, '').replace(/\/$/, '') || 'index.html').toLowerCase();
+        const targetNorm = (url.replace(/^\//, '').replace(/\/$/, '') || 'index.html').toLowerCase();
+
+        if (curNorm === targetNorm || (curNorm === 'index.html' && targetNorm === 'index.html')) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        // 1. Move liquid indicator and active state immediately on touch/click
+        const navTabs = el.closest('.nav-tabs') || document.querySelector('.header-nav-tabs .nav-tabs, .app-header .nav-tabs');
+        if (navTabs) {
+          navTabs.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active', 'floating-active'));
+          el.classList.add('active');
+          const pill = document.getElementById('apk-nav-liquid-indicator');
+          if (pill && el.offsetWidth > 0) {
+            pill.style.width = `${el.offsetWidth}px`;
+            pill.style.height = `${el.offsetHeight}px`;
+            pill.style.transform = `translate3d(${el.offsetLeft}px, ${el.offsetTop}px, 0)`;
+            pill.style.opacity = '1';
+          }
+        }
+
+        // 2. Smoothly dissolve out the current page content
+        const main = document.querySelector('main, #catalog-view, #tests-catalog-view, #notes-catalog-view, .main-container');
+        if (main) {
+          main.classList.add('page-glide-out');
+        }
+
+        // 3. Fluid navigation after 75ms
+        setTimeout(() => {
+          window.location.href = url;
+        }, 75);
+      });
+    }
+  });
 
   // Remove unused Upcoming tab in rail/dock
   const upTab = document.getElementById('tab-upcoming');
@@ -1370,6 +1403,7 @@ function attachNavLiquidDropAndCards() {
     pill = document.createElement('span');
     pill.id = 'apk-nav-liquid-indicator';
     pill.setAttribute('aria-hidden', 'true');
+    pill.style.opacity = '0';
     navTabs.insertBefore(pill, navTabs.firstChild);
   }
 
@@ -1379,6 +1413,7 @@ function attachNavLiquidDropAndCards() {
     pill.style.width = `${tabEl.offsetWidth}px`;
     pill.style.height = `${tabEl.offsetHeight}px`;
     pill.style.transform = `translate3d(${tabEl.offsetLeft}px, ${tabEl.offsetTop}px, 0)`;
+    pill.style.opacity = '1';
     if (immediate) {
       void pill.offsetWidth;
       pill.style.transition = '';

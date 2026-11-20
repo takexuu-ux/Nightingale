@@ -1,5 +1,6 @@
 // Nightingale All Videos Library — Instant Subject + Teacher Catalog, Throttled On-Demand Topic Loading & Batch 103 Live Sync
 import './apk/apk-shell.js';
+import { getSubjectIllustration } from './data/subjectIllustrations.js';
 import { MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
 import { ALL_VIDEO_SUBJECTS, PRESEEDED_VIDEOS_BY_SUBJECT, ALL_VIDEOS_TOTALS } from './data/allVideosCatalog.js';
@@ -691,13 +692,13 @@ function renderCurrentCatalog() {
   }
 
   classListContainer.innerHTML = list.map(sub => {
-    const svg = getSubjectSVG(sub.title);
+    const illustration = getSubjectIllustration(sub.title);
     const isHighlight = sub.id === '73' || sub.category === 'Core Subjects' || sub.isBatch103;
     return `
       <div class="subject-card ${isHighlight ? 'curated-highlight' : ''}" data-sub-id="${escapeHtml(sub.id)}" data-rb="${sub.isBatch103 ? '1' : '0'}">
         <div class="subject-card-top">
-          <div class="subject-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">${svg}</svg>
+          <div class="subject-card-icon subject-card-image-box">
+            ${illustration}
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${escapeHtml(sub.title)}</h3>

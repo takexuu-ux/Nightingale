@@ -3,6 +3,7 @@
 // paginated API fetching, and Red Sapphire Brochure & Timetable access.
 
 import './apk/apk-shell.js';
+import { getSubjectIllustration } from './data/subjectIllustrations.js';
 
 import { MEDICINE_SUBJECT, MEDICINE_MASTER_NOTES } from './data/medicineNotes.js';
 import { ALL_MASTER_SUBJECTS, MASTER_NOTES_BY_SUBJECT } from './data/allSubjectsNotes.js';
@@ -730,10 +731,8 @@ function renderBatch104Cards() {
     return `
       <div class="subject-card" data-rb-sub-id="${sub.id}" style="${hasContent ? '' : 'opacity: 0.78;'}">
         <div class="subject-card-top">
-          <div class="subject-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              ${svgIcon}
-            </svg>
+          <div class="subject-card-icon subject-card-image-box">
+            ${getSubjectIllustration(sub.title)}
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${sub.title}</h3>
@@ -967,10 +966,8 @@ function renderSubjectCards() {
     return `
       <div class="subject-card" data-sub-id="${sub.id}" style="${highlightStyle}">
         <div class="subject-card-top">
-          <div class="subject-card-icon" style="${iconStyle}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              ${svgIcon}
-            </svg>
+          <div class="subject-card-icon subject-card-image-box" style="${iconStyle}">
+            ${getSubjectIllustration(sub.title)}
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${sub.title}</h3>

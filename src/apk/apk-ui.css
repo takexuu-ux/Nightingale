@@ -212,7 +212,8 @@ body {
   background-position: center center !important;
   background-repeat: no-repeat !important;
   background-image: url('./bg-app-wallpaper.jpg') !important;
-  transition: opacity 0.3s ease, filter 0.3s ease;
+  transition: none !important;
+  animation: none !important;
 }
 
 html[data-theme="dark"] #apk-ambient-bg {
@@ -2467,6 +2468,42 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 .class-subject-icon svg {
   width: 19px;
   height: 19px;
+}
+
+/* Bespoke Transparent Subject Vector Art (Videos, Notes, Tests) */
+.subject-card-image-box {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.40)) !important;
+  transition: transform 0.24s cubic-bezier(0.34, 1.35, 0.64, 1), filter 0.24s ease !important;
+}
+
+.subject-card-image-box svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.subject-card:hover .subject-card-image-box,
+.subject-card:active .subject-card-image-box {
+  transform: scale(1.08) rotate(-1.5deg) !important;
+  filter: drop-shadow(0 6px 16px rgba(124, 58, 237, 0.55)) !important;
+}
+
+[data-theme="light"] .subject-card-image-box {
+  background: transparent !important;
+  border: none !important;
+  filter: drop-shadow(0 4px 10px rgba(124, 58, 237, 0.22)) !important;
 }
 
 .subject-card-meta,
@@ -8646,77 +8683,200 @@ main#app,
   }
 }
 
-#apk-companion-pet.is-running .apk-pet-avatar {
-  animation: spideyHeroRun 0.22s ease-in-out infinite alternate !important;
+/* ══════════════════════════════════════════════════════════════════════════════
+   SPIDER-MAN SUPERHERO COMPANION: FULL ARTICULATED ANATOMY & STUNT ANIMATIONS
+   - Expressive Mask Eyes (blinking, squinting, spider-sense)
+   - Dynamic Legs Movement (running cycle, mid-air swing kicks)
+   - Hands & Arms Movement (web shooter "thwip", overhead web grip)
+   - Acrobatic Stunts (360° backflip, organic web swing, superhero landing)
+   ══════════════════════════════════════════════════════════════════════════════ */
+#apk-companion-pet {
+  width: 68px !important;
+  height: 74px !important;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
 }
 
-@keyframes spideyHeroRun {
-  0% { transform: translateY(0) rotate(-6deg); }
-  100% { transform: translateY(-8px) rotate(6deg); }
+.spidey-hero-svg {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible !important;
 }
 
+/* Subtle Natural Superhero Hover Bob */
+.spidey-body-root {
+  transform-origin: 48px 55px;
+  animation: spideyIdleHover 3.2s ease-in-out infinite;
+}
+
+@keyframes spideyIdleHover {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(1.5deg); }
+}
+
+/* 1. MASK EYES MOVEMENT: Natural Blinks & Squints */
+.spidey-eye {
+  transform-origin: 48px 30px;
+  animation: spideyMaskBlink 4.2s ease-in-out infinite;
+}
+
+@keyframes spideyMaskBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+  98% { transform: scaleY(1); }
+}
+
+#apk-companion-pet.is-squint .spidey-eye,
+#apk-companion-pet.is-swinging .spidey-eye {
+  transform: scaleY(0.55) scaleX(1.08) !important;
+  transition: transform 0.15s ease;
+}
+
+#apk-companion-pet.is-alert .spidey-eye {
+  transform: scale(1.18) !important;
+  transition: transform 0.12s ease;
+}
+
+#apk-companion-pet.is-alert .spidey-sense-waves {
+  display: block !important;
+  animation: spideySensePulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes spideySensePulse {
+  0% { transform: scale(0.95); opacity: 0.75; }
+  100% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px #FBBF24); }
+}
+
+/* 2. LEGS MOVEMENT: Alternating Running Kick Cycles on Drag */
+#apk-companion-pet.is-running .spidey-leg-left {
+  transform-origin: 44px 68px;
+  animation: spideyLegCycleLeft 0.18s ease-in-out infinite alternate !important;
+}
+
+#apk-companion-pet.is-running .spidey-leg-right {
+  transform-origin: 52px 68px;
+  animation: spideyLegCycleRight 0.18s ease-in-out infinite alternate !important;
+}
+
+@keyframes spideyLegCycleLeft {
+  0% { transform: rotate(-28deg) translateY(-2px); }
+  100% { transform: rotate(30deg) translateY(3px); }
+}
+
+@keyframes spideyLegCycleRight {
+  0% { transform: rotate(28deg) translateY(3px); }
+  100% { transform: rotate(-30deg) translateY(-2px); }
+}
+
+/* Legs mid-air acrobatics when swinging */
+#apk-companion-pet.is-swinging .spidey-leg-left {
+  transform-origin: 44px 68px;
+  animation: spideyLegSwingAcrobat 0.85s ease-in-out forwards !important;
+}
+
+#apk-companion-pet.is-swinging .spidey-leg-right {
+  transform-origin: 52px 68px;
+  animation: spideyLegSwingExtend 0.85s ease-in-out forwards !important;
+}
+
+@keyframes spideyLegSwingAcrobat {
+  0% { transform: rotate(0deg); }
+  35% { transform: rotate(-35deg) scale(0.9); }
+  75% { transform: rotate(24deg) scale(1.05); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes spideyLegSwingExtend {
+  0% { transform: rotate(0deg); }
+  40% { transform: rotate(32deg) scale(1.1); }
+  80% { transform: rotate(-18deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 3. HANDS & ARMS MOVEMENT: Running Pumps, Web Gripping, Shooting */
+#apk-companion-pet.is-running .spidey-arm-left {
+  transform-origin: 38px 54px;
+  animation: spideyArmPumpLeft 0.18s ease-in-out infinite alternate !important;
+}
+
+#apk-companion-pet.is-running .spidey-arm-right {
+  transform-origin: 58px 50px;
+  animation: spideyArmPumpRight 0.18s ease-in-out infinite alternate !important;
+}
+
+@keyframes spideyArmPumpLeft {
+  0% { transform: rotate(-24deg); }
+  100% { transform: rotate(22deg); }
+}
+
+@keyframes spideyArmPumpRight {
+  0% { transform: rotate(22deg); }
+  100% { transform: rotate(-26deg); }
+}
+
+#apk-companion-pet.is-shooting .spidey-web-flare {
+  display: block !important;
+  animation: spideyWristFlare 0.25s ease-out forwards;
+}
+
+@keyframes spideyWristFlare {
+  0% { transform: scale(0.4); opacity: 0; }
+  50% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+/* 4. SUPERHERO STUNTS */
+/* Stunt A: 360° Acrobatic Corkscrew Backflip */
+#apk-companion-pet.is-backflip {
+  animation: spideyAcrobaticFlip 0.78s cubic-bezier(0.2, 0.85, 0.35, 1.25) forwards !important;
+}
+
+@keyframes spideyAcrobaticFlip {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  30% { transform: translateY(-48px) rotate(-140deg) scale(1.2); }
+  65% { transform: translateY(-24px) rotate(-280deg) scale(1.12); }
+  88% { transform: translateY(2px) rotate(-360deg) scale(0.96, 1.04); }
+  100% { transform: translateY(0) rotate(-360deg) scale(1, 1); }
+}
+
+/* Stunt B: Dynamic Web Swing Arc */
+#apk-companion-pet.is-swinging {
+  animation: spideyPendulumArc 0.95s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+}
+
+@keyframes spideyPendulumArc {
+  0% { transform: rotate(-24deg) scale(1); }
+  35% { transform: rotate(28deg) scale(1.08) translateY(-8px); }
+  75% { transform: rotate(-10deg) scale(1.02); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+/* Stunt C: Superhero 3-Point Landing Crouch */
+#apk-companion-pet.is-crouching .spidey-body-root {
+  transform-origin: 48px 85px;
+  animation: spideyLandingCrouch 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards !important;
+}
+
+@keyframes spideyLandingCrouch {
+  0% { transform: scale(1.05, 0.92) translateY(2px); }
+  45% { transform: scale(1.24, 0.75) translateY(7px); }
+  100% { transform: scale(1, 1) translateY(0); }
+}
+
+/* Directional Flip */
+#apk-companion-pet.facing-left .spidey-hero-svg {
+  transform: scaleX(-1);
+}
+
+/* Spider-Web Lines & Organic Silk Physics */
 #spidey-web-line {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
   pointer-events: none !important;
   z-index: 999998 !important;
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 12px rgba(96, 165, 250, 0.5));
-}
-
-/* Walking Cycle (Lumi cute hover-walk & ear wiggle) */
-#apk-companion-pet.is-walking .apk-pet-avatar {
-  animation: lumiHoverWalk 0.38s ease-in-out infinite alternate !important;
-}
-#apk-companion-pet.is-walking .lumi-ears {
-  transform-origin: 40px 18px;
-  animation: lumiEarWiggle 0.38s ease-in-out infinite alternate !important;
-}
-#apk-companion-pet.is-walking .lumi-paws {
-  transform-origin: 40px 64px;
-  animation: lumiPawStep 0.38s ease-in-out infinite alternate !important;
-}
-
-@keyframes lumiHoverWalk {
-  0% { transform: translateY(0px) rotate(-1.5deg); }
-  100% { transform: translateY(-5px) rotate(1.5deg); }
-}
-@keyframes lumiEarWiggle {
-  0% { transform: rotate(-6deg); }
-  100% { transform: rotate(6deg); }
-}
-@keyframes lumiPawStep {
-  0% { transform: rotate(-8deg); }
-  100% { transform: rotate(8deg); }
-}
-
-/* Running Sprint Cycle (Lumi energetic dash with flying star trail) */
-#apk-companion-pet.is-running .apk-pet-avatar {
-  animation: lumiHoverRun 0.18s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate !important;
-}
-#apk-companion-pet.is-running .lumi-ears {
-  transform-origin: 40px 18px;
-  animation: lumiEarFlutter 0.18s ease-in-out infinite alternate !important;
-}
-#apk-companion-pet.is-running .lumi-antenna {
-  transform-origin: 40px 8px;
-  animation: lumiAntennaGlow 0.2s ease-in-out infinite alternate !important;
-}
-
-@keyframes lumiHoverRun {
-  0% { transform: translateY(0px) scale(0.98, 1.02); }
-  100% { transform: translateY(-7px) scale(1.04, 0.96); }
-}
-@keyframes lumiEarFlutter {
-  0% { transform: rotate(-14deg); }
-  100% { transform: rotate(14deg); }
-}
-@keyframes lumiAntennaGlow {
-  0% { transform: scale(0.9); filter: drop-shadow(0 0 2px #FBBF24); }
-  100% { transform: scale(1.15); filter: drop-shadow(0 0 6px #FDE047); }
-}
-
-/* ── Dynamic Pet Body Expression Animations ── */
-#apk-companion-pet.is-wiggle .apk-pet-avatar,
-#apk-companion-pet.is-buri .apk-pet-avatar {
-  animation: lumiWiggle 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) !important;
+  overflow: visible !important;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 16px rgba(167, 139, 250, 0.6));
 }
 #apk-companion-pet.is-shock .apk-pet-avatar {
   animation: lumiShock 0.55s ease-in-out !important;
@@ -12062,17 +12222,16 @@ body.in-classroom #apk-companion-pet {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   USER SPECIFIED CARD GRADIENT: Dark Top-Left fading to Bottom-Right
+   USER SPECIFIED CARD GRADIENTS: Dark Top-Left fading to Bottom-Right
+   - Classes, Subjects & Notes: Deep Amethyst / Royal Violet Gradient
+   - Test Cards: Distinct Deep Midnight Sapphire-Indigo Gradient
    ══════════════════════════════════════════════════════════════════════════════ */
 [data-theme="dark"] .class-card,
-[data-theme="dark"] .subject-card,
+[data-theme="dark"] #classroom-dashboard .subject-card,
 [data-theme="dark"] #notes-catalog-view .subject-card,
 [data-theme="dark"] #subjects-grid .subject-card,
-[data-theme="dark"] #tests-catalog-view .subject-card,
-[data-theme="dark"] #tests-grid .subject-card,
 [data-theme="dark"] .note-doc-card,
 [data-theme="dark"] .doc-card,
-[data-theme="dark"] .test-card,
 [data-theme="dark"] .minimal-resume-card {
   background: linear-gradient(135deg, #241644 0%, #170d2c 48%, #0d0618 100%) !important;
   border: 1.5px solid rgba(167, 139, 250, 0.28) !important;
@@ -12085,15 +12244,35 @@ body.in-classroom #apk-companion-pet {
 [data-theme="light"] .subject-card,
 [data-theme="light"] #notes-catalog-view .subject-card,
 [data-theme="light"] #subjects-grid .subject-card,
-[data-theme="light"] #tests-catalog-view .subject-card,
-[data-theme="light"] #tests-grid .subject-card,
 [data-theme="light"] .note-doc-card,
 [data-theme="light"] .doc-card,
-[data-theme="light"] .test-card,
 [data-theme="light"] .minimal-resume-card {
   background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 50%, #ede9fe 100%) !important;
   border: 1.5px solid rgba(139, 92, 246, 0.28) !important;
   box-shadow: 0 6px 20px rgba(124, 58, 237, 0.1) !important;
+}
+
+/* Distinct Test Cards Gradient (Matches theme but distinctly Indigo / Sapphire tint, different from Notes) */
+[data-theme="dark"] .test-card,
+[data-theme="dark"] #tests-catalog-view .subject-card,
+[data-theme="dark"] #tests-grid .subject-card,
+[data-theme="dark"] .test-cards-grid .note-doc-card,
+[data-theme="dark"] .test-cards-grid .test-card {
+  background: linear-gradient(145deg, rgba(20, 24, 55, 0.88) 0%, rgba(13, 16, 40, 0.94) 55%, rgba(8, 10, 26, 0.98) 100%) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.42) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.52), 0 0 18px rgba(99, 102, 241, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+}
+
+[data-theme="light"] .test-card,
+[data-theme="light"] #tests-catalog-view .subject-card,
+[data-theme="light"] #tests-grid .subject-card,
+[data-theme="light"] .test-cards-grid .note-doc-card,
+[data-theme="light"] .test-cards-grid .test-card {
+  background: linear-gradient(145deg, #f0f4ff 0%, #e0e7ff 55%, #dbeafe 100%) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.45) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -12116,31 +12295,24 @@ body.in-classroom #apk-companion-pet {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   DATE PICKER: Clear Distinction for Current Date (Today)
+   DATE PICKER: Clear Distinction for Current Date (Today) — Distinct BG Only (No Floating Text)
    ══════════════════════════════════════════════════════════════════════════════ */
 .apk-date-pill.is-today {
-  border: 1.5px solid #a78bfa !important;
-  position: relative !important;
-  background: rgba(124, 58, 237, 0.2) !important;
+  border: 1.5px solid rgba(167, 139, 250, 0.65) !important;
+  background: rgba(124, 58, 237, 0.28) !important;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.3) !important;
 }
 
-.apk-date-pill.is-today::before {
-  content: 'TODAY';
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 7.5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  padding: 1px 4px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, #7c3aed, #9333ea);
-  color: #ffffff;
-  white-space: nowrap;
-  line-height: 1;
-  z-index: 5;
-  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.5);
+[data-theme="light"] .apk-date-pill.is-today {
+  border: 1.5px solid #8b5cf6 !important;
+  background: rgba(139, 92, 246, 0.18) !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2) !important;
+}
+
+.apk-date-pill.is-today.active {
+  background: linear-gradient(135deg, #9D84F7 0%, #805CEB 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 6px 20px rgba(142, 116, 229, 0.55) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -12185,4 +12357,117 @@ body.in-classroom #apk-companion-pet {
   flex-direction: column !important;
   justify-content: space-between !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE & TABLET: GLOBAL TAP HIGHLIGHT & FOCUS BOX SUPPRESSION
+   Eliminates the Android WebView white/gray highlight box on button tap
+   ═══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+}
+
+:focus,
+:focus-visible {
+  outline: none !important;
+}
+
+.nav-tab,
+.nav-tab:active,
+.nav-tab:focus,
+.nav-tab:focus-visible,
+.nav-tab:hover,
+.app-header,
+.app-header button,
+.header-nav-tabs,
+.header-nav-tabs button,
+.apk-icon-btn,
+.btn {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  -webkit-focus-ring-color: transparent !important;
+  outline: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Guard liquid nav indicator: prevent unmeasured box flash */
+#apk-nav-liquid-indicator:not([style*="width"]) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPTIONS (HAMBURGER) BUTTON: ZERO GLITCH / IDENTICAL POSITION ACROSS ALL PAGES
+   ═══════════════════════════════════════════════════════════════════════════ */
+#apk-hamburger-btn,
+.apk-hamburger-btn {
+  position: fixed !important;
+  top: max(12px, env(safe-area-inset-top, 12px)) !important;
+  left: 14px !important;
+  z-index: 10000 !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  margin: 0 !important;
+  background: rgba(18, 14, 28, 0.72) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+  transform: translateZ(0) !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease !important;
+}
+
+[data-theme="light"] #apk-hamburger-btn,
+[data-theme="light"] .apk-hamburger-btn {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(139, 92, 246, 0.25) !important;
+  box-shadow: 0 4px 16px rgba(109, 40, 217, 0.12) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FLUID iOS-STYLE PAGE TRANSITIONS
+   Wallpaper & Navigation Island stay 100% stationary; only content glides
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes iosPageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+main,
+#catalog-view,
+#tests-catalog-view,
+#notes-catalog-view,
+.main-container,
+.catalog-container,
+.notes-container,
+.tests-container,
+.saved-container {
+  animation: iosPageEnter 0.34s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  will-change: transform, opacity;
+}
+
+.page-glide-out {
+  opacity: 0 !important;
+  transform: translateY(-8px) scale(0.99) !important;
+  filter: blur(1.5px) !important;
+  transition: opacity 0.14s cubic-bezier(0.4, 0, 0.2, 1), transform 0.14s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  pointer-events: none !important;
+}
+
 

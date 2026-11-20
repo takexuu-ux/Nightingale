@@ -1,5 +1,6 @@
 // Nightingale Categorized Practice Tests, Question Bank & Batch 104 CBT Controller
 import './apk/apk-shell.js';
+import { getSubjectIllustration } from './data/subjectIllustrations.js';
 import { PRACTICE_TEST_SERIES, QBANK_SUBJECTS, TESTS_CATALOG_TOTALS } from './data/allTestsCatalog.js';
 import { getBatchBaselineState, syncBatchLive, getBatchIdFromName, fetchWithAutoAuth, hydrateAndroidAuthSession } from './utils/batch104Sync.js';
 import { IS_HINGLISH_APK, getPdfPreviewSrc } from './config/appMode.js';
@@ -417,8 +418,8 @@ function renderCatalogGrid() {
     return `
       <div class="subject-card" data-kind="${card.kind}" data-id="${escapeHtml(card.id)}" style="${borderCss}">
         <div class="subject-card-top">
-          <div class="subject-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">${svg}</svg>
+          <div class="subject-card-icon subject-card-image-box">
+            ${getSubjectIllustration(card.title)}
           </div>
           <div class="subject-card-meta">
             <h3 class="subject-card-title">${escapeHtml(card.title)}</h3>

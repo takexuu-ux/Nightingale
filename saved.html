@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <style>
+      html, body {
+        background-color: #09080e !important;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent !important;
+      }
+      html[data-theme="light"], html[data-theme="light"] body {
+        background-color: #f6f4fa !important;
+      }
+      #apk-hamburger-btn {
+        position: fixed !important;
+        top: max(12px, env(safe-area-inset-top, 12px)) !important;
+        left: 14px !important;
+        z-index: 10000 !important;
+      }
+    </style>
     <script>
       (function(){
         try {
@@ -27,15 +44,17 @@
     <!-- Ambient Vector Landscape Background Layer -->
     <div id="apk-ambient-bg"></div>
 
+    <!-- Options Button (Fixed Top-Left across all pages, zero overlap with island) -->
+    <button id="apk-hamburger-btn" class="apk-icon-btn apk-hamburger-btn" type="button" aria-label="Open Menu &amp; Settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
     <!-- Top Navigation Header (Floating Island) -->
     <header id="app-header" class="app-header">
-      <button id="apk-hamburger-btn" class="apk-icon-btn apk-hamburger-btn" type="button" aria-label="Open Menu &amp; Settings">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
       <nav class="header-nav-tabs">
         <div class="nav-tabs" style="margin: 0 !important;">
           <button id="tab-live" class="nav-tab" title="Home" onclick="window.location.href='/'">
