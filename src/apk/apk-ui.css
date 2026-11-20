@@ -951,7 +951,7 @@ body.is-logged-in #live-tab-layout,
   visibility: visible !important;
 }
 
-body.is-logged-in #class-list-container,
+#classroom-dashboard #class-list-container,
 #classroom-dashboard:not(.hide) #class-list-container {
   display: flex !important;
   flex-wrap: wrap !important;
@@ -4834,11 +4834,9 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     padding: 6px 0 10px 0 !important;
   }
 
-  /* Tablet Landscape & Desktop: Classes Grid (Centered Horizontally Under Date Picker) */
-  body.is-logged-in #class-list-container:not(.hide),
-  #classroom-dashboard:not(.hide) #class-list-container:not(.hide),
-  #class-list-container:not(.hide),
-  .class-grid:not(.hide) {
+  /* Tablet Landscape & Desktop: Home Classroom Dashboard Grid (Centered Horizontally Under Date Picker) */
+  #classroom-dashboard #class-list-container:not(.hide),
+  #classroom-dashboard .class-grid:not(.hide) {
     display: flex !important;
     flex-wrap: wrap !important;
     justify-content: center !important;
@@ -11553,22 +11551,64 @@ main#app,
 /* ══════════════════════════════════════════════════════════════════════════════
    LIVE EMBEDDED CLASSROOM VIEWER (FULLSCREEN STAGE & ZOOM INTEGRATION)
    ══════════════════════════════════════════════════════════════════════════════ */
-.classroom-viewer-container {
+/* Absolute Global Lockdown: When in live classroom, completely hide dashboard, hero, date picker, pet and main content */
+body.in-classroom main#app,
+body.in-classroom #classroom-dashboard,
+body.in-classroom .dashboard-container,
+body.in-classroom #apk-home-hero,
+body.in-classroom #continue-watching-section,
+body.in-classroom #apk-date-picker-wrap,
+body.in-classroom #live-tab-layout,
+body.in-classroom #class-list-container,
+body.in-classroom #app-header,
+body.in-classroom #apk-bottom-nav,
+body.in-classroom #apk-pet-stage,
+body.in-classroom #apk-companion-pet {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.classroom-viewer-container,
+#classroom-viewer {
   position: fixed !important;
   inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
   height: 100dvh !important;
   background: #080614 !important;
-  z-index: 99999 !important;
+  z-index: 99999999 !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
   color: #ffffff !important;
 }
 
-.classroom-viewer-container.hide {
+.classroom-viewer-container.hide,
+#classroom-viewer.hide {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.classroom-viewer-container .classroom-content,
+#classroom-viewer .classroom-content {
+  flex: 1 1 auto !important;
+  height: calc(100vh - 52px) !important;
+  height: calc(100dvh - 52px) !important;
+  width: 100% !important;
+  display: flex !important;
+  position: relative !important;
+  background: #000000 !important;
+  overflow: hidden !important;
 }
 
 .classroom-header {
@@ -12001,3 +12041,129 @@ main#app,
   border: 1px solid rgba(0, 0, 0, 0.1);
   color: #475569;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   USER SPECIFIED CARD GRADIENT: Dark Top-Left fading to Bottom-Right
+   ══════════════════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] .class-card,
+[data-theme="dark"] .subject-card,
+[data-theme="dark"] #notes-catalog-view .subject-card,
+[data-theme="dark"] #subjects-grid .subject-card,
+[data-theme="dark"] #tests-catalog-view .subject-card,
+[data-theme="dark"] #tests-grid .subject-card,
+[data-theme="dark"] .note-doc-card,
+[data-theme="dark"] .doc-card,
+[data-theme="dark"] .test-card,
+[data-theme="dark"] .minimal-resume-card {
+  background: linear-gradient(135deg, #241644 0%, #170d2c 48%, #0d0618 100%) !important;
+  border: 1.5px solid rgba(167, 139, 250, 0.28) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+}
+
+[data-theme="light"] .class-card,
+[data-theme="light"] .subject-card,
+[data-theme="light"] #notes-catalog-view .subject-card,
+[data-theme="light"] #subjects-grid .subject-card,
+[data-theme="light"] #tests-catalog-view .subject-card,
+[data-theme="light"] #tests-grid .subject-card,
+[data-theme="light"] .note-doc-card,
+[data-theme="light"] .doc-card,
+[data-theme="light"] .test-card,
+[data-theme="light"] .minimal-resume-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 50%, #ede9fe 100%) !important;
+  border: 1.5px solid rgba(139, 92, 246, 0.28) !important;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.1) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   HOME RESUME CARD: Matched to exact width of the Dates Strip
+   ══════════════════════════════════════════════════════════════════════════════ */
+#continue-watching-section,
+.continue-watching-section {
+  width: 100% !important;
+  max-width: 860px !important;
+  margin: 4px auto 16px auto !important;
+  box-sizing: border-box !important;
+}
+
+.continue-watching-grid,
+.minimal-resume-card {
+  width: 100% !important;
+  max-width: 860px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   DATE PICKER: Clear Distinction for Current Date (Today)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.apk-date-pill.is-today {
+  border: 1.5px solid #a78bfa !important;
+  position: relative !important;
+  background: rgba(124, 58, 237, 0.2) !important;
+}
+
+.apk-date-pill.is-today::before {
+  content: 'TODAY';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  color: #ffffff;
+  white-space: nowrap;
+  line-height: 1;
+  z-index: 5;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PET SYSTEM: STRICTLY NO TEXTS OR BUBBLES AROUND PET
+   ══════════════════════════════════════════════════════════════════════════════ */
+#apk-pet-tamagotchi-bubble,
+.apk-pet-tamagotchi-bubble,
+.apk-companion-pet-bubble {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   VIDEOS & NOTES SUBJECT CARDS: STRICT UNIFORM 3-COLUMN CSS GRID
+   ══════════════════════════════════════════════════════════════════════════════ */
+.notes-subject-grid,
+#subjects-catalog-view #class-list-container,
+#notes-catalog-view #class-list-container,
+#class-list-container.notes-subject-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.notes-subject-grid .subject-card,
+#subjects-catalog-view .subject-card,
+#notes-catalog-view .subject-card,
+#class-list-container.notes-subject-grid .subject-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 160px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+

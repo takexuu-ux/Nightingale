@@ -1357,6 +1357,14 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
     let passcode = '';
     let meetingToken = '';
 
+    // Immediately trigger fullscreen classroom transition to prevent any UI flicker
+    if (classroomTitle) classroomTitle.textContent = title;
+    if (classroomInstructor) classroomInstructor.textContent = instructorName;
+    document.body.classList.add('in-classroom');
+    if (appHeader) appHeader.classList.add('hide');
+    if (classroomDashboard) classroomDashboard.classList.add('hide');
+    if (classroomViewer) classroomViewer.classList.remove('hide');
+
     if (!token) {
       throw new Error('Please log in with your registered account to join live classes.');
     }
@@ -1510,7 +1518,10 @@ async function joinEmbeddedClassroom(classId, title, instructorName) {
       cleanName = persistedRandName;
     }
     // Include un and uname to be fully compatible with Zoom Web Client name pre-filling
-    const zoomWebLink = `/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
+    const proxyBase = (window.location.protocol === 'file:' || window.location.origin.includes('localhost') || !window.location.origin.includes('render'))
+      ? 'https://nightingale-9n2c.onrender.com'
+      : '';
+    const zoomWebLink = `${proxyBase}/zoom/wc/join/${meetingId}?pwd=${passcode}&prefer=1&un=${encodeURIComponent(cleanName)}&uname=${encodeURIComponent(cleanName)}`;
     
     // Background Render proxy verification: ensure Render is truly awake (JSON status ok) before loading iframe to avoid raw terminal screen
     async function checkRenderAwake(timeoutMs = 2500) {
@@ -3206,23 +3217,38 @@ function getPoolForLive(classes) {
     }
   }
 
-  let poolForLive = dedupedClasses.filter(c => doesClassMatchBatch(c, activeBatch));
-  if (poolForLive.length === 0 && RED_SAPPHIRE_DATA) {
+  // Always merge batch timetable classes from RED_SAPPHIRE_DATA so every date (past, today, tomorrow, and future) has its schedule!
+  if (RED_SAPPHIRE_DATA) {
     const isEng = Boolean(activeBatch && activeBatch.toLowerCase().includes('english'));
-    const fallbackList = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
-    if (fallbackList && fallbackList.length > 0) {
-      poolForLive = fallbackList.map(item => ({
-        id: item.id || `rs-${Math.random()}`,
-        title: item.title,
-        instructor: item.faculty || item.instructor || 'NNL Faculty',
-        start: item.start,
-        end: item.end,
-        meetingId: item.meetingId || '814 2901 8820',
-        passcode: item.passcode || '992026',
-        vdoCipherId: item.vdoCipherId || '',
-        subject: item.subject || 'Red Sapphire Batch'
-      }));
+    const timetable = isEng ? RED_SAPPHIRE_DATA.englishSchedule : RED_SAPPHIRE_DATA.hinglishSchedule;
+    if (timetable && timetable.length > 0) {
+      for (const item of timetable) {
+        const titleStr = (item.title || '').trim().toLowerCase();
+        const startStr = item.start || '';
+        const idKey = item.id ? `id_${item.id}` : `t_${titleStr}_${startStr}`;
+        const altKey = `t_${titleStr}_${startStr}`;
+        if (!seenKeys.has(idKey) && !seenKeys.has(altKey)) {
+          seenKeys.add(idKey);
+          seenKeys.add(altKey);
+          dedupedClasses.push({
+            id: item.id || `rs-${item.title}-${startStr}`,
+            title: item.title,
+            instructor: item.faculty || item.instructor || 'NNL Faculty',
+            start: item.start,
+            end: item.end,
+            meetingId: item.meetingId || '814 2901 8820',
+            passcode: item.passcode || '992026',
+            vdoCipherId: item.vdoCipherId || '',
+            subject: item.subject || 'Red Sapphire Batch'
+          });
+        }
+      }
     }
+  }
+
+  let poolForLive = dedupedClasses.filter(c => doesClassMatchBatch(c, activeBatch));
+  if (poolForLive.length === 0) {
+    poolForLive = dedupedClasses;
   }
   return poolForLive;
 }
@@ -3270,7 +3296,12 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
   }
 
   function selectDate(targetDate, targetPill) {
-    window.__nnlSelectedDateStr = targetDate.toDateString();
+    const dateStr = targetDate.toDateString();
+    window.__nnlSelectedDateStr = dateStr;
+    try {
+      localStorage.setItem('nnl_selected_date_str', dateStr);
+    } catch (_) {}
+
     pickerBar.querySelectorAll('.apk-date-pill').forEach(p => p.classList.remove('active'));
     if (targetPill) targetPill.classList.add('active');
 
@@ -3286,8 +3317,39 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
 
     classListContainer.innerHTML = '';
 
-    // If classes are currently loading, show single short simple loading description
-    if (isLoading || !classesFetched) {
+    // Cache-First: If classes are already known or cached for this date, render instantly (0ms) without showing spinner!
+    if (dayClasses.length > 0) {
+      if (emptyState) emptyState.classList.add('hide');
+      classListContainer.classList.remove('hide');
+      classListContainer.style.display = '';
+
+      // Sort dayClasses: Live classes first, then upcoming, then completed
+      const sortedDayClasses = [...dayClasses].sort((a, b) => {
+        const startA = parseApiDate(a.start || a.startTime || '');
+        const endA = a.end || a.endTime ? parseApiDate(a.end || a.endTime) : new Date(startA.getTime() + 2 * 3600000);
+        const isLiveA = now >= startA && now <= endA;
+        const startB = parseApiDate(b.start || b.startTime || '');
+        const endB = b.end || b.endTime ? parseApiDate(b.end || b.endTime) : new Date(startB.getTime() + 2 * 3600000);
+        const isLiveB = now >= startB && now <= endB;
+        if (isLiveA && !isLiveB) return -1;
+        if (!isLiveA && isLiveB) return 1;
+        return startA.getTime() - startB.getTime();
+      });
+
+      sortedDayClasses.forEach(c => {
+        const start = parseApiDate(c.start || c.startTime || '');
+        const end = c.end || c.endTime ? parseApiDate(c.end || c.endTime) : new Date(start.getTime() + 2 * 3600000);
+        const isLiveNow = now >= start && now <= end;
+        const isStartingSoon = start > now && (start - now) <= 30 * 60 * 1000;
+        const hasEnded = now > end;
+        c._hasEndedToday = hasEnded;
+        classListContainer.appendChild(createClassCard(c, isLiveNow, isStartingSoon));
+      });
+      return;
+    }
+
+    // Only show centered loading spinner if network fetch is in-flight and no classes exist
+    if (isLoading && (!poolClasses || poolClasses.length === 0)) {
       if (emptyState) emptyState.classList.add('hide');
       classListContainer.classList.remove('hide');
       classListContainer.style.display = 'flex';
@@ -3379,7 +3441,14 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
 
   let initialActiveTarget = null;
   let todayTarget = null;
-  const activeDateStr = window.__nnlSelectedDateStr || now.toDateString();
+  const savedDateStr = (() => {
+    try {
+      return localStorage.getItem('nnl_selected_date_str');
+    } catch (_) {
+      return null;
+    }
+  })();
+  const activeDateStr = savedDateStr || window.__nnlSelectedDateStr || now.toDateString();
 
   dates.forEach(d => {
     const isToday = d.toDateString() === now.toDateString();
@@ -3388,7 +3457,7 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
     const hasLecture = dayClasses.length > 0;
 
     const pill = document.createElement('div');
-    pill.className = `apk-date-pill ${isSelected ? 'active' : ''} ${hasLecture ? 'has-lecture' : ''}`;
+    pill.className = `apk-date-pill ${isSelected ? 'active' : ''} ${hasLecture ? 'has-lecture' : ''} ${isToday ? 'is-today' : ''}`;
     pill.innerHTML = `
       <span class="apk-date-pill-dot"></span>
       <span class="apk-date-pill-day">${dayNames[d.getDay()]}</span>
