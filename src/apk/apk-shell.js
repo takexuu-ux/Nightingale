@@ -8,7 +8,8 @@ import {
   getActivePetId,
   setActivePetId,
   getAvailablePets,
-  getShinchanSvg
+  getCompanionSvg,
+  getPetName
 } from './apk-pet-system.js';
 
 function detectSystemDark() {
@@ -272,10 +273,10 @@ function buildSidePanel() {
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              ${getShinchanSvg('default')}
+              ${getCompanionSvg('default')}
             </div>
             <div>
-              <div style="font-weight:700;font-size:13.5px;color:var(--text-primary);">Shin-chan</div>
+              <div style="font-weight:700;font-size:13.5px;color:var(--text-primary);" id="apk-side-companion-name">${getPetName()}</div>
               <div style="font-size:11px;color:var(--text-secondary);">Interactive Companion</div>
             </div>
           </div>
@@ -1174,12 +1175,12 @@ function normalizeHeaderAndChrome() {
 
       // Delicate micro-blooms (tiny Sakura, Lavender floret, Chamomile, Rose petal)
       const flowerSVGs = [
-        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-4" r="3" fill="#F472B6"/><circle cx="4" cy="-1.5" r="3" fill="#FBCFE8"/><circle cx="2.5" cy="3.5" r="3" fill="#EC4899"/><circle cx="-2.5" cy="3.5" r="3" fill="#F472B6"/><circle cx="-4" cy="-1.5" r="3" fill="#FBCFE8"/><circle cx="0" cy="0" r="1.8" fill="#FDE047"/></g></svg>`,
-        `<svg viewBox="0 0 24 24" width="12" height="12" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-3.5" r="2.6" fill="#C084FC"/><circle cx="3.5" cy="1.2" r="2.6" fill="#DDD6FE"/><circle cx="-3.5" cy="1.2" r="2.6" fill="#A855F7"/><circle cx="0" cy="3" r="2" fill="#E9D5FF"/><circle cx="0" cy="0" r="1.5" fill="#FEF08A"/></g></svg>`,
-        `<svg viewBox="0 0 24 24" width="13" height="13" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-4.5" rx="1.6" ry="3.2" fill="#FFFFFF"/><ellipse cx="4" cy="-2.2" rx="1.6" ry="3.2" transform="rotate(60 4 -2.2)" fill="#FDF4FF"/><ellipse cx="4" cy="2.2" rx="1.6" ry="3.2" transform="rotate(120 4 2.2)" fill="#FFFFFF"/><ellipse cx="0" cy="4.5" rx="1.6" ry="3.2" fill="#FDF4FF"/><ellipse cx="-4" cy="2.2" rx="1.6" ry="3.2" transform="rotate(60 -4 2.2)" fill="#FFFFFF"/><ellipse cx="-4" cy="-2.2" rx="1.6" ry="3.2" transform="rotate(120 -4 -2.2)" fill="#FDF4FF"/><circle cx="0" cy="0" r="2.2" fill="#FACC15"/></g></svg>`,
-        `<svg viewBox="0 0 24 24" width="11" height="11" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.9"/></svg>`,
-        `<svg viewBox="0 0 24 24" width="12" height="12" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.92"/></svg>`,
-        `<svg viewBox="0 0 24 24" width="11" height="11" fill="none"><circle cx="12" cy="12" r="3" fill="#FDE047"/><path d="M12 3v18M3 12h18" stroke="#FEF08A" stroke-width="1.6" stroke-linecap="round"/></svg>`
+        `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-3.5" r="2.5" fill="#F472B6"/><circle cx="3.5" cy="-1.2" r="2.5" fill="#FBCFE8"/><circle cx="2" cy="3" r="2.5" fill="#EC4899"/><circle cx="-2" cy="3" r="2.5" fill="#F472B6"/><circle cx="-3.5" cy="-1.2" r="2.5" fill="#FBCFE8"/><circle cx="0" cy="0" r="1.5" fill="#FDE047"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><g transform="translate(12,12)"><circle cx="0" cy="-3" r="2.2" fill="#C084FC"/><circle cx="3" cy="1" r="2.2" fill="#DDD6FE"/><circle cx="-3" cy="1" r="2.2" fill="#A855F7"/><circle cx="0" cy="2.5" r="1.8" fill="#E9D5FF"/><circle cx="0" cy="0" r="1.2" fill="#FEF08A"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><g transform="translate(12,12)"><ellipse cx="0" cy="-4" rx="1.4" ry="2.6" fill="#FFFFFF"/><ellipse cx="3.5" cy="-2" rx="1.4" ry="2.6" transform="rotate(60 3.5 -2)" fill="#FDF4FF"/><ellipse cx="3.5" cy="2" rx="1.4" ry="2.6" transform="rotate(120 3.5 2)" fill="#FFFFFF"/><ellipse cx="0" cy="4" rx="1.4" ry="2.6" fill="#FDF4FF"/><ellipse cx="-3.5" cy="2" rx="1.4" ry="2.6" transform="rotate(60 -3.5 2)" fill="#FFFFFF"/><ellipse cx="-3.5" cy="-2" rx="1.4" ry="2.6" transform="rotate(120 -3.5 -2)" fill="#FDF4FF"/><circle cx="0" cy="0" r="1.8" fill="#FACC15"/></g></svg>`,
+        `<svg viewBox="0 0 24 24" width="9" height="9" fill="none"><path d="M4 20C4 20 7 11 20 4C20 4 17 17 4 20Z" fill="#34D399" opacity="0.9"/></svg>`,
+        `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><path d="M12 2C8 6 5 10 5 14a7 7 0 0 0 14 0c0-4-3-8-7-12z" fill="#FB7185" opacity="0.92"/></svg>`,
+        `<svg viewBox="0 0 24 24" width="9" height="9" fill="none"><circle cx="12" cy="12" r="2.6" fill="#FDE047"/><path d="M12 3v18M3 12h18" stroke="#FEF08A" stroke-width="1.4" stroke-linecap="round"/></svg>`
       ];
 
       const spawnFlowerAtCursor = (clientX, clientY, isMicro = false) => {
@@ -1189,7 +1190,7 @@ function normalizeHeaderAndChrome() {
         const y = clientY - rect.top;
 
         // Keep active area strictly bounded inside the image
-        if (x < 10 || y < 10 || x > rect.width - 10 || y > rect.height - 10) return;
+        if (x < 6 || y < 6 || x > rect.width - 6 || y > rect.height - 6) return;
 
         const flower = document.createElement('span');
         flower.className = 'apk-cursor-flower';
@@ -1198,11 +1199,11 @@ function normalizeHeaderAndChrome() {
         flower.style.top = `${y}px`;
 
         const angle = Math.random() * Math.PI * 2;
-        const dist = 6 + Math.random() * 14;
+        const dist = 5 + Math.random() * 12;
         const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist - (5 + Math.random() * 8);
+        const dy = Math.sin(angle) * dist - (4 + Math.random() * 7);
         const rot = (Math.random() - 0.5) * 60;
-        const baseScale = isMicro ? (0.45 + Math.random() * 0.15) : (0.6 + Math.random() * 0.15);
+        const baseScale = isMicro ? (0.34 + Math.random() * 0.12) : (0.44 + Math.random() * 0.12);
 
         flower.style.setProperty('--target-x', `${dx}px`);
         flower.style.setProperty('--target-y', `${dy}px`);
@@ -1210,20 +1211,40 @@ function normalizeHeaderAndChrome() {
         flower.style.setProperty('--target-scale', `${baseScale}`);
 
         sparksEl.appendChild(flower);
-        setTimeout(() => flower.remove(), 800);
+        setTimeout(() => flower.remove(), 750);
       };
 
       const onPointerMove = (e) => {
         const now = Date.now();
-        if (now - lastSpawnTime < 110) return;
+        if (now - lastSpawnTime < 90) return;
         lastSpawnTime = now;
-        spawnFlowerAtCursor(e.clientX, e.clientY, Math.random() > 0.4);
+        spawnFlowerAtCursor(e.clientX, e.clientY, true);
       };
 
       bot.addEventListener('pointermove', onPointerMove);
       bot.addEventListener('pointerdown', (e) => {
         spawnFlowerAtCursor(e.clientX, e.clientY, false);
       });
+
+      // Mobile Touch Dragging: seamlessly sprout tiny blossoms as user drags finger across the lungs
+      const handleTouchDrag = (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        try { e.preventDefault(); } catch (_) {}
+        const now = Date.now();
+        if (now - lastSpawnTime < 55) return;
+        lastSpawnTime = now;
+        const touch = e.touches[0];
+        spawnFlowerAtCursor(touch.clientX, touch.clientY, true);
+      };
+
+      bot.addEventListener('touchstart', (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        try { e.preventDefault(); } catch (_) {}
+        const touch = e.touches[0];
+        spawnFlowerAtCursor(touch.clientX, touch.clientY, false);
+      }, { passive: false });
+
+      bot.addEventListener('touchmove', handleTouchDrag, { passive: false });
 
       wrapper.appendChild(bot);
     }

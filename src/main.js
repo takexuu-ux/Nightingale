@@ -3189,7 +3189,13 @@ function getPoolForLive(classes) {
   const dedupedClasses = [];
   for (const c of cleanClasses) {
     if (!c) continue;
-    const startStr = c.start || c.startTime || '';
+    if (!c.start) {
+      c.start = c.startTime || c.start_time || c.starts_at || c.schedule_start_time || c.scheduled_at || (c.date && c.time ? `${c.date}T${c.time}` : c.date) || '';
+    }
+    if (!c.end) {
+      c.end = c.endTime || c.end_time || c.ends_at || c.schedule_end_time || c.scheduled_end || '';
+    }
+    const startStr = c.start || '';
     const titleStr = (c.title || c.topic || '').trim().toLowerCase();
     const idKey = c.id ? `id_${c.id}` : `t_${titleStr}_${startStr}`;
     const altKey = `t_${titleStr}_${startStr}`;
@@ -3321,11 +3327,49 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
         classListContainer.appendChild(createClassCard(c, isLiveNow, isStartingSoon));
       });
     } else {
-      classListContainer.classList.add('hide');
-      if (emptyState) {
-        emptyState.classList.remove('hide');
-        const emptyTitle = emptyState.querySelector('.apk-empty-title');
-        if (emptyTitle) emptyTitle.textContent = isToday ? 'No classes scheduled for today' : `No lectures scheduled on ${dayNames[targetDate.getDay()]}, ${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
+      // If selected date is today and there are no classes scheduled for today,
+      // but poolClasses has future/upcoming classes, gracefully show the upcoming lectures
+      // with a clear, elegant subtitle so the screen is never dead or confusing!
+      const upcomingClasses = isToday && poolClasses && poolClasses.length > 0
+        ? poolClasses.filter(c => {
+            const start = parseApiDate(c.start || c.startTime || '');
+            return !isNaN(start.getTime()) && start.getTime() > now.getTime();
+          }).sort((a, b) => {
+            const aT = parseApiDate(a.start || a.startTime || '').getTime();
+            const bT = parseApiDate(b.start || b.startTime || '').getTime();
+            return aT - bT;
+          })
+        : [];
+
+      if (isToday && upcomingClasses.length > 0) {
+        if (emptyState) emptyState.classList.add('hide');
+        classListContainer.classList.remove('hide');
+        classListContainer.style.display = '';
+
+        const notice = document.createElement('div');
+        notice.style.cssText = 'grid-column: 1 / -1; width: 100%; padding: 14px 18px; margin-bottom: 12px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 14px; color: var(--text-secondary); font-size: 13px; display: flex; align-items: center; gap: 10px;';
+        notice.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>No live classes scheduled for today. Displaying upcoming schedule below:</span>
+        `;
+        classListContainer.appendChild(notice);
+
+        upcomingClasses.forEach(c => {
+          const start = parseApiDate(c.start || c.startTime || '');
+          const isStartingSoon = (start - now) <= 30 * 60 * 1000;
+          classListContainer.appendChild(createClassCard(c, false, isStartingSoon));
+        });
+      } else {
+        classListContainer.classList.add('hide');
+        if (emptyState) {
+          emptyState.classList.remove('hide');
+          const emptyTitle = emptyState.querySelector('.apk-empty-title');
+          if (emptyTitle) emptyTitle.textContent = isToday ? 'No classes scheduled for today' : `No lectures scheduled on ${dayNames[targetDate.getDay()]}, ${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`;
+        }
       }
     }
   }
@@ -4826,6 +4870,9 @@ function initOtpBoxes() {
     digits.split('').forEach((d, i) => {
       if (boxes[i]) {
         boxes[i].value = d;
+        boxes[i].style.setProperty('--i', i);
+        boxes[i].classList.remove('filled');
+        void boxes[i].offsetWidth; // force reflow so animation initializes fresh
         boxes[i].classList.add('filled');
       }
     });

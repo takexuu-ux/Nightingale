@@ -142,6 +142,25 @@
   height: 0 !important;
 }
 
+html, body, #classroom-dashboard, main#app, .main-content, .dashboard-container, .notes-page-container, .tests-page-container, .saved-page-container {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+main#app::-webkit-scrollbar,
+#classroom-dashboard::-webkit-scrollbar,
+.main-content::-webkit-scrollbar,
+.dashboard-container::-webkit-scrollbar,
+.notes-page-container::-webkit-scrollbar,
+.tests-page-container::-webkit-scrollbar,
+.saved-page-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 html {
   margin: 0;
   padding: 0;
@@ -3797,13 +3816,17 @@ body:not(.apk-is-auth) {
     bottom: auto !important;
     transform: none !important;
     margin: auto auto !important;
-    width: clamp(140px, 36vw, 190px) !important;
+    width: clamp(180px, 48vw, 245px) !important;
     height: auto !important;
     max-height: none !important;
     aspect-ratio: 360 / 390 !important;
     overflow: visible !important;
     opacity: 0.95 !important;
     filter: drop-shadow(0 10px 24px rgba(124, 92, 224, 0.20)) !important;
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-user-drag: none !important;
   }
 
   .apk-auth-botanical .apk-botanical-img {
@@ -3981,7 +4004,9 @@ body:not(.apk-is-auth) {
     transform: translateY(-2px) scale(1.06) !important;
     animation: apkOtpOrbit 1.1s linear infinite !important;
   }
-  #auth-screen .otp-box.filled {
+  #auth-screen .otp-box.filled,
+  #auth-screen .otp-box.filled:focus,
+  #auth-screen .otp-boxes-container.running-glow .otp-box {
     width: 34px !important;
     height: 38px !important;
     font-size: 16px !important;
@@ -3990,21 +4015,12 @@ body:not(.apk-is-auth) {
     background-color: transparent !important;
     background-image:
       linear-gradient(#141E28, #141E28),
-      linear-gradient(135deg, #10B981, #059669) !important;
+      conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.14) 0deg, rgba(16, 185, 129, 0.14) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.14) 360deg) !important;
     background-origin: border-box !important;
     background-clip: padding-box, border-box !important;
     color: #34D399 !important;
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.35) !important;
-  }
-  #auth-screen .otp-box.filled:focus {
-    border: 2px solid transparent !important;
-    background-color: transparent !important;
-    background-image:
-      linear-gradient(#141E28, #141E28),
-      conic-gradient(from var(--otp-angle), rgba(16, 185, 129, 0.15) 0deg, rgba(16, 185, 129, 0.15) 175deg, #10B981 240deg, #34D399 295deg, #A7F3D0 335deg, rgba(16, 185, 129, 0.15) 360deg) !important;
-    background-origin: border-box !important;
-    background-clip: padding-box, border-box !important;
-    box-shadow: 0 0 18px rgba(16, 185, 129, 0.8), 0 0 6px #10B981 !important;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.65), 0 0 4px #10B981 !important;
+    animation: apkOtpOrbit 0.9s linear infinite !important;
   }
   #auth-screen #verify-otp-btn {
     height: 35px !important;
@@ -4333,8 +4349,7 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   /* Single-line Slideable Tabs for Tests (Test Series, Question Bank, Red Sapphire) and Saved Content */
-  .section-mode-tabs,
-  .saved-mode-tabs {
+  .section-mode-tabs {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -4356,6 +4371,24 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     box-sizing: border-box !important;
     overflow-x: hidden !important;
     margin: 6px 0 16px !important;
+  }
+
+  .saved-mode-tabs {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 580px !important;
+    gap: 6px !important;
+    padding: 5px !important;
+    background: rgba(30, 24, 52, 0.65) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(142, 116, 229, 0.28) !important;
+    border-radius: 999px !important;
+    box-sizing: border-box !important;
+    margin: 6px auto 16px auto !important;
   }
 
   .section-mode-tabs::-webkit-scrollbar,
@@ -4392,8 +4425,7 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     font-weight: 800 !important;
   }
 
-  .section-mode-tabs .section-mode-tab,
-  .saved-mode-tabs .saved-mode-tab {
+  .section-mode-tabs .section-mode-tab {
     flex: 0 0 auto !important;
     white-space: nowrap !important;
     height: 34px !important;
@@ -4408,6 +4440,27 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     align-items: center !important;
     justify-content: center !important;
     gap: 6px !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: none !important;
+  }
+
+  .saved-mode-tabs .saved-mode-tab {
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    height: 38px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
     transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
     box-shadow: none !important;
   }
@@ -4645,11 +4698,14 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   .dashboard-container,
-  .notes-page-container,
-  .tests-page-container,
+  .notes-page-container:not(.hide),
+  .tests-page-container:not(.hide),
   #classroom-dashboard:not(.hide),
-  .notes-catalog-view,
-  #live-tab-layout {
+  .notes-catalog-view:not(.hide),
+  .notes-subject-view:not(.hide),
+  .tests-catalog-view:not(.hide),
+  .tests-detail-view:not(.hide),
+  #live-tab-layout:not(.hide) {
     width: 100% !important;
     max-width: 1560px !important;
     margin: 0 auto !important;
@@ -4678,10 +4734,10 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   }
 
   /* Tablet Landscape & Desktop: Classes Grid (Fully visible, responsive multi-column layout) */
-  body.is-logged-in #class-list-container,
-  #classroom-dashboard:not(.hide) #class-list-container,
-  #class-list-container,
-  .class-grid {
+  body.is-logged-in #class-list-container:not(.hide),
+  #classroom-dashboard:not(.hide) #class-list-container:not(.hide),
+  #class-list-container:not(.hide),
+  .class-grid:not(.hide) {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
     gap: 16px !important;
@@ -6784,24 +6840,23 @@ main#app,
   transform: translateY(-1px) scale(1.08) !important;
 }
 
-/* ── Dedicated Saved Content Page Styles: Slideable Horizontal Tabs ── */
+/* ── Dedicated Saved Content Page Styles: Balanced 3-Segment Tabs ── */
 .saved-mode-tabs {
   display: flex !important;
   flex-direction: row !important;
-  overflow-x: auto !important;
-  scrollbar-width: none !important;
-  -webkit-overflow-scrolling: touch !important;
-  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
   width: 100% !important;
-  gap: 8px !important;
-  padding: 4px !important;
+  max-width: 580px !important;
+  margin: 0 auto 1.4rem auto !important;
+  gap: 6px !important;
+  padding: 5px !important;
   border-radius: 999px !important;
   background: rgba(30, 24, 52, 0.65) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(142, 116, 229, 0.28) !important;
   box-sizing: border-box !important;
-  margin-bottom: 1.25rem !important;
 }
 
 .saved-mode-tabs::-webkit-scrollbar {
@@ -6815,10 +6870,12 @@ main#app,
 }
 
 .saved-mode-tab {
-  flex: 0 0 auto !important;
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
   white-space: nowrap !important;
-  height: 36px !important;
-  padding: 0 16px !important;
+  height: 38px !important;
+  padding: 0 10px !important;
   border-radius: 999px !important;
   border: none !important;
   background: transparent !important;
@@ -6828,7 +6885,7 @@ main#app,
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
+  gap: 7px !important;
   cursor: pointer !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }

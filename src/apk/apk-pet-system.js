@@ -1,15 +1,36 @@
-// Nightingale Companion Mascot: Lumi (Cyber Tamagotchi Study Companion)
-// 100% Code-Generated Vector Companion with Delightful Expressions & Micro-Interactions
+// Nightingale Companion Mascot: Lumi (Flat 2D Pastel Kawaii Anime Study Companion)
+// 100% Code-Generated Clean 2D Vector Companion with Delightful Expressions & Micro-Interactions
 // STRICT RULE: Mascot is NEVER shown on the Login / Authentication screen.
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
+const STORAGE_PET_NAME_KEY = 'nnl_companion_pet_name';
+
+export function getPetName() {
+  try {
+    return localStorage.getItem(STORAGE_PET_NAME_KEY) || 'Lumi';
+  } catch {
+    return 'Lumi';
+  }
+}
+
+export function setPetName(name) {
+  try {
+    if (name && typeof name === 'string') {
+      localStorage.setItem(STORAGE_PET_NAME_KEY, name.trim());
+    }
+  } catch {}
+}
 
 export function getPetSvg(petId, expression = 'default') {
   return getLumiSvg(expression);
 }
 
 export function getNurseSvg(expression = 'default') {
+  return getLumiSvg(expression);
+}
+
+export function getCompanionSvg(expression = 'default') {
   return getLumiSvg(expression);
 }
 
@@ -24,196 +45,148 @@ export function getLumiSvg(expr = 'default') {
     case 'happy':
       faceContent = `
         <!-- Joy Smiling Curved Eyes (⌒ ⌒) -->
-        <path d="M 23 35 Q 29 27 35 35" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none" />
-        <path d="M 45 35 Q 51 27 57 35" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none" />
+        <path d="M 27 38 Q 31 33 35 38" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" fill="none" />
+        <path d="M 45 38 Q 49 33 53 38" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" fill="none" />
         <!-- Big Happy Open Smile with Pink Tongue -->
-        <path d="M 35 42 Q 40 50 45 42 Z" fill="#F43F5E" stroke="#881337" stroke-width="1.2" />
-        <ellipse cx="40" cy="46" rx="3" ry="1.6" fill="#FDA4AF" />
+        <path d="M 36 42 Q 40 48 44 42 Z" fill="#FB7185" stroke="#334155" stroke-width="1.5" />
+        <ellipse cx="40" cy="45" rx="2" ry="1.2" fill="#FECDD3" />
         <!-- Rosy Cheeks -->
-        <ellipse cx="18" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.85" />
-        <ellipse cx="62" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.85" />
-        <!-- Floating Micro Joy Sparkles -->
-        <circle cx="28" cy="24" r="1.5" fill="#FDE047" />
-        <circle cx="52" cy="24" r="1.5" fill="#FDE047" />
+        <ellipse cx="22" cy="42" rx="4" ry="2.2" fill="#FB7185" opacity="0.85" />
+        <ellipse cx="58" cy="42" rx="4" ry="2.2" fill="#FB7185" opacity="0.85" />
       `;
       break;
 
     case 'focus':
       faceContent = `
-        <!-- Smart Study Glasses (Cyber Purple/Gold wireframe) -->
-        <rect x="18" y="27" width="18" height="15" rx="5" fill="rgba(147, 197, 253, 0.25)" stroke="#A78BFA" stroke-width="2" />
-        <rect x="44" y="27" width="18" height="15" rx="5" fill="rgba(147, 197, 253, 0.25)" stroke="#A78BFA" stroke-width="2" />
-        <line x1="36" y1="34" x2="44" y2="34" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" />
+        <!-- Smart Study Glasses (Clean indigo outline) -->
+        <rect x="23" y="32" width="14" height="12" rx="4" fill="none" stroke="#6366F1" stroke-width="1.8" />
+        <rect x="43" y="32" width="14" height="12" rx="4" fill="none" stroke="#6366F1" stroke-width="1.8" />
+        <line x1="37" y1="38" x2="43" y2="38" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" />
         <!-- Determined Sparkling Eyes inside lenses -->
-        <circle cx="27" cy="34" r="3.2" fill="#FFFFFF" />
-        <circle cx="28" cy="33" r="1.4" fill="#38BDF8" />
-        <circle cx="53" cy="34" r="3.2" fill="#FFFFFF" />
-        <circle cx="54" cy="33" r="1.4" fill="#38BDF8" />
+        <circle cx="30" cy="38" r="2.8" fill="#1E293B" />
+        <circle cx="29.2" cy="37.2" r="0.9" fill="#FFFFFF" />
+        <circle cx="50" cy="38" r="2.8" fill="#1E293B" />
+        <circle cx="49.2" cy="37.2" r="0.9" fill="#FFFFFF" />
         <!-- Focus Smart Smirk -->
-        <path d="M 36 45 Q 40 48 44 45" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" fill="none" />
-        <!-- Subtle Rosy Cheek Glow -->
-        <ellipse cx="17" cy="41" rx="3.5" ry="1.8" fill="#FB7185" opacity="0.6" />
-        <ellipse cx="63" cy="41" rx="3.5" ry="1.8" fill="#FB7185" opacity="0.6" />
+        <path d="M 37 44 Q 40 46 43 44" stroke="#334155" stroke-width="1.8" stroke-linecap="round" fill="none" />
+        <!-- Soft Blush -->
+        <ellipse cx="21" cy="43" rx="3" ry="1.6" fill="#FDA4AF" opacity="0.75" />
+        <ellipse cx="59" cy="43" rx="3" ry="1.6" fill="#FDA4AF" opacity="0.75" />
       `;
       break;
 
     case 'wink':
       faceContent = `
         <!-- Playful Left Wink (> shape) -->
-        <path d="M 23 32 L 31 35 L 23 38" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-        <!-- Right Sparkling Eye with Star Glimmer -->
-        <ellipse cx="51" cy="35" rx="5.5" ry="6" fill="#FFFFFF" />
-        <ellipse cx="51" cy="35.5" rx="3.6" ry="4" fill="#1E1B4B" />
-        <circle cx="49" cy="33.5" r="1.6" fill="#FFFFFF" />
-        <polygon points="53,32 54,34 56,34 54.5,35.5 55,37.5 53,36.2 51,37.5 51.5,35.5 50,34 52,34" fill="#FACC15" />
-        <!-- Playful Kitty Mouth -->
-        <path d="M 35 44 Q 38 42 40 44 Q 42 42 45 44" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" fill="none" />
+        <path d="M 27 36 L 33 38.5 L 27 41" stroke="#1E293B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <!-- Right Sparkling Eye -->
+        <circle cx="49" cy="38" r="3.4" fill="#1E293B" />
+        <circle cx="48" cy="36.5" r="1.2" fill="#FFFFFF" />
+        <!-- Cheeky Smile -->
+        <path d="M 37 42 Q 40 44 43 41" stroke="#334155" stroke-width="1.8" stroke-linecap="round" fill="none" />
         <!-- Blushing Cheeks -->
-        <ellipse cx="18" cy="40" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
-        <ellipse cx="62" cy="40" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
+        <ellipse cx="22" cy="43" rx="3.5" ry="2" fill="#FB7185" opacity="0.85" />
+        <ellipse cx="58" cy="43" rx="3.5" ry="2" fill="#FB7185" opacity="0.85" />
       `;
       break;
 
     case 'love':
       faceContent = `
         <!-- Big Heart Eyes (♥ ♥) -->
-        <path d="M 27 28 C 24 25, 20 28, 20 32 C 20 37, 27 41, 27 41 C 27 41, 34 37, 34 32 C 34 28, 30 25, 27 28 Z" fill="#F43F5E" />
-        <path d="M 53 28 C 50 25, 46 28, 46 32 C 46 37, 53 41, 53 41 C 53 41, 60 37, 60 32 C 60 28, 56 25, 53 28 Z" fill="#F43F5E" />
+        <path d="M 31 35 C 29 33 26 35 26 38 C 26 41 31 44 31 44 C 31 44 36 41 36 38 C 36 35 33 33 31 35 Z" fill="#F43F5E" />
+        <path d="M 49 35 C 47 33 44 35 44 38 C 44 41 49 44 49 44 C 49 44 54 41 54 38 C 54 35 51 33 49 35 Z" fill="#F43F5E" />
         <!-- Cute Little 'o' Mouth -->
-        <ellipse cx="40" cy="45" rx="2.5" ry="3.2" fill="#FFFFFF" />
+        <ellipse cx="40" cy="44" rx="2" ry="2.6" fill="#334155" />
         <!-- Radiant Blushing Cheeks -->
-        <ellipse cx="16" cy="39" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.9" />
-        <ellipse cx="64" cy="39" rx="4.5" ry="2.5" fill="#FB7185" opacity="0.9" />
+        <ellipse cx="22" cy="43" rx="4" ry="2.2" fill="#FB7185" opacity="0.9" />
+        <ellipse cx="58" cy="43" rx="4" ry="2.2" fill="#FB7185" opacity="0.9" />
       `;
       break;
 
     case 'sleepy':
       faceContent = `
         <!-- Peaceful Sleeping Eyes (– –) -->
-        <line x1="22" y1="35" x2="33" y2="35" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" />
-        <line x1="47" y1="35" x2="58" y2="35" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" />
-        <!-- Tiny Snooze Mouth with Snot/Sleep Bubble -->
-        <ellipse cx="40" cy="43" rx="2.2" ry="1.6" fill="#FFFFFF" />
-        <circle cx="45" cy="38" r="4.5" fill="rgba(147, 197, 253, 0.45)" stroke="#93C5FD" stroke-width="1.2" />
-        <circle cx="43.5" cy="36.5" r="1.2" fill="#FFFFFF" />
-        <!-- Floating zzz -->
-        <text x="58" y="24" fill="#C4B5FD" font-size="8" font-family="sans-serif" font-weight="800">z</text>
-        <text x="64" y="18" fill="#A78BFA" font-size="10" font-family="sans-serif" font-weight="800">Z</text>
+        <path d="M 26 39 Q 31 42 35 39" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round" fill="none" />
+        <path d="M 45 39 Q 49 42 54 39" stroke="#1E293B" stroke-width="2.2" stroke-linecap="round" fill="none" />
+        <!-- Cute Snooze Bubble -->
+        <circle cx="47" cy="34" r="3.5" fill="#E0E7FF" stroke="#A5B4FC" stroke-width="1.1" opacity="0.9" />
+        <circle cx="46" cy="33" r="1" fill="#FFFFFF" />
+        <!-- Floating z Z -->
+        <text x="56" y="28" fill="#818CF8" font-size="7" font-weight="800" font-family="sans-serif">z</text>
+        <text x="61" y="22" fill="#6366F1" font-size="9" font-weight="800" font-family="sans-serif">Z</text>
+        <!-- Soft Blush -->
+        <ellipse cx="22" cy="43" rx="3.2" ry="1.8" fill="#FDA4AF" opacity="0.7" />
+        <ellipse cx="58" cy="43" rx="3.2" ry="1.8" fill="#FDA4AF" opacity="0.7" />
       `;
       break;
 
     case 'shocked':
       faceContent = `
         <!-- Wide Cute Shocked Eyes -->
-        <ellipse cx="27" cy="34" rx="6" ry="6.5" fill="#FFFFFF" />
-        <circle cx="27" cy="34" r="2.4" fill="#1E1B4B" />
-        <ellipse cx="53" cy="34" rx="6" ry="6.5" fill="#FFFFFF" />
-        <circle cx="53" cy="34" r="2.4" fill="#1E1B4B" />
+        <circle cx="31" cy="37" r="4.2" fill="#1E293B" />
+        <circle cx="30" cy="35.5" r="1.5" fill="#FFFFFF" />
+        <circle cx="49" cy="37" r="4.2" fill="#1E293B" />
+        <circle cx="48" cy="35.5" r="1.5" fill="#FFFFFF" />
         <!-- O-shaped Mouth -->
-        <ellipse cx="40" cy="45" rx="3.5" ry="4.5" fill="#F43F5E" />
-        <ellipse cx="40" cy="46" rx="2" ry="2" fill="#FDA4AF" />
+        <ellipse cx="40" cy="45" rx="3" ry="4" fill="#FB7185" stroke="#334155" stroke-width="1.3" />
         <!-- Anime Blue Sweatdrop -->
-        <path d="M 14 26 C 14 22, 17 20, 17 20 C 17 20, 20 22, 20 26 C 20 28, 18.5 29.5, 17 29.5 C 15.5 29.5, 14 28, 14 26 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8" />
+        <path d="M 21 28 C 21 25 23 23 23 23 C 23 23 25 25 25 28 C 25 29.5 24 30.5 23 30.5 C 22 30.5 21 29.5 21 28 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="0.8" />
       `;
       break;
 
     default:
       faceContent = `
-        <!-- Big Kawaii Sparkling Eyes -->
-        <ellipse cx="27" cy="34" rx="6" ry="6.8" fill="#FFFFFF" />
-        <ellipse cx="27" cy="34.5" rx="4.2" ry="4.8" fill="#1E1B4B" />
-        <circle cx="25" cy="32" r="2" fill="#FFFFFF" />
-        <circle cx="29" cy="36" r="1" fill="#38BDF8" />
-        <ellipse cx="53" cy="34" rx="6" ry="6.8" fill="#FFFFFF" />
-        <ellipse cx="53" cy="34.5" rx="4.2" ry="4.8" fill="#1E1B4B" />
-        <circle cx="51" cy="32" r="2" fill="#FFFFFF" />
-        <circle cx="55" cy="36" r="1" fill="#38BDF8" />
+        <!-- Big Kawaii Sparkling Round Eyes -->
+        <circle cx="31" cy="38" r="3.4" fill="#1E293B" />
+        <circle cx="30" cy="36.5" r="1.2" fill="#FFFFFF" />
+        <circle cx="49" cy="38" r="3.4" fill="#1E293B" />
+        <circle cx="48" cy="36.5" r="1.2" fill="#FFFFFF" />
         <!-- Cute Curved Smile -->
-        <path d="M 36 43 Q 40 47 44 43" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" fill="none" />
+        <path d="M 37 42 Q 40 44 43 42" stroke="#334155" stroke-width="1.9" stroke-linecap="round" fill="none" />
         <!-- Soft Anime Rosy Cheeks -->
-        <ellipse cx="17" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
-        <ellipse cx="63" cy="39" rx="4" ry="2.2" fill="#FB7185" opacity="0.8" />
+        <ellipse cx="22" cy="43" rx="3.5" ry="2" fill="#FDA4AF" opacity="0.85" />
+        <ellipse cx="58" cy="43" rx="3.5" ry="2" fill="#FDA4AF" opacity="0.85" />
       `;
       break;
   }
 
   return `
-    <svg viewBox="0 0 80 88" width="100%" height="100%" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="lumi-body-grad" cx="40%" cy="32%" r="68%">
-          <stop offset="0%" stop-color="#A78BFA" />
-          <stop offset="45%" stop-color="#7C3AED" />
-          <stop offset="100%" stop-color="#4C1D95" />
-        </radialGradient>
-        <linearGradient id="lumi-visor-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#1E1B4B" />
-          <stop offset="100%" stop-color="#0F172A" />
-        </linearGradient>
-        <linearGradient id="lumi-ear-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#C4B5FD" />
-          <stop offset="100%" stop-color="#8B5CF6" />
-        </linearGradient>
-        <filter id="lumi-glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="rgba(124, 58, 237, 0.45)" />
-        </filter>
-        <filter id="star-glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
-
+    <svg viewBox="0 0 80 84" width="100%" height="100%" style="overflow:visible;" xmlns="http://www.w3.org/2000/svg">
       <!-- Soft Ambient Ground Shadow -->
-      <ellipse cx="40" cy="82" rx="20" ry="4" fill="rgba(0,0,0,0.22)" class="lumi-ground-shadow" />
+      <ellipse cx="40" cy="74" rx="18" ry="3.5" fill="rgba(0,0,0,0.12)" class="lumi-ground-shadow" />
 
-      <!-- Cute Cyber Cat / Bunny Ears -->
+      <!-- Cute Rounded Pastel Bunny Ears -->
       <g class="lumi-ears">
         <!-- Left Ear -->
-        <path d="M 20 22 C 16 10, 22 4, 27 12 C 28 14, 28 18, 26 24 Z" fill="url(#lumi-ear-grad)" stroke="#4C1D95" stroke-width="1.4" />
-        <path d="M 22 17 C 20 11, 23 8, 25 13 C 25.5 14, 25.5 16, 24.5 19 Z" fill="#F472B6" opacity="0.85" />
+        <path d="M 24 24 C 19 6 32 4 34 22" fill="#FFFDF9" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M 25 19 C 22 10 29 9 31 18" fill="#FBCFE8" />
         <!-- Right Ear -->
-        <path d="M 60 22 C 64 10, 58 4, 53 12 C 52 14, 52 18, 54 24 Z" fill="url(#lumi-ear-grad)" stroke="#4C1D95" stroke-width="1.4" />
-        <path d="M 58 17 C 60 11, 57 8, 55 13 C 54.5 14, 54.5 16, 55.5 19 Z" fill="#F472B6" opacity="0.85" />
+        <path d="M 56 24 C 61 6 48 4 46 22" fill="#FFFDF9" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M 55 19 C 58 10 51 9 49 18" fill="#FBCFE8" />
       </g>
 
-      <!-- Star Antenna in center top -->
-      <g class="lumi-antenna" filter="url(#star-glow)">
-        <line x1="40" y1="16" x2="40" y2="7" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" />
-        <polygon points="40,2 41.5,5.5 45,5.8 42.4,8.2 43.2,11.8 40,10 36.8,11.8 37.6,8.2 35,5.8 38.5,5.5" fill="#FDE047" stroke="#F59E0B" stroke-width="0.8" />
+      <!-- Soft Rounded Feet -->
+      <g class="lumi-feet">
+        <ellipse cx="30" cy="69" rx="5.5" ry="3.2" fill="#F8FAFC" stroke="#334155" stroke-width="1.8" />
+        <ellipse cx="50" cy="69" rx="5.5" ry="3.2" fill="#F8FAFC" stroke="#334155" stroke-width="1.8" />
       </g>
 
-      <!-- Main Capsule Egg Body -->
-      <g class="lumi-main-body" filter="url(#lumi-glow)">
-        <rect x="12" y="16" width="56" height="58" rx="28" fill="url(#lumi-body-grad)" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" />
-        <!-- Top Light Sheen -->
-        <ellipse cx="40" cy="22" rx="18" ry="4.5" fill="#FFFFFF" opacity="0.25" />
+      <!-- Main Chubby Mochi Body (Clean 2D Flat Pastel) -->
+      <g class="lumi-main-body">
+        <path d="M 16 38 C 16 22 26 18 40 18 C 54 18 64 22 64 38 C 64 56 56 68 40 68 C 24 68 16 56 16 38 Z" fill="#FFFDF9" stroke="#334155" stroke-width="2.2" stroke-linejoin="round" />
       </g>
 
-      <!-- Face Screen / Visor -->
-      <g class="lumi-screen">
-        <rect x="17" y="24" width="46" height="30" rx="15" fill="url(#lumi-visor-grad)" stroke="rgba(167, 139, 250, 0.4)" stroke-width="1.4" />
-        <!-- Visor Glass Glint -->
-        <path d="M 20 28 Q 40 25 58 29" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" fill="none" stroke-linecap="round" />
-        <!-- Interactive Facial Features -->
+      <!-- Interactive 2D Facial Features (Direct on face, zero glass/visor) -->
+      <g class="lumi-face">
         ${faceContent}
       </g>
 
-      <!-- Cute Belly Core Hologram (Study Pulse Core) -->
-      <g class="lumi-belly">
-        <circle cx="40" cy="62" r="5" fill="#1E1B4B" stroke="#A78BFA" stroke-width="1.2" />
-        <circle cx="40" cy="62" r="2.8" fill="#38BDF8" filter="url(#star-glow)" />
-        <circle cx="40" cy="62" r="1.2" fill="#FFFFFF" />
-      </g>
-
-      <!-- Cute Tiny Paws -->
+      <!-- Cute Tiny Front Paws -->
       <g class="lumi-paws">
         <!-- Left Paw -->
-        <ellipse cx="14" cy="54" rx="4.5" ry="3.5" fill="#C4B5FD" stroke="#4C1D95" stroke-width="1.2" />
+        <ellipse cx="29" cy="54" rx="3.6" ry="2.6" fill="#FFFDF9" stroke="#334155" stroke-width="1.8" />
         <!-- Right Paw -->
-        <ellipse cx="66" cy="54" rx="4.5" ry="3.5" fill="#C4B5FD" stroke="#4C1D95" stroke-width="1.2" />
-        <!-- Left Foot -->
-        <ellipse cx="28" cy="74" rx="6.5" ry="3.8" fill="#8B5CF6" stroke="#4C1D95" stroke-width="1.2" />
-        <!-- Right Foot -->
-        <ellipse cx="52" cy="74" rx="6.5" ry="3.8" fill="#8B5CF6" stroke="#4C1D95" stroke-width="1.2" />
+        <ellipse cx="51" cy="54" rx="3.6" ry="2.6" fill="#FFFDF9" stroke="#334155" stroke-width="1.8" />
       </g>
     </svg>
   `;
