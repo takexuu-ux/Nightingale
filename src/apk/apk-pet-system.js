@@ -400,13 +400,24 @@ export function initPetSystem() {
         root.style.transition = 'transform 0.88s cubic-bezier(0.25, 1, 0.5, 1)';
         setPosition(targetX, targetY);
 
-        if (webLine) {
-          const targetHandX = isFacingLeft ? targetX + 14 : targetX + 54;
-          const targetHandY = targetY + 14;
-          webLine.innerHTML = createOrganicWebMarkup(targetHandX, targetHandY, anchorX, anchorY);
-        }
+        let swingRaf = null;
+        const swingStart = performance.now();
+        const swingDuration = 880;
+
+        const updateLiveWeb = (now) => {
+          if (!webLine || !isStuntActive) return;
+          const rect = root.getBoundingClientRect();
+          const liveHandX = isFacingLeft ? rect.left + 14 : rect.left + 54;
+          const liveHandY = rect.top + 14;
+          webLine.innerHTML = createOrganicWebMarkup(liveHandX, liveHandY, anchorX, anchorY);
+          if (now - swingStart < swingDuration) {
+            swingRaf = requestAnimationFrame(updateLiveWeb);
+          }
+        };
+        swingRaf = requestAnimationFrame(updateLiveWeb);
 
         setTimeout(() => {
+          if (swingRaf) cancelAnimationFrame(swingRaf);
           pos.x = targetX;
           pos.y = targetY;
           root.style.transition = '';

@@ -8826,8 +8826,10 @@ main#app,
 
 /* 4. SUPERHERO STUNTS */
 /* Stunt A: 360° Acrobatic Corkscrew Backflip */
-#apk-companion-pet.is-backflip {
+#apk-companion-pet.is-backflip .apk-pet-avatar,
+#apk-companion-pet.is-backflip .spidey-mascot-svg {
   animation: spideyAcrobaticFlip 0.78s cubic-bezier(0.2, 0.85, 0.35, 1.25) forwards !important;
+  transform-origin: center center !important;
 }
 
 @keyframes spideyAcrobaticFlip {
@@ -8839,8 +8841,10 @@ main#app,
 }
 
 /* Stunt B: Dynamic Web Swing Arc */
-#apk-companion-pet.is-swinging {
+#apk-companion-pet.is-swinging .apk-pet-avatar,
+#apk-companion-pet.is-swinging .spidey-mascot-svg {
   animation: spideyPendulumArc 0.95s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  transform-origin: 50% -20px !important;
 }
 
 @keyframes spideyPendulumArc {
