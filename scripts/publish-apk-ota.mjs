@@ -26,16 +26,20 @@ console.log('1. Building Hinglish-only Vite bundle...');
 execSync('npm run build:apk', { cwd: ROOT, stdio: 'inherit' });
 
 // Determine target webVersion BEFORE zipping so version.json inside bundle matches manifest.json 1:1
-let nextWebVersion = 1;
-try {
-  const res = await fetch(`https://api.github.com/repos/takexuu-ux/Nightingale/contents/manifest.json?ref=ota-hinglish`, {
-    headers: { 'Accept': 'application/vnd.github.raw+json', 'User-Agent': 'NightingalePublisher' }
-  });
-  if (res.ok) {
-    const cur = await res.json();
-    nextWebVersion = (Number(cur.webVersion) || 0) + 1;
-  }
-} catch {}
+const webArgIdx = args.indexOf('--web');
+let nextWebVersion = webArgIdx >= 0 && args[webArgIdx + 1] ? Number(args[webArgIdx + 1]) : 200;
+if (webArgIdx < 0) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/takexuu-ux/Nightingale/contents/manifest.json?ref=ota-hinglish`, {
+      headers: { 'Accept': 'application/vnd.github.raw+json', 'User-Agent': 'NightingalePublisher' }
+    });
+    if (res.ok) {
+      const cur = await res.json();
+      const remoteV = Number(cur.webVersion) || 0;
+      nextWebVersion = Math.max(200, remoteV + 1);
+    }
+  } catch {}
+}
 
 // Write version.json into dist/ cleanly
 fs.writeFileSync(path.join(ROOT, 'dist', 'version.json'), JSON.stringify({ webVersion: nextWebVersion }));
