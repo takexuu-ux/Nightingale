@@ -1024,6 +1024,7 @@ function normalizeHeaderAndChrome() {
     if (!el) return;
     el.innerHTML = `${icon}<span>${label}</span>`;
     el.removeAttribute('onclick');
+    el.removeAttribute('title');
 
     if (!el.__nnlFluidNavBound) {
       el.__nnlFluidNavBound = true;

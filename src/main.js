@@ -3441,14 +3441,8 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
 
   let initialActiveTarget = null;
   let todayTarget = null;
-  const savedDateStr = (() => {
-    try {
-      return localStorage.getItem('nnl_selected_date_str');
-    } catch (_) {
-      return null;
-    }
-  })();
-  const activeDateStr = savedDateStr || window.__nnlSelectedDateStr || now.toDateString();
+  // Opening the app must strictly default to today's date
+  const activeDateStr = window.__nnlSelectedDateStr || now.toDateString();
 
   dates.forEach(d => {
     const isToday = d.toDateString() === now.toDateString();
@@ -3475,7 +3469,7 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
     pickerBar.appendChild(pill);
   });
 
-  const chosenTarget = initialActiveTarget || todayTarget;
+  const chosenTarget = (window.__nnlSelectedDateStr ? initialActiveTarget : todayTarget) || todayTarget || initialActiveTarget;
   if (chosenTarget) {
     selectDate(chosenTarget.date, chosenTarget.pill);
     setTimeout(() => {

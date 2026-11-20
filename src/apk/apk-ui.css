@@ -217,13 +217,13 @@ body {
 }
 
 html[data-theme="dark"] #apk-ambient-bg {
-  background-image: url('./bg-web-landscape-dark.jpg') !important;
+  background-image: url('./bg-app-wallpaper.jpg') !important;
   opacity: 1.0 !important;
   filter: none !important;
 }
 
 html[data-theme="light"] #apk-ambient-bg {
-  background-image: url('./bg-web-landscape-light.jpg') !important;
+  background-image: url('./bg-app-wallpaper-light.jpg') !important;
   opacity: 1.0 !important;
   filter: none !important;
 }
@@ -237,33 +237,25 @@ html[data-theme="light"] #apk-ambient-bg::after {
   pointer-events: none;
 }
 
-/* ── Website Landscape Medical Wallpaper (Dark & Light Theme) ── */
-#apk-ambient-bg,
-html #apk-ambient-bg,
-html[data-theme="dark"] #apk-ambient-bg,
-html:not([data-theme="light"]) #apk-ambient-bg,
-body #apk-ambient-bg,
-body.apk-shell-active #apk-ambient-bg,
-html[data-theme="dark"] body.apk-shell-active #apk-ambient-bg {
-  background-image: url('./bg-web-landscape-dark.jpg') !important;
-  background-size: cover !important;
-  background-position: center center !important;
+/* ── Web Desktop Landscape Wallpaper Only on Large Non-APK Screens ── */
+@media (min-width: 880px) {
+  html:not(.is-native-android-apk) body:not(.is-native-android-apk) #apk-ambient-bg {
+    background-image: url('./bg-web-landscape-dark.jpg') !important;
+  }
+  html[data-theme="light"]:not(.is-native-android-apk) body:not(.is-native-android-apk) #apk-ambient-bg {
+    background-image: url('./bg-web-landscape-light.jpg') !important;
+  }
 }
 
-html[data-theme="light"] #apk-ambient-bg,
-html[data-theme="light"] body #apk-ambient-bg,
-html[data-theme="light"] body.apk-shell-active #apk-ambient-bg {
-  background-image: url('./bg-web-landscape-light.jpg') !important;
-  background-size: cover !important;
-  background-position: center center !important;
-}
-
-/* ── STRICT GUARANTEE: Native Android APK environment ALWAYS preserves original mobile wallpaper ── */
+/* ── STRICT GUARANTEE: Native Android APK environment ALWAYS preserves mobile wallpaper without flicker ── */
 body.is-native-android-apk #apk-ambient-bg,
+html.is-native-android-apk #apk-ambient-bg,
+html[data-theme="dark"].is-native-android-apk #apk-ambient-bg,
 html[data-theme="dark"] body.is-native-android-apk #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper.jpg') !important;
 }
 
+html[data-theme="light"].is-native-android-apk #apk-ambient-bg,
 html[data-theme="light"] body.is-native-android-apk #apk-ambient-bg {
   background-image: url('./bg-app-wallpaper-light.jpg') !important;
 }
@@ -965,26 +957,36 @@ body.is-logged-in #live-tab-layout,
   box-sizing: border-box !important;
 }
 
-/* Strictly hide Option Button, Drawer & Nav on Login / Auth Screen (Only when NOT logged in) */
-body.apk-is-auth:not(.is-logged-in) #apk-hamburger-btn,
-body.apk-is-auth:not(.is-logged-in) .apk-hamburger-btn,
-body.apk-is-auth:not(.is-logged-in) #apk-side-drawer,
-body.apk-is-auth:not(.is-logged-in) .apk-side-drawer,
-body.apk-is-auth:not(.is-logged-in) #app-header,
-body.apk-is-auth:not(.is-logged-in) #apk-bottom-nav,
-body.apk-is-auth:not(.is-logged-in) .nav-tab-refresh-btn,
-body.apk-is-auth:not(.is-logged-in) #apk-pet-stage,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-hamburger-btn,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) .apk-hamburger-btn,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-side-drawer,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) .apk-side-drawer,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) #app-header,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-bottom-nav,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) .nav-tab-refresh-btn,
-body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-pet-stage {
+/* Strictly hide Option Button, Drawer & Nav ONLY on unauthenticated Login Screen */
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) #apk-hamburger-btn,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) .apk-hamburger-btn,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) #apk-side-drawer,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) .apk-side-drawer,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) #app-header,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) #apk-bottom-nav,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) .nav-tab-refresh-btn,
+html:not(.is-logged-in) body.apk-is-auth:not(.is-logged-in) #apk-pet-stage,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-hamburger-btn,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) .apk-hamburger-btn,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-side-drawer,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) .apk-side-drawer,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) #app-header,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-bottom-nav,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) .nav-tab-refresh-btn,
+html:not(.is-logged-in) body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-pet-stage {
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+html.is-logged-in #apk-hamburger-btn,
+body.is-logged-in #apk-hamburger-btn,
+html.is-logged-in .apk-hamburger-btn,
+body.is-logged-in .apk-hamburger-btn {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .auth-hero-wrapper {
@@ -12437,41 +12439,57 @@ body.in-classroom #apk-companion-pet {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FLUID iOS-STYLE PAGE TRANSITIONS
-   Wallpaper & Navigation Island stay 100% stationary; only content glides
+   FLUID iOS-STYLE PAGE TRANSITIONS (Hardware Accelerated 60/120 FPS)
+   Wallpaper & Navigation Island stay 100% stationary; only components glide
    ═══════════════════════════════════════════════════════════════════════════ */
 @keyframes iosPageEnter {
   0% {
     opacity: 0;
-    transform: translateY(14px) scale(0.992);
-    filter: blur(2px);
+    transform: translateY(12px) scale(0.992);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 
 main,
+#app,
+#classroom-dashboard,
+.apk-home-feed,
 #catalog-view,
 #tests-catalog-view,
 #notes-catalog-view,
 .main-container,
 .catalog-container,
 .notes-container,
+.notes-page-container,
 .tests-container,
-.saved-container {
-  animation: iosPageEnter 0.34s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+.saved-container,
+.saved-page-container {
+  animation: iosPageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both !important;
   will-change: transform, opacity;
 }
 
 .page-glide-out {
   opacity: 0 !important;
   transform: translateY(-8px) scale(0.99) !important;
-  filter: blur(1.5px) !important;
   transition: opacity 0.14s cubic-bezier(0.4, 0, 0.2, 1), transform 0.14s cubic-bezier(0.4, 0, 0.2, 1) !important;
   pointer-events: none !important;
+}
+
+/* Guard against Android WebView native tooltip popup box & tap highlights */
+.nav-tab,
+.nav-tab *,
+.app-header .nav-tabs,
+.header-nav-tabs,
+#apk-nav-liquid-indicator {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  outline: none !important;
 }
 
 
