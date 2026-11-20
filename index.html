@@ -14,7 +14,8 @@
           document.documentElement.setAttribute('data-theme', t);
           if (localStorage.getItem('nnl_access_token')) {
             var s = document.createElement('style');
-            s.textContent = '#app-preloader{display:none!important;}';
+            s.id = 'nnl-logged-in-pre-paint';
+            s.textContent = '#app-preloader{display:none!important;} #auth-screen,#auth-screen-container,.auth-hero-wrapper{display:none!important;} #apk-hamburger-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;}';
             document.head.appendChild(s);
           }
         } catch(e) {}
@@ -40,12 +41,13 @@
     <meta name="description" content="Access Nightingale premium nursing preparation classes directly from your PC browser and join live interactive sessions." />
     <title>Nightingale Classroom - Premium Nursing Portal</title>
   </head>
-  <body class="apk-is-auth on-login-screen">
+  <body>
     <script>
       (function(){
         try {
-          if (localStorage.getItem('nnl_access_token')) {
-            document.body.classList.remove('apk-is-auth', 'on-login-screen');
+          if (!localStorage.getItem('nnl_access_token')) {
+            document.body.classList.add('apk-is-auth', 'on-login-screen');
+          } else {
             document.body.classList.add('is-logged-in');
           }
         } catch(e) {}

@@ -964,23 +964,23 @@ body.is-logged-in #live-tab-layout,
   box-sizing: border-box !important;
 }
 
-/* Strictly hide Option Button, Drawer & Nav on Login / Auth Screen */
-body.apk-is-auth #apk-hamburger-btn,
-body.apk-is-auth .apk-hamburger-btn,
-body.apk-is-auth #apk-side-drawer,
-body.apk-is-auth .apk-side-drawer,
-body.apk-is-auth #app-header,
-body.apk-is-auth #apk-bottom-nav,
-body.apk-is-auth .nav-tab-refresh-btn,
-body.apk-is-auth #apk-pet-stage,
-body:has(#auth-screen:not(.hide)) #apk-hamburger-btn,
-body:has(#auth-screen:not(.hide)) .apk-hamburger-btn,
-body:has(#auth-screen:not(.hide)) #apk-side-drawer,
-body:has(#auth-screen:not(.hide)) .apk-side-drawer,
-body:has(#auth-screen:not(.hide)) #app-header,
-body:has(#auth-screen:not(.hide)) #apk-bottom-nav,
-body:has(#auth-screen:not(.hide)) .nav-tab-refresh-btn,
-body:has(#auth-screen:not(.hide)) #apk-pet-stage {
+/* Strictly hide Option Button, Drawer & Nav on Login / Auth Screen (Only when NOT logged in) */
+body.apk-is-auth:not(.is-logged-in) #apk-hamburger-btn,
+body.apk-is-auth:not(.is-logged-in) .apk-hamburger-btn,
+body.apk-is-auth:not(.is-logged-in) #apk-side-drawer,
+body.apk-is-auth:not(.is-logged-in) .apk-side-drawer,
+body.apk-is-auth:not(.is-logged-in) #app-header,
+body.apk-is-auth:not(.is-logged-in) #apk-bottom-nav,
+body.apk-is-auth:not(.is-logged-in) .nav-tab-refresh-btn,
+body.apk-is-auth:not(.is-logged-in) #apk-pet-stage,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-hamburger-btn,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) .apk-hamburger-btn,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-side-drawer,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) .apk-side-drawer,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) #app-header,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-bottom-nav,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) .nav-tab-refresh-btn,
+body:not(.is-logged-in):has(#auth-screen:not(.hide)) #apk-pet-stage {
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
@@ -11958,88 +11958,107 @@ body.in-classroom #apk-companion-pet {
 
 .apk-update-prompt-card {
   width: 100%;
-  max-width: 360px;
-  background: linear-gradient(145deg, rgba(28, 22, 54, 0.96) 0%, rgba(18, 14, 34, 0.98) 100%);
-  border: 1px solid rgba(167, 139, 250, 0.28);
-  border-radius: 20px;
-  padding: 24px 20px;
+  max-width: 310px;
+  background: rgba(19, 13, 36, 0.98) !important;
+  border: 1px solid rgba(167, 139, 250, 0.3) !important;
+  border-radius: 18px;
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 32px rgba(124, 92, 224, 0.18);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(124, 58, 237, 0.25) !important;
 }
 
 [data-theme="light"] .apk-update-prompt-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8f6fe 100%);
-  border: 1px solid rgba(142, 116, 229, 0.32);
-  box-shadow: 0 16px 48px rgba(108, 79, 214, 0.2);
+  background: rgba(19, 13, 36, 0.98) !important;
+  border: 1px solid rgba(167, 139, 250, 0.3) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(124, 58, 237, 0.25) !important;
 }
 
 .apk-update-icon-glow {
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(16, 185, 129, 0.16) 100%);
-  border: 1px solid rgba(167, 139, 250, 0.3);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(167, 139, 250, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .apk-update-title {
-  margin: 0 0 8px 0;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-primary);
+  margin: 0 0 6px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f1f5f9 !important;
 }
 
 .apk-update-desc {
-  margin: 0 0 20px 0;
-  font-size: 0.85rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
+  margin: 0 0 14px 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #94a3b8 !important;
 }
 
 .apk-update-actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
 }
 
 .apk-update-btn-primary {
-  flex: 1;
-  padding: 11px 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #7c3aed 0%, #10b981 100%);
-  border: none;
-  color: #ffffff;
-  font-size: 0.9rem;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
-  transition: transform 0.18s ease;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+  transition: transform 0.18s ease, opacity 0.18s ease;
 }
 
 .apk-update-btn-primary:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
+}
+
+.apk-update-btn-secondary {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #cbd5e1 !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.apk-update-btn-secondary:active {
+  transform: scale(0.98);
 }
 
 .apk-update-btn-dismiss {
-  padding: 11px 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  font-weight: 600;
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 0.78rem;
+  font-weight: 500;
   cursor: pointer;
 }
 [data-theme="light"] .apk-update-btn-dismiss {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #475569;
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════

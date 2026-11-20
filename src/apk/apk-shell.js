@@ -495,27 +495,27 @@ function buildSidePanel() {
     modal.innerHTML = `
       <div class="apk-update-prompt-card">
         <div class="apk-update-icon-glow">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
         </div>
         <h3 class="apk-update-title">Update Ready (${versionStr})</h3>
-        <p class="apk-update-desc">${isApk ? 'A fresh version of Nightingale is available with performance optimizations and stability fixes.' : 'A new update is available with performance improvements and bug fixes.'}</p>
+        <p class="apk-update-desc">A fresh update is available with performance optimizations and stability fixes.</p>
         
         <!-- Centered Download Progress Bar Widget -->
         <div id="apk-modal-progress-wrap" style="display:none;width:100%;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin:12px 0;">
-          <span id="apk-modal-progress-txt" style="font-size:13px;font-weight:700;color:var(--text-primary);text-align:center;">Downloading 0%</span>
-          <div style="width:100%;height:7px;background:rgba(255,255,255,0.12);border-radius:99px;overflow:hidden;">
-            <div id="apk-modal-progress-bar" style="width:0%;height:100%;background:linear-gradient(90deg, #8E74E5 0%, #10B981 100%);border-radius:99px;transition:width 0.2s ease;"></div>
+          <span id="apk-modal-progress-txt" style="font-size:12px;font-weight:700;color:#f1f5f9;text-align:center;">Downloading 0%</span>
+          <div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:99px;overflow:hidden;">
+            <div id="apk-modal-progress-bar" style="width:0%;height:100%;background:linear-gradient(90deg, #7c3aed 0%, #10B981 100%);border-radius:99px;transition:width 0.2s ease;"></div>
           </div>
         </div>
 
-        <div class="apk-update-actions" style="display:flex;flex-direction:column;gap:8px;width:100%;">
-          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button" style="width:100%;">Update Now</button>
-          ${isApk ? '<button id="apk-update-modal-download" class="apk-update-btn-secondary" type="button" style="width:100%;">Download APK file</button>' : ''}
-          <button id="apk-update-modal-dismiss" class="apk-update-btn-dismiss" type="button" style="width:100%;">Later</button>
+        <div class="apk-update-actions">
+          <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button">Update Now</button>
+          <button id="apk-update-modal-download" class="apk-update-btn-secondary" type="button">Download APK File</button>
+          <button id="apk-update-modal-dismiss" class="apk-update-btn-dismiss" type="button">Later</button>
         </div>
       </div>
     `;
@@ -526,15 +526,36 @@ function buildSidePanel() {
     const dismissBtn = modal.querySelector('#apk-update-modal-dismiss');
 
     dismissBtn?.addEventListener('click', () => modal.remove());
+
     updateBtn?.addEventListener('click', async () => {
       updateBtn.disabled = true;
-      if (sideCheckBtn) {
-        sideCheckBtn.click();
+      if (dismissBtn) dismissBtn.style.display = 'none';
+
+      if (type === 'apk' || updatePendingType === 'apk') {
+        updateBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> Downloading APK...';
+        await downloadAndSaveApk(updateBtn, modal);
+      } else {
+        updateBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> Updating Assets...';
+        try {
+          const applyRes = await fetch('/__ota/apply', { method: 'POST' });
+          const applyJson = await applyRes.json();
+          if (applyJson.ok) {
+            updateBtn.textContent = 'Reloading...';
+            setTimeout(() => window.location.reload(), 300);
+          } else {
+            throw new Error(applyJson.error || 'Apply failed');
+          }
+        } catch (err) {
+          console.warn('Web update apply failed, downloading APK instead:', err);
+          updateBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> Downloading APK...';
+          await downloadAndSaveApk(updateBtn, modal);
+        }
       }
-      modal.remove();
     });
+
     downloadBtn?.addEventListener('click', async () => {
       downloadBtn.disabled = true;
+      if (dismissBtn) dismissBtn.style.display = 'none';
       await downloadAndSaveApk(downloadBtn, modal);
     });
   }
