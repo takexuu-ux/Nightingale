@@ -3291,8 +3291,11 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
       if (emptyState) emptyState.classList.add('hide');
       classListContainer.classList.remove('hide');
       classListContainer.style.display = 'flex';
+      classListContainer.style.justifyContent = 'center';
+      classListContainer.style.alignItems = 'center';
+      classListContainer.style.width = '100%';
       classListContainer.innerHTML = `
-        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1rem;gap:8px;color:var(--text-secondary);width:100%;text-align:center;">
+        <div class="classes-loading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1rem;gap:8px;color:var(--text-secondary);width:100%;text-align:center;margin:0 auto;grid-column:1/-1;">
           <div class="spinner" style="width:30px;height:30px;border-width:2.8px;border-color:rgba(142,116,229,0.25);border-top-color:#8E74E5;"></div>
         </div>
       `;

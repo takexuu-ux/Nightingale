@@ -2196,38 +2196,73 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 }
 
 /* Class card top header minimal alignment close to border corners */
+.class-card {
+  position: relative !important;
+  padding: 12px 14px 14px 14px !important;
+  border-radius: 18px !important;
+}
+
 .class-card-top-header {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   width: 100% !important;
-  margin: -4px 0 10px 0 !important;
+  margin: 0 0 10px 0 !important;
 }
 
 .class-card .live-indicator {
   margin: 0 !important;
-  padding: 2px 7px !important;
-  font-size: 9.5px !important;
+  padding: 2px 6px !important;
+  font-size: 8.5px !important;
   font-weight: 800 !important;
-  letter-spacing: 0.4px !important;
-  border-radius: 6px !important;
-  height: 20px !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  border-radius: 5px !important;
+  height: 18px !important;
   display: inline-flex !important;
   align-items: center !important;
+  gap: 3px !important;
+}
+
+.class-card .live-indicator.live-pulse {
+  background: rgba(239, 68, 68, 0.16) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  color: #F87171 !important;
+}
+
+.class-card .live-indicator.status-ended {
+  background: rgba(148, 163, 184, 0.12) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  color: #94A3B8 !important;
+}
+
+.class-card .live-indicator.status-upcoming {
+  background: rgba(124, 58, 237, 0.12) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  color: #A78BFA !important;
 }
 
 .class-card .live-indicator .live-dot-glow {
-  width: 5px !important;
-  height: 5px !important;
-  margin-right: 4px !important;
+  width: 4px !important;
+  height: 4px !important;
+  margin-right: 3px !important;
 }
 
 .class-card .class-instructor {
-  font-size: 11px !important;
+  font-size: 10.5px !important;
   font-weight: 700 !important;
-  color: var(--accent) !important;
+  color: var(--text-secondary) !important;
+  opacity: 0.85 !important;
   margin: 0 !important;
-  opacity: 0.9 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3.5px !important;
+}
+
+.class-card .class-instructor svg {
+  width: 10.5px !important;
+  height: 10.5px !important;
+  opacity: 0.75 !important;
 }
 
 /* Completed Class Button (Distinct violet tint, no tick icon) */
@@ -4763,10 +4798,10 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     overflow-x: hidden !important;
   }
 
-  .dashboard-container,
+  #classroom-dashboard:not(.hide),
+  body:not(.in-classroom) .dashboard-container:not(.hide),
   .notes-page-container:not(.hide),
   .tests-page-container:not(.hide),
-  #classroom-dashboard:not(.hide),
   .notes-catalog-view:not(.hide),
   .notes-subject-view:not(.hide),
   .tests-catalog-view:not(.hide),
@@ -4799,29 +4834,96 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     padding: 6px 0 10px 0 !important;
   }
 
-  /* Tablet Landscape & Desktop: Classes Grid (Fully visible, responsive multi-column layout) */
+  /* Tablet Landscape & Desktop: Classes Grid (Centered Horizontally Under Date Picker) */
   body.is-logged-in #class-list-container:not(.hide),
   #classroom-dashboard:not(.hide) #class-list-container:not(.hide),
   #class-list-container:not(.hide),
   .class-grid:not(.hide) {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: stretch !important;
     gap: 16px !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: 1200px !important;
     margin: 0 auto !important;
-    justify-content: center !important;
-    justify-items: center !important;
     visibility: visible !important;
     opacity: 1 !important;
+    box-sizing: border-box !important;
+  }
+
+  .classes-loading-placeholder,
+  #class-list-container .classes-loading-placeholder {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    flex: 1 1 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    margin: 2.5rem auto !important;
+    padding: 2rem 1rem !important;
   }
 
   .class-card {
     width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
+    max-width: 440px !important;
+    min-width: 280px !important;
+    flex: 1 1 340px !important;
     display: flex !important;
     flex-direction: column !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  /* ABSOLUTE LIVE CLASSROOM LOCKDOWN: Never show dashboard, hero, date picker, continue watching, or pet inside classroom */
+  body.in-classroom main#app,
+  body.in-classroom #classroom-dashboard,
+  body.in-classroom .dashboard-container,
+  body.in-classroom #apk-home-hero,
+  body.in-classroom #continue-watching-section,
+  body.in-classroom #apk-date-picker-wrap,
+  body.in-classroom #live-tab-layout,
+  body.in-classroom #class-list-container,
+  body.in-classroom #app-header,
+  body.in-classroom #apk-bottom-nav,
+  body.in-classroom #apk-pet-stage {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .classroom-viewer-container:not(.hide) {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 9999999 !important;
+    background: #080614 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .classroom-viewer-container:not(.hide) .classroom-content {
+    flex: 1 1 auto !important;
+    height: calc(100vh - 52px) !important;
+    height: calc(100dvh - 52px) !important;
+    width: 100% !important;
+    display: flex !important;
+    position: relative !important;
+    background: #000000 !important;
+    overflow: hidden !important;
   }
 
   .notes-subject-grid,
@@ -6709,7 +6811,7 @@ main#app,
   stroke: #6d28d9 !important;
 }
 
-/* Dark Mode: Deep saturated royal violet in top-left fading to dark midnight down-right */
+/* Dark Mode: Apple-Grade Glassmorphism for Subject Cards, Test Cards, & Note Cards */
 [data-theme="dark"] .subject-card,
 [data-theme="dark"] #notes-catalog-view .subject-card,
 [data-theme="dark"] #subjects-grid .subject-card,
@@ -6718,9 +6820,22 @@ main#app,
 [data-theme="dark"] .note-doc-card,
 [data-theme="dark"] .doc-card,
 [data-theme="dark"] .test-card {
-  background: linear-gradient(135deg, #2c1954 0%, #1c1238 48%, #100c22 100%) !important;
-  border: 1.5px solid rgba(167, 139, 250, 0.28) !important;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45) !important;
+  background: rgba(28, 18, 54, 0.54) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+}
+
+[data-theme="dark"] .subject-card:hover,
+[data-theme="dark"] .test-card:hover,
+[data-theme="dark"] .note-doc-card:hover {
+  background: rgba(36, 24, 70, 0.64) !important;
+  border-color: rgba(167, 139, 250, 0.45) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 24px rgba(124, 58, 237, 0.22) !important;
+  transform: translateY(-2px) !important;
 }
 
 [data-theme="dark"] .subject-card-title,
@@ -8510,6 +8625,42 @@ main#app,
 }
 #apk-companion-pet:not(.facing-left).is-running .apk-pet-avatar {
   transform: scaleX(1) rotate(8deg);
+}
+
+/* Spiderman Superhero Web-Swing & Action Stunt Animations */
+#apk-companion-pet.is-swinging .apk-pet-avatar {
+  animation: spideyPendulumSwing 0.85s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  transform-origin: 50% -40px !important;
+}
+
+@keyframes spideyPendulumSwing {
+  0% {
+    transform: rotate(-32deg) scale(0.92);
+  }
+  45% {
+    transform: rotate(26deg) scale(1.08) translateY(-14px);
+  }
+  75% {
+    transform: rotate(-12deg) scale(1.02);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+#apk-companion-pet.is-running .apk-pet-avatar {
+  animation: spideyHeroRun 0.22s ease-in-out infinite alternate !important;
+}
+
+@keyframes spideyHeroRun {
+  0% { transform: translateY(0) rotate(-6deg); }
+  100% { transform: translateY(-8px) rotate(6deg); }
+}
+
+#spidey-web-line {
+  pointer-events: none !important;
+  z-index: 999998 !important;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 12px rgba(96, 165, 250, 0.5));
 }
 
 /* Walking Cycle (Lumi cute hover-walk & ear wiggle) */

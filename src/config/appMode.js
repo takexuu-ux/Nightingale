@@ -14,8 +14,8 @@ export const IS_ANDROID_WEBVIEW =
 export function getPdfPreviewSrc(rawPdfUrl) {
   if (!rawPdfUrl) return '';
   const cleanUrl = rawPdfUrl.trim();
-  if (cleanUrl.startsWith('https://docs.google.com/viewer')) return cleanUrl;
-  return `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(cleanUrl)}`;
+  if (cleanUrl.startsWith('https://docs.google.com/gview') || cleanUrl.startsWith('https://drive.google.com/viewerng')) return cleanUrl;
+  return `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(cleanUrl)}`;
 }
 
 export function restoreApkSessionSync() {

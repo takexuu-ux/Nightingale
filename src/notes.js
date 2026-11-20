@@ -1437,7 +1437,21 @@ function openPdfModal(title, url, downloadName = '') {
       pdfModalDownloadBtn.setAttribute('download', downloadName);
     }
     const span = pdfModalDownloadBtn.querySelector('span');
-    if (span) span.textContent = 'Open Full PDF';
+    if (span) span.textContent = 'Download';
+  }
+
+  const pdfModalNativeBtn = document.getElementById('pdf-modal-native-btn');
+  if (pdfModalNativeBtn) {
+    pdfModalNativeBtn.onclick = (e) => {
+      e.preventDefault();
+      if (window.AndroidPdfBridge && typeof window.AndroidPdfBridge.viewPdfExternal === 'function') {
+        window.AndroidPdfBridge.viewPdfExternal(url, title || 'Study Notes');
+      } else if (window.AndroidBridge && typeof window.AndroidBridge.viewPdfExternal === 'function') {
+        window.AndroidBridge.viewPdfExternal(url, title || 'Study Notes');
+      } else {
+        window.open(url, '_blank');
+      }
+    };
   }
 
   if (pdfModalIframe) {
