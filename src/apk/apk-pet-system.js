@@ -194,9 +194,14 @@ export function syncPetVisibility() {
   const onLogin = document.body.classList.contains('on-login-screen') || (authOverlay && !authOverlay.classList.contains('hide'));
 
   if (!isPetEnabled() || onLogin) {
-    root.style.display = 'none';
+    root.style.setProperty('display', 'none', 'important');
+    root.classList.add('hide', 'hide-on-auth');
   } else {
-    root.style.display = 'flex';
+    root.classList.remove('hide', 'hide-on-auth');
+    root.style.removeProperty('display');
+    root.style.setProperty('display', 'flex', 'important');
+    root.style.setProperty('visibility', 'visible', 'important');
+    root.style.setProperty('opacity', '1', 'important');
   }
 }
 
@@ -282,9 +287,14 @@ export function initPetSystem() {
   const initialX = isDesktop ? window.innerWidth - 110 : window.innerWidth - 75;
   const initialY = isDesktop ? window.innerHeight - 200 : window.innerHeight - 180;
 
+  const maxX = Math.max(20, window.innerWidth - 80);
+  const maxY = Math.max(40, window.innerHeight - 120);
+  const initialSafeX = (savedPos?.x && typeof savedPos.x === 'number') ? Math.max(16, Math.min(maxX, savedPos.x)) : initialX;
+  const initialSafeY = (savedPos?.y && typeof savedPos.y === 'number') ? Math.max(40, Math.min(maxY, savedPos.y)) : initialY;
+
   const pos = {
-    x: savedPos?.x && savedPos.x < window.innerWidth - 60 ? savedPos.x : initialX,
-    y: savedPos?.y && savedPos.y < window.innerHeight - 60 ? savedPos.y : initialY
+    x: initialSafeX,
+    y: initialSafeY
   };
 
   const setPosition = (x, y) => {

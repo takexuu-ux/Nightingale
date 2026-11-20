@@ -438,6 +438,13 @@ function checkLoginState() {
     classroomDashboard.classList.remove('hide');
     if (cyberHero) cyberHero.classList.add('hide');
     if (toggleBtn) toggleBtn.classList.remove('hide');
+    document.body.classList.remove('on-login-screen');
+    const petEl = document.getElementById('apk-companion-pet');
+    if (petEl) {
+      petEl.classList.remove('hide', 'hide-on-auth');
+      petEl.style.removeProperty('display');
+      petEl.style.display = 'flex';
+    }
     if (typeof window.__nnlSyncPetVisibility === 'function') {
       window.__nnlSyncPetVisibility();
     }
@@ -3469,7 +3476,7 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
     pickerBar.appendChild(pill);
   });
 
-  const chosenTarget = (window.__nnlSelectedDateStr ? initialActiveTarget : todayTarget) || todayTarget || initialActiveTarget;
+  const chosenTarget = todayTarget || initialActiveTarget;
   if (chosenTarget) {
     selectDate(chosenTarget.date, chosenTarget.pill);
     setTimeout(() => {

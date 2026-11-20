@@ -531,23 +531,47 @@ function buildSidePanel() {
       updateBtn.disabled = true;
       if (dismissBtn) dismissBtn.style.display = 'none';
 
+      const progressWrap = modal.querySelector('#apk-modal-progress-wrap');
+      const progressTxt = modal.querySelector('#apk-modal-progress-txt');
+      const progressBar = modal.querySelector('#apk-modal-progress-bar');
+      const modalActions = modal.querySelector('.apk-update-actions');
+
       if (type === 'apk' || updatePendingType === 'apk') {
-        updateBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> Downloading APK...';
+        if (progressWrap) progressWrap.style.display = 'flex';
+        if (modalActions) modalActions.style.display = 'none';
         await downloadAndSaveApk(updateBtn, modal);
       } else {
-        updateBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> Updating Assets...';
+        if (progressWrap) progressWrap.style.display = 'flex';
+        if (modalActions) modalActions.style.display = 'none';
+
+        let currentPct = 8;
+        if (progressTxt) progressTxt.textContent = `Updating assets: ${currentPct}%`;
+        if (progressBar) progressBar.style.width = `${currentPct}%`;
+
+        const progressInterval = setInterval(() => {
+          if (currentPct < 90) {
+            currentPct += Math.floor(Math.random() * 8) + 6;
+            if (currentPct > 90) currentPct = 90;
+            if (progressTxt) progressTxt.textContent = `Updating assets: ${currentPct}%`;
+            if (progressBar) progressBar.style.width = `${currentPct}%`;
+          }
+        }, 140);
+
         try {
           const applyRes = await fetch('/__ota/apply', { method: 'POST' });
           const applyJson = await applyRes.json();
+          clearInterval(progressInterval);
           if (applyJson.ok) {
-            updateBtn.textContent = 'Reloading...';
-            setTimeout(() => window.location.reload(), 300);
+            if (progressTxt) progressTxt.textContent = 'Updating assets: 100% (Reloading...)';
+            if (progressBar) progressBar.style.width = '100%';
+            setTimeout(() => window.location.reload(), 400);
           } else {
             throw new Error(applyJson.error || 'Apply failed');
           }
         } catch (err) {
+          clearInterval(progressInterval);
           console.warn('Web update apply failed, downloading APK instead:', err);
-          updateBtn.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> Downloading APK...';
+          if (progressTxt) progressTxt.textContent = 'Downloading APK...';
           await downloadAndSaveApk(updateBtn, modal);
         }
       }
@@ -678,17 +702,27 @@ function buildSidePanel() {
       e.stopPropagation();
       if (updatePendingType === 'web') {
         sideCheckBtn.disabled = true;
-        if (sideCheckTxt) sideCheckTxt.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Updating...</span>';
+        let sidePct = 8;
+        if (sideCheckTxt) sideCheckTxt.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Updating ${sidePct}%</span>`;
+        const sideInterval = setInterval(() => {
+          if (sidePct < 90) {
+            sidePct += Math.floor(Math.random() * 8) + 6;
+            if (sidePct > 90) sidePct = 90;
+            if (sideCheckTxt) sideCheckTxt.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Updating ${sidePct}%</span>`;
+          }
+        }, 140);
         try {
           const applyRes = await fetch('/__ota/apply', { method: 'POST' });
           const applyJson = await applyRes.json();
+          clearInterval(sideInterval);
           if (applyJson.ok) {
-            if (sideCheckTxt) sideCheckTxt.textContent = 'Reloading...';
-            setTimeout(() => window.location.reload(), 300);
+            if (sideCheckTxt) sideCheckTxt.textContent = 'Reloading 100%...';
+            setTimeout(() => window.location.reload(), 400);
           } else {
             throw new Error(applyJson.error || 'Apply failed');
           }
         } catch (err) {
+          clearInterval(sideInterval);
           sideCheckBtn.disabled = false;
           if (sideCheckTxt) sideCheckTxt.textContent = 'Retry Update';
         }
@@ -1191,7 +1225,7 @@ function normalizeHeaderAndChrome() {
   // Auth Screen Layout Integration & Strict Hamburger/Side Panel Hiding
   const syncAuthMode = () => {
     const authEl = document.getElementById('auth-screen');
-    const token = localStorage.getItem('nnl_access_token');
+    const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
     const isAuth = !token && Boolean(authEl && !authEl.classList.contains('hide'));
     if (document.body.classList.contains('apk-is-auth') !== isAuth) {
       document.body.classList.toggle('apk-is-auth', isAuth);
