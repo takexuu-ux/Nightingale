@@ -404,13 +404,24 @@ function buildSidePanel() {
   let updatePendingType = null; // null | 'web' | 'apk'
   let pendingVersionStr = '';
 
-  async function downloadAndSaveApk(targetBtnEl) {
-    if (targetBtnEl) {
+  async function downloadAndSaveApk(targetBtnEl, modalWrap) {
+    const progressWrap = modalWrap ? modalWrap.querySelector('#apk-modal-progress-wrap') : null;
+    const progressTxt = modalWrap ? modalWrap.querySelector('#apk-modal-progress-txt') : null;
+    const progressBar = modalWrap ? modalWrap.querySelector('#apk-modal-progress-bar') : null;
+    const modalActions = modalWrap ? modalWrap.querySelector('.apk-update-actions') : null;
+
+    if (progressWrap && progressBar && progressTxt) {
+      if (modalActions) modalActions.style.display = 'none';
+      progressWrap.style.display = 'flex';
+      progressTxt.textContent = 'Downloading 0%';
+      progressBar.style.width = '0%';
+    } else if (targetBtnEl) {
       targetBtnEl.disabled = true;
-      targetBtnEl.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Downloading APK...</span>';
+      targetBtnEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;"><span class="spinner" style="width:12px;height:12px;border-width:2px;"></span><span>Downloading 0%</span></div>';
     }
+
     if (sideStatusMsg) {
-      sideStatusMsg.textContent = 'Downloading Nightingale.apk directly to Downloads...';
+      sideStatusMsg.textContent = 'Downloading update...';
       sideStatusMsg.style.display = 'block';
     }
 
@@ -424,33 +435,53 @@ function buildSidePanel() {
           if (!p) break;
           if (p.state === 'ready') break;
           if (p.state === 'error') throw new Error(p.error || 'Download failed');
-          if (p.state === 'downloading' && targetBtnEl) {
-            targetBtnEl.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Downloading ${p.percent || 0}%</span>`;
+          const pct = Math.max(0, Math.min(100, p.percent || 0));
+          if (progressWrap && progressBar && progressTxt) {
+            progressTxt.textContent = `Downloading ${pct}%`;
+            progressBar.style.width = `${pct}%`;
+          } else if (targetBtnEl) {
+            targetBtnEl.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;"><span class="spinner" style="width:12px;height:12px;border-width:2px;"></span><span>Downloading ${pct}%</span></div>`;
           }
         }
       }
 
       await fetch('/__ota/open-downloads', { method: 'POST' }).catch(() => {});
       if (sideStatusMsg) {
-        sideStatusMsg.textContent = '✓ Saved Nightingale.apk in Downloads! Tap to install or open from File Manager.';
+        sideStatusMsg.textContent = 'Download complete';
         sideStatusMsg.style.color = '#10B981';
         sideStatusMsg.style.display = 'block';
       }
+
+      if (progressWrap && modalActions) {
+        progressWrap.style.display = 'none';
+        modalActions.style.display = 'flex';
+        const modalDlBtn = modalWrap.querySelector('#apk-update-modal-download');
+        if (modalDlBtn) {
+          modalDlBtn.disabled = false;
+          modalDlBtn.textContent = 'Install Update';
+          modalDlBtn.onclick = async () => {
+            await fetch('/__ota/launch-installer', { method: 'POST' }).catch(() => {});
+          };
+        }
+      }
+
       if (targetBtnEl) {
         targetBtnEl.disabled = false;
-        targetBtnEl.textContent = '✓ Saved in Downloads (Open Files)';
+        targetBtnEl.textContent = 'Install Update';
+        targetBtnEl.onclick = async () => {
+          await fetch('/__ota/launch-installer', { method: 'POST' }).catch(() => {});
+        };
       }
     } catch (e) {
       console.warn('Bridge APK download fallback:', e);
-      // Fallback: direct browser download
       window.location.href = 'https://raw.githubusercontent.com/takexuu-ux/Nightingale/refs/heads/ota-hinglish/Nightingale.apk';
       if (sideStatusMsg) {
-        sideStatusMsg.textContent = 'Downloading via browser to Downloads...';
+        sideStatusMsg.textContent = 'Downloading in browser...';
         sideStatusMsg.style.display = 'block';
       }
       if (targetBtnEl) {
         targetBtnEl.disabled = false;
-        targetBtnEl.textContent = 'Download APK (Manual Install)';
+        targetBtnEl.textContent = 'Download APK';
       }
     }
   }
@@ -472,6 +503,15 @@ function buildSidePanel() {
         </div>
         <h3 class="apk-update-title">Update Ready (${versionStr})</h3>
         <p class="apk-update-desc">${isApk ? 'A fresh version of Nightingale is available with performance optimizations and stability fixes.' : 'A new update is available with performance improvements and bug fixes.'}</p>
+        
+        <!-- Centered Download Progress Bar Widget -->
+        <div id="apk-modal-progress-wrap" style="display:none;width:100%;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin:12px 0;">
+          <span id="apk-modal-progress-txt" style="font-size:13px;font-weight:700;color:var(--text-primary);text-align:center;">Downloading 0%</span>
+          <div style="width:100%;height:7px;background:rgba(255,255,255,0.12);border-radius:99px;overflow:hidden;">
+            <div id="apk-modal-progress-bar" style="width:0%;height:100%;background:linear-gradient(90deg, #8E74E5 0%, #10B981 100%);border-radius:99px;transition:width 0.2s ease;"></div>
+          </div>
+        </div>
+
         <div class="apk-update-actions" style="display:flex;flex-direction:column;gap:8px;width:100%;">
           <button id="apk-update-modal-btn" class="apk-update-btn-primary" type="button" style="width:100%;">Update Now</button>
           ${isApk ? '<button id="apk-update-modal-download" class="apk-update-btn-secondary" type="button" style="width:100%;">Download APK file</button>' : ''}
@@ -495,8 +535,7 @@ function buildSidePanel() {
     });
     downloadBtn?.addEventListener('click', async () => {
       downloadBtn.disabled = true;
-      await downloadAndSaveApk(downloadBtn);
-      setTimeout(() => modal.remove(), 1200);
+      await downloadAndSaveApk(downloadBtn, modal);
     });
   }
 
@@ -577,8 +616,8 @@ function buildSidePanel() {
           if (sideDownloadBtn) sideDownloadBtn.style.display = 'none';
           if (sideCheckBtn) {
             sideCheckBtn.disabled = false;
-            // Up to date: show circular icon with emerald checkmark instead of button text
-            sideCheckBtn.innerHTML = '<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(16,185,129,0.18);border:1px solid rgba(16,185,129,0.4);color:#10b981;font-size:13px;font-weight:900;">✓</span>';
+            // Up to date: clean minimal text without tick
+            sideCheckBtn.innerHTML = '<span style="font-size:12px;font-weight:700;color:#10B981;">Up to Date</span>';
             sideCheckBtn.style.background = 'rgba(255,255,255,0.08)';
             sideCheckBtn.style.borderColor = 'rgba(255,255,255,0.14)';
             sideCheckBtn.style.color = 'var(--text-primary)';
@@ -641,9 +680,9 @@ function buildSidePanel() {
             const st = await preCheck.json();
             if (st.ready) {
               sideCheckBtn.disabled = false;
-              if (sideCheckTxt) sideCheckTxt.textContent = 'Install / Saved to Downloads';
+              if (sideCheckTxt) sideCheckTxt.textContent = 'Install Update';
               if (sideStatusMsg) {
-                sideStatusMsg.textContent = 'APK saved to Downloads as Nightingale.apk — tap to install or open from File Manager.';
+                sideStatusMsg.textContent = 'Download complete';
                 sideStatusMsg.style.display = 'block';
               }
               await fetch('/__ota/launch-installer', { method: 'POST' });
@@ -658,9 +697,9 @@ function buildSidePanel() {
             const status = await pRes.json();
             if (status.state === 'ready') {
               sideCheckBtn.disabled = false;
-              if (sideCheckTxt) sideCheckTxt.textContent = 'Install / Saved to Downloads';
+              if (sideCheckTxt) sideCheckTxt.textContent = 'Install Update';
               if (sideStatusMsg) {
-                sideStatusMsg.textContent = 'APK saved to Downloads as Nightingale.apk — tap to install or open from File Manager.';
+                sideStatusMsg.textContent = 'Download complete';
                 sideStatusMsg.style.display = 'block';
               }
               await fetch('/__ota/launch-installer', { method: 'POST' });

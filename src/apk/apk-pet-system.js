@@ -457,66 +457,72 @@ function renderPetElement() {
   let walkTimeout = null;
   let returnTimeout = null;
 
-  // Gentle autonomous hover / patrol along screen edge
+  // Dynamic autonomous roaming & lively walking across screen edges
   function doAutonomousWalk() {
     if (isDragging || isWalking || !isPetEnabled() || isLoginScreenActive()) return;
 
     const vw = window.innerWidth;
-    const walkLeft = pos.x > 90;
-    const distance = 40 + Math.random() * 35;
-    const targetX = walkLeft ? Math.max(16, pos.x - distance) : Math.min(vw - 75, pos.x + distance);
-    const originWalkX = pos.x;
+    const vh = window.innerHeight;
 
+    // Decide movement pattern: roam along edge or cross to opposite screen side
+    const atRight = pos.x > vw * 0.5;
+    const crossScreen = Math.random() < 0.4;
+
+    let targetX;
+    if (crossScreen) {
+      targetX = atRight
+        ? Math.max(16, Math.round(vw * 0.05) + Math.round(Math.random() * 24))
+        : Math.min(vw - 74, Math.round(vw * 0.90) - Math.round(Math.random() * 24));
+    } else {
+      const step = (Math.random() - 0.5) * 110;
+      targetX = Math.max(16, Math.min(vw - 74, pos.x + step));
+    }
+
+    // Wander up or down across comfortable vertical zone (avoiding header and bottom bar)
+    const minY = Math.round(vh * 0.20);
+    const maxY = Math.round(vh * 0.74);
+    const deltaY = (Math.random() - 0.5) * 100;
+    const targetY = Math.max(minY, Math.min(maxY, pos.y + deltaY));
+
+    const movingLeft = targetX < pos.x;
     isWalking = true;
     root.classList.add('is-walking');
-    if (walkLeft) {
+    if (movingLeft) {
       root.classList.add('facing-left');
     } else {
       root.classList.remove('facing-left');
     }
 
-    root.style.transition = 'transform 1.8s ease-in-out';
+    const dist = Math.hypot(targetX - pos.x, targetY - pos.y);
+    const walkDuration = Math.max(1.2, Math.min(2.4, dist / 110));
+
+    root.style.transition = `transform ${walkDuration}s cubic-bezier(0.25, 1, 0.5, 1)`;
     pos.x = targetX;
-    setPosition(targetX, pos.y);
+    pos.y = targetY;
+    setPosition(targetX, targetY);
 
     walkTimeout = setTimeout(() => {
       root.classList.remove('is-walking');
       root.style.transition = '';
+      isWalking = false;
 
+      // Spontaneous playful expression upon arriving at new spot
       const funEmotes = [
         { expr: 'happy', anim: 'is-cheer' },
         { expr: 'wink', anim: 'is-wink' },
-        { expr: 'love', anim: 'is-hop' }
+        { expr: 'love', anim: 'is-hop' },
+        { expr: 'focus', anim: 'is-nod' }
       ];
       const pick = funEmotes[Math.floor(Math.random() * funEmotes.length)];
       setPetExpression(pick.expr, pick.anim);
 
-      returnTimeout = setTimeout(() => {
-        if (isDragging || !isPetEnabled()) {
-          isWalking = false;
-          return;
-        }
-        root.classList.add('is-walking');
-        if (walkLeft) {
-          root.classList.remove('facing-left');
-        } else {
-          root.classList.add('facing-left');
-        }
-        root.style.transition = 'transform 1.8s ease-in-out';
-        pos.x = originWalkX;
-        setPosition(originWalkX, pos.y);
-
-        setTimeout(() => {
-          root.classList.remove('is-walking', 'facing-left');
-          root.style.transition = '';
-          isWalking = false;
-          setPetExpression('default');
-        }, 1850);
-      }, 2200);
-    }, 1850);
+      setTimeout(() => {
+        if (!isWalking) setPetExpression('default');
+      }, 2000);
+    }, walkDuration * 1000);
   }
 
-  setInterval(doAutonomousWalk, 16000);
+  setInterval(doAutonomousWalk, 8000);
 
   // Page Scroll & Click Dynamic Reactions
   let scrollReactionTimeout = null;

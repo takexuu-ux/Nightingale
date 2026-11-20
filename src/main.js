@@ -2952,7 +2952,7 @@ async function loadDashboard(isSilent = false, isManualRefresh = false) {
       renderHomeDateCalendar(poolForLive, false);
     } else {
       const initialPool = getPoolForLive(classesData || []);
-      renderHomeDateCalendar(initialPool, initialPool.length === 0);
+      renderHomeDateCalendar(initialPool, !classesFetched);
     }
   }
 
@@ -3287,7 +3287,7 @@ function renderHomeDateCalendar(poolClasses, isLoading = false) {
     classListContainer.innerHTML = '';
 
     // If classes are currently loading, show single short simple loading description
-    if (isLoading) {
+    if (isLoading || !classesFetched) {
       if (emptyState) emptyState.classList.add('hide');
       classListContainer.classList.remove('hide');
       classListContainer.style.display = 'flex';
@@ -3465,13 +3465,12 @@ function renderClasses(classes) {
   });
 
   if (tabLive) {
-    const pulseDot = hasLiveClass ? ' <span class="tab-live-pulse-dot"></span>' : '';
     tabLive.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      <span>HOME</span>${pulseDot}
+      <span>HOME</span>
     `;
   }
 
@@ -4326,8 +4325,7 @@ function createClassCard(c, isCurrentlyLive) {
       } else {
         buttonsHtml = `
           <div style="margin-top: 0.85rem; width: 100%;">
-            <div class="apk-upcoming-pill" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 14px;border-radius:12px;background:var(--bg-subtle);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:700;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="apk-upcoming-pill apk-completed-pill" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px 14px;border-radius:12px;font-size:12.5px;font-weight:700;">
               <span>Class Completed</span>
             </div>
           </div>
@@ -4358,10 +4356,10 @@ function createClassCard(c, isCurrentlyLive) {
   }
 
   card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; width: 100%; gap: 10px;">
+    <div class="class-card-top-header">
       ${badgeHtml}
-      <div class="class-instructor" style="margin-bottom: 0; font-size: 0.82rem; font-weight: 700; color: var(--accent); display: inline-flex; align-items: center; gap: 5px;">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      <div class="class-instructor" style="display: inline-flex; align-items: center; gap: 4px;">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         <span>${escapeHtml(instructor)}</span>
       </div>
     </div>
@@ -4456,8 +4454,7 @@ setInterval(() => {
               const actionContainer = card.querySelector('.zoom-action-container') || joinBtn.parentElement;
               if (actionContainer) {
                 actionContainer.innerHTML = `
-                  <div class="apk-upcoming-pill" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 14px;border-radius:12px;background:var(--bg-subtle);border:1px solid var(--border-hairline);color:var(--text-secondary);font-size:12.5px;font-weight:700;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg>
+                  <div class="apk-upcoming-pill apk-completed-pill" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px 14px;border-radius:12px;font-size:12.5px;font-weight:700;">
                     <span>Class Completed</span>
                   </div>
                 `;

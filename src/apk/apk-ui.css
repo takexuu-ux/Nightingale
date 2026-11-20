@@ -2149,26 +2149,35 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 }
 
 [data-theme="dark"] .class-card {
-  background: linear-gradient(135deg, rgba(32, 22, 58, 0.78) 0%, rgba(20, 14, 38, 0.92) 100%) !important;
-  border: 1.5px solid rgba(167, 139, 250, 0.26) !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+  background: rgba(26, 18, 52, 0.52) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 [data-theme="dark"] .class-card:hover {
-  border-color: rgba(167, 139, 250, 0.45) !important;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), 0 0 20px rgba(139, 92, 246, 0.15) !important;
+  background: rgba(32, 22, 64, 0.62) !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
+  border-top-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.48), 0 0 24px rgba(124, 58, 237, 0.2) !important;
   transform: translateY(-2px) !important;
 }
 
 [data-theme="light"] .class-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(246, 241, 255, 0.90) 100%) !important;
-  border: 1.5px solid rgba(139, 92, 246, 0.28) !important;
-  box-shadow: 0 10px 24px rgba(109, 40, 217, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.68) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 12px 32px rgba(109, 40, 217, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.85) !important;
 }
 
 [data-theme="light"] .class-card:hover {
-  border-color: rgba(139, 92, 246, 0.45) !important;
-  box-shadow: 0 14px 28px rgba(109, 40, 217, 0.14) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(139, 92, 246, 0.42) !important;
+  box-shadow: 0 16px 36px rgba(109, 40, 217, 0.14) !important;
   transform: translateY(-2px) !important;
 }
 
@@ -2184,6 +2193,63 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 [data-theme="light"] .class-card.live-card-border {
   background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 42%, #ffffff 90%) !important;
   border-color: rgba(217, 70, 239, 0.55) !important;
+}
+
+/* Class card top header minimal alignment close to border corners */
+.class-card-top-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: -4px 0 10px 0 !important;
+}
+
+.class-card .live-indicator {
+  margin: 0 !important;
+  padding: 2px 7px !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.4px !important;
+  border-radius: 6px !important;
+  height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.class-card .live-indicator .live-dot-glow {
+  width: 5px !important;
+  height: 5px !important;
+  margin-right: 4px !important;
+}
+
+.class-card .class-instructor {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  margin: 0 !important;
+  opacity: 0.9 !important;
+}
+
+/* Completed Class Button (Distinct violet tint, no tick icon) */
+.class-card .apk-upcoming-pill.apk-completed-pill {
+  background: rgba(124, 58, 237, 0.14) !important;
+  border: 1px solid rgba(167, 139, 250, 0.32) !important;
+  color: #DDD6FE !important;
+}
+
+[data-theme="light"] .class-card .apk-upcoming-pill.apk-completed-pill {
+  background: rgba(124, 58, 237, 0.09) !important;
+  border-color: rgba(124, 58, 237, 0.28) !important;
+  color: #5B21B6 !important;
+}
+
+/* Remove green pulse dot from Home button on island */
+.tab-live-pulse-dot,
+.app-header .tab-live-pulse-dot,
+#apk-island-root .tab-live-pulse-dot {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 /* Elegant action buttons on class card */
@@ -4744,6 +4810,8 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto !important;
+    justify-content: center !important;
+    justify-items: center !important;
     visibility: visible !important;
     opacity: 1 !important;
   }

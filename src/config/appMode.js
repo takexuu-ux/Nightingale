@@ -13,9 +13,9 @@ export const IS_ANDROID_WEBVIEW =
 
 export function getPdfPreviewSrc(rawPdfUrl) {
   if (!rawPdfUrl) return '';
-  // Direct PDF URL embeds natively across all modern desktop browsers (Chrome, Edge, Firefox, Safari)
-  // giving users full zoom, page search, navigation and crisp vector rendering.
-  return rawPdfUrl;
+  const cleanUrl = rawPdfUrl.trim();
+  if (cleanUrl.startsWith('https://docs.google.com/viewer')) return cleanUrl;
+  return `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(cleanUrl)}`;
 }
 
 export function restoreApkSessionSync() {
