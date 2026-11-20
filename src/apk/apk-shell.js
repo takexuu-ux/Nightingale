@@ -625,9 +625,7 @@ function buildSidePanel() {
             sideCheckBtn.style.color = '#ffffff';
           }
           if (sideDownloadBtn) sideDownloadBtn.style.display = 'none';
-          if (isAuto) {
-            showUpdatePromptModal('web', pendingVersionStr);
-          }
+          showUpdatePromptModal('web', pendingVersionStr);
         } else if (hasNative) {
           updatePendingType = 'apk';
           pendingVersionStr = `v1.0.${data.remoteNativeVersionCode}`;
@@ -647,9 +645,7 @@ function buildSidePanel() {
           if (sideDownloadBtn) {
             sideDownloadBtn.style.display = 'inline-flex';
           }
-          if (isAuto) {
-            showUpdatePromptModal('apk', pendingVersionStr);
-          }
+          showUpdatePromptModal('apk', pendingVersionStr);
         } else {
           updatePendingType = null;
           if (sideVerTag) {
@@ -701,6 +697,7 @@ function buildSidePanel() {
     sideCheckBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (updatePendingType === 'web') {
+        showUpdatePromptModal('web', pendingVersionStr);
         sideCheckBtn.disabled = true;
         let sidePct = 8;
         if (sideCheckTxt) sideCheckTxt.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span><span>Updating ${sidePct}%</span>`;
