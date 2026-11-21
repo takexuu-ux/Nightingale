@@ -1,10 +1,12 @@
-// Nightingale Companion Mascot: Spiderman (Action Superhero Study Companion)
-// Custom Articulated Vector Spiderman with Expressive Mask, Moving Limbs, Organic Silk Web, and Action Stunts
+// Nightingale Companion Mascot: Authentic Spiderman (Action Superhero Study Companion)
+// Uses high-definition authentic Spider-Man art with organic silk webs, acrobatics, and physics
 // STRICT RULES:
 // 1. Mascot is NEVER shown on the Login / Authentication screen.
 // 2. User explicitly requested: NO texts or speech bubbles around the pet!
 // 3. Web line MUST connect to Spiderman's HAND, never to his head.
-// 4. Web line is an organic curved tensile silk filament with 8-spoke ceiling splatter, NOT a straight dashed line.
+// 4. Web line is an organic curved tensile silk filament with 8-spoke ceiling splatter.
+
+import { SPIDERMAN_IMAGE_DATA } from './spidermanAsset.js';
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
@@ -15,7 +17,7 @@ export function getPetName() {
 }
 
 export function getCompanionSvg(expression = 'default') {
-  return getSpidermanSvg(expression);
+  return getSpidermanAvatarMarkup(expression);
 }
 
 export const PET_CATALOG = [
@@ -23,7 +25,7 @@ export const PET_CATALOG = [
     id: 'spiderman',
     name: 'Spiderman',
     tagline: 'Superhero Study Companion',
-    getSvg: (expr) => getSpidermanSvg(expr)
+    getSvg: (expr) => getSpidermanAvatarMarkup(expr)
   }
 ];
 
@@ -40,132 +42,47 @@ export function setActivePetId() {
 }
 
 export function getLumiSvg(expression = 'default') {
-  return getSpidermanSvg(expression);
+  return getSpidermanAvatarMarkup(expression);
 }
 
 export function getSpidermanSvg(expr = 'default') {
+  return getSpidermanAvatarMarkup(expr);
+}
+
+export function getSpidermanAvatarMarkup(expr = 'default') {
   let extraFx = '';
 
   if (expr === 'spider-sense' || expr === 'alert') {
     extraFx = `
-      <g class="spidey-sense-waves">
-        <path d="M 32 14 Q 48 4 64 14" stroke="#FBBF24" stroke-width="2.6" stroke-linecap="round" fill="none" />
-        <path d="M 26 8 Q 48 -4 70 8" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.95" />
-        <path d="M 36 20 Q 48 12 60 20" stroke="#EF4444" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.85" />
-      </g>
+      <div class="spidey-sense-waves">
+        <svg viewBox="0 0 80 40" fill="none" class="spidey-sense-waves-svg">
+          <path d="M 12 30 Q 40 4 68 30" stroke="#FBBF24" stroke-width="3" stroke-linecap="round" fill="none" />
+          <path d="M 20 34 Q 40 14 60 34" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.9" />
+          <path d="M 28 38 Q 40 24 52 38" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.8" />
+        </svg>
+      </div>
     `;
   } else if (expr === 'web-shoot' || expr === 'shooting') {
     extraFx = `
-      <g class="spidey-web-flare">
-        <circle cx="16" cy="54" r="5" fill="#FFFFFF" opacity="0.95" />
-        <line x1="16" y1="54" x2="4" y2="44" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
-        <line x1="16" y1="54" x2="8" y2="64" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round" />
-      </g>
+      <div class="spidey-web-flare">
+        <div class="spidey-flare-dot"></div>
+      </div>
     `;
   }
 
-  // Articulated Spiderman Superhero Layers:
-  // Head, Expressive Mask Eyes (blinking via CSS), Torso with Black Spider Insignia,
-  // Movable Legs (running cycle/swing kicks), Movable Arms (overhead web grip & thwip wrist)
   return `
-    <svg width="68" height="74" viewBox="0 0 96 104" fill="none" xmlns="http://www.w3.org/2000/svg" class="spidey-hero-svg">
-      <defs>
-        <radialGradient id="spideySuitRed" cx="45%" cy="35%" r="65%">
-          <stop offset="0%" stop-color="#FF3B5C"/>
-          <stop offset="60%" stop-color="#E11D48"/>
-          <stop offset="100%" stop-color="#9F1239"/>
-        </radialGradient>
-        <radialGradient id="spideySuitBlue" cx="40%" cy="30%" r="70%">
-          <stop offset="0%" stop-color="#38BDF8"/>
-          <stop offset="60%" stop-color="#0284C7"/>
-          <stop offset="100%" stop-color="#0F172A"/>
-        </radialGradient>
-        <filter id="spideyGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.55)"/>
-        </filter>
-      </defs>
-
+    <div class="spidey-avatar-wrap">
       ${extraFx}
-
-      <g class="spidey-body-root" filter="url(#spideyGlow)">
-        <!-- 1. LEFT LEG (Back layer during run / kick cycle) -->
-        <g class="spidey-leg-left">
-          <!-- Blue Thigh -->
-          <path d="M 38 64 L 32 78 L 42 80 L 44 65 Z" fill="url(#spideySuitBlue)"/>
-          <!-- Red Boot with web lines -->
-          <path d="M 31 77 L 26 92 L 36 94 L 42 79 Z" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="0.8"/>
-          <path d="M 26 92 L 20 95 L 34 96 L 36 93 Z" fill="#E11D48"/>
-        </g>
-
-        <!-- 2. RIGHT LEG (Front layer during run / kick cycle) -->
-        <g class="spidey-leg-right">
-          <!-- Blue Thigh -->
-          <path d="M 52 64 L 56 78 L 46 80 L 44 65 Z" fill="url(#spideySuitBlue)"/>
-          <!-- Red Boot with web lines -->
-          <path d="M 55 77 L 58 92 L 48 94 L 46 79 Z" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="0.8"/>
-          <path d="M 58 92 L 64 95 L 50 96 L 48 93 Z" fill="#E11D48"/>
-        </g>
-
-        <!-- 3. TORSO (Red chest center, blue flanks, black spider insignia) -->
-        <g class="spidey-torso">
-          <!-- Blue Flanks -->
-          <path d="M 34 46 L 30 64 L 48 68 L 48 46 Z" fill="url(#spideySuitBlue)"/>
-          <path d="M 62 46 L 66 64 L 48 68 L 48 46 Z" fill="url(#spideySuitBlue)"/>
-          <!-- Red Center Vest -->
-          <path d="M 36 44 Q 48 42 60 44 L 56 66 Q 48 68 40 66 Z" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="0.8"/>
-          <!-- Black Webbing on Chest -->
-          <path d="M 48 43 L 48 67 M 40 48 Q 48 52 56 48 M 41 56 Q 48 60 55 56 M 42 62 Q 48 64 54 62" stroke="#0F172A" stroke-width="0.8" fill="none" opacity="0.8"/>
-          <!-- Iconic Black Spider Emblem -->
-          <ellipse cx="48" cy="54" rx="2" ry="3.5" fill="#0F172A"/>
-          <circle cx="48" cy="51" r="1.4" fill="#0F172A"/>
-          <!-- 8 Spider Legs -->
-          <path d="M 47 52 Q 42 48 40 50 M 47 54 Q 41 54 40 57 M 49 52 Q 54 48 56 50 M 49 54 Q 55 54 56 57" stroke="#0F172A" stroke-width="0.9" fill="none"/>
-          <path d="M 47 55 Q 42 58 41 62 M 47 56 Q 43 62 43 65 M 49 55 Q 54 58 55 62 M 49 56 Q 53 62 53 65" stroke="#0F172A" stroke-width="0.9" fill="none"/>
-        </g>
-
-        <!-- 4. LEFT ARM (Forward Web-Shooter Wrist in "thwip" pose) -->
-        <g class="spidey-arm-left">
-          <path d="M 36 46 L 24 50 L 26 56 L 36 52 Z" fill="url(#spideySuitRed)"/>
-          <path d="M 24 50 L 16 54 L 18 60 L 26 56 Z" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="0.8"/>
-          <!-- Silver Web-Shooter Nozzle Flare -->
-          <circle cx="16" cy="54" r="2.2" fill="#E2E8F0" stroke="#0F172A" stroke-width="0.8"/>
-        </g>
-
-        <!-- 5. RIGHT ARM (Raised Overhead Holding the Web Line) -->
-        <g class="spidey-arm-right">
-          <path d="M 60 46 L 70 34 L 76 38 L 62 52 Z" fill="url(#spideySuitRed)"/>
-          <path d="M 70 34 L 78 20 L 84 23 L 76 38 Z" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="0.8"/>
-          <!-- Clenched Fist Gripping Hand -->
-          <circle cx="80" cy="18" r="4.2" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="0.8"/>
-        </g>
-
-        <!-- 6. HEAD & MASK -->
-        <g class="spidey-head">
-          <ellipse cx="48" cy="30" rx="19" ry="21" fill="url(#spideySuitRed)" stroke="#0F172A" stroke-width="1.2"/>
-          <path d="M 48 9 L 48 51 M 29 30 L 67 30 M 34 16 L 62 44 M 34 44 L 62 16" stroke="#0F172A" stroke-width="0.8" opacity="0.6"/>
-          <ellipse cx="48" cy="30" rx="8" ry="9" stroke="#0F172A" stroke-width="0.7" fill="none" opacity="0.6"/>
-          <ellipse cx="48" cy="30" rx="14" ry="15" stroke="#0F172A" stroke-width="0.7" fill="none" opacity="0.6"/>
-
-          <!-- 7. EXPRESSIVE MASK EYES (Blinking via CSS spideyMaskBlink) -->
-          <g class="spidey-eye left">
-            <path d="M 33 26 C 35 22, 42 22, 45 28 C 45 35, 38 38, 33 34 C 31 32, 31 28, 33 26 Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.4"/>
-            <path d="M 35 25 C 38 23, 42 24, 44 28" stroke="#38BDF8" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-          </g>
-          <g class="spidey-eye right">
-            <path d="M 63 26 C 61 22, 54 22, 51 28 C 51 35, 58 38, 63 34 C 65 32, 65 28, 63 26 Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.4"/>
-            <path d="M 61 25 C 58 23, 54 24, 52 28" stroke="#38BDF8" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-          </g>
-        </g>
-      </g>
-    </svg>
+      <img src="${SPIDERMAN_IMAGE_DATA}" alt="Spiderman Mascot" class="spidey-avatar-img" draggable="false" />
+    </div>
   `;
 }
 
 export function isPetEnabled() {
   try {
     const val = localStorage.getItem(STORAGE_ENABLED_KEY);
-    if (val === null) return true;
-    return val !== 'false';
+    if (val === 'false') return false;
+    return true;
   } catch {
     return true;
   }
@@ -173,15 +90,12 @@ export function isPetEnabled() {
 
 export function isLoginScreenActive() {
   if (typeof document === 'undefined') return false;
+  const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
+  if (token) return false;
   if (document.body.classList.contains('on-login-screen')) return true;
   const authScreen = document.getElementById('auth-screen');
   if (authScreen && !authScreen.classList.contains('hide')) {
     return true;
-  }
-  const isIndex = window.location.pathname.endsWith('/index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
-  if (isIndex) {
-    const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
-    if (!token) return true;
   }
   return false;
 }
@@ -191,11 +105,12 @@ export function syncPetVisibility() {
   if (!root) return;
 
   const authOverlay = document.getElementById('auth-screen');
-  const onLogin = document.body.classList.contains('on-login-screen') || (authOverlay && !authOverlay.classList.contains('hide'));
+  const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
+  const onLogin = !token && (document.body.classList.contains('on-login-screen') || (authOverlay && !authOverlay.classList.contains('hide')));
 
   if (!isPetEnabled() || onLogin) {
     root.style.setProperty('display', 'none', 'important');
-    root.classList.add('hide', 'hide-on-auth');
+    root.classList.add('hide');
   } else {
     root.classList.remove('hide', 'hide-on-auth');
     root.style.removeProperty('display');
@@ -221,7 +136,7 @@ export function setPetExpression(expr, bodyAnim = null) {
 
   const avatar = root.querySelector('.apk-pet-avatar');
   if (avatar) {
-    avatar.innerHTML = getSpidermanSvg(expr);
+    avatar.innerHTML = getSpidermanAvatarMarkup(expr);
   }
 
   if (bodyAnim) {
@@ -237,7 +152,7 @@ export function setPetExpression(expr, bodyAnim = null) {
   clearTimeout(expressionTimeout);
   if (expr !== 'default') {
     expressionTimeout = setTimeout(() => {
-      if (avatar) avatar.innerHTML = getSpidermanSvg('default');
+      if (avatar) avatar.innerHTML = getSpidermanAvatarMarkup('default');
     }, 2400);
   }
 }
@@ -258,15 +173,27 @@ export function triggerSpideyStunt() {
 export function initPetSystem() {
   if (typeof document === 'undefined') return;
 
+  const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
+  if (token) {
+    document.body.classList.remove('apk-is-auth', 'on-login-screen');
+    document.body.classList.add('is-logged-in');
+    document.documentElement.classList.add('is-logged-in');
+  }
+
   let root = document.getElementById('apk-companion-pet');
   if (!root) {
     root = document.createElement('div');
     root.id = 'apk-companion-pet';
     root.className = 'apk-companion-pet';
     root.innerHTML = `
-      <div class="apk-pet-avatar">${getSpidermanSvg('default')}</div>
+      <div class="apk-pet-avatar">${getSpidermanAvatarMarkup('default')}</div>
     `;
     document.body.appendChild(root);
+  } else {
+    const avatar = root.querySelector('.apk-pet-avatar');
+    if (avatar) {
+      avatar.innerHTML = getSpidermanAvatarMarkup('default');
+    }
   }
 
   const existingBubble = document.getElementById('apk-pet-tamagotchi-bubble');
@@ -399,8 +326,8 @@ export function initPetSystem() {
         document.body.appendChild(webLine);
       }
 
-      // Hand attachment coordinates (Raised right hand in standard pose, or left shooter)
-      const handX = isFacingLeft ? pos.x + 14 : pos.x + 54;
+      // Hand attachment coordinates (Spider-Man hand / web shooter position)
+      const handX = isFacingLeft ? pos.x + 14 : pos.x + 48;
       const handY = pos.y + 14;
 
       webLine.innerHTML = createOrganicWebMarkup(handX, handY, anchorX, anchorY);
@@ -417,7 +344,7 @@ export function initPetSystem() {
         const updateLiveWeb = (now) => {
           if (!webLine || !isStuntActive) return;
           const rect = root.getBoundingClientRect();
-          const liveHandX = isFacingLeft ? rect.left + 14 : rect.left + 54;
+          const liveHandX = isFacingLeft ? rect.left + 14 : rect.left + 48;
           const liveHandY = rect.top + 14;
           webLine.innerHTML = createOrganicWebMarkup(liveHandX, liveHandY, anchorX, anchorY);
           if (now - swingStart < swingDuration) {

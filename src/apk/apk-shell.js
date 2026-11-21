@@ -544,27 +544,27 @@ function buildSidePanel() {
         if (progressWrap) progressWrap.style.display = 'flex';
         if (modalActions) modalActions.style.display = 'none';
 
-        let currentPct = 8;
-        if (progressTxt) progressTxt.textContent = `Updating assets: ${currentPct}%`;
+        let currentPct = 12;
+        if (progressTxt) progressTxt.textContent = `Downloading update... ${currentPct}%`;
         if (progressBar) progressBar.style.width = `${currentPct}%`;
 
         const progressInterval = setInterval(() => {
-          if (currentPct < 90) {
-            currentPct += Math.floor(Math.random() * 8) + 6;
-            if (currentPct > 90) currentPct = 90;
-            if (progressTxt) progressTxt.textContent = `Updating assets: ${currentPct}%`;
+          if (currentPct < 92) {
+            currentPct += Math.floor(Math.random() * 8) + 5;
+            if (currentPct > 92) currentPct = 92;
+            if (progressTxt) progressTxt.textContent = `Downloading update... ${currentPct}%`;
             if (progressBar) progressBar.style.width = `${currentPct}%`;
           }
-        }, 140);
+        }, 120);
 
         try {
           const applyRes = await fetch('/__ota/apply', { method: 'POST' });
           const applyJson = await applyRes.json();
           clearInterval(progressInterval);
           if (applyJson.ok) {
-            if (progressTxt) progressTxt.textContent = 'Updating assets: 100% (Reloading...)';
+            if (progressTxt) progressTxt.textContent = '100% Complete (Restarting...)';
             if (progressBar) progressBar.style.width = '100%';
-            setTimeout(() => window.location.reload(), 400);
+            setTimeout(() => window.location.reload(), 450);
           } else {
             throw new Error(applyJson.error || 'Apply failed');
           }
@@ -1377,8 +1377,9 @@ function normalizeHeaderAndChrome() {
 }
 
 function enforceAuthGuard() {
-  let token = localStorage.getItem('nnl_access_token');
+  let token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
   if (token === 'GUEST_DEMO_TOKEN') {
+    localStorage.removeItem('token');
     localStorage.removeItem('nnl_access_token');
     token = null;
   }
@@ -1393,7 +1394,11 @@ function enforceAuthGuard() {
     return false;
   }
 
-  if (!isSubpage && !token) {
+  if (token) {
+    document.body.classList.remove('apk-is-auth', 'on-login-screen');
+    document.body.classList.add('is-logged-in');
+    document.documentElement.classList.add('is-logged-in');
+  } else if (!isSubpage) {
     document.body.classList.add('apk-is-auth');
     document.getElementById('app-header')?.classList.add('hide');
     document.getElementById('classroom-dashboard')?.classList.add('hide');
@@ -1650,22 +1655,22 @@ function initApkShell() {
         pill.style.transform = `translate3d(${curActive.offsetLeft}px, ${curActive.offsetTop}px, 0)`;
       }
 
-      // Automated safety: If any back button or detail view is actually visible, hide Option button; otherwise keep visible
+      // Only hide option button if inside a deep lecture/test detail view or side drawer
       const isVisible = (el) => Boolean(el && el.offsetParent !== null && !el.closest('.hide') && !el.classList.contains('hide'));
-      const hasBackButton = Boolean(
-        [...document.querySelectorAll('#btn-back-subjects, #btn-back-to-subjects, #btn-back-tests, .btn-notes-back')].some(isVisible) ||
-        [...document.querySelectorAll('#notes-subject-view, #subject-detail-view, #tests-detail-view, #quiz-viewer, #recording-viewer')].some(isVisible) ||
-        document.body.classList.contains('apk-in-detail')
-      );
+      const isDetailActive = document.body.classList.contains('apk-in-detail') ||
+        [...document.querySelectorAll('#btn-back-subjects, #btn-back-to-subjects, #btn-back-tests, .btn-notes-back')].some(isVisible);
       const isTablet = window.innerWidth >= 768;
       const ham = document.getElementById('apk-hamburger-btn');
       if (ham) {
-        if ((!isTablet && hasBackButton) || document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
+        if ((!isTablet && isDetailActive) || document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
           ham.style.setProperty('display', 'none', 'important');
           ham.style.setProperty('visibility', 'hidden', 'important');
         } else {
           ham.style.removeProperty('display');
           ham.style.removeProperty('visibility');
+          ham.style.setProperty('display', 'inline-flex', 'important');
+          ham.style.setProperty('visibility', 'visible', 'important');
+          ham.style.setProperty('opacity', '1', 'important');
         }
       }
     });

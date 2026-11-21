@@ -41,7 +41,7 @@
         position: fixed !important;
         top: max(12px, env(safe-area-inset-top, 12px)) !important;
         left: 14px !important;
-        z-index: 10000 !important;
+        z-index: 25000 !important;
         width: 44px !important;
         height: 44px !important;
         min-width: 44px !important;
@@ -143,9 +143,11 @@
     <script>
       (function(){
         try {
-          if (!localStorage.getItem('nnl_access_token')) {
+          var token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
+          if (!token) {
             document.body.classList.add('apk-is-auth', 'on-login-screen');
           } else {
+            document.body.classList.remove('apk-is-auth', 'on-login-screen');
             document.body.classList.add('is-logged-in');
           }
         } catch(e) {}

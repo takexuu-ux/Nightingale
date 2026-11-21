@@ -4169,12 +4169,9 @@ body:not(.apk-is-auth) {
   }
 }
 
-/* ── Codex Companion Pet System (Guaranteed OFF & Zero Flicker) ── */
-body.apk-pet-disabled #apk-companion-pet,
-body.on-login-screen #apk-companion-pet,
-body:has(#auth-screen:not(.hide)) #apk-companion-pet,
-.auth-hero-wrapper ~ #apk-companion-pet,
-#apk-companion-pet.hide-on-auth,
+/* ── Codex Companion Pet System (Guaranteed Visible when logged in) ── */
+html:not(.is-logged-in) body.on-login-screen #apk-companion-pet,
+html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
 #apk-companion-pet.hide {
   display: none !important;
   visibility: hidden !important;
@@ -4183,30 +4180,30 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
 }
 
 #apk-companion-pet {
-  position: fixed;
+  position: fixed !important;
   left: 0;
   top: 0;
   width: 62px !important;
   height: 62px !important;
-  z-index: 9400;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
+  z-index: 99999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none !important;
   cursor: grab;
   will-change: transform;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45));
   transition: opacity 0.25s ease, filter 0.2s ease;
 }
 
 @media (max-width: 680px) {
   #apk-companion-pet {
-    width: 54px !important;
-    height: 54px !important;
+    width: 58px !important;
+    height: 58px !important;
   }
 }
 
@@ -4218,10 +4215,75 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: 100% !important;
   height: 100% !important;
-  animation: apkPetBob 3.4s ease-in-out infinite;
+  animation: spideyIdleHover 3.4s ease-in-out infinite;
   will-change: transform;
+}
+
+.spidey-avatar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+}
+
+.spidey-avatar-img {
+  width: 58px !important;
+  height: 58px !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55));
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+#apk-companion-pet.facing-left .spidey-avatar-img {
+  transform: scaleX(-1);
+}
+
+#apk-companion-pet.is-crouching .spidey-avatar-img {
+  transform: scale(1.18, 0.82) translateY(5px);
+}
+
+#apk-companion-pet.is-dragging .spidey-avatar-img {
+  transform: scale(1.08);
+}
+
+@keyframes spideyIdleHover {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.spidey-sense-waves {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 35px;
+  pointer-events: none;
+  animation: spideySensePulse 0.4s ease-in-out infinite alternate;
+}
+
+.spidey-sense-waves-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+@keyframes spideySensePulse {
+  0% { transform: translateX(-50%) scale(0.95); opacity: 0.8; }
+  100% { transform: translateX(-50%) scale(1.15); opacity: 1; }
 }
 
 @keyframes apkPetBob {
@@ -4643,7 +4705,7 @@ body:has(#auth-screen:not(.hide)) #apk-companion-pet,
     position: fixed !important;
     top: max(14px, env(safe-area-inset-top)) !important;
     left: 14px !important;
-    z-index: 8900 !important;
+    z-index: 25000 !important;
     display: inline-flex !important;
   }
 
@@ -5942,7 +6004,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     left: 14px !important;
     width: 34px !important;
     height: 34px !important;
-    z-index: 8900 !important;
+    z-index: 25000 !important;
     margin: 0 !important;
     display: inline-flex !important;
   }
@@ -5991,7 +6053,7 @@ body:not(.apk-is-auth) #apk-auth-botanical {
     left: 14px !important;
     width: 36px !important;
     height: 36px !important;
-    z-index: 8900 !important;
+    z-index: 25000 !important;
     margin: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -6042,33 +6104,11 @@ body:not(.apk-is-auth) #apk-auth-botanical {
   height: 18px !important;
 }
 
-/* Hide Option Button completely whenever Side Panel is open OR inside Subject / Lectures / Notes detail view */
+/* Hide Option Button completely ONLY when Side Panel is open OR inside Subject / Lecture detail view */
 body.apk-side-open #apk-hamburger-btn,
 body.apk-side-open .apk-hamburger-btn,
 body.apk-in-detail #apk-hamburger-btn,
-body.apk-in-detail .apk-hamburger-btn,
-body:has(#apk-side-panel:not(.hide)) #apk-hamburger-btn,
-body:has(#apk-side-panel:not(.hide)) .apk-hamburger-btn,
-body:has(#subject-detail-view:not(.hide)) #apk-hamburger-btn,
-body:has(#subject-detail-view:not(.hide)) .apk-hamburger-btn,
-body:has(.subject-detail-view:not(.hide)) #apk-hamburger-btn,
-body:has(.subject-detail-view:not(.hide)) .apk-hamburger-btn,
-body:has(#notes-subject-view:not(.hide)) #apk-hamburger-btn,
-body:has(#notes-subject-view:not(.hide)) .apk-hamburger-btn,
-body:has(#tests-detail-view:not(.hide)) #apk-hamburger-btn,
-body:has(#tests-detail-view:not(.hide)) .apk-hamburger-btn,
-body:has(#cbt-quiz-view:not(.hide)) #apk-hamburger-btn,
-body:has(#cbt-quiz-view:not(.hide)) .apk-hamburger-btn,
-body:has(#quiz-viewer:not(.hide)) #apk-hamburger-btn,
-body:has(#quiz-viewer:not(.hide)) .apk-hamburger-btn,
-body:has(#quiz-overview:not(.hide)) #apk-hamburger-btn,
-body:has(#quiz-overview:not(.hide)) .apk-hamburger-btn,
-body:has(#cbt-report-modal:not(.hide)) #apk-hamburger-btn,
-body:has(#cbt-report-modal:not(.hide)) .apk-hamburger-btn,
-body:has(#recording-viewer-modal:not(.hide)) #apk-hamburger-btn,
-body:has(#recording-viewer-modal:not(.hide)) .apk-hamburger-btn,
-#apk-side-panel:not(.hide) ~ #apk-hamburger-btn,
-#apk-side-panel:not(.hide) ~ .apk-hamburger-btn {
+body.apk-in-detail .apk-hamburger-btn {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -12411,7 +12451,7 @@ body.in-classroom #apk-companion-pet {
   position: fixed !important;
   top: max(12px, env(safe-area-inset-top, 12px)) !important;
   left: 14px !important;
-  z-index: 10000 !important;
+  z-index: 25000 !important;
   width: 44px !important;
   height: 44px !important;
   display: inline-flex !important;
