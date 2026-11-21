@@ -1655,14 +1655,10 @@ function initApkShell() {
         pill.style.transform = `translate3d(${curActive.offsetLeft}px, ${curActive.offsetTop}px, 0)`;
       }
 
-      // Only hide option button if inside a deep lecture/test detail view or side drawer
-      const isVisible = (el) => Boolean(el && el.offsetParent !== null && !el.closest('.hide') && !el.classList.contains('hide'));
-      const isDetailActive = document.body.classList.contains('apk-in-detail') ||
-        [...document.querySelectorAll('#btn-back-subjects, #btn-back-to-subjects, #btn-back-tests, .btn-notes-back')].some(isVisible);
-      const isTablet = window.innerWidth >= 768;
+      // Keep option button visible across all pages and views (only hide on unauthenticated login screen or when side drawer is open)
       const ham = document.getElementById('apk-hamburger-btn');
       if (ham) {
-        if ((!isTablet && isDetailActive) || document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
+        if (document.body.classList.contains('apk-side-open') || document.body.classList.contains('apk-is-auth')) {
           ham.style.setProperty('display', 'none', 'important');
           ham.style.setProperty('visibility', 'hidden', 'important');
         } else {

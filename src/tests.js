@@ -498,10 +498,13 @@ function openDetailView(kind, item) {
   testsDetailView.classList.remove('hide');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Strictly hide Option Button inside detail views
-  document.body.classList.add('apk-in-detail');
+  // Keep Option Button visible
   const ham = document.getElementById('apk-hamburger-btn');
-  if (ham) ham.style.setProperty('display', 'none', 'important');
+  if (ham && !document.body.classList.contains('apk-side-open')) {
+    ham.style.setProperty('display', 'inline-flex', 'important');
+    ham.style.setProperty('visibility', 'visible', 'important');
+    ham.style.setProperty('opacity', '1', 'important');
+  }
 
   if (testDetailTitle) testDetailTitle.textContent = item.title || 'Practice Tests';
 
@@ -534,11 +537,12 @@ function closeDetailView() {
   testsDetailView.classList.add('hide');
   testsCatalogView.classList.remove('hide');
 
-  // Restore Option Button outside detail views
-  document.body.classList.remove('apk-in-detail');
+  // Ensure Option Button remains visible
   const ham = document.getElementById('apk-hamburger-btn');
   if (ham && !document.body.classList.contains('apk-side-open')) {
-    ham.style.removeProperty('display');
+    ham.style.setProperty('display', 'inline-flex', 'important');
+    ham.style.setProperty('visibility', 'visible', 'important');
+    ham.style.setProperty('opacity', '1', 'important');
   }
 
   renderCatalogGrid();
