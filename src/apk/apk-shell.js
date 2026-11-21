@@ -167,13 +167,6 @@ export function openSidePanel() {
     panel.classList.remove('hide');
     document.body.classList.add('apk-side-open');
     syncPetSelectionUI();
-    const ham = document.getElementById('apk-hamburger-btn');
-    if (ham) {
-      ham.style.setProperty('display', 'none', 'important');
-      ham.style.setProperty('visibility', 'hidden', 'important');
-      ham.style.setProperty('opacity', '0', 'important');
-      ham.style.setProperty('pointer-events', 'none', 'important');
-    }
   }
 }
 
@@ -182,13 +175,6 @@ export function closeSidePanel() {
   if (panel) {
     panel.classList.add('hide');
     document.body.classList.remove('apk-side-open');
-    const ham = document.getElementById('apk-hamburger-btn');
-    if (ham && !document.body.classList.contains('apk-is-auth')) {
-      ham.style.removeProperty('display');
-      ham.style.removeProperty('visibility');
-      ham.style.removeProperty('opacity');
-      ham.style.removeProperty('pointer-events');
-    }
   }
 }
 
@@ -1138,10 +1124,10 @@ function normalizeHeaderAndChrome() {
   if (!hamBtn) {
     hamBtn = document.createElement('button');
     hamBtn.id = 'apk-hamburger-btn';
-    hamBtn.className = 'apk-icon-btn apk-hamburger-btn';
+    hamBtn.className = 'apk-hamburger-btn';
     hamBtn.type = 'button';
     hamBtn.setAttribute('aria-label', 'Open Menu & Settings');
-    hamBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
+    hamBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`;
   }
   if (hamBtn && !hamBtn.__bound) {
     hamBtn.__bound = true;
@@ -1664,9 +1650,8 @@ function initApkShell() {
         } else {
           ham.style.removeProperty('display');
           ham.style.removeProperty('visibility');
-          ham.style.setProperty('display', 'inline-flex', 'important');
-          ham.style.setProperty('visibility', 'visible', 'important');
-          ham.style.setProperty('opacity', '1', 'important');
+          ham.style.removeProperty('opacity');
+          ham.style.removeProperty('pointer-events');
         }
       }
     });

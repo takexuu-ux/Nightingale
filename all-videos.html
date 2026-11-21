@@ -43,10 +43,12 @@
         top: max(14px, env(safe-area-inset-top, 14px)) !important;
         left: 14px !important;
         z-index: 25000 !important;
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
-        min-height: 34px !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        max-width: 28px !important;
+        max-height: 28px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -57,10 +59,10 @@
         padding: 0 !important;
         background: rgba(30, 22, 54, 0.72) !important;
         border: 1px solid rgba(255, 255, 255, 0.16) !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         backdrop-filter: blur(24px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-        box-shadow: 2.5px 2.5px 0 0 #8E74E5, 0 4px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+        box-shadow: 2px 2px 0 0 #8E74E5, 0 3px 10px rgba(0, 0, 0, 0.28) !important;
         color: #ffffff !important;
         cursor: pointer !important;
         transform: translateZ(0) !important;
@@ -70,14 +72,14 @@
       [data-theme="light"] #apk-hamburger-btn {
         background: rgba(255, 255, 255, 0.88) !important;
         border: 1px solid rgba(142, 116, 229, 0.38) !important;
-        box-shadow: 2.5px 2.5px 0 0 #8E74E5, 0 4px 14px rgba(108, 79, 214, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+        box-shadow: 2px 2px 0 0 #8E74E5, 0 3px 10px rgba(108, 79, 214, 0.2) !important;
         color: #1e1b4b !important;
       }
       #apk-hamburger-btn svg {
-        width: 18px !important;
-        height: 18px !important;
+        width: 15px !important;
+        height: 15px !important;
         stroke: currentColor !important;
-        stroke-width: 2.3 !important;
+        stroke-width: 2.2 !important;
         fill: none !important;
         display: block !important;
       }
@@ -404,8 +406,8 @@
     <div id="apk-ambient-bg"></div>
 
     <!-- Options Button (Fixed Top-Left across all pages, zero overlap with island) -->
-    <button id="apk-hamburger-btn" class="apk-icon-btn apk-hamburger-btn" type="button" aria-label="Open Menu &amp; Settings">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+    <button id="apk-hamburger-btn" class="apk-hamburger-btn" type="button" aria-label="Open Menu &amp; Settings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="6" x2="21" y2="6"></line>
         <line x1="3" y1="12" x2="21" y2="12"></line>
         <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -480,7 +482,7 @@
               </button>
             </div>
             <button id="videos-search-toggle" class="apk-search-toggle-btn" type="button" title="Search" aria-label="Search">
-              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
               </svg>
             </button>

@@ -1,6 +1,11 @@
-// Nightingale Study Companion Mascot: Mochi (Kawaii Medical Study Companion)
-// Adorable, lively pet with rich facial expressions (sparkling anime eyes, blinking, winking, smiling, blushing),
-// gentle organic hovering physics, interactive tap reactions with encouraging quotes, and smart spatial dodging.
+// Nightingale Study Companion Mascot: Koda (The AI Cyber Fox Study Companion)
+// Sleek, gender-neutral, modern study companion inspired by high-performance developer pets.
+// Features genuine animated facial expressions:
+// - default: Sharp, intelligent dark eyes with dual cyan/white specular highlights and confident smile ( ◕ ‿ ◕ )
+// - blink: Clean horizontal blinking eyelids ( ─ ‿ ─ )
+// - focus: Cool glowing cyan study glasses with determined focus brow!
+// - happy / cheer: Cheerful crescent eyes ( ^ ‿ ^ ) with open smile and gold star particles!
+// Zero pink blush, zero nurse caps, zero pink hearts.
 
 const STORAGE_PET_KEY = 'nnl_companion_pet_id';
 const STORAGE_ENABLED_KEY = 'nnl_companion_pet_enabled';
@@ -26,19 +31,19 @@ export function setPetEnabled(enabled) {
 }
 
 export function getPetName() {
-  return 'Mochi';
+  return 'Koda';
 }
 
 export function getCompanionSvg(expression = 'default') {
-  return getMochiAvatarMarkup(expression);
+  return getKodaAvatarMarkup(expression);
 }
 
 export const PET_CATALOG = [
   {
-    id: 'mochi',
-    name: 'Mochi',
-    tagline: 'Kawaii Medical Study Companion',
-    getSvg: (expr) => getMochiAvatarMarkup(expr)
+    id: 'koda',
+    name: 'Koda',
+    tagline: 'AI Medical Study Companion',
+    getSvg: (expr) => getKodaAvatarMarkup(expr)
   }
 ];
 
@@ -47,38 +52,42 @@ export function getAvailablePets() {
 }
 
 export function getActivePetId() {
-  return 'mochi';
+  return 'koda';
 }
 
 export function setActivePetId() {
   try {
-    localStorage.setItem(STORAGE_PET_KEY, 'mochi');
+    localStorage.setItem(STORAGE_PET_KEY, 'koda');
   } catch {}
 }
 
 export function getLumiSvg(expression = 'default') {
-  return getMochiAvatarMarkup(expression);
+  return getKodaAvatarMarkup(expression);
 }
 
-// Encouraging study quotes whispered on tap
+// Empowering, high-yield NORCET / medical study quotes
 const ENCOURAGEMENTS = [
-  "You've got this, Doctor! 🩺",
-  "NORCET AIIMS Rank 1! 🌟",
-  "Keep studying, future officer! ✨",
-  "Focus mode: ON! 📖",
-  "Every lecture counts! 🎯",
-  "Proud of your hard work! 💖",
-  "Stay consistent, champion! 🚀"
+  "Focus mode locked: AIIMS New Delhi! 🎯",
+  "High-yield concepts only! ⚡",
+  "One concept at a time, Doctor! 🩺",
+  "Master your NCLEX & NORCET prep! 🚀",
+  "Consistent daily reps build champions! ⭐",
+  "Clinical rationales decoded! 🧠",
+  "Stay sharp, future AIIMS Nursing Officer! 🏆"
 ];
 
 let speechTimeout = null;
 export function showMochiSpeech(text) {
+  showKodaSpeech(text);
+}
+
+export function showKodaSpeech(text) {
   const root = document.getElementById('apk-companion-pet');
   if (!root) return;
-  let bubble = root.querySelector('.mochi-speech-bubble');
+  let bubble = root.querySelector('.mochi-speech-bubble, .koda-speech-bubble');
   if (!bubble) {
     bubble = document.createElement('div');
-    bubble.className = 'mochi-speech-bubble';
+    bubble.className = 'koda-speech-bubble';
     root.appendChild(bubble);
   }
   bubble.textContent = text || ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
@@ -90,137 +99,157 @@ export function showMochiSpeech(text) {
 }
 
 export function getMochiAvatarMarkup(expr = 'default') {
+  return getKodaAvatarMarkup(expr);
+}
+
+export function getKodaAvatarMarkup(expr = 'default') {
   let eyesMarkup = '';
   let mouthMarkup = '';
-  let blushMarkup = `
-    <ellipse cx="18" cy="39" rx="4.5" ry="2.6" fill="#FF8BA7" opacity="0.6" filter="url(#mochiBlushGlow)"/>
-    <ellipse cx="52" cy="39" rx="4.5" ry="2.6" fill="#FF8BA7" opacity="0.6" filter="url(#mochiBlushGlow)"/>
-  `;
-  let accessoryMarkup = `
-    <!-- Tiny Medical Nurse Cap with Lavender Cross -->
-    <g transform="translate(25, 4)">
-      <path d="M 3 12 L 8 4 L 14 4 L 19 12 Z" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="0.8"/>
-      <path d="M 11 6.5 L 11 10.5 M 9 8.5 L 13 8.5" stroke="#8E74E5" stroke-width="1.4" stroke-linecap="round"/>
-    </g>
-  `;
+  let accessoryMarkup = '';
 
-  if (expr === 'happy' || expr === 'excited') {
-    // Joyful crescent smiling anime eyes ( ^ ‿ ^ )
+  if (expr === 'happy' || expr === 'excited' || expr === 'cheer') {
+    // Cheerful upward-curved eyes ( ^ ‿ ^ )
     eyesMarkup = `
-      <path d="M 20 32 Q 26 24 32 32" stroke="#2D1F3F" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <path d="M 38 32 Q 44 24 50 32" stroke="#2D1F3F" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M 22 34 Q 28 26 34 34" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+      <path d="M 40 34 Q 46 26 52 34" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none"/>
     `;
     mouthMarkup = `
-      <!-- Open cheerful happy mouth with tiny pink tongue -->
-      <path d="M 32 37 Q 35 43 38 37 Z" fill="#FF6B8B"/>
-      <path d="M 33 39 Q 35 41 37 39" fill="#FFA5BA"/>
-    `;
-    blushMarkup = `
-      <ellipse cx="17" cy="38" rx="5" ry="3" fill="#FF5E85" opacity="0.8" filter="url(#mochiBlushGlow)"/>
-      <ellipse cx="53" cy="38" rx="5" ry="3" fill="#FF5E85" opacity="0.8" filter="url(#mochiBlushGlow)"/>
+      <path d="M 33 42 Q 37 47 41 42" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" fill="#EA580C"/>
     `;
   } else if (expr === 'blink') {
-    // Gentle natural blinking ( — ‿ — )
+    // Clean horizontal eyelids ( ─ ‿ ─ )
     eyesMarkup = `
-      <line x1="20" y1="33" x2="31" y2="33" stroke="#2D1F3F" stroke-width="2.6" stroke-linecap="round"/>
-      <line x1="39" y1="33" x2="50" y2="33" stroke="#2D1F3F" stroke-width="2.6" stroke-linecap="round"/>
+      <line x1="22" y1="34" x2="34" y2="34" stroke="#0F172A" stroke-width="2.8" stroke-linecap="round"/>
+      <line x1="40" y1="34" x2="52" y2="34" stroke="#0F172A" stroke-width="2.8" stroke-linecap="round"/>
     `;
     mouthMarkup = `
-      <path d="M 32 37 Q 33.5 39 35 37.5 Q 36.5 39 38 37" stroke="#2D1F3F" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M 33 41 Q 37 43 41 41" stroke="#0F172A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
     `;
-  } else if (expr === 'wink') {
-    // Playful wink with star sparkle ( ★ ‿ < )
+  } else if (expr === 'focus' || expr === 'study') {
+    // Sleek cyber glasses with electric cyan glow & determined brow
     eyesMarkup = `
-      <!-- Left eye winking line -->
-      <path d="M 21 34 Q 26 38 31 34" stroke="#2D1F3F" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <!-- Right eye big starry anime pupil -->
-      <ellipse cx="44" cy="32" rx="5" ry="5.5" fill="#2D1F3F"/>
-      <circle cx="46" cy="30" r="2.2" fill="#FFFFFF"/>
-      <circle cx="42.5" cy="34" r="1.1" fill="#FFFFFF"/>
-      <polygon points="44,28 45,30 47,30 45.5,31.5 46,33.5 44,32 42,33.5 42.5,31.5 41,30 43,30" fill="#FFD700" transform="scale(0.5) translate(46, 32)"/>
+      <!-- Focused Eyes -->
+      <ellipse cx="28" cy="33" rx="4.5" ry="4.5" fill="#0F172A"/>
+      <circle cx="29.5" cy="31.5" r="1.6" fill="#38BDF8"/>
+      <ellipse cx="46" cy="33" rx="4.5" ry="4.5" fill="#0F172A"/>
+      <circle cx="47.5" cy="31.5" r="1.6" fill="#38BDF8"/>
+    `;
+    accessoryMarkup = `
+      <!-- Cyber Study Glasses -->
+      <rect x="20" y="27" width="16" height="12" rx="3.5" fill="rgba(6, 182, 212, 0.15)" stroke="#06B6D4" stroke-width="1.8"/>
+      <rect x="38" y="27" width="16" height="12" rx="3.5" fill="rgba(6, 182, 212, 0.15)" stroke="#06B6D4" stroke-width="1.8"/>
+      <line x1="36" y1="32" x2="38" y2="32" stroke="#06B6D4" stroke-width="1.8"/>
+      <line x1="17" y1="31" x2="20" y2="31" stroke="#06B6D4" stroke-width="1.6"/>
+      <line x1="54" y1="31" x2="57" y2="31" stroke="#06B6D4" stroke-width="1.6"/>
+      <!-- Glass Glare Highlights -->
+      <line x1="22" y1="29" x2="26" y2="29" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+      <line x1="40" y1="29" x2="44" y2="29" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
     `;
     mouthMarkup = `
-      <!-- Cute tongue out -->
-      <path d="M 32 37 Q 33.5 39 35 37.5 Q 36.5 39 38 37" stroke="#2D1F3F" stroke-width="2" stroke-linecap="round" fill="none"/>
-      <path d="M 36 38 Q 38 43 40 38 Z" fill="#FF6B8B"/>
+      <line x1="34" y1="42" x2="40" y2="42" stroke="#0F172A" stroke-width="2.2" stroke-linecap="round"/>
     `;
   } else {
-    // Default: Big glossy, sparkling anime eyes with double reflections ( ◕ ‿ ◕ )
+    // Default: Intelligent alert eyes with cyan/white reflections ( ◕ ‿ ◕ )
     eyesMarkup = `
       <!-- Left Eye -->
-      <ellipse cx="25" cy="32" rx="5" ry="5.8" fill="#2D1F3F"/>
-      <circle cx="27" cy="30" r="2.2" fill="#FFFFFF"/>
-      <circle cx="23.5" cy="34" r="1.1" fill="#FFFFFF"/>
+      <ellipse cx="28" cy="33" rx="4.8" ry="5.2" fill="#0F172A"/>
+      <circle cx="29.8" cy="31.2" r="1.8" fill="#FFFFFF"/>
+      <circle cx="26.5" cy="34.5" r="1.1" fill="#38BDF8"/>
       <!-- Right Eye -->
-      <ellipse cx="45" cy="32" rx="5" ry="5.8" fill="#2D1F3F"/>
-      <circle cx="47" cy="30" r="2.2" fill="#FFFFFF"/>
-      <circle cx="43.5" cy="34" r="1.1" fill="#FFFFFF"/>
+      <ellipse cx="46" cy="33" rx="4.8" ry="5.2" fill="#0F172A"/>
+      <circle cx="47.8" cy="31.2" r="1.8" fill="#FFFFFF"/>
+      <circle cx="44.5" cy="34.5" r="1.1" fill="#38BDF8"/>
     `;
     mouthMarkup = `
-      <!-- Cute ω kitten smile -->
-      <path d="M 31 37 Q 33 39.5 35 37.5 Q 37 39.5 39 37" stroke="#2D1F3F" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <!-- Confident Smile -->
+      <path d="M 33 41 Q 37 44 41 41" stroke="#0F172A" stroke-width="2.2" stroke-linecap="round" fill="none"/>
     `;
   }
 
   return `
-    <div class="mochi-companion-avatar" data-expr="${expr}">
-      <svg class="mochi-svg" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div class="koda-companion-avatar" data-expr="${expr}">
+      <svg class="koda-svg" viewBox="0 0 74 74" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Soft Body Shading -->
-          <linearGradient id="mochiBodyGrad" x1="15" y1="12" x2="55" y2="60" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#FFFFFF"/>
-            <stop offset="0.65" stop-color="#FFF5F2"/>
-            <stop offset="1" stop-color="#FDECE6"/>
+          <!-- Fur Gradient: Rich Vibrant Amber-Orange -->
+          <linearGradient id="kodaFurGrad" x1="16" y1="12" x2="58" y2="64" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FB923C"/>
+            <stop offset="0.45" stop-color="#EA580C"/>
+            <stop offset="1" stop-color="#C2410C"/>
           </linearGradient>
-          <!-- Soft Peach Shadow -->
-          <filter id="mochiDropShadow" x="-10%" y="-10%" width="130%" height="130%">
-            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(142, 116, 229, 0.35)"/>
-          </filter>
-          <filter id="mochiBlushGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="1.5"/>
+          <!-- Charcoal Ears & Accents -->
+          <linearGradient id="kodaCharcoalGrad" x1="20" y1="8" x2="54" y2="30" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#334155"/>
+            <stop offset="1" stop-color="#0F172A"/>
+          </linearGradient>
+          <!-- Cream Muzzle Gradient -->
+          <linearGradient id="kodaCreamGrad" x1="26" y1="34" x2="48" y2="52" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFFFFF"/>
+            <stop offset="1" stop-color="#FEF3C7"/>
+          </linearGradient>
+          <!-- High-End Ambient Drop Shadow -->
+          <filter id="kodaShadow" x="-15%" y="-15%" width="130%" height="130%">
+            <feDropShadow dx="0" dy="4" stdDeviation="4.5" flood-color="rgba(15, 23, 42, 0.45)"/>
           </filter>
         </defs>
 
-        <!-- Drop Shadow Aura -->
-        <ellipse cx="35" cy="62" rx="20" ry="4" fill="rgba(60, 30, 90, 0.18)" filter="url(#mochiBlushGlow)"/>
+        <!-- Base Soft Ground Shadow -->
+        <ellipse cx="37" cy="67" rx="22" ry="4" fill="rgba(15, 23, 42, 0.25)"/>
 
-        <!-- Ears (Soft rounded with cute pink inner ear) -->
-        <g id="mochi-ears">
-          <!-- Left Ear -->
-          <path d="M 16 26 C 11 15 15 11 25 18 Z" fill="#FFF5F2" stroke="#2D1F3F" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M 17 24 C 14 17 17 14 23 19 Z" fill="#FF8BA7" opacity="0.85"/>
-          <!-- Right Ear -->
-          <path d="M 54 26 C 59 15 55 11 45 18 Z" fill="#FFF5F2" stroke="#2D1F3F" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M 53 24 C 56 17 53 14 47 19 Z" fill="#FF8BA7" opacity="0.85"/>
+        <!-- Ears: Pointed, Sleek with Slate Tips & Cream Inner Tuft -->
+        <g id="koda-ears">
+          <!-- Left Ear Outer -->
+          <path d="M 17 32 C 10 18 16 8 27 15 Z" fill="url(#kodaFurGrad)" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round"/>
+          <!-- Left Ear Slate Tip -->
+          <path d="M 12 21 C 11 16 14 10 20 12 Z" fill="url(#kodaCharcoalGrad)"/>
+          <!-- Left Ear Inner Cream -->
+          <path d="M 18 28 C 14 20 18 15 24 18 Z" fill="#FEF3C7" opacity="0.9"/>
+
+          <!-- Right Ear Outer -->
+          <path d="M 57 32 C 64 18 58 8 47 15 Z" fill="url(#kodaFurGrad)" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round"/>
+          <!-- Right Ear Slate Tip -->
+          <path d="M 62 21 C 63 16 60 10 54 12 Z" fill="url(#kodaCharcoalGrad)"/>
+          <!-- Right Ear Inner Cream -->
+          <path d="M 56 28 C 60 20 56 15 50 18 Z" fill="#FEF3C7" opacity="0.9"/>
         </g>
 
-        <!-- Chubby Soft Rounded Body / Face -->
-        <rect x="13" y="16" width="44" height="42" rx="21" fill="url(#mochiBodyGrad)" stroke="#2D1F3F" stroke-width="2" filter="url(#mochiDropShadow)"/>
+        <!-- Main Head Silhouette (Sleek Geometric Oval with Cheek Fluffs) -->
+        <path d="M 15 38 C 12 44 16 52 23 55 C 29 58 45 58 51 55 C 58 52 62 44 59 38 C 58 26 50 18 37 18 C 24 18 16 26 15 38 Z"
+              fill="url(#kodaFurGrad)"
+              stroke="#0F172A"
+              stroke-width="2.2"
+              stroke-linejoin="round"
+              filter="url(#kodaShadow)"/>
 
-        <!-- Cheeks Blush -->
-        ${blushMarkup}
+        <!-- Forehead Cyber Diamond Crest (Gold Accent) -->
+        <polygon points="37,21 40,25 37,29 34,25" fill="#F59E0B" stroke="#0F172A" stroke-width="1"/>
 
-        <!-- Nose -->
-        <polygon points="33.5,34.5 36.5,34.5 35,36" fill="#FF7597"/>
+        <!-- Cheek Flairs & Cream Muzzle (Gender-neutral, sharp & clean) -->
+        <path d="M 24 45 C 22 51 28 56 37 56 C 46 56 52 51 50 45 C 47 38 43 35 37 35 C 31 35 27 38 24 45 Z"
+              fill="url(#kodaCreamGrad)"
+              stroke="#0F172A"
+              stroke-width="1.8"/>
+
+        <!-- Sleek Charcoal Nose -->
+        <polygon points="35,38 39,38 37,40" fill="#0F172A"/>
 
         <!-- Eyes -->
-        <g id="mochi-eyes">
+        <g id="koda-eyes">
           ${eyesMarkup}
         </g>
 
         <!-- Mouth -->
-        <g id="mochi-mouth">
+        <g id="koda-mouth">
           ${mouthMarkup}
         </g>
 
-        <!-- Tiny Paws resting in front -->
-        <g id="mochi-paws">
-          <ellipse cx="25" cy="54" rx="4.5" ry="3.2" fill="#FFFFFF" stroke="#2D1F3F" stroke-width="1.5"/>
-          <ellipse cx="45" cy="54" rx="4.5" ry="3.2" fill="#FFFFFF" stroke="#2D1F3F" stroke-width="1.5"/>
-        </g>
-
-        <!-- Accessory (Nurse Cap) -->
+        <!-- Accessory (Cyber Glasses if in Focus mode) -->
         ${accessoryMarkup}
+
+        <!-- Clean Paws Resting at Bottom -->
+        <g id="koda-paws">
+          <ellipse cx="27" cy="58" rx="4.5" ry="3.2" fill="#FEF3C7" stroke="#0F172A" stroke-width="1.6"/>
+          <ellipse cx="47" cy="58" rx="4.5" ry="3.2" fill="#FEF3C7" stroke="#0F172A" stroke-width="1.6"/>
+        </g>
       </svg>
     </div>
   `;
@@ -259,31 +288,31 @@ export function syncPetVisibility() {
 }
 
 let reactionTimer = null;
-export function triggerPetReaction(expr = 'happy', durationMs = 2200) {
+export function triggerPetReaction(expr = 'focus', durationMs = 2400) {
   const root = document.getElementById('apk-companion-pet');
   if (!root) return;
   const avatar = root.querySelector('.apk-pet-avatar');
   if (!avatar) return;
 
-  avatar.innerHTML = getMochiAvatarMarkup(expr);
-  root.classList.add('mochi-pop-react');
+  avatar.innerHTML = getKodaAvatarMarkup(expr);
+  root.classList.add('koda-pop-react');
 
-  // Spawn a floating heart
-  spawnFloatingHeart(root);
+  // Spawn a floating gold star / study spark
+  spawnFloatingStar(root);
 
   clearTimeout(reactionTimer);
   reactionTimer = setTimeout(() => {
-    avatar.innerHTML = getMochiAvatarMarkup('default');
-    root.classList.remove('mochi-pop-react');
+    avatar.innerHTML = getKodaAvatarMarkup('default');
+    root.classList.remove('koda-pop-react');
   }, durationMs);
 }
 
-function spawnFloatingHeart(parent) {
-  const heart = document.createElement('div');
-  heart.className = 'mochi-floating-heart';
-  heart.innerHTML = ['💖', '✨', '🩺', '🌸', '⭐'][Math.floor(Math.random() * 5)];
-  parent.appendChild(heart);
-  setTimeout(() => heart.remove(), 1200);
+function spawnFloatingStar(parent) {
+  const star = document.createElement('div');
+  star.className = 'koda-floating-star';
+  star.innerHTML = ['⭐', '✨', '⚡', '🩺', '🎯'][Math.floor(Math.random() * 5)];
+  parent.appendChild(star);
+  setTimeout(() => star.remove(), 1200);
 }
 
 let currentCorner = 'bottom-right';
@@ -318,16 +347,15 @@ export function initCompanionPet() {
     root.id = 'apk-companion-pet';
     root.className = 'apk-companion-pet';
     root.setAttribute('role', 'button');
-    root.setAttribute('aria-label', 'Mochi Kawaii Study Companion');
+    root.setAttribute('aria-label', 'Koda AI Study Companion');
     root.innerHTML = `
-      <div class="apk-pet-avatar">${getMochiAvatarMarkup('default')}</div>
-      <div class="mochi-sparkles"></div>
+      <div class="apk-pet-avatar">${getKodaAvatarMarkup('default')}</div>
     `;
     document.body.appendChild(root);
   } else {
     const avatar = root.querySelector('.apk-pet-avatar');
     if (avatar) {
-      avatar.innerHTML = getMochiAvatarMarkup('default');
+      avatar.innerHTML = getKodaAvatarMarkup('default');
     }
   }
 
@@ -338,29 +366,29 @@ export function initCompanionPet() {
     if (document.hidden) return;
     const avatar = root.querySelector('.apk-pet-avatar');
     if (!avatar) return;
-    const curExpr = avatar.querySelector('.mochi-companion-avatar')?.getAttribute('data-expr');
+    const curExpr = avatar.querySelector('.koda-companion-avatar')?.getAttribute('data-expr');
     if (!curExpr || curExpr === 'default') {
-      avatar.innerHTML = getMochiAvatarMarkup('blink');
+      avatar.innerHTML = getKodaAvatarMarkup('blink');
       setTimeout(() => {
-        const check = avatar.querySelector('.mochi-companion-avatar')?.getAttribute('data-expr');
+        const check = avatar.querySelector('.koda-companion-avatar')?.getAttribute('data-expr');
         if (check === 'blink') {
-          avatar.innerHTML = getMochiAvatarMarkup('default');
+          avatar.innerHTML = getKodaAvatarMarkup('default');
         }
       }, 180);
     }
   }, 3800);
 
-  // Tap Interactions: Giggles, blushes, winks, pops floating heart & whispers study quote
+  // Tap Interactions: Triggers study focus or cheering expression, sparkles & whispers study quote
   root.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const expressions = ['happy', 'wink', 'excited'];
+    const expressions = ['focus', 'happy', 'excited'];
     const chosen = expressions[Math.floor(Math.random() * expressions.length)];
-    triggerPetReaction(chosen, 2000);
-    showMochiSpeech();
+    triggerPetReaction(chosen, 2200);
+    showKodaSpeech();
   });
 
-  // Smart Context-Aware Dodging
+  // Smart Context-Aware Dodging: moves to top when user scrolls down
   let dodgeTimeout = null;
   window.addEventListener('scroll', () => {
     const scrollY = window.scrollY || document.documentElement.scrollTop;
@@ -377,7 +405,7 @@ export function initCompanionPet() {
     }
   }, { passive: true });
 
-  // When video viewer is open, dim Mochi and tuck safely to bottom
+  // When video viewer is open, dim Koda and tuck safely to bottom
   const observer = new MutationObserver(() => {
     const recViewer = document.getElementById('recording-viewer');
     const isVideoOpen = recViewer && !recViewer.classList.contains('hide');
