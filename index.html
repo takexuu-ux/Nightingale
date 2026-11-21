@@ -21,31 +21,32 @@
         width: 100vw !important;
         height: 100vh !important;
         background-color: #09080e !important;
-        background-image: 
-          radial-gradient(circle at 18% 18%, rgba(124, 58, 237, 0.16) 0%, transparent 45%),
-          radial-gradient(circle at 82% 82%, rgba(99, 102, 241, 0.14) 0%, transparent 45%),
-          radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%) !important;
+        background-image: url('/bg-app-wallpaper.jpg') !important;
         background-attachment: fixed !important;
         background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
         z-index: -10 !important;
         pointer-events: none !important;
         transform: translateZ(0) !important;
       }
       html[data-theme="light"] #apk-ambient-bg {
         background-color: #f6f4fa !important;
-        background-image: 
-          radial-gradient(circle at 20% 20%, rgba(196, 181, 253, 0.35) 0%, transparent 45%),
-          radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.25) 0%, transparent 45%) !important;
+        background-image: url('/bg-app-wallpaper-light.jpg') !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        opacity: 1 !important;
       }
       #apk-hamburger-btn {
-        position: fixed !important;
-        top: max(12px, env(safe-area-inset-top, 12px)) !important;
+        position: absolute !important;
+        top: max(14px, env(safe-area-inset-top, 14px)) !important;
         left: 14px !important;
         z-index: 25000 !important;
-        width: 44px !important;
-        height: 44px !important;
-        min-width: 44px !important;
-        min-height: 44px !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -54,12 +55,12 @@
         pointer-events: auto !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: rgba(18, 14, 28, 0.72) !important;
-        border: 1px solid rgba(167, 139, 250, 0.28) !important;
-        border-radius: 12px !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+        background: rgba(30, 22, 54, 0.72) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        border-radius: 10px !important;
+        backdrop-filter: blur(24px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+        box-shadow: 2.5px 2.5px 0 0 #8E74E5, 0 4px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
         color: #ffffff !important;
         cursor: pointer !important;
         transform: translateZ(0) !important;
@@ -67,15 +68,16 @@
         outline: none !important;
       }
       [data-theme="light"] #apk-hamburger-btn {
-        background: rgba(255, 255, 255, 0.85) !important;
-        border: 1px solid rgba(139, 92, 246, 0.25) !important;
-        box-shadow: 0 4px 16px rgba(109, 40, 217, 0.12) !important;
+        background: rgba(255, 255, 255, 0.88) !important;
+        border: 1px solid rgba(142, 116, 229, 0.38) !important;
+        box-shadow: 2.5px 2.5px 0 0 #8E74E5, 0 4px 14px rgba(108, 79, 214, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
         color: #1e1b4b !important;
       }
       #apk-hamburger-btn svg {
-        width: 22px !important;
-        height: 22px !important;
+        width: 18px !important;
+        height: 18px !important;
         stroke: currentColor !important;
+        stroke-width: 2.3 !important;
         fill: none !important;
         display: block !important;
       }

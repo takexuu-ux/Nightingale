@@ -1185,6 +1185,13 @@ function updateQuizNavigator() {
       updateQuizNavigator();
     });
   });
+
+  const activeBtn = grid.querySelector('.nav-q-btn.active');
+  if (activeBtn) {
+    try {
+      activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } catch (e) {}
+  }
 }
 
 function renderAnalysisQuestions(filter = 'all') {

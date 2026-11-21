@@ -16,7 +16,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#7C3AED"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#fonGlow)"/>
       <!-- Stethoscope Contour -->
       <path d="M 22 28 C 16 38, 18 58, 40 58 C 62 58, 64 38, 58 28" stroke="url(#fonViolet)" stroke-width="2.6" stroke-linecap="round" fill="none"/>
       <path d="M 22 28 C 22 20, 29 16, 32 16 M 58 28 C 58 20, 51 16, 48 16" stroke="url(#fonViolet)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
@@ -51,7 +50,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#7C3AED"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#anaGlow)"/>
       <!-- Anatomical Heart Organ -->
       <path d="M 40 32 C 34 24, 23 27, 26 38 C 28 45, 36 53, 40 58 C 44 53, 52 45, 54 38 C 57 27, 46 24, 40 32 Z" fill="rgba(124, 58, 237, 0.32)" stroke="url(#anaViolet)" stroke-width="2"/>
       <!-- Aorta & Pulmonary Arteries -->
@@ -77,7 +75,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#7C3AED"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#pedGlow)"/>
       <!-- Protective Caring Hands Frame -->
       <path d="M 18 52 C 16 38, 24 24, 40 22 C 56 24, 64 38, 62 52" stroke="url(#pedViolet)" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round" fill="none"/>
       <!-- Cute Infant Footprint — Sole & Heel -->
@@ -108,7 +105,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#medGlow)"/>
       <!-- Dual Stethoscope Binaural Tubes -->
       <path d="M 28 20 C 28 28, 33 34, 40 34 C 47 34, 52 28, 52 20" stroke="url(#medViolet)" stroke-width="2.6" stroke-linecap="round" fill="none"/>
       <circle cx="28" cy="20" r="2.4" fill="#FFFFFF"/>
@@ -137,7 +133,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#7C3AED"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#surgGlow)"/>
       <!-- Sterile Boundary Circular Ring -->
       <circle cx="40" cy="40" r="28" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1.4" stroke-dasharray="4 4" fill="none"/>
       <!-- Surgical Scalpel -->
@@ -173,7 +168,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#7C3AED"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#obgGlow)"/>
       <!-- Pregnant Mother Silhouette Arc -->
       <path d="M 30 18 C 30 18, 38 20, 38 28 C 38 32, 32 35, 32 40 C 32 48, 48 54, 46 64" stroke="url(#obgViolet)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
       <!-- Maternal Womb Embrace -->
@@ -201,7 +195,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#chnGlow)"/>
       <!-- Protective Health Shield Outline -->
       <path d="M 40 14 Q 58 18 58 36 C 58 52, 40 64, 40 66 C 40 64, 22 52, 22 36 Q 22 18 40 14 Z" fill="rgba(124, 58, 237, 0.22)" stroke="url(#chnViolet)" stroke-width="2"/>
       <!-- Adult Figure (Left) -->
@@ -232,7 +225,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#rxGlow)"/>
       <!-- Medicine Bottle Body -->
       <rect x="22" y="30" width="22" height="32" rx="4" fill="rgba(124, 58, 237, 0.32)" stroke="url(#rxViolet)" stroke-width="2"/>
       <rect x="25" y="24" width="16" height="6" rx="2" fill="url(#rxViolet)"/>
@@ -262,7 +254,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#bioGlow)"/>
       <!-- Central Hexagon Molecule -->
       <polygon points="40,22 56,31 56,49 40,58 24,49 24,31" stroke="url(#bioViolet)" stroke-width="2.2" fill="rgba(124, 58, 237, 0.25)"/>
       <!-- Inner Double Bonds -->
@@ -296,7 +287,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#pathGlow)"/>
       <!-- Microscope Eyepiece & Body -->
       <path d="M 30 18 L 36 26 L 30 30" stroke="url(#pathViolet)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
       <!-- Arm Curve -->
@@ -327,7 +317,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#menGlow)"/>
       <!-- Human Head Profile Contour -->
       <path d="M 26 58 L 30 54 C 30 54, 24 50, 24 38 C 24 24, 34 16, 48 16 C 60 16, 64 26, 64 36 C 64 42, 60 48, 54 52 L 54 62" stroke="url(#menViolet)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
       <!-- Synaptic Neural Network inside Brain -->
@@ -361,7 +350,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#micGlow)"/>
       <!-- Glass Petri Dish Outer Rim -->
       <circle cx="40" cy="40" r="26" stroke="url(#micViolet)" stroke-width="2.2" fill="rgba(124, 58, 237, 0.22)"/>
       <circle cx="40" cy="40" r="22" stroke="rgba(167, 139, 250, 0.4)" stroke-width="1.2" stroke-dasharray="3 3" fill="none"/>
@@ -391,7 +379,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#resGlow)"/>
       <!-- Research Protocol Document -->
       <rect x="22" y="18" width="28" height="38" rx="3" fill="rgba(124, 58, 237, 0.28)" stroke="url(#resViolet)" stroke-width="2"/>
       <line x1="28" y1="26" x2="44" y2="26" stroke="#DDD6FE" stroke-width="1.8" stroke-linecap="round"/>
@@ -419,7 +406,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#mgtGlow)"/>
       <!-- Hospital Main Wing -->
       <rect x="28" y="24" width="24" height="38" rx="2" fill="rgba(124, 58, 237, 0.32)" stroke="url(#mgtViolet)" stroke-width="2"/>
       <!-- Hospital Left Wing -->
@@ -452,7 +438,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#eduGlow)"/>
       <!-- Open Academic Medical Textbook -->
       <path d="M 40 38 Q 24 34 18 36 L 18 56 Q 24 54 40 58 Q 56 54 62 56 L 62 36 Q 56 34 40 38 Z" fill="rgba(124, 58, 237, 0.32)" stroke="url(#eduViolet)" stroke-width="2"/>
       <line x1="40" y1="38" x2="40" y2="58" stroke="url(#eduViolet)" stroke-width="2"/>
@@ -481,7 +466,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#infGlow)"/>
       <!-- Hospital Telemetry Tablet Screen -->
       <rect x="20" y="20" width="40" height="36" rx="4" fill="rgba(124, 58, 237, 0.28)" stroke="url(#infViolet)" stroke-width="2"/>
       <rect x="24" y="24" width="32" height="24" rx="2" fill="rgba(18, 14, 28, 0.65)"/>
@@ -508,7 +492,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#aptGlow)"/>
       <!-- Interlocking Precision Gear Cog -->
       <circle cx="40" cy="40" r="15" stroke="url(#aptViolet)" stroke-width="2.4" fill="rgba(124, 58, 237, 0.3)"/>
       <circle cx="40" cy="40" r="6" fill="#FFFFFF"/>
@@ -542,7 +525,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#engGlow)"/>
       <!-- Primary Speech Bubble -->
       <path d="M 22 24 C 22 19, 27 16, 36 16 L 52 16 C 60 16, 64 20, 64 26 L 64 38 C 64 44, 58 46, 50 46 L 42 46 L 34 54 L 34 46 L 30 46 C 24 46, 22 42, 22 36 Z" fill="rgba(124, 58, 237, 0.3)" stroke="url(#engViolet)" stroke-width="2"/>
       <!-- Communication Text Lines -->
@@ -567,7 +549,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#procGlow)"/>
       <!-- Angled Precision Medical Syringe -->
       <g transform="rotate(-40 40 40)">
         <!-- Plunger Rod -->
@@ -607,7 +588,6 @@ export const SUBJECT_ILLUSTRATIONS = {
           <stop offset="100%" stop-color="#6C4FD6"/>
         </linearGradient>
       </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#defGlow)"/>
       <circle cx="40" cy="40" r="28" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>
       <!-- Asclepius Central Medical Staff -->
       <line x1="40" y1="16" x2="40" y2="64" stroke="url(#defViolet)" stroke-width="3" stroke-linecap="round"/>

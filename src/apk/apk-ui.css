@@ -2374,10 +2374,10 @@ body:has(#tests-detail-view:not(.hide)) .notes-hero-header {
 
 [data-theme="dark"] #subjects-catalog-view .subject-card,
 [data-theme="dark"] #class-list-container .subject-card {
-  background: radial-gradient(circle at 0% 0%, #0d0f14 0%, #151821 42%, transparent 80%),
-              linear-gradient(135deg, #101217 0%, #191c24 50%, #222632 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  background: radial-gradient(circle at 0% 0%, rgba(142, 116, 229, 0.35) 0%, transparent 68%),
+              linear-gradient(155deg, rgba(46, 36, 82, 0.88) 0%, rgba(26, 20, 52, 0.94) 100%) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 /* 3. Notes & PDFs (Cobalt Azure / Sky Blue - Corner gradient from TOP-LEFT) */
@@ -2944,20 +2944,62 @@ body:not(.apk-is-auth) {
   flex-shrink: 0;
 }
 
+/* Dedicated High-Contrast Action Buttons for Notes & PDFs (User specification: Black BG/White Text on Dark, White BG/Black Text on Light) */
 .note-doc-actions .btn-note-view,
 .note-doc-actions .btn-note-download {
-  height: 33px;
-  padding: 0 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  white-space: nowrap;
-  text-decoration: none;
-  cursor: pointer;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  padding: 0 16px !important;
+  border-radius: 11px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.18s ease !important;
+}
+
+.note-doc-actions .btn-note-view svg,
+.note-doc-actions .btn-note-download svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: #FFFFFF !important;
+  flex-shrink: 0 !important;
+}
+
+.note-doc-actions .btn-note-view:active,
+.note-doc-actions .btn-note-download:active {
+  transform: scale(0.97) !important;
+  background: #141B2D !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+}
+
+[data-theme="light"] .note-doc-actions .btn-note-view,
+[data-theme="light"] .note-doc-actions .btn-note-download {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.22) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .note-doc-actions .btn-note-view svg,
+[data-theme="light"] .note-doc-actions .btn-note-download svg {
+  stroke: #0F172A !important;
+}
+
+[data-theme="light"] .note-doc-actions .btn-note-view:active,
+[data-theme="light"] .note-doc-actions .btn-note-download:active {
+  background: #F1F5F9 !important;
+  border-color: rgba(15, 23, 42, 0.42) !important;
 }
 
 .note-doc-actions .btn-note-view.btn-launch-test {
@@ -4218,72 +4260,47 @@ html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
   position: relative;
   width: 100% !important;
   height: 100% !important;
-  animation: spideyIdleHover 3.4s ease-in-out infinite;
+  animation: novaHoverBob 3.2s ease-in-out infinite;
   will-change: transform;
 }
 
-.spidey-avatar-wrap {
+.nova-companion-avatar {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 6px 14px rgba(124, 58, 237, 0.45));
 }
 
-.spidey-avatar-img {
-  width: 58px !important;
-  height: 58px !important;
-  object-fit: contain !important;
+.nova-svg {
+  width: 56px !important;
+  height: 56px !important;
+  display: block !important;
   pointer-events: none !important;
   user-select: none !important;
-  -webkit-user-select: none !important;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55));
-  transform-origin: center center;
-  transition: transform 0.2s ease;
 }
 
-#apk-companion-pet.facing-left .spidey-avatar-img {
-  transform: scaleX(-1);
-}
-
-#apk-companion-pet.is-crouching .spidey-avatar-img {
-  transform: scale(1.18, 0.82) translateY(5px);
-}
-
-#apk-companion-pet.is-dragging .spidey-avatar-img {
-  transform: scale(1.08);
-}
-
-@keyframes spideyIdleHover {
+@keyframes novaHoverBob {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-6px);
+    transform: translateY(-5px);
   }
 }
 
-.spidey-sense-waves {
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70px;
-  height: 35px;
-  pointer-events: none;
-  animation: spideySensePulse 0.4s ease-in-out infinite alternate;
+#apk-companion-pet.nova-reacting .apk-pet-avatar {
+  animation: novaBounce 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-.spidey-sense-waves-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-@keyframes spideySensePulse {
-  0% { transform: translateX(-50%) scale(0.95); opacity: 0.8; }
-  100% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+@keyframes novaBounce {
+  0% { transform: scale(1) translateY(0); }
+  35% { transform: scale(1.18, 0.82) translateY(-8px); }
+  65% { transform: scale(0.92, 1.08) translateY(-14px); }
+  85% { transform: scale(1.04, 0.96) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); }
 }
 
 @keyframes apkPetBob {
@@ -4591,6 +4608,17 @@ html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
     border-radius: 999px !important;
     box-sizing: border-box !important;
     margin: 6px auto 16px auto !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  @media (max-width: 580px) {
+    .saved-mode-tabs {
+      justify-content: flex-start !important;
+      padding: 4px 6px !important;
+      gap: 6px !important;
+    }
   }
 
   .section-mode-tabs::-webkit-scrollbar,
@@ -4665,6 +4693,18 @@ html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
     gap: 7px !important;
     transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
     box-shadow: none !important;
+  }
+
+  @media (max-width: 580px) {
+    .saved-mode-tabs .saved-mode-tab {
+      flex: 1 0 auto !important;
+      width: auto !important;
+      min-width: auto !important;
+      padding: 0 12px !important;
+      font-size: 11.5px !important;
+      height: 36px !important;
+      gap: 5px !important;
+    }
   }
 
   #subjects-catalog-view .section-mode-tabs .section-mode-tab {
@@ -5184,9 +5224,6 @@ html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
 .btn-primary,
 .btn-verify-compact,
 .sd-lecture-btn,
-.btn-note-view,
-.note-doc-actions .btn-note-view,
-.note-doc-actions .btn-note-view.btn-launch-test,
 .apk-pill-opt.active,
 .section-mode-tab.active,
 .filter-chip.active {
@@ -5200,9 +5237,7 @@ html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
 #btn-back-to-subjects,
 #btn-back-subjects,
 #btn-back-tests,
-.quiz-mode-toggle-pill,
-.note-doc-actions .btn-note-download,
-.note-doc-actions .btn-note-download.btn-launch-test {
+.quiz-mode-toggle-pill {
   background: linear-gradient(145deg, #F8F5FF 0%, #EFE8FD 100%) !important;
   color: #4E329A !important;
   border-color: rgba(124, 92, 224, 0.24) !important;
@@ -5213,9 +5248,7 @@ html:not(.is-logged-in) body.apk-is-auth #apk-companion-pet,
 [data-theme="dark"] #btn-back-to-subjects,
 [data-theme="dark"] #btn-back-subjects,
 [data-theme="dark"] #btn-back-tests,
-[data-theme="dark"] .quiz-mode-toggle-pill,
-[data-theme="dark"] .note-doc-actions .btn-note-download,
-[data-theme="dark"] .note-doc-actions .btn-note-download.btn-launch-test {
+[data-theme="dark"] .quiz-mode-toggle-pill {
   background: linear-gradient(145deg, rgba(124, 92, 224, 0.22) 0%, rgba(91, 62, 168, 0.14) 100%) !important;
   color: #DDD6FE !important;
   border-color: rgba(167, 139, 250, 0.28) !important;
@@ -6787,10 +6820,10 @@ main#app,
 /* Videos Subject Cards: User requested Dark Grey gradient strictly for Videos */
 [data-theme="dark"] #subjects-catalog-view .subject-card,
 [data-theme="dark"] #class-list-container .subject-card {
-  background: radial-gradient(circle at 0% 0%, #0d0f14 0%, #151821 42%, transparent 80%),
-              linear-gradient(135deg, #101217 0%, #191c24 50%, #222632 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  background: radial-gradient(circle at 0% 0%, rgba(142, 116, 229, 0.35) 0%, transparent 68%),
+              linear-gradient(155deg, rgba(46, 36, 82, 0.88) 0%, rgba(26, 20, 52, 0.94) 100%) !important;
+  border: 1px solid rgba(167, 139, 250, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Notes Subject Cards: Rich Royal Violet / Slate Orchid Theme Gradient */
@@ -7117,6 +7150,9 @@ main#app,
   -webkit-backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(142, 116, 229, 0.28) !important;
   box-sizing: border-box !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
 }
 
 .saved-mode-tabs::-webkit-scrollbar {
@@ -7148,6 +7184,28 @@ main#app,
   gap: 7px !important;
   cursor: pointer !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@media (max-width: 580px) {
+  .saved-mode-tabs {
+    justify-content: flex-start !important;
+    padding: 4px 6px !important;
+    gap: 6px !important;
+  }
+  .saved-mode-tab {
+    flex: 1 0 auto !important;
+    width: auto !important;
+    min-width: auto !important;
+    padding: 0 12px !important;
+    font-size: 11.5px !important;
+    height: 36px !important;
+    gap: 5px !important;
+  }
+  .saved-mode-tab svg {
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+  }
 }
 
 .saved-mode-tab.active {
@@ -8704,225 +8762,33 @@ main#app,
   transform: scaleX(1) rotate(8deg);
 }
 
-/* Spiderman Superhero Web-Swing & Action Stunt Animations */
-#apk-companion-pet.is-swinging .apk-pet-avatar {
-  animation: spideyPendulumSwing 0.85s cubic-bezier(0.25, 1, 0.5, 1) !important;
-  transform-origin: 50% -40px !important;
-}
-
-@keyframes spideyPendulumSwing {
-  0% {
-    transform: rotate(-32deg) scale(0.92);
-  }
-  45% {
-    transform: rotate(26deg) scale(1.08) translateY(-14px);
-  }
-  75% {
-    transform: rotate(-12deg) scale(1.02);
-  }
-  100% {
-    transform: rotate(0deg) scale(1);
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   SPIDER-MAN SUPERHERO COMPANION: FULL ARTICULATED ANATOMY & STUNT ANIMATIONS
-   - Expressive Mask Eyes (blinking, squinting, spider-sense)
-   - Dynamic Legs Movement (running cycle, mid-air swing kicks)
-   - Hands & Arms Movement (web shooter "thwip", overhead web grip)
-   - Acrobatic Stunts (360° backflip, organic web swing, superhero landing)
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* Nova AI Companion Mascot (ChatGPT-Style Companion) */
 #apk-companion-pet {
-  width: 68px !important;
-  height: 74px !important;
-  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
-}
-
-.spidey-hero-svg {
-  width: 100% !important;
-  height: 100% !important;
-  overflow: visible !important;
-}
-
-/* Subtle Natural Superhero Hover Bob */
-.spidey-body-root {
-  transform-origin: 48px 55px;
-  animation: spideyIdleHover 3.2s ease-in-out infinite;
-}
-
-@keyframes spideyIdleHover {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-5px) rotate(1.5deg); }
-}
-
-/* 1. MASK EYES MOVEMENT: Natural Blinks & Squints */
-.spidey-eye {
-  transform-origin: 48px 30px;
-  animation: spideyMaskBlink 4.2s ease-in-out infinite;
-}
-
-@keyframes spideyMaskBlink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.12); }
-  98% { transform: scaleY(1); }
-}
-
-#apk-companion-pet.is-squint .spidey-eye,
-#apk-companion-pet.is-swinging .spidey-eye {
-  transform: scaleY(0.55) scaleX(1.08) !important;
-  transition: transform 0.15s ease;
-}
-
-#apk-companion-pet.is-alert .spidey-eye {
-  transform: scale(1.18) !important;
-  transition: transform 0.12s ease;
-}
-
-#apk-companion-pet.is-alert .spidey-sense-waves {
-  display: block !important;
-  animation: spideySensePulse 0.5s ease-in-out infinite alternate;
-}
-
-@keyframes spideySensePulse {
-  0% { transform: scale(0.95); opacity: 0.75; }
-  100% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px #FBBF24); }
-}
-
-/* 2. LEGS MOVEMENT: Alternating Running Kick Cycles on Drag */
-#apk-companion-pet.is-running .spidey-leg-left {
-  transform-origin: 44px 68px;
-  animation: spideyLegCycleLeft 0.18s ease-in-out infinite alternate !important;
-}
-
-#apk-companion-pet.is-running .spidey-leg-right {
-  transform-origin: 52px 68px;
-  animation: spideyLegCycleRight 0.18s ease-in-out infinite alternate !important;
-}
-
-@keyframes spideyLegCycleLeft {
-  0% { transform: rotate(-28deg) translateY(-2px); }
-  100% { transform: rotate(30deg) translateY(3px); }
-}
-
-@keyframes spideyLegCycleRight {
-  0% { transform: rotate(28deg) translateY(3px); }
-  100% { transform: rotate(-30deg) translateY(-2px); }
-}
-
-/* Legs mid-air acrobatics when swinging */
-#apk-companion-pet.is-swinging .spidey-leg-left {
-  transform-origin: 44px 68px;
-  animation: spideyLegSwingAcrobat 0.85s ease-in-out forwards !important;
-}
-
-#apk-companion-pet.is-swinging .spidey-leg-right {
-  transform-origin: 52px 68px;
-  animation: spideyLegSwingExtend 0.85s ease-in-out forwards !important;
-}
-
-@keyframes spideyLegSwingAcrobat {
-  0% { transform: rotate(0deg); }
-  35% { transform: rotate(-35deg) scale(0.9); }
-  75% { transform: rotate(24deg) scale(1.05); }
-  100% { transform: rotate(0deg); }
-}
-
-@keyframes spideyLegSwingExtend {
-  0% { transform: rotate(0deg); }
-  40% { transform: rotate(32deg) scale(1.1); }
-  80% { transform: rotate(-18deg); }
-  100% { transform: rotate(0deg); }
-}
-
-/* 3. HANDS & ARMS MOVEMENT: Running Pumps, Web Gripping, Shooting */
-#apk-companion-pet.is-running .spidey-arm-left {
-  transform-origin: 38px 54px;
-  animation: spideyArmPumpLeft 0.18s ease-in-out infinite alternate !important;
-}
-
-#apk-companion-pet.is-running .spidey-arm-right {
-  transform-origin: 58px 50px;
-  animation: spideyArmPumpRight 0.18s ease-in-out infinite alternate !important;
-}
-
-@keyframes spideyArmPumpLeft {
-  0% { transform: rotate(-24deg); }
-  100% { transform: rotate(22deg); }
-}
-
-@keyframes spideyArmPumpRight {
-  0% { transform: rotate(22deg); }
-  100% { transform: rotate(-26deg); }
-}
-
-#apk-companion-pet.is-shooting .spidey-web-flare {
-  display: block !important;
-  animation: spideyWristFlare 0.25s ease-out forwards;
-}
-
-@keyframes spideyWristFlare {
-  0% { transform: scale(0.4); opacity: 0; }
-  50% { transform: scale(1.25); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.9; }
-}
-
-/* 4. SUPERHERO STUNTS */
-/* Stunt A: 360° Acrobatic Corkscrew Backflip */
-#apk-companion-pet.is-backflip .apk-pet-avatar,
-#apk-companion-pet.is-backflip .spidey-mascot-svg {
-  animation: spideyAcrobaticFlip 0.78s cubic-bezier(0.2, 0.85, 0.35, 1.25) forwards !important;
-  transform-origin: center center !important;
-}
-
-@keyframes spideyAcrobaticFlip {
-  0% { transform: translateY(0) rotate(0deg) scale(1); }
-  30% { transform: translateY(-48px) rotate(-140deg) scale(1.2); }
-  65% { transform: translateY(-24px) rotate(-280deg) scale(1.12); }
-  88% { transform: translateY(2px) rotate(-360deg) scale(0.96, 1.04); }
-  100% { transform: translateY(0) rotate(-360deg) scale(1, 1); }
-}
-
-/* Stunt B: Dynamic Web Swing Arc */
-#apk-companion-pet.is-swinging .apk-pet-avatar,
-#apk-companion-pet.is-swinging .spidey-mascot-svg {
-  animation: spideyPendulumArc 0.95s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
-  transform-origin: 50% -20px !important;
-}
-
-@keyframes spideyPendulumArc {
-  0% { transform: rotate(-24deg) scale(1); }
-  35% { transform: rotate(28deg) scale(1.08) translateY(-8px); }
-  75% { transform: rotate(-10deg) scale(1.02); }
-  100% { transform: rotate(0deg) scale(1); }
-}
-
-/* Stunt C: Superhero 3-Point Landing Crouch */
-#apk-companion-pet.is-crouching .spidey-body-root {
-  transform-origin: 48px 85px;
-  animation: spideyLandingCrouch 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards !important;
-}
-
-@keyframes spideyLandingCrouch {
-  0% { transform: scale(1.05, 0.92) translateY(2px); }
-  45% { transform: scale(1.24, 0.75) translateY(7px); }
-  100% { transform: scale(1, 1) translateY(0); }
-}
-
-/* Directional Flip */
-#apk-companion-pet.facing-left .spidey-hero-svg {
-  transform: scaleX(-1);
-}
-
-/* Spider-Web Lines & Organic Silk Physics */
-#spidey-web-line {
   position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
+  z-index: 24000 !important;
+  width: 58px !important;
+  height: 58px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45));
+  transition: top 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+              bottom 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+              left 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+              right 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.3s ease !important;
+}
+
+#apk-companion-pet.hide,
+#apk-companion-pet.hide-on-auth {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
   pointer-events: none !important;
-  z-index: 999998 !important;
-  overflow: visible !important;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 16px rgba(167, 139, 250, 0.6));
 }
 #apk-companion-pet.is-shock .apk-pet-avatar {
   animation: lumiShock 0.55s ease-in-out !important;
@@ -9360,6 +9226,150 @@ main#app,
     flex-shrink: 0 !important;
     height: 100% !important;
     overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .quiz-viewer-header {
+    padding: 8px 12px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+  .quiz-viewer-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  .btn-quiz-back {
+    height: 30px !important;
+    padding: 0 8px !important;
+    font-size: 11.5px !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  .quiz-viewer-title-area {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  #quiz-title {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 140px !important;
+    line-height: 1.2 !important;
+  }
+  #quiz-meta {
+    display: none !important;
+  }
+  .quiz-header-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+  .quiz-timer-container {
+    height: 28px !important;
+    padding: 2px 8px !important;
+    gap: 4px !important;
+  }
+  .quiz-timer {
+    font-size: 11.5px !important;
+  }
+  .btn-close-quiz {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+  }
+  .quiz-viewer-body {
+    flex-direction: column !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    overflow: hidden !important;
+  }
+  .quiz-sidebar {
+    order: -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 6px 8px !important;
+    border-radius: 12px !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    height: auto !important;
+  }
+  .quiz-sidebar-title,
+  .quiz-sidebar-legend {
+    display: none !important;
+  }
+  .quiz-navigator-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 2px 0 !important;
+  }
+  .quiz-navigator-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+  .nav-q-btn {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+  }
+  .quiz-question-container {
+    flex: 1 1 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 12px 14px !important;
+    margin-bottom: 0 !important;
+    border-radius: 14px !important;
+  }
+  .quiz-viewer-footer {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+  }
+  .quiz-footer-nav-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex: 1 !important;
+  }
+  .quiz-viewer-footer .btn,
+  .btn-cbt-action {
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    min-width: auto !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    flex: 1 !important;
+    white-space: nowrap !important;
+  }
+  .btn-cbt-submit {
+    flex: 1.1 !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
   }
 }
 
@@ -12446,14 +12456,19 @@ body.in-classroom #apk-companion-pet {
 /* ═══════════════════════════════════════════════════════════════════════════
    OPTIONS (HAMBURGER) BUTTON: ZERO GLITCH / IDENTICAL POSITION ACROSS ALL PAGES
    ═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPTIONS (HAMBURGER) BUTTON: PHONEPE STYLE (SCROLLS WITH PAGE & MATCHES SEARCH BUTTON)
+   ═══════════════════════════════════════════════════════════════════════════ */
 #apk-hamburger-btn,
 .apk-hamburger-btn {
-  position: fixed !important;
-  top: max(12px, env(safe-area-inset-top, 12px)) !important;
+  position: absolute !important;
+  top: max(14px, env(safe-area-inset-top, 14px)) !important;
   left: 14px !important;
   z-index: 25000 !important;
-  width: 44px !important;
-  height: 44px !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -12461,21 +12476,54 @@ body.in-classroom #apk-companion-pet {
   visibility: visible !important;
   pointer-events: auto !important;
   margin: 0 !important;
-  background: rgba(18, 14, 28, 0.72) !important;
-  border: 1px solid rgba(167, 139, 250, 0.28) !important;
-  border-radius: 12px !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  background: rgba(30, 22, 54, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  color: var(--text-primary) !important;
+  box-shadow:
+    2.5px 2.5px 0 0 #8E74E5,
+    0 4px 14px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   transform: translateZ(0) !important;
+  cursor: pointer !important;
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease !important;
+}
+
+#apk-hamburger-btn svg,
+.apk-hamburger-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: currentColor !important;
+  stroke-width: 2.3 !important;
+  display: block !important;
+}
+
+#apk-hamburger-btn:active,
+.apk-hamburger-btn:active {
+  transform: scale(0.94) !important;
 }
 
 [data-theme="light"] #apk-hamburger-btn,
 [data-theme="light"] .apk-hamburger-btn {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(139, 92, 246, 0.25) !important;
-  box-shadow: 0 4px 16px rgba(109, 40, 217, 0.12) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(142, 116, 229, 0.38) !important;
+  color: #1E1B4B !important;
+  box-shadow:
+    2.5px 2.5px 0 0 #8E74E5,
+    0 4px 14px rgba(108, 79, 214, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+@media (min-width: 768px) {
+  #apk-hamburger-btn,
+  .apk-hamburger-btn {
+    position: fixed !important;
+    top: 18px !important;
+    left: 20px !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -41,8 +41,15 @@ if (webArgIdx < 0) {
   } catch {}
 }
 
+// Read NATIVE_VERSION_CODE (allow override via CLI flag --native)
+const nativeArgIdx = args.indexOf('--native');
+let nativeVersionCode = 44;
+if (nativeArgIdx >= 0 && args[nativeArgIdx + 1]) {
+  nativeVersionCode = Number(args[nativeArgIdx + 1]);
+}
+
 // Write version.json into dist/ cleanly
-fs.writeFileSync(path.join(ROOT, 'dist', 'version.json'), JSON.stringify({ webVersion: nextWebVersion }));
+fs.writeFileSync(path.join(ROOT, 'dist', 'version.json'), JSON.stringify({ webVersion: nextWebVersion, nativeVersionCode }));
 
 console.log(`2. Packaging lightweight hinglish-bundle.zip (webVersion=${nextWebVersion})...`);
 fs.rmSync(OTA_TMP, { recursive: true, force: true });
@@ -75,12 +82,6 @@ execSync(`python "${path.join(OTA_TMP, 'make_zip.py')}"`, { stdio: 'inherit' });
 fs.rmSync(path.join(OTA_TMP, 'make_zip.py'), { force: true });
 fs.rmSync(otaWebStage, { recursive: true, force: true });
 
-// Read NATIVE_VERSION_CODE from OtaManager.java (allow override via CLI flag --native)
-const nativeArgIdx = args.indexOf('--native');
-let nativeVersionCode = 1; // default to 1 so ALL phones perform instant in-app web update (<1s) without downloading 50MB+ APK
-if (nativeArgIdx >= 0 && args[nativeArgIdx + 1]) {
-  nativeVersionCode = Number(args[nativeArgIdx + 1]);
-}
 
 const manifest = {
   webVersion: nextWebVersion,
