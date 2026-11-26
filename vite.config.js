@@ -27,7 +27,8 @@ export default defineConfig(({ mode }) => ({
         notes: './notes.html',
         tests: './tests.html',
         saved: './saved.html',
-        saarthi: './saarthi.html'
+        saarthi: './saarthi.html',
+        pyqs: './pyqs.html'
       }
     }
   },

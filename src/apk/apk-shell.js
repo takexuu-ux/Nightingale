@@ -276,6 +276,20 @@ function buildSidePanel() {
       <div class="apk-side-card">
         <div class="apk-side-section-title">Saved &amp; Resources</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
+          <!-- 3rd Year PYQ Predictor & Question Papers -->
+          <button type="button" id="apk-side-pyq-btn" class="apk-resource-btn">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="apk-res-icon apk-res-icon-indigo" style="background:rgba(142,116,229,0.2);color:#A78BFA;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </div>
+              <div style="text-align:left;">
+                <span class="apk-res-label" style="display:block;line-height:1.2;">3rd Year PYQ Predictor</span>
+                <span style="font-size:10px;color:var(--text-secondary);font-weight:600;">16 Papers &amp; Repeating Topics</span>
+              </div>
+            </div>
+            <svg class="apk-res-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
           <!-- Single Unified Saved Button -->
           <button type="button" id="apk-side-saved-hub-btn" class="apk-resource-btn">
             <div style="display:flex;align-items:center;gap:12px;">
@@ -352,6 +366,12 @@ function buildSidePanel() {
         syncPetSelectionUI();
       }
     });
+  });
+
+  // 3rd Year PYQ Predictor & Question Papers inside Side Panel
+  panel.querySelector('#apk-side-pyq-btn')?.addEventListener('click', () => {
+    closeSidePanel();
+    window.location.href = '/pyqs.html';
   });
 
   // Single Unified Saved & Offline Hub inside Side Panel
