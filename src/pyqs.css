@@ -529,10 +529,33 @@ html[data-theme="light"] .btn-toggle-answer {
 }
 
 .img-notes {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--pyq-text-muted);
-  line-height: 1.45;
-  margin-bottom: 10px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.exam-svg-box {
+  background: var(--pyq-bg-inner);
+  border: 1px solid var(--pyq-border);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.exam-svg-box svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.exam-svg-caption {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--pyq-text-muted);
+  margin-top: 8px;
 }
 
 .clinical-table {
