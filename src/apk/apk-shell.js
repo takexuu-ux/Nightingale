@@ -337,7 +337,7 @@ function buildSidePanel() {
       <div class="apk-side-footer">
         <button id="apk-sheet-logout-btn" type="button" class="apk-signout-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span>Sign Out</span>
+          <span id="apk-sheet-logout-txt">${localStorage.getItem('nnl_access_token') ? 'Sign Out' : 'Log in with Mobile Number'}</span>
         </button>
       </div>
     </div>
@@ -783,11 +783,12 @@ function buildSidePanel() {
   // Auto-check on sidebar render
   setTimeout(() => performOtaCheck(true), 1200);
 
-  // Sign out
+  // Sign out / Switch Account
   panel.querySelector('#apk-sheet-logout-btn')?.addEventListener('click', () => {
     try { sessionStorage.setItem('nnl_explicit_logout', 'true'); } catch (_) {}
     try { localStorage.removeItem('nnl_access_token'); } catch (_) {}
     try { localStorage.removeItem('nnl_refresh_token'); } catch (_) {}
+    try { localStorage.removeItem('nnl_guest_mode'); } catch (_) {}
     try { localStorage.removeItem('nnl_phone'); } catch (_) {}
     try { localStorage.removeItem('nnl_user_phone'); } catch (_) {}
     try { localStorage.removeItem('nnl_user_id'); } catch (_) {}
@@ -1228,7 +1229,7 @@ function normalizeHeaderAndChrome() {
   // Auth Screen Layout Integration & Strict Hamburger/Side Panel Hiding
   const syncAuthMode = () => {
     const authEl = document.getElementById('auth-screen');
-    const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
+    const token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token') || (localStorage.getItem('nnl_guest_mode') === 'true');
     const isAuth = !token && Boolean(authEl && !authEl.classList.contains('hide'));
     if (document.body.classList.contains('apk-is-auth') !== isAuth) {
       document.body.classList.toggle('apk-is-auth', isAuth);

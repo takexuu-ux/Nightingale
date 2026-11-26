@@ -426,8 +426,10 @@ function checkLoginState() {
     phoneInput.value = '';
   }
 
-  if (token) {
-    // Transition UI to logged-in state
+  const isGuest = localStorage.getItem('nnl_guest_mode') === 'true';
+
+  if (token || isGuest) {
+    // Transition UI to open access / logged-in state
     document.body.classList.remove('apk-is-auth', 'on-login-screen');
     document.body.classList.add('is-logged-in');
     authScreen.classList.add('hide');
@@ -449,8 +451,13 @@ function checkLoginState() {
       window.__nnlSyncPetVisibility();
     }
 
+    const greeting = document.getElementById('apk-hero-greeting');
+    if (greeting) {
+      greeting.textContent = isGuest && !token ? 'Welcome, Guest Student' : 'Welcome, NNL ke Papa';
+    }
+
     // Update profile info
-    let displayName = savedPhone ? savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2') : 'Student';
+    let displayName = savedPhone && savedPhone !== 'Guest Student' ? savedPhone.replace(/(\d{3})\d{5}(\d{2})/, '$1*****$2') : (isGuest ? 'Guest Student (Open Access)' : 'Student');
     if (userPhone) userPhone.textContent = displayName;
     if (userAvatar) {
       userAvatar.innerHTML = `
@@ -4454,6 +4461,17 @@ async function handleJoinClassroomClick(e) {
   const btn = e.target.closest('.join-embedded-btn');
   if (!btn) return;
 
+  const token = localStorage.getItem('nnl_access_token');
+  if (!token) {
+    await showCustomAlert(
+      'Live streaming requires an active Nursing Next Live mobile number. Notes, Tests, 3rd Year PYQs, and Question Papers are fully accessible without login. Please log in with your phone and OTP to stream live classes.',
+      'Mobile Login Required'
+    );
+    localStorage.removeItem('nnl_guest_mode');
+    checkLoginState();
+    return;
+  }
+
   const classId = btn.getAttribute('data-class-id');
   const title = btn.getAttribute('data-class-title') || 'Live Class';
   const instructor = btn.getAttribute('data-class-instructor') || 'Faculty';
@@ -5104,6 +5122,22 @@ function clearOtpBoxes() {
 
 // Initialize OTP boxes immediately
 initOtpBoxes();
+
+export function enterGuestMode() {
+  localStorage.setItem('nnl_guest_mode', 'true');
+  localStorage.setItem('nnl_phone', 'Guest Student');
+  checkLoginState();
+}
+
+window.__nnlEnterGuestMode = enterGuestMode;
+
+const guestBtn = document.getElementById('guest-access-btn');
+if (guestBtn) {
+  guestBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    enterGuestMode();
+  });
+}
 
 // Handle Login request (Send OTP)
 phoneForm.addEventListener('submit', async (e) => {

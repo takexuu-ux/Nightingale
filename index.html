@@ -289,6 +289,22 @@
                   <span>Request OTP</span>
                 </button>
               </form>
+
+              <!-- Guest Open Access Option -->
+              <div style="margin-top: 14px; text-align: center;">
+                <div style="display: flex; align-items: center; gap: 8px; margin: 12px 0;">
+                  <div style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12);"></div>
+                  <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted, #94A3B8); font-weight: 700; letter-spacing: 0.05em;">OR</span>
+                  <div style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12);"></div>
+                </div>
+                <button type="button" id="guest-access-btn" class="btn btn-secondary" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; font-weight: 700; font-size: 13.5px; border-radius: 11px; background: rgba(142, 116, 229, 0.16); border: 1px solid rgba(142, 116, 229, 0.38); color: #DDD6FE; cursor: pointer; transition: all 0.2s ease;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Continue without Login (Explore Notes, Tests &amp; PYQs)</span>
+                </button>
+                <p style="font-size: 11px; color: var(--text-muted, #94A3B8); margin: 8px 0 0 0; line-height: 1.45;">
+                  Instant open access to 16 Question Papers, 141+ Notes, Test Bank &amp; PYQs. (Mobile login only needed for live streaming).
+                </p>
+              </div>
             </div>
 
             <!-- Step 2: Input OTP (Hidden by default) -->
@@ -553,7 +569,7 @@
         <script>
           (function(){
             try {
-              if (localStorage.getItem('nnl_access_token')) {
+              if (localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_guest_mode') === 'true') {
                 document.body.classList.remove('apk-is-auth', 'on-login-screen');
                 document.body.classList.add('is-logged-in');
                 var d = document.getElementById('classroom-dashboard');
