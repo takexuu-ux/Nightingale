@@ -369,6 +369,7 @@ function renderPriorityTopics(topics) {
 
     const rep = topic.repeatCount >= 4 ? 4 : (topic.repeatCount || 1);
     const badgeLabel = rep === 1 ? '1x Asked in Exam' : `${rep}x Repeated in NTRUHS`;
+    const yearsStr = (topic.years || []).join(' • ');
 
     card.innerHTML = `
       <div class="pyq-topic-header">
@@ -376,26 +377,21 @@ function renderPriorityTopics(topics) {
           <span class="pyq-freq-badge b-${rep}-repeat">
             ${badgeLabel}
           </span>
-          <div class="pyq-years-tag-list">
-            ${yearsHtml}
-          </div>
+          ${yearsStr ? `<span class="pyq-year-summary">${yearsStr}</span>` : ''}
         </div>
 
         <h3 class="pyq-topic-title">${topic.title}</h3>
 
-        ${conceptsHtml ? `<ul class="pyq-concepts-list">${conceptsHtml}</ul>` : ''}
-
         ${questionsHtml ? `
           <div class="pyq-questions-section">
-            <div class="pyq-questions-header">Exact Exam Questions (${topic.questions.length})</div>
             ${questionsHtml}
           </div>
         ` : ''}
 
         <div class="pyq-answer-action-bar">
           <button type="button" class="btn-toggle-answer">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span class="btn-toggle-txt">View Exam Answer (2-3 Pages)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span class="btn-toggle-txt">Read Answer (2-3 Pages)</span>
           </button>
         </div>
       </div>
@@ -419,7 +415,7 @@ function renderPriorityTopics(topics) {
         card.classList.toggle('expanded');
         const txt = card.querySelector('.btn-toggle-txt');
         if (txt) {
-          txt.textContent = card.classList.contains('expanded') ? 'Hide Exam Answer' : 'View Exam Answer (2-3 Pages)';
+          txt.textContent = card.classList.contains('expanded') ? 'Hide Answer' : 'Read Answer (2-3 Pages)';
         }
       });
     }

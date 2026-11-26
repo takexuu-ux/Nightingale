@@ -1,30 +1,32 @@
-/* 3rd Year B.Sc Nursing PYQ Portal - Solid High-Contrast Reading Stylesheet */
-/* Clean, readable typography engineered for medical exam study - Zero blurry glass UI */
+/* 3rd Year B.Sc Nursing PYQ Portal - Eye-Friendly Dark Grey Reading Stylesheet */
+/* Neutral dark charcoal-grey gradients & crisp readable typography */
 
 :root {
-  --pyq-bg-surface: #151221;
-  --pyq-bg-card: #1A162B;
-  --pyq-bg-inner: #100D1C;
-  --pyq-border: rgba(142, 116, 229, 0.22);
-  --pyq-border-active: #8E74E5;
-  --pyq-text-primary: #FFFFFF;
-  --pyq-text-secondary: #DDD6FE;
-  --pyq-text-muted: #94A3B8;
-  --pyq-accent: #8E74E5;
-  --pyq-accent-bg: rgba(142, 116, 229, 0.16);
+  --pyq-bg-surface: linear-gradient(180deg, #181a1f 0%, #121418 100%);
+  --pyq-bg-card: linear-gradient(180deg, #1f2228 0%, #181a1f 100%);
+  --pyq-bg-inner: #131519;
+  --pyq-border: rgba(255, 255, 255, 0.09);
+  --pyq-border-active: #38bdf8;
+  --pyq-text-primary: #f3f4f6;
+  --pyq-text-secondary: #d1d5db;
+  --pyq-text-muted: #9ca3af;
+  --pyq-accent: #38bdf8;
+  --pyq-accent-text: #7dd3fc;
+  --pyq-accent-bg: rgba(56, 189, 248, 0.14);
 }
 
 html[data-theme="light"] {
-  --pyq-bg-surface: #F8FAFC;
-  --pyq-bg-card: #FFFFFF;
-  --pyq-bg-inner: #F1F5F9;
-  --pyq-border: #E2E8F0;
-  --pyq-border-active: #7C3AED;
-  --pyq-text-primary: #0F172A;
+  --pyq-bg-surface: #f8fafc;
+  --pyq-bg-card: #ffffff;
+  --pyq-bg-inner: #f1f5f9;
+  --pyq-border: #e2e8f0;
+  --pyq-border-active: #0284c7;
+  --pyq-text-primary: #0f172a;
   --pyq-text-secondary: #334155;
-  --pyq-text-muted: #64748B;
-  --pyq-accent: #7C3AED;
-  --pyq-accent-bg: rgba(124, 58, 237, 0.1);
+  --pyq-text-muted: #64748b;
+  --pyq-accent: #0284c7;
+  --pyq-accent-text: #0369a1;
+  --pyq-accent-bg: rgba(2, 132, 199, 0.1);
 }
 
 .pyq-portal-container {
@@ -128,7 +130,11 @@ html[data-theme="light"] {
 .pyq-sub-chip.active {
   background: var(--pyq-accent);
   border-color: var(--pyq-accent);
-  color: #FFFFFF !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .pyq-sub-chip.active {
+  color: #ffffff !important;
 }
 
 /* Mode Switcher Bar (Repeating Topics vs Question Papers) */
@@ -230,28 +236,19 @@ html[data-theme="light"] .pyq-mode-btn.active {
   margin-top: 12px;
 }
 
-/* Solid High-Contrast Repeating Topic Cards - Responsive Full Width Grid */
+/* Solid High-Contrast Repeating Topic Cards - Spacious Uncrowded Layout */
 .pyq-topics-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
-@media (min-width: 980px) {
+@media (min-width: 1080px) {
   .pyq-topics-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 20px;
     align-items: start;
-  }
-  .pyq-topic-card.expanded {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (min-width: 1360px) {
-  .pyq-topics-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .pyq-topic-card.expanded {
     grid-column: 1 / -1;
@@ -261,7 +258,7 @@ html[data-theme="light"] .pyq-mode-btn.active {
 .pyq-topic-card {
   background: var(--pyq-bg-card);
   border: 1px solid var(--pyq-border);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.2s ease;
   display: flex;
@@ -270,11 +267,15 @@ html[data-theme="light"] .pyq-mode-btn.active {
 }
 
 .pyq-topic-card:hover {
-  border-color: rgba(142, 116, 229, 0.45);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+html[data-theme="light"] .pyq-topic-card:hover {
+  border-color: rgba(2, 132, 199, 0.45);
 }
 
 .pyq-topic-header {
-  padding: 15px 16px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -311,15 +312,21 @@ html[data-theme="light"] .pyq-mode-btn.active {
 }
 
 .b-2-repeat {
-  background: rgba(142, 116, 229, 0.18);
-  border: 1px solid rgba(142, 116, 229, 0.4);
-  color: var(--pyq-accent);
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
 }
 
 .b-1-repeat {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.38);
-  color: #34D399;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.pyq-year-summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pyq-text-muted);
 }
 
 .pyq-years-tag-list {
@@ -378,9 +385,10 @@ html[data-theme="light"] .pyq-mode-btn.active {
 /* Exam Questions Section */
 .pyq-questions-section {
   background: var(--pyq-bg-inner);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
+  border: 1px solid var(--pyq-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
 }
 
 .pyq-questions-header {
@@ -430,14 +438,14 @@ html[data-theme="light"] .pyq-mode-btn.active {
 .btn-toggle-answer {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 8px;
+  gap: 8px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 9px;
   background: var(--pyq-accent-bg);
-  border: 1px solid rgba(142, 116, 229, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.38);
   color: var(--pyq-text-primary);
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -445,18 +453,18 @@ html[data-theme="light"] .pyq-mode-btn.active {
 
 .btn-toggle-answer:hover {
   background: var(--pyq-accent);
-  color: #FFFFFF;
+  color: #0f172a;
 }
 
 .pyq-topic-card.expanded .btn-toggle-answer {
   background: var(--pyq-accent);
-  color: #FFFFFF;
+  color: #0f172a;
 }
 
 /* Written Exam Model Answer Container */
 .pyq-model-answer-wrapper {
   display: none;
-  padding: 16px;
+  padding: 20px 22px;
   border-top: 1px solid var(--pyq-border);
   background: var(--pyq-bg-surface);
 }
@@ -501,8 +509,8 @@ html[data-theme="light"] .pyq-mode-btn.active {
 }
 
 .concept-body {
-  font-size: 13.5px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.72;
   color: var(--pyq-text-secondary);
 }
 
@@ -612,8 +620,12 @@ html[data-theme="light"] .pyq-mode-btn.active {
 
 .pyq-btn-view {
   background: var(--pyq-accent);
-  color: #FFFFFF;
+  color: #0f172a;
   border-color: var(--pyq-accent);
+}
+
+html[data-theme="light"] .pyq-btn-view {
+  color: #ffffff;
 }
 
 .pyq-btn-view:hover {
