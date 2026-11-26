@@ -168,56 +168,35 @@
       </nav>
     </header>
 
-    <main class="main-container" style="padding-top: max(56px, env(safe-area-inset-top, 56px));">
+    <main id="app" class="main-container">
       <div class="pyq-portal-container">
-        <!-- Compact Top Bar: Back Button & Page Title -->
+        <!-- Compact Top Bar -->
         <div class="pyq-compact-header">
-          <a href="/" class="pyq-back-pill" id="pyq-back-to-home">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-            <span>Home</span>
-          </a>
-          <h2 class="pyq-page-title">University Question Papers</h2>
+          <h2 class="pyq-page-title">3rd Year Question Papers</h2>
         </div>
 
-        <!-- On-Page Academic Year Switcher (No Popup) -->
-        <div class="pyq-year-switcher" id="pyq-year-switcher" role="tablist" aria-label="Select Academic Year">
-          <button type="button" class="pyq-year-chip is-soon" data-year="1">1st Year (Soon)</button>
-          <button type="button" class="pyq-year-chip is-soon" data-year="2">2nd Year (Soon)</button>
-          <button type="button" class="pyq-year-chip active" data-year="3">3rd Year (Active)</button>
-          <button type="button" class="pyq-year-chip is-soon" data-year="4">4th Year (Soon)</button>
+        <!-- Directly on Top: Subject Selector Chips -->
+        <div class="pyq-subject-selector" id="pyq-subject-selector" role="tablist" aria-label="Select Subject"></div>
+
+        <!-- Mode Bar: Short clean titles -->
+        <div class="pyq-mode-bar" role="tablist">
+          <button type="button" id="pyq-mode-priority" class="pyq-mode-btn active" role="tab" aria-selected="true">
+            All Questions &amp; Topics
+          </button>
+          <button type="button" id="pyq-mode-papers" class="pyq-mode-btn" role="tab" aria-selected="false">
+            Question Papers
+          </button>
         </div>
 
-        <!-- Coming Soon Container for 1st/2nd/4th Year -->
-        <div id="pyq-year-soon-container" style="display:none;"></div>
+        <!-- SECTION 1: ALL REPEATING TOPICS & QUESTIONS (4x, 3x, 2x, 1x) -->
+        <section id="pyq-priority-section">
+          <div class="pyq-topics-list" id="pyq-topics-list"></div>
+        </section>
 
-        <!-- Active 3rd Year Content Wrapper -->
-        <div id="pyq-active-year-content">
-          <!-- Directly on Top: Subject Selector Chips -->
-          <div class="pyq-subject-selector" id="pyq-subject-selector" role="tablist" aria-label="Select Subject"></div>
-
-          <!-- Mode Bar: Short clean titles -->
-          <div class="pyq-mode-bar" role="tablist">
-            <button type="button" id="pyq-mode-priority" class="pyq-mode-btn active" role="tab" aria-selected="true">
-              All Questions &amp; Topics
-            </button>
-            <button type="button" id="pyq-mode-papers" class="pyq-mode-btn" role="tab" aria-selected="false">
-              Question Papers
-            </button>
-          </div>
-
-          <!-- Frequency Filter Chips (All, 4x, 3x, 2x, 1x) -->
-          <div class="pyq-freq-filter-bar" id="pyq-freq-filter-bar" role="tablist" aria-label="Filter by Repeat Frequency"></div>
-
-          <!-- SECTION 1: PRIORITY REPEATING TOPICS & 2-3 PAGE ANSWERS -->
-          <section id="pyq-priority-section">
-            <div class="pyq-topics-list" id="pyq-topics-list"></div>
-          </section>
-
-          <!-- SECTION 2: QUESTION PAPERS (PDFs) -->
-          <section id="pyq-papers-section" style="display:none;">
-            <div class="pyq-papers-grid" id="pyq-papers-grid"></div>
-          </section>
-        </div>
+        <!-- SECTION 2: QUESTION PAPERS (PDFs) -->
+        <section id="pyq-papers-section" style="display:none;">
+          <div class="pyq-papers-grid" id="pyq-papers-grid"></div>
+        </section>
       </div>
     </main>
 

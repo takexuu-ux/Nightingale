@@ -29,9 +29,9 @@ html[data-theme="light"] {
 
 .pyq-portal-container {
   width: 100%;
-  max-width: 1520px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 12px clamp(14px, 3vw, 42px) 90px clamp(14px, 3vw, 42px);
+  padding: 0 4px 80px 4px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--pyq-text-primary);
   box-sizing: border-box;
@@ -39,7 +39,7 @@ html[data-theme="light"] {
 
 @media (min-width: 768px) {
   .pyq-portal-container {
-    padding: 18px clamp(20px, 3.5vw, 48px) 100px clamp(20px, 3.5vw, 48px);
+    padding: 0 8px 60px 8px;
   }
 }
 
@@ -48,7 +48,14 @@ html[data-theme="light"] {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  min-height: 36px;
+}
+
+@media (max-width: 879px) {
+  .pyq-compact-header {
+    padding-left: 46px;
+  }
 }
 
 .pyq-back-pill {

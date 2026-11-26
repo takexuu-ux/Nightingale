@@ -20,14 +20,8 @@ Object.keys(PYQ_EXTENDED_TOPICS).forEach((subKey) => {
 
 let currentSubjectId = 'msn';
 let currentMode = 'priority'; // 'priority' | 'papers'
-let currentFreqFilter = 'all'; // 'all' | 4 | 3 | 2 | 1
-let currentYear = '3';
 
 // DOM Elements
-const yearSwitcherEl = document.getElementById('pyq-year-switcher');
-const yearSoonContainerEl = document.getElementById('pyq-year-soon-container');
-const activeYearContentEl = document.getElementById('pyq-active-year-content');
-const freqFilterBarEl = document.getElementById('pyq-freq-filter-bar');
 const subjectSelectorEl = document.getElementById('pyq-subject-selector');
 const modePriorityBtn = document.getElementById('pyq-mode-priority');
 const modePapersBtn = document.getElementById('pyq-mode-papers');
@@ -74,50 +68,10 @@ function init() {
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
   }
 
-  setupYearSwitcher();
   renderSubjectChips();
   setupModeSwitchers();
   setupPdfModalControls();
   updateView();
-}
-
-function setupYearSwitcher() {
-  if (!yearSwitcherEl) return;
-  const chips = yearSwitcherEl.querySelectorAll('.pyq-year-chip');
-  chips.forEach((chip) => {
-    chip.addEventListener('click', () => {
-      const yr = chip.getAttribute('data-year');
-      if (!yr || yr === currentYear) return;
-      currentYear = yr;
-      chips.forEach((c) => c.classList.remove('active'));
-      chip.classList.add('active');
-
-      if (yr === '3') {
-        if (yearSoonContainerEl) yearSoonContainerEl.style.display = 'none';
-        if (activeYearContentEl) activeYearContentEl.style.display = 'block';
-        updateView();
-      } else {
-        if (activeYearContentEl) activeYearContentEl.style.display = 'none';
-        if (yearSoonContainerEl) {
-          yearSoonContainerEl.style.display = 'block';
-          const yrLabel = yr === '1' ? '1st Year' : yr === '2' ? '2nd Year' : '4th Year';
-          yearSoonContainerEl.innerHTML = `
-            <div class="pyq-year-soon-card">
-              <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:800;color:var(--pyq-text-primary);">${yrLabel} B.Sc Nursing Question Papers</h3>
-              <p style="margin:0 0 18px 0;font-size:13.5px;color:var(--pyq-text-muted);line-height:1.5;">Previous year question papers and repeating topic analysis for ${yrLabel} are being compiled. 3rd Year (16 Question Papers &amp; All Topics) is currently live.</p>
-              <button type="button" id="pyq-switch-back-3rd" class="pyq-btn-view" style="padding:0 20px;height:38px;border-radius:10px;border:none;">
-                Open 3rd Year Question Papers
-              </button>
-            </div>
-          `;
-          document.getElementById('pyq-switch-back-3rd')?.addEventListener('click', () => {
-            const yr3Chip = yearSwitcherEl.querySelector('.pyq-year-chip[data-year="3"]');
-            if (yr3Chip) yr3Chip.click();
-          });
-        }
-      }
-    });
-  });
 }
 
 function renderSubjectChips() {
@@ -363,57 +317,16 @@ export async function openPdfViewer(title, pdfUrl) {
 
 window.openPdfViewer = openPdfViewer;
 
-function renderFreqFilterChips(topics) {
-  if (!freqFilterBarEl) return;
-  if (currentMode !== 'priority') {
-    freqFilterBarEl.style.display = 'none';
-    return;
-  }
-  freqFilterBarEl.style.display = 'flex';
-  freqFilterBarEl.innerHTML = '';
-
-  const counts = { all: topics.length, 4: 0, 3: 0, 2: 0, 1: 0 };
-  topics.forEach((t) => {
-    const r = t.repeatCount >= 4 ? 4 : (t.repeatCount || 1);
-    counts[r] = (counts[r] || 0) + 1;
-  });
-
-  const filters = [
-    { key: 'all', label: `All (${counts.all})` },
-    { key: 4, label: `4x Repeated (${counts[4]})` },
-    { key: 3, label: `3x Repeated (${counts[3]})` },
-    { key: 2, label: `2x Repeated (${counts[2]})` },
-    { key: 1, label: `1x / Emerging (${counts[1]})` }
-  ];
-
-  filters.forEach((f) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `pyq-freq-chip ${currentFreqFilter === f.key ? 'active' : ''}`;
-    btn.textContent = f.label;
-    btn.addEventListener('click', () => {
-      if (currentFreqFilter === f.key) return;
-      currentFreqFilter = f.key;
-      updateView();
-    });
-    freqFilterBarEl.appendChild(btn);
-  });
-}
-
 function updateView() {
   const subData = PYQ_SUBJECTS_DATA[currentSubjectId];
   if (!subData) return;
-
-  renderFreqFilterChips(subData.topics || []);
 
   // Toggle Section Visibility
   if (currentMode === 'priority') {
     prioritySectionEl.style.display = 'block';
     papersSectionEl.style.display = 'none';
-    const filtered = currentFreqFilter === 'all'
-      ? subData.topics
-      : subData.topics.filter((t) => (t.repeatCount >= 4 ? 4 : (t.repeatCount || 1)) === currentFreqFilter);
-    renderPriorityTopics(filtered);
+    const sorted = [...(subData.topics || [])].sort((a, b) => (b.repeatCount || 1) - (a.repeatCount || 1));
+    renderPriorityTopics(sorted);
   } else {
     prioritySectionEl.style.display = 'none';
     papersSectionEl.style.display = 'block';
