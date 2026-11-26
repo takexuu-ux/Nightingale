@@ -4,11 +4,30 @@
 import './apk/apk-shell.js';
 import './pyqs.css';
 import { PYQ_SUBJECTS_DATA } from './data/pyqMasterData.js';
+import { PYQ_EXTENDED_TOPICS } from './data/pyqExtendedData.js';
+
+// Merge extended 2x & 1x topics into each subject seamlessly
+Object.keys(PYQ_EXTENDED_TOPICS).forEach((subKey) => {
+  if (PYQ_SUBJECTS_DATA[subKey] && Array.isArray(PYQ_SUBJECTS_DATA[subKey].topics)) {
+    const existingIds = new Set(PYQ_SUBJECTS_DATA[subKey].topics.map((t) => t.id));
+    PYQ_EXTENDED_TOPICS[subKey].forEach((extTopic) => {
+      if (!existingIds.has(extTopic.id)) {
+        PYQ_SUBJECTS_DATA[subKey].topics.push(extTopic);
+      }
+    });
+  }
+});
 
 let currentSubjectId = 'msn';
 let currentMode = 'priority'; // 'priority' | 'papers'
+let currentFreqFilter = 'all'; // 'all' | 4 | 3 | 2 | 1
+let currentYear = '3';
 
 // DOM Elements
+const yearSwitcherEl = document.getElementById('pyq-year-switcher');
+const yearSoonContainerEl = document.getElementById('pyq-year-soon-container');
+const activeYearContentEl = document.getElementById('pyq-active-year-content');
+const freqFilterBarEl = document.getElementById('pyq-freq-filter-bar');
 const subjectSelectorEl = document.getElementById('pyq-subject-selector');
 const modePriorityBtn = document.getElementById('pyq-mode-priority');
 const modePapersBtn = document.getElementById('pyq-mode-papers');
@@ -55,10 +74,50 @@ function init() {
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
   }
 
+  setupYearSwitcher();
   renderSubjectChips();
   setupModeSwitchers();
   setupPdfModalControls();
   updateView();
+}
+
+function setupYearSwitcher() {
+  if (!yearSwitcherEl) return;
+  const chips = yearSwitcherEl.querySelectorAll('.pyq-year-chip');
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const yr = chip.getAttribute('data-year');
+      if (!yr || yr === currentYear) return;
+      currentYear = yr;
+      chips.forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      if (yr === '3') {
+        if (yearSoonContainerEl) yearSoonContainerEl.style.display = 'none';
+        if (activeYearContentEl) activeYearContentEl.style.display = 'block';
+        updateView();
+      } else {
+        if (activeYearContentEl) activeYearContentEl.style.display = 'none';
+        if (yearSoonContainerEl) {
+          yearSoonContainerEl.style.display = 'block';
+          const yrLabel = yr === '1' ? '1st Year' : yr === '2' ? '2nd Year' : '4th Year';
+          yearSoonContainerEl.innerHTML = `
+            <div class="pyq-year-soon-card">
+              <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:800;color:var(--pyq-text-primary);">${yrLabel} B.Sc Nursing Question Papers</h3>
+              <p style="margin:0 0 18px 0;font-size:13.5px;color:var(--pyq-text-muted);line-height:1.5;">Previous year question papers and repeating topic analysis for ${yrLabel} are being compiled. 3rd Year (16 Question Papers &amp; All Topics) is currently live.</p>
+              <button type="button" id="pyq-switch-back-3rd" class="pyq-btn-view" style="padding:0 20px;height:38px;border-radius:10px;border:none;">
+                Open 3rd Year Question Papers
+              </button>
+            </div>
+          `;
+          document.getElementById('pyq-switch-back-3rd')?.addEventListener('click', () => {
+            const yr3Chip = yearSwitcherEl.querySelector('.pyq-year-chip[data-year="3"]');
+            if (yr3Chip) yr3Chip.click();
+          });
+        }
+      }
+    });
+  });
 }
 
 function renderSubjectChips() {
@@ -304,15 +363,57 @@ export async function openPdfViewer(title, pdfUrl) {
 
 window.openPdfViewer = openPdfViewer;
 
+function renderFreqFilterChips(topics) {
+  if (!freqFilterBarEl) return;
+  if (currentMode !== 'priority') {
+    freqFilterBarEl.style.display = 'none';
+    return;
+  }
+  freqFilterBarEl.style.display = 'flex';
+  freqFilterBarEl.innerHTML = '';
+
+  const counts = { all: topics.length, 4: 0, 3: 0, 2: 0, 1: 0 };
+  topics.forEach((t) => {
+    const r = t.repeatCount >= 4 ? 4 : (t.repeatCount || 1);
+    counts[r] = (counts[r] || 0) + 1;
+  });
+
+  const filters = [
+    { key: 'all', label: `All (${counts.all})` },
+    { key: 4, label: `4x Repeated (${counts[4]})` },
+    { key: 3, label: `3x Repeated (${counts[3]})` },
+    { key: 2, label: `2x Repeated (${counts[2]})` },
+    { key: 1, label: `1x / Emerging (${counts[1]})` }
+  ];
+
+  filters.forEach((f) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `pyq-freq-chip ${currentFreqFilter === f.key ? 'active' : ''}`;
+    btn.textContent = f.label;
+    btn.addEventListener('click', () => {
+      if (currentFreqFilter === f.key) return;
+      currentFreqFilter = f.key;
+      updateView();
+    });
+    freqFilterBarEl.appendChild(btn);
+  });
+}
+
 function updateView() {
   const subData = PYQ_SUBJECTS_DATA[currentSubjectId];
   if (!subData) return;
+
+  renderFreqFilterChips(subData.topics || []);
 
   // Toggle Section Visibility
   if (currentMode === 'priority') {
     prioritySectionEl.style.display = 'block';
     papersSectionEl.style.display = 'none';
-    renderPriorityTopics(subData.topics);
+    const filtered = currentFreqFilter === 'all'
+      ? subData.topics
+      : subData.topics.filter((t) => (t.repeatCount >= 4 ? 4 : (t.repeatCount || 1)) === currentFreqFilter);
+    renderPriorityTopics(filtered);
   } else {
     prioritySectionEl.style.display = 'none';
     papersSectionEl.style.display = 'block';
@@ -323,6 +424,11 @@ function updateView() {
 function renderPriorityTopics(topics) {
   if (!topicsListEl) return;
   topicsListEl.innerHTML = '';
+
+  if (!topics || topics.length === 0) {
+    topicsListEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--pyq-text-muted);font-size:13.5px;">No questions match this filter for the selected subject.</div>';
+    return;
+  }
 
   topics.forEach((topic) => {
     const card = document.createElement('div');
@@ -348,11 +454,14 @@ function renderPriorityTopics(topics) {
       </div>
     `).join('');
 
+    const rep = topic.repeatCount >= 4 ? 4 : (topic.repeatCount || 1);
+    const badgeLabel = rep === 1 ? '1x Asked in Exam' : `${rep}x Repeated in NTRUHS`;
+
     card.innerHTML = `
       <div class="pyq-topic-header">
         <div class="pyq-topic-meta-row">
-          <span class="pyq-freq-badge b-${topic.repeatCount >= 4 ? '4' : topic.repeatCount}-repeat">
-            ${topic.repeatCount}x Repeated in NTRUHS
+          <span class="pyq-freq-badge b-${rep}-repeat">
+            ${badgeLabel}
           </span>
           <div class="pyq-years-tag-list">
             ${yearsHtml}

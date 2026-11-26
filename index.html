@@ -232,9 +232,9 @@
             <span>Saved</span>
           </button>
 
-          <button id="tab-pyqs" class="nav-tab" type="button" aria-label="Question Papers">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
-            <span>PYQs</span>
+          <button id="tab-pyqs" class="nav-tab" type="button" aria-label="University Question Papers" onclick="window.location.href='/pyqs.html';">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M2 10h20M12 3 2 10h20zM6 10v11M10 10v11M14 10v11M18 10v11"/></svg>
+            <span>University</span>
           </button>
         </div>
       </nav>
@@ -381,14 +381,6 @@
             <h2 id="apk-hero-greeting" class="apk-home-title">Welcome, NNL ke Papa</h2>
           </div>
 
-          <!-- University Question Papers Quick Access Bar -->
-          <div style="display:flex;align-items:center;margin:2px 0 16px 0;">
-            <button type="button" id="home-pyq-quick-btn" onclick="if(window.openPyqYearSelectorModal){window.openPyqYearSelectorModal();}else{window.location.href='/pyqs.html';}" style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:12px;background:rgba(142,116,229,0.18);border:1px solid rgba(142,116,229,0.4);color:#ffffff;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s ease;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent,#8E74E5);"><path d="M12 2v20M2 12h20"/></svg>
-              <span>University Question Papers (PYQ)</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.75;"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
 
           <!-- Minimal Resume Last Watched Lecture Card -->
           <div id="continue-watching-section" class="hide" style="width:100%;margin-top:4px;margin-bottom:24px;">
