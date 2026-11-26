@@ -382,6 +382,8 @@ function renderPriorityTopics(topics) {
 
         <h3 class="pyq-topic-title">${topic.title}</h3>
 
+        ${conceptsHtml ? `<ul class="pyq-concepts-list">${conceptsHtml}</ul>` : ''}
+
         ${questionsHtml ? `
           <div class="pyq-questions-section">
             ${questionsHtml}
@@ -390,17 +392,13 @@ function renderPriorityTopics(topics) {
 
         <div class="pyq-answer-action-bar">
           <button type="button" class="btn-toggle-answer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span class="btn-toggle-txt">Read Answer (2-3 Pages)</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span class="btn-toggle-txt">Show Answer</span>
           </button>
         </div>
       </div>
 
       <div class="pyq-model-answer-wrapper">
-        <div class="pyq-exam-answer-label">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span>Exhaustive Clinical Written Exam Model Solution</span>
-        </div>
         <div class="concept-body">
           ${topic.answerHtml}
         </div>
@@ -415,7 +413,7 @@ function renderPriorityTopics(topics) {
         card.classList.toggle('expanded');
         const txt = card.querySelector('.btn-toggle-txt');
         if (txt) {
-          txt.textContent = card.classList.contains('expanded') ? 'Hide Answer' : 'Read Answer (2-3 Pages)';
+          txt.textContent = card.classList.contains('expanded') ? 'Hide Answer' : 'Show Answer';
         }
       });
     }

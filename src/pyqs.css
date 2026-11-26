@@ -83,7 +83,7 @@ html[data-theme="light"] {
 }
 
 .pyq-page-title {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 800;
   margin: 0;
   color: var(--pyq-text-primary);
@@ -96,10 +96,10 @@ html[data-theme="light"] {
 /* Horizontal Subject Selector */
 .pyq-subject-selector {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  padding: 2px 2px 8px 2px;
-  margin-bottom: 12px;
+  padding: 2px 2px 10px 2px;
+  margin-bottom: 14px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -110,12 +110,12 @@ html[data-theme="light"] {
 
 .pyq-sub-chip {
   flex-shrink: 0;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
   background: var(--pyq-bg-card);
   border: 1px solid var(--pyq-border);
   color: var(--pyq-text-secondary);
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s ease;
@@ -151,12 +151,12 @@ html[data-theme="light"] .pyq-sub-chip.active {
 .pyq-mode-btn {
   flex: 1;
   text-align: center;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 8px;
   border: none;
   background: transparent;
   color: var(--pyq-text-muted);
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s ease;
@@ -236,23 +236,11 @@ html[data-theme="light"] .pyq-mode-btn.active {
   margin-top: 12px;
 }
 
-/* Solid High-Contrast Repeating Topic Cards - Spacious Uncrowded Layout */
+/* Solid High-Contrast Repeating Topic Cards - Clean Single Column Reading Layout */
 .pyq-topics-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-@media (min-width: 1080px) {
-  .pyq-topics-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    align-items: start;
-  }
-  .pyq-topic-card.expanded {
-    grid-column: 1 / -1;
-  }
+  gap: 18px;
 }
 
 .pyq-topic-card {
@@ -263,7 +251,6 @@ html[data-theme="light"] .pyq-mode-btn.active {
   transition: border-color 0.2s ease;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .pyq-topic-card:hover {
@@ -291,10 +278,10 @@ html[data-theme="light"] .pyq-topic-card:hover {
 }
 
 .pyq-freq-badge {
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -331,54 +318,54 @@ html[data-theme="light"] .pyq-topic-card:hover {
 
 .pyq-years-tag-list {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .pyq-year-pill {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
   background: var(--pyq-bg-inner);
   border: 1px solid var(--pyq-border);
   color: var(--pyq-text-muted);
 }
 
 .pyq-topic-title {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 800;
   color: var(--pyq-text-primary);
-  margin: 0 0 10px 0;
-  line-height: 1.35;
+  margin: 0 0 12px 0;
+  line-height: 1.38;
 }
 
 /* Recurring Concepts List */
 .pyq-concepts-list {
   list-style: none;
-  margin: 0 0 10px 0;
+  margin: 0 0 14px 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .pyq-concept-item {
-  font-size: 12.5px;
-  line-height: 1.45;
+  font-size: 14.5px;
+  line-height: 1.5;
   color: var(--pyq-text-secondary);
   background: var(--pyq-bg-inner);
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: 8px;
+  padding: 8px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .pyq-concept-years {
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: var(--pyq-accent);
+  color: var(--pyq-accent-text);
   white-space: nowrap;
 }
 
@@ -413,51 +400,56 @@ html[data-theme="light"] .pyq-topic-card:hover {
 }
 
 .pyq-q-badge {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--pyq-accent);
-  margin-bottom: 2px;
+  color: var(--pyq-accent-text);
+  margin-bottom: 4px;
 }
 
 .pyq-q-text {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--pyq-text-primary);
-  line-height: 1.45;
+  line-height: 1.55;
 }
 
-/* View Exam Answer (2-3 Pages) Button */
+/* Show / Hide Answer Button */
 .pyq-answer-action-bar {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-top: auto;
-  padding-top: 8px;
+  padding-top: 6px;
 }
 
 .btn-toggle-answer {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
-  padding: 0 18px;
+  height: 40px;
+  padding: 0 20px;
   border-radius: 9px;
-  background: var(--pyq-accent-bg);
-  border: 1px solid rgba(56, 189, 248, 0.38);
+  background: var(--pyq-bg-inner);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--pyq-text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
+html[data-theme="light"] .btn-toggle-answer {
+  border-color: var(--pyq-border);
+}
+
 .btn-toggle-answer:hover {
   background: var(--pyq-accent);
+  border-color: var(--pyq-accent);
   color: #0f172a;
 }
 
 .pyq-topic-card.expanded .btn-toggle-answer {
   background: var(--pyq-accent);
+  border-color: var(--pyq-accent);
   color: #0f172a;
 }
 
@@ -502,15 +494,15 @@ html[data-theme="light"] .pyq-topic-card:hover {
 }
 
 .concept-title {
-  font-size: 14.5px;
+  font-size: 16.5px;
   font-weight: 800;
   color: var(--pyq-text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .concept-body {
-  font-size: 14px;
-  line-height: 1.72;
+  font-size: 15.5px;
+  line-height: 1.75;
   color: var(--pyq-text-secondary);
 }
 
