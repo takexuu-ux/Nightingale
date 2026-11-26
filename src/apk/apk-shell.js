@@ -276,20 +276,6 @@ function buildSidePanel() {
       <div class="apk-side-card">
         <div class="apk-side-section-title">Saved &amp; Resources</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <!-- 3rd Year PYQ Predictor & Question Papers -->
-          <button type="button" id="apk-side-pyq-btn" class="apk-resource-btn">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div class="apk-res-icon apk-res-icon-indigo" style="background:rgba(142,116,229,0.2);color:#A78BFA;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-              </div>
-              <div style="text-align:left;">
-                <span class="apk-res-label" style="display:block;line-height:1.2;">3rd Year PYQ Predictor</span>
-                <span style="font-size:10px;color:var(--text-secondary);font-weight:600;">16 Papers &amp; Repeating Topics</span>
-              </div>
-            </div>
-            <svg class="apk-res-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-
           <!-- Single Unified Saved Button -->
           <button type="button" id="apk-side-saved-hub-btn" class="apk-resource-btn">
             <div style="display:flex;align-items:center;gap:12px;">
@@ -297,6 +283,19 @@ function buildSidePanel() {
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               </div>
               <span class="apk-res-label">Saved Content</span>
+            </div>
+            <svg class="apk-res-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- Question Papers (PYQ) -->
+          <button type="button" id="apk-side-pyq-btn" class="apk-resource-btn">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="apk-res-icon apk-res-icon-indigo" style="background:rgba(142,116,229,0.2);color:#A78BFA;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v20M2 12h20"/>
+                </svg>
+              </div>
+              <span class="apk-res-label">Question Papers (PYQ)</span>
             </div>
             <svg class="apk-res-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
@@ -368,10 +367,10 @@ function buildSidePanel() {
     });
   });
 
-  // 3rd Year PYQ Predictor & Question Papers inside Side Panel
+  // Question Papers (PYQ) inside Side Panel opens Year Selector Modal
   panel.querySelector('#apk-side-pyq-btn')?.addEventListener('click', () => {
     closeSidePanel();
-    window.location.href = '/pyqs.html';
+    openPyqYearSelectorModal();
   });
 
   // Single Unified Saved & Offline Hub inside Side Panel
@@ -935,6 +934,105 @@ function openBatchSwitcherModal() {
         sel.value = chosen;
         sel.dispatchEvent(new Event('change', { bubbles: true }));
       }
+    }
+  });
+
+  document.body.appendChild(overlay);
+}
+
+function showApkToast(msg) {
+  let toast = document.getElementById('apk-global-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'apk-global-toast';
+    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1E1636;border:1px solid rgba(142,116,229,0.45);color:#ffffff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,0.5);pointer-events:none;transition:opacity 0.25s ease;text-align:center;max-width:90vw;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 2400);
+}
+
+function openPyqYearSelectorModal() {
+  const existing = document.getElementById('apk-pyq-year-sheet');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'apk-pyq-year-sheet';
+  overlay.className = 'apk-sheet-backdrop';
+  overlay.innerHTML = `
+    <div class="apk-sheet-card" role="dialog" aria-modal="true" aria-label="Select B.Sc Nursing Year">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--text-primary);">B.Sc Nursing Question Papers</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Select academic year for university PYQs</div>
+        </div>
+        <button type="button" class="apk-icon-btn apk-sheet-close" aria-label="Close">
+          ${NAV_ICONS.close}
+        </button>
+      </div>
+      <div class="apk-batch-options-list" style="display:flex;flex-direction:column;gap:8px;padding:2px 0;">
+        <button type="button" class="apk-batch-option" style="opacity:0.65;cursor:pointer;" data-year-status="soon">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-weight:800;font-size:13.5px;">1st Year B.Sc Nursing</span>
+              <span style="font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.08);color:var(--text-muted);">Coming Soon</span>
+            </div>
+            <span style="font-size:11.5px;opacity:0.75;font-weight:500;">Anatomy, Physiology, Nutrition, Nursing Foundation</span>
+          </div>
+        </button>
+
+        <button type="button" class="apk-batch-option" style="opacity:0.65;cursor:pointer;" data-year-status="soon">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-weight:800;font-size:13.5px;">2nd Year B.Sc Nursing</span>
+              <span style="font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.08);color:var(--text-muted);">Coming Soon</span>
+            </div>
+            <span style="font-size:11.5px;opacity:0.75;font-weight:500;">MSN-I, Pharmacology, Pathology, Genetics, Sociology</span>
+          </div>
+        </button>
+
+        <button type="button" class="apk-batch-option active" data-year-action="3rd" style="border-color:var(--accent);background:rgba(142,116,229,0.14);">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-weight:800;font-size:13.5px;color:var(--accent);">3rd Year B.Sc Nursing</span>
+              <span style="font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:4px;background:rgba(142,116,229,0.22);color:var(--accent);">Active • 16 Papers</span>
+            </div>
+            <span style="font-size:11.5px;color:var(--text-secondary);font-weight:500;">MSN-II, Mental Health, Child Health, Research &amp; Stats</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button type="button" class="apk-batch-option" style="opacity:0.65;cursor:pointer;" data-year-status="soon">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-weight:800;font-size:13.5px;">4th Year B.Sc Nursing</span>
+              <span style="font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.08);color:var(--text-muted);">Coming Soon</span>
+            </div>
+            <span style="font-size:11.5px;opacity:0.75;font-weight:500;">Midwifery &amp; Obstetrical Nursing, Community Health-II</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  `;
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.closest('.apk-sheet-close')) {
+      overlay.remove();
+      return;
+    }
+    const opt = e.target.closest('.apk-batch-option');
+    if (!opt) return;
+    if (opt.dataset.yearAction === '3rd') {
+      overlay.remove();
+      window.location.href = '/pyqs.html';
+      return;
+    }
+    if (opt.dataset.yearStatus === 'soon') {
+      showApkToast('Question papers for this year will be available in future updates.');
     }
   });
 

@@ -4,7 +4,6 @@
 import './apk/apk-shell.js';
 import './pyqs.css';
 import { PYQ_SUBJECTS_DATA } from './data/pyqMasterData.js';
-import { getPdfPreviewSrc } from './config/appMode.js';
 
 let currentSubjectId = 'msn';
 let currentMode = 'priority'; // 'priority' | 'papers'
@@ -18,19 +17,26 @@ const papersSectionEl = document.getElementById('pyq-papers-section');
 const topicsListEl = document.getElementById('pyq-topics-list');
 const papersGridEl = document.getElementById('pyq-papers-grid');
 
-// Hero Stats Elements
-const statTotalPapersEl = document.getElementById('pyq-stat-total-papers');
-const statRepeatTopicsEl = document.getElementById('pyq-stat-repeat-topics');
-const statGuaranteedEl = document.getElementById('pyq-stat-guaranteed');
-const currentSubjectTitleEl = document.getElementById('pyq-current-subject-title');
-const currentSubjectDescEl = document.getElementById('pyq-current-subject-desc');
-
 // PDF Modal Elements
 const pdfModal = document.getElementById('pyq-pdf-modal');
-const pdfModalIframe = document.getElementById('pyq-pdf-iframe');
 const pdfModalTitle = document.getElementById('pyq-pdf-modal-title');
 const pdfModalDownload = document.getElementById('pyq-pdf-modal-download');
 const pdfModalClose = document.getElementById('pyq-pdf-modal-close');
+const pdfCanvas = document.getElementById('pyq-pdf-canvas');
+const pdfLoadingEl = document.getElementById('pyq-pdf-loading');
+const pdfPrevBtn = document.getElementById('pdf-prev-page');
+const pdfNextBtn = document.getElementById('pdf-next-page');
+const pdfPageNumEl = document.getElementById('pdf-page-num');
+const pdfZoomInBtn = document.getElementById('pdf-zoom-in');
+const pdfZoomOutBtn = document.getElementById('pdf-zoom-out');
+
+// PDF.js State
+let currentPdfDoc = null;
+let currentPdfPage = 1;
+let totalPdfPages = 1;
+let currentZoomScale = 1.0;
+let isRenderingPdfPage = false;
+let pendingPdfPage = null;
 
 function init() {
   // Parse URL query parameter if present
@@ -44,9 +50,14 @@ function init() {
     currentMode = 'papers';
   }
 
+  // Setup PDF.js worker
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
+  }
+
   renderSubjectChips();
   setupModeSwitchers();
-  setupPdfModal();
+  setupPdfModalControls();
   updateView();
 }
 
@@ -59,10 +70,8 @@ function renderSubjectChips() {
     chip.type = 'button';
     chip.className = `pyq-sub-chip ${sub.id === currentSubjectId ? 'active' : ''}`;
     chip.setAttribute('data-sub-id', sub.id);
-    chip.innerHTML = `
-      <span>${sub.shortName}</span>
-      <span style="font-size:10px;opacity:0.8;font-weight:600;">(${sub.topics.length} Topics)</span>
-    `;
+    // Clean label only: no topic count
+    chip.innerHTML = `<span>${sub.shortName}</span>`;
     chip.addEventListener('click', () => {
       if (currentSubjectId === sub.id) return;
       currentSubjectId = sub.id;
@@ -127,12 +136,18 @@ export function triggerFileDownload(url, title, filename) {
 
 window.triggerFileDownload = triggerFileDownload;
 
-function setupPdfModal() {
+function setupPdfModalControls() {
   if (!pdfModal) return;
 
   const closeModal = () => {
     pdfModal.classList.remove('open');
-    if (pdfModalIframe) pdfModalIframe.src = 'about:blank';
+    currentPdfDoc = null;
+    currentPdfPage = 1;
+    currentZoomScale = 1.0;
+    if (pdfCanvas) {
+      const ctx = pdfCanvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+    }
   };
 
   if (pdfModalClose) {
@@ -149,6 +164,42 @@ function setupPdfModal() {
     });
   }
 
+  if (pdfPrevBtn) {
+    pdfPrevBtn.addEventListener('click', () => {
+      if (currentPdfPage > 1) {
+        currentPdfPage--;
+        queueRenderPage(currentPdfPage);
+      }
+    });
+  }
+
+  if (pdfNextBtn) {
+    pdfNextBtn.addEventListener('click', () => {
+      if (currentPdfPage < totalPdfPages) {
+        currentPdfPage++;
+        queueRenderPage(currentPdfPage);
+      }
+    });
+  }
+
+  if (pdfZoomInBtn) {
+    pdfZoomInBtn.addEventListener('click', () => {
+      if (currentZoomScale < 2.5) {
+        currentZoomScale += 0.25;
+        queueRenderPage(currentPdfPage);
+      }
+    });
+  }
+
+  if (pdfZoomOutBtn) {
+    pdfZoomOutBtn.addEventListener('click', () => {
+      if (currentZoomScale > 0.6) {
+        currentZoomScale -= 0.25;
+        queueRenderPage(currentPdfPage);
+      }
+    });
+  }
+
   pdfModal.addEventListener('click', (e) => {
     if (e.target === pdfModal) closeModal();
   });
@@ -160,11 +211,62 @@ function setupPdfModal() {
   });
 }
 
-export function openPdfViewer(title, pdfUrl) {
-  if (!pdfModal || !pdfModalIframe) {
+function queueRenderPage(num) {
+  if (isRenderingPdfPage) {
+    pendingPdfPage = num;
+  } else {
+    renderPdfPage(num);
+  }
+}
+
+async function renderPdfPage(num) {
+  if (!currentPdfDoc || !pdfCanvas) return;
+  isRenderingPdfPage = true;
+
+  try {
+    const page = await currentPdfDoc.getPage(num);
+    const container = document.getElementById('pyq-pdf-body');
+    const containerWidth = container ? container.clientWidth - 32 : window.innerWidth - 48;
+    const baseWidth = Math.min(Math.max(containerWidth, 320), 860);
+
+    const unscaledViewport = page.getViewport({ scale: 1 });
+    const computedScale = (baseWidth / unscaledViewport.width) * currentZoomScale;
+    const viewport = page.getViewport({ scale: computedScale });
+
+    const ctx = pdfCanvas.getContext('2d');
+    pdfCanvas.height = viewport.height;
+    pdfCanvas.width = viewport.width;
+
+    const renderContext = {
+      canvasContext: ctx,
+      viewport: viewport
+    };
+
+    await page.render(renderContext).promise;
+  } catch (err) {
+    console.error('Error rendering PDF page:', err);
+  } finally {
+    isRenderingPdfPage = false;
+    if (pdfPageNumEl) {
+      pdfPageNumEl.textContent = `${num} / ${totalPdfPages}`;
+    }
+    if (pdfLoadingEl) {
+      pdfLoadingEl.style.display = 'none';
+    }
+    if (pendingPdfPage !== null) {
+      const p = pendingPdfPage;
+      pendingPdfPage = null;
+      renderPdfPage(p);
+    }
+  }
+}
+
+export async function openPdfViewer(title, pdfUrl) {
+  if (!pdfModal || !pdfCanvas) {
     window.open(pdfUrl, '_blank');
     return;
   }
+
   if (pdfModalTitle) pdfModalTitle.textContent = title;
   if (pdfModalDownload) {
     const filename = title.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
@@ -172,26 +274,39 @@ export function openPdfViewer(title, pdfUrl) {
     pdfModalDownload.setAttribute('data-url', pdfUrl);
     pdfModalDownload.setAttribute('download', filename);
   }
-  // Use Nightingale PDF preview source resolver
-  const viewerSrc = getPdfPreviewSrc(pdfUrl);
-  pdfModalIframe.src = viewerSrc;
+
   pdfModal.classList.add('open');
+  if (pdfLoadingEl) pdfLoadingEl.style.display = 'flex';
+  if (pdfPageNumEl) pdfPageNumEl.textContent = '...';
+
+  // Check if PDF.js is ready
+  if (!window.pdfjsLib) {
+    console.warn('PDF.js not loaded, opening URL directly');
+    if (pdfLoadingEl) pdfLoadingEl.style.display = 'none';
+    window.open(pdfUrl, '_blank');
+    return;
+  }
+
+  try {
+    const loadingTask = window.pdfjsLib.getDocument(pdfUrl);
+    currentPdfDoc = await loadingTask.promise;
+    totalPdfPages = currentPdfDoc.numPages || 1;
+    currentPdfPage = 1;
+    currentZoomScale = 1.0;
+    renderPdfPage(currentPdfPage);
+  } catch (err) {
+    console.error('Failed to load PDF document via PDF.js:', err);
+    if (pdfLoadingEl) {
+      pdfLoadingEl.innerHTML = `<span style="color:#F87171;">Failed to load PDF preview. <a href="${pdfUrl}" target="_blank" style="color:var(--pyq-accent);text-decoration:underline;">Click to download</a></span>`;
+    }
+  }
 }
+
+window.openPdfViewer = openPdfViewer;
 
 function updateView() {
   const subData = PYQ_SUBJECTS_DATA[currentSubjectId];
   if (!subData) return;
-
-  // Update Hero Titles and Stats
-  if (currentSubjectTitleEl) currentSubjectTitleEl.textContent = subData.name;
-  if (currentSubjectDescEl) currentSubjectDescEl.textContent = subData.desc;
-
-  const totalTopics = subData.topics.length;
-  const guaranteedTopics = subData.topics.filter(t => t.repeatCount >= 4).length;
-
-  if (statTotalPapersEl) statTotalPapersEl.textContent = '4 Papers';
-  if (statRepeatTopicsEl) statRepeatTopicsEl.textContent = `${totalTopics} Topics`;
-  if (statGuaranteedEl) statGuaranteedEl.textContent = `${guaranteedTopics} Guaranteed`;
 
   // Toggle Section Visibility
   if (currentMode === 'priority') {
@@ -209,15 +324,15 @@ function renderPriorityTopics(topics) {
   if (!topicsListEl) return;
   topicsListEl.innerHTML = '';
 
-  topics.forEach((topic, idx) => {
+  topics.forEach((topic) => {
     const card = document.createElement('div');
     card.className = 'pyq-topic-card';
     card.id = `card-${topic.id}`;
 
-    // Year badges HTML
+    // Year tags
     const yearsHtml = (topic.years || []).map(y => `<span class="pyq-year-pill">${y}</span>`).join('');
 
-    // Concepts sub-list HTML
+    // Recurring concepts sub-list
     const conceptsHtml = (topic.subItems || []).map(item => `
       <li class="pyq-concept-item">
         <span>${item.concept}</span>
@@ -225,78 +340,67 @@ function renderPriorityTopics(topics) {
       </li>
     `).join('');
 
-    // Exam questions HTML
+    // Exam questions
     const questionsHtml = (topic.questions || []).map(q => `
-      <div class="pyq-q-item">
-        <div class="pyq-q-header">
-          <span class="pyq-q-paper-badge">${q.paperBadge}</span>
-          <span class="pyq-q-weight">${q.weight}</span>
-        </div>
+      <div class="pyq-q-row">
+        <div class="pyq-q-badge">${q.paperBadge} • ${q.weight}</div>
         <div class="pyq-q-text">${q.questionText}</div>
       </div>
     `).join('');
 
     card.innerHTML = `
       <div class="pyq-topic-header">
-        <div class="pyq-topic-topbar">
-          <div class="pyq-topic-badges">
-            <span class="pyq-badge-chip ${topic.tierClass}">
-              ${topic.repeatCount >= 4 ? '🔥' : '⭐'} ${topic.repeatCount}x Repeated (${topic.probability}% Probability)
-            </span>
-            <span class="pyq-badge-chip" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--pyq-text-muted);">
-              ${topic.priorityTier}
-            </span>
-          </div>
-          <div class="pyq-years-list">
+        <div class="pyq-topic-meta-row">
+          <span class="pyq-freq-badge b-${topic.repeatCount >= 4 ? '4' : topic.repeatCount}-repeat">
+            ${topic.repeatCount}x Repeated in NTRUHS
+          </span>
+          <div class="pyq-years-tag-list">
             ${yearsHtml}
           </div>
         </div>
 
-        <div class="pyq-topic-title-row">
-          <h3 class="pyq-topic-title">${topic.title}</h3>
-          <div class="pyq-topic-chevron" aria-label="Toggle answer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
+        <h3 class="pyq-topic-title">${topic.title}</h3>
 
         ${conceptsHtml ? `<ul class="pyq-concepts-list">${conceptsHtml}</ul>` : ''}
 
         ${questionsHtml ? `
-          <div class="pyq-exam-questions-box">
-            <div class="pyq-questions-label">Exact Exam Questions (${topic.questions.length})</div>
+          <div class="pyq-questions-section">
+            <div class="pyq-questions-header">Exact Exam Questions (${topic.questions.length})</div>
             ${questionsHtml}
           </div>
         ` : ''}
 
-        <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
-          <button type="button" class="pyq-btn-secondary" style="height:32px;padding:0 12px;font-size:12px;font-weight:700;border-radius:8px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <span class="pyq-toggle-text">View Model Answer &amp; Clinical Guide</span>
+        <div class="pyq-answer-action-bar">
+          <button type="button" class="btn-toggle-answer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span class="btn-toggle-txt">View Exam Answer (2-3 Pages)</span>
           </button>
-          <span style="font-size:11px;color:var(--pyq-text-muted);font-weight:600;">High-Yield Written Answers</span>
         </div>
       </div>
 
       <div class="pyq-model-answer-wrapper">
-        <div class="pyq-answer-category-header">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <span>Exhaustive Clinical Answer &amp; Exam Notes</span>
+        <div class="pyq-exam-answer-label">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Exhaustive Clinical Written Exam Model Solution</span>
         </div>
-        <div class="pyq-answer-body">
+        <div class="concept-body">
           ${topic.answerHtml}
         </div>
       </div>
     `;
 
-    // Add click handler to toggle accordion
-    const header = card.querySelector('.pyq-topic-header');
-    header.addEventListener('click', (e) => {
-      card.classList.toggle('expanded');
-      const toggleTxt = card.querySelector('.pyq-toggle-text');
-      if (toggleTxt) {
-        toggleTxt.textContent = card.classList.contains('expanded') ? 'Collapse Answer' : 'View Model Answer & Clinical Guide';
-      }
-    });
+    // Toggle button handler
+    const toggleBtn = card.querySelector('.btn-toggle-answer');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        card.classList.toggle('expanded');
+        const txt = card.querySelector('.btn-toggle-txt');
+        if (txt) {
+          txt.textContent = card.classList.contains('expanded') ? 'Hide Exam Answer' : 'View Exam Answer (2-3 Pages)';
+        }
+      });
+    }
 
     topicsListEl.appendChild(card);
   });
@@ -309,28 +413,18 @@ function renderQuestionPapers(papers) {
   papers.forEach((p) => {
     const card = document.createElement('div');
     card.className = 'pyq-paper-card';
+    // User requested: No emojis, no 75 marks / 3 hours bloat, clean Year & Session with View and Download
     card.innerHTML = `
       <div>
-        <div class="pyq-paper-top">
-          <span class="pyq-paper-year-badge">${p.year}</span>
-          <span class="pyq-paper-badge-pill">${p.badge}</span>
-        </div>
-        <h4 class="pyq-paper-title">${p.title}</h4>
-        <div class="pyq-paper-meta">
-          <span>📅 ${p.date}</span>
-          <span>•</span>
-          <span>💯 ${p.totalMarks} Marks</span>
-          <span>•</span>
-          <span>⏳ ${p.duration}</span>
-        </div>
+        <h4 class="pyq-paper-title">${p.year} — ${p.badge || 'Annual Exam'}</h4>
       </div>
       <div class="pyq-paper-actions">
-        <button type="button" class="pyq-paper-btn pyq-btn-primary btn-read-paper">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>Read in App</span>
+        <button type="button" class="pyq-btn-view btn-read-paper">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>View</span>
         </button>
-        <button type="button" class="pyq-paper-btn pyq-btn-secondary btn-download-paper">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <button type="button" class="pyq-btn-download btn-download-paper">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>Download</span>
         </button>
       </div>
@@ -340,7 +434,7 @@ function renderQuestionPapers(papers) {
     if (readBtn) {
       readBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        openPdfViewer(p.title, p.file);
+        openPdfViewer(`${p.year} ${p.badge || 'Paper'}`, p.file);
       });
     }
 
@@ -348,8 +442,8 @@ function renderQuestionPapers(papers) {
     if (dlBtn) {
       dlBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        const filename = p.title.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
-        triggerFileDownload(p.file, p.title, filename);
+        const filename = `${p.year}_${p.badge || 'question_paper'}.pdf`.replace(/[^a-zA-Z0-9_.-]/g, '_');
+        triggerFileDownload(p.file, `${p.year} Question Paper`, filename);
       });
     }
 
