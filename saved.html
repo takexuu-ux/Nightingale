@@ -112,8 +112,9 @@
           if (window.AndroidBridge || window.__NNL_ANDROID_APK__ || (navigator.userAgent && /NightingaleAndroid/i.test(navigator.userAgent))) {
             document.documentElement.classList.add('is-native-android-apk');
           }
-          var token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token');
-          if (token) {
+          var isGuest = localStorage.getItem('nnl_guest_mode') === 'true' || localStorage.getItem('nnl_access_token') === 'GUEST_OPEN_ACCESS';
+          var token = localStorage.getItem('token') || localStorage.getItem('nnl_access_token') || localStorage.getItem('nnl_auth_token') || (isGuest ? 'GUEST_OPEN_ACCESS' : null);
+          if (token || isGuest) {
             document.documentElement.classList.add('is-logged-in');
             var s = document.createElement('style');
             s.textContent = '#app-preloader{display:none!important;} #apk-hamburger-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}';
@@ -165,6 +166,11 @@
           <button id="tab-saved" class="nav-tab active">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             <span>Saved</span>
+          </button>
+
+          <button id="tab-pyqs" class="nav-tab" type="button" onclick="if(window.openPyqYearSelectorModal){window.openPyqYearSelectorModal();}else{window.location.href='/pyqs.html';}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+            <span>PYQs</span>
           </button>
         </div>
       </nav>

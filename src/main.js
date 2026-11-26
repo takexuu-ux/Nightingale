@@ -4190,7 +4190,6 @@ function renderContinueWatchingSection() {
       <div class="resume-card-body">
         <div class="resume-card-top-row">
           <h4 class="resume-card-title">${escapeHtml(item.title || 'Recorded Lecture')}</h4>
-          <span class="lecture-progress-text" style="font-size:11px;font-weight:700;color:var(--accent);">${displayPct}%</span>
         </div>
         <div class="resume-card-meta">
           <span>${escapeHtml(item.instructor || 'NNL Faculty')}${item.subject ? ` • ${escapeHtml(item.subject)}` : ''}</span>
@@ -4462,13 +4461,11 @@ async function handleJoinClassroomClick(e) {
   if (!btn) return;
 
   const token = localStorage.getItem('nnl_access_token');
-  if (!token) {
+  if (!token || token === 'GUEST_OPEN_ACCESS') {
     await showCustomAlert(
-      'Live streaming requires an active Nursing Next Live mobile number. Notes, Tests, 3rd Year PYQs, and Question Papers are fully accessible without login. Please log in with your phone and OTP to stream live classes.',
+      'Live streaming requires logging in with your registered mobile number and OTP. All Question Papers, Notes, and Tests remain fully accessible without OTP.',
       'Mobile Login Required'
     );
-    localStorage.removeItem('nnl_guest_mode');
-    checkLoginState();
     return;
   }
 
@@ -5125,7 +5122,10 @@ initOtpBoxes();
 
 export function enterGuestMode() {
   localStorage.setItem('nnl_guest_mode', 'true');
+  localStorage.setItem('nnl_access_token', 'GUEST_OPEN_ACCESS');
+  localStorage.setItem('token', 'GUEST_OPEN_ACCESS');
   localStorage.setItem('nnl_phone', 'Guest Student');
+  sessionStorage.removeItem('nnl_explicit_logout');
   checkLoginState();
 }
 
